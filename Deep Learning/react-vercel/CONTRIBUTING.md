@@ -8,7 +8,7 @@ This guide helps you understand, modify, and extend the project.
 ### Project Structure
 
 ```
-cloud-ml-react-vercel/
+react-vercel/
 ├── backend/                    # FastAPI backend
 │   ├── app/
 │   │   ├── main.py            # 🔥 START HERE: Main API routes

@@ -44,7 +44,7 @@ A full-stack Todo application built with React (TypeScript) and FastAPI (Python)
 1. **Clone the repository**
    ```bash
    git clone <your-repo-url>
-   cd cloud-ml-react-azure
+   cd react-azure
    ```
 
 2. **Start the Backend**
@@ -118,7 +118,7 @@ No environment variables needed for basic setup.
 ## 📁 Project Structure
 
 ```
-cloud-ml-react-azure/
+react-azure/
 ├── backend/                 # FastAPI backend
 │   ├── app/
 │   │   ├── __init__.py

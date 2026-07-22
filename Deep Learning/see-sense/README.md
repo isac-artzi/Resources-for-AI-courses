@@ -4,7 +4,7 @@
 > (**Streamlit UI ⇄ FastAPI Model API ⇄ Supabase Data**), with the middle box
 > swapped for a **PyTorch CNN + Grad-CAM** doing image classification with
 > visual explanations. The deploy steps are identical, so follow the main
-> [three-cloud TUTORIAL](../cloud-ml-three-cloud/TUTORIAL.md).
+> [three-cloud TUTORIAL](../three-cloud/TUTORIAL.md).
 
 ## Live deployment URLs (fill these in)
 
@@ -68,7 +68,7 @@ writer, Supabase as the single source of truth, service-role vs anon keys, RLS o
 ## Project structure
 
 ```
-cloud-ml-see-sense/
+see-sense/
 ├── README.md                 # This file
 ├── MODEL_CARD.md             # Model details, Grad-CAM, privacy, limitations
 ├── shared/
@@ -96,7 +96,7 @@ cloud-ml-see-sense/
 ## Quickstart (local)
 
 ```bash
-cd cloud-ml-see-sense
+cd see-sense
 
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
@@ -111,7 +111,7 @@ streamlit run ui/app.py                                # terminal 2
 ```
 
 To deploy to the three clouds, follow **Part E** of the main
-[TUTORIAL](../cloud-ml-three-cloud/TUTORIAL.md): apply
+[TUTORIAL](../three-cloud/TUTORIAL.md): apply
 `db/migrations/001_init.sql` in the Supabase SQL Editor → deploy the API from
 `render.yaml` on Render → deploy the UI on Streamlit Community Cloud.
 

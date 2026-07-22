@@ -5,7 +5,7 @@ Get the app running in 3 minutes!
 ## Step 1: Install Dependencies
 
 ```bash
-cd cloud-ml-react-local
+cd react-local
 npm install
 ```
 

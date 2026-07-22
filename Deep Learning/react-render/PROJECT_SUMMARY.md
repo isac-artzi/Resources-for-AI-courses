@@ -23,7 +23,7 @@ Build and deploy a full-stack deep learning web application that:
 ## 📁 Complete File Structure
 
 ```
-cloud-ml-react-render/
+react-render/
 │
 ├── 📄 README.md                          # Main tutorial (comprehensive guide)
 ├── 📄 QUICKSTART.md                      # Get started in 5 minutes

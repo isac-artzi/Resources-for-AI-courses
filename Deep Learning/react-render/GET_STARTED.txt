@@ -102,7 +102,7 @@ Your complete tutorial project is ready to use. Here's what you have:
 │ 📂 PROJECT STRUCTURE                                                         │
 ├──────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
-│  cloud-ml-react-render/                                                     │
+│  react-render/                                                     │
 │  ├── 📄 Documentation files (6 guides)                                      │
 │  ├── 📁 backend/              ← FastAPI + PyTorch                           │
 │  │   ├── app.py                                                             │

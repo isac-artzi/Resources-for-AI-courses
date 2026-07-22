@@ -14,7 +14,7 @@ This guide gets you up and running as fast as possible.
 
 ```bash
 git clone <your-repo-url>
-cd cloud-ml-react-vercel
+cd react-vercel
 ```
 
 ### 2. Setup Backend (Terminal 1)

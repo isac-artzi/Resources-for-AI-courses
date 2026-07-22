@@ -29,7 +29,7 @@ Before deploying, ensure you have:
 
 ```bash
 # Navigate to your project root
-cd cloud-ml-react-vercel
+cd react-vercel
 
 # Initialize git (if not already done)
 git init

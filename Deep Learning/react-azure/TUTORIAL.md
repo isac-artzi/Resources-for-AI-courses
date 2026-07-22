@@ -52,7 +52,7 @@ A Todo application where users can:
 ## Project Structure
 
 ```
-cloud-ml-react-azure/
+react-azure/
 ├── backend/                    # FastAPI backend
 │   ├── app/
 │   │   ├── __init__.py

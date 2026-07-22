@@ -77,7 +77,7 @@ PyTorch Model
 
 ```bash
 # Navigate to project root
-cd cloud-ml-react-render
+cd react-render
 
 # Initialize Git repository (if not already done)
 git init

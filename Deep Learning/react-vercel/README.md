@@ -83,7 +83,7 @@ git --version
 ## 📁 Project Structure
 
 ```
-cloud-ml-react-vercel/
+react-vercel/
 ├── frontend/                  # React application
 │   ├── public/               # Static files
 │   ├── src/
@@ -119,7 +119,7 @@ cloud-ml-react-vercel/
 
 ```bash
 # If you haven't already, navigate to your project directory
-cd cloud-ml-react-vercel
+cd react-vercel
 ```
 
 ### Step 2: Setup Backend (FastAPI)

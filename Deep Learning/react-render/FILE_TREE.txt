@@ -1,4 +1,4 @@
-📁 cloud-ml-react-render/
+📁 react-render/
 │
 ├── 📄 GET_STARTED.txt              ← START HERE! Visual guide
 ├── 📄 README.md                    ← Main comprehensive tutorial

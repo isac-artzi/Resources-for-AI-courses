@@ -46,7 +46,7 @@ Students learn to build, test, and deploy a real-world AI application.
 ## 📁 Complete File Structure
 
 ```
-cloud-ml-react-vercel/
+react-vercel/
 │
 ├── 📖 Documentation
 │   ├── README.md                    # Main tutorial

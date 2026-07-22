@@ -35,7 +35,7 @@ Modern browsers are powerful enough to run machine learning models! TensorFlow.j
 
 1. **Navigate to the project directory**:
    ```bash
-   cd cloud-ml-react-local
+   cd react-local
    ```
 
 2. **Install dependencies**:
@@ -63,7 +63,7 @@ Modern browsers are powerful enough to run machine learning models! TensorFlow.j
 ### Project Structure
 
 ```
-cloud-ml-react-local/
+react-local/
 ├── README.md                 # This file
 ├── package.json              # Dependencies and scripts
 ├── public/

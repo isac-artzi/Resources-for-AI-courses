@@ -38,7 +38,7 @@ git --version
 1. **Clone Repository**
    ```bash
    git clone <your-repo-url>
-   cd cloud-ml-react-vercel
+   cd react-vercel
    ```
 
 2. **Setup Backend**

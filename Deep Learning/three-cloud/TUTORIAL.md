@@ -102,7 +102,7 @@ This is the template you fork. Each tier has its **own** `requirements.txt` so
 each cloud installs only what it needs.
 
 ```
-cloud-ml-three-cloud/
+three-cloud/
 ├── README.md                       # product README (fill in your 3 URLs at the top)
 ├── TUTORIAL.md                     # this file
 ├── MODEL_CARD.md                   # rendered in the UI 'Model Card' tab

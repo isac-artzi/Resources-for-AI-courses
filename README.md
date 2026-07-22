@@ -1,10 +1,14 @@
-# Cloud ML Deployment Templates
+# Resources for AI Courses
 
-A collection of full-stack deep learning and web application templates demonstrating various cloud deployment strategies. Each project showcases different cloud platforms and deployment patterns.
+A collection of teaching resources organized by subject. Each top-level folder
+groups the projects and tutorials for one subject area.
 
-## Projects Overview
+## Deep Learning
 
-This repository contains **8 complete projects** that demonstrate modern web development and cloud deployment techniques. Each project has its own detailed README and tutorial.
+The [`Deep Learning/`](./Deep%20Learning) folder contains **8 complete projects**
+demonstrating full-stack deep learning and various cloud deployment strategies.
+Each project showcases different cloud platforms and deployment patterns, and has
+its own detailed README and tutorial.
 
 > **New here? Start with the three-cloud architecture below.** It is the
 > canonical reference pattern, and *Income-Insight* and *See-Sense* show the same
@@ -13,7 +17,7 @@ This repository contains **8 complete projects** that demonstrate modern web dev
 
 ---
 
-### ⭐ cloud-ml-three-cloud (reference architecture)
+### ⭐ three-cloud (reference architecture)
 **Regress-It — Streamlit + FastAPI + Supabase**
 
 The three-cloud reference template: an interactive linear-regression demo split
@@ -27,11 +31,11 @@ templates reuse, provided as a complete working, forkable template.
   pytest suite, model card, reusable across models
 - **Cost**: Free tier on all three platforms
 
-[→ View Project README](./cloud-ml-three-cloud/README.md) | [→ Tutorial](./cloud-ml-three-cloud/TUTORIAL.md)
+[→ View Project README](./Deep%20Learning/three-cloud/README.md) | [→ Tutorial](./Deep%20Learning/three-cloud/TUTORIAL.md)
 
 ---
 
-### ⭐ cloud-ml-income-insight
+### ⭐ income-insight
 **Income-Insight — Tabular MLP Classifier on the same three clouds**
 
 Reuses the three-cloud architecture with the model box swapped for a PyTorch MLP
@@ -45,11 +49,11 @@ shaped, synthetic data).
   `/predict_batch`, `/schema`, and a fairness `/audit` endpoint; pytest suite
 - **Cost**: Free tier on all three platforms
 
-[→ View Project README](./cloud-ml-income-insight/README.md) | [→ Tutorial](./cloud-ml-three-cloud/TUTORIAL.md)
+[→ View Project README](./Deep%20Learning/income-insight/README.md) | [→ Tutorial](./Deep%20Learning/three-cloud/TUTORIAL.md)
 
 ---
 
-### ⭐ cloud-ml-see-sense
+### ⭐ see-sense
 **See-Sense — CNN Image Classifier + Grad-CAM on the same three clouds**
 
 Reuses the three-cloud architecture with the model box swapped for a PyTorch CNN
@@ -63,11 +67,11 @@ network looked* (synthetic shape images).
   privacy invariant, accuracy/macro-F1 metrics, `/predict_sample`; pytest suite
 - **Cost**: Free tier on all three platforms
 
-[→ View Project README](./cloud-ml-see-sense/README.md) | [→ Tutorial](./cloud-ml-three-cloud/TUTORIAL.md)
+[→ View Project README](./Deep%20Learning/see-sense/README.md) | [→ Tutorial](./Deep%20Learning/three-cloud/TUTORIAL.md)
 
 ---
 
-### 1. cloud-ml-react-azure
+### 1. react-azure
 **Full-Stack Todo Application on Azure**
 
 A production-ready todo application built with React and FastAPI, deployed on Microsoft Azure.
@@ -78,11 +82,11 @@ A production-ready todo application built with React and FastAPI, deployed on Mi
 - **Highlights**: Containerized deployment, free-tier Azure services
 - **Cost**: ~$5/month (Azure Container Registry only)
 
-[→ View Project README](./cloud-ml-react-azure/README.md) | [→ Tutorial](./cloud-ml-react-azure/TUTORIAL.md)
+[→ View Project README](./Deep%20Learning/react-azure/README.md) | [→ Tutorial](./Deep%20Learning/react-azure/TUTORIAL.md)
 
 ---
 
-### 2. cloud-ml-react-render
+### 2. react-render
 **Image Classification with Deep Learning**
 
 A full-stack deep learning application for image classification using PyTorch/TensorFlow.
@@ -93,11 +97,11 @@ A full-stack deep learning application for image classification using PyTorch/Te
 - **Highlights**: Complete ML pipeline, educational deep learning tutorial
 - **Cost**: Free tier available
 
-[→ View Project README](./cloud-ml-react-render/README.md)
+[→ View Project README](./Deep%20Learning/react-render/README.md)
 
 ---
 
-### 3. cloud-ml-react-vercel
+### 3. react-vercel
 **Deep Learning Deployment with Vercel + Railway**
 
 Image classification application demonstrating Vercel and Railway deployment.
@@ -108,11 +112,11 @@ Image classification application demonstrating Vercel and Railway deployment.
 - **Highlights**: Hybrid cloud deployment, optimized for ML workloads
 - **Cost**: Free tier available on both platforms
 
-[→ View Project README](./cloud-ml-react-vercel/README.md)
+[→ View Project README](./Deep%20Learning/react-vercel/README.md)
 
 ---
 
-### 4. cloud-ml-react-vercel-render
+### 4. react-vercel-render
 **Vercel + Render Deployment Pattern**
 
 Alternative deployment approach using Vercel for frontend and Render for ML backend.
@@ -123,11 +127,11 @@ Alternative deployment approach using Vercel for frontend and Render for ML back
 - **Highlights**: Cost-effective hybrid deployment, detailed deployment guide
 - **Cost**: Free tier available
 
-[→ View Project README](./cloud-ml-react-vercel-render/README.md)
+[→ View Project README](./Deep%20Learning/react-vercel-render/README.md)
 
 ---
 
-### 5. cloud-ml-react-local
+### 5. react-local
 **Browser-Based Deep Learning (No Backend Required)**
 
 Handwritten digit recognition running entirely in the browser using TensorFlow.js.
@@ -138,7 +142,7 @@ Handwritten digit recognition running entirely in the browser using TensorFlow.j
 - **Highlights**: No server costs, privacy-friendly, WebGL acceleration
 - **Cost**: Free (static hosting only)
 
-[→ View Project README](./cloud-ml-react-local/README.md)
+[→ View Project README](./Deep%20Learning/react-local/README.md)
 
 ---
 
@@ -209,18 +213,18 @@ By working through these projects, you will learn:
 ### Choose Your Learning Path
 
 **Path 1: Start Simple** (Recommended for beginners)
-1. Start with **cloud-ml-react-local** (no backend, browser-only)
-2. Move to **cloud-ml-react-render** (add backend deployment)
-3. Try **cloud-ml-react-vercel** (learn multi-platform deployment)
+1. Start with **react-local** (no backend, browser-only)
+2. Move to **react-render** (add backend deployment)
+3. Try **react-vercel** (learn multi-platform deployment)
 
 **Path 2: Cloud Platform Focus**
-1. Learn **cloud-ml-react-azure** (Microsoft Azure ecosystem)
-2. Compare with **cloud-ml-react-vercel-render** (alternative platforms)
+1. Learn **react-azure** (Microsoft Azure ecosystem)
+2. Compare with **react-vercel-render** (alternative platforms)
 
 **Path 3: Deep Learning Focus**
-1. Explore **cloud-ml-react-local** (browser-based ML)
-2. Scale up with **cloud-ml-react-render** (server-based ML)
-3. Deploy to **cloud-ml-react-vercel** (production ML)
+1. Explore **react-local** (browser-based ML)
+2. Scale up with **react-render** (server-based ML)
+3. Deploy to **react-vercel** (production ML)
 
 ### General Setup Steps
 
@@ -229,12 +233,12 @@ Each project follows a similar workflow:
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd cloud-ml-deployment
+   cd Resources-for-AI-courses
    ```
 
 2. **Navigate to a project**
    ```bash
-   cd cloud-ml-[project-name]
+   cd "Deep Learning/[project-name]"
    ```
 
 3. **Follow the project's README**
@@ -247,51 +251,52 @@ Each project follows a similar workflow:
 ## Project Structure
 
 ```
-cloud-ml-deployment/
+Resources-for-AI-courses/
 ├── README.md                          # This file
-├── cloud-ml-three-cloud/             # ⭐ Reference architecture
-│   ├── ui/                           # Streamlit thin client
-│   ├── api/                          # FastAPI + PyTorch (Render)
-│   ├── db/                           # Supabase migrations + seed
-│   ├── shared/                       # Pydantic contract + data gen
-│   ├── tests/                        # pytest suite
-│   ├── README.md                     # Project documentation
-│   └── TUTORIAL.md                   # Step-by-step guide
-├── cloud-ml-income-insight/          # ⭐ Tabular classifier (same 3 clouds)
-│   ├── ui/                           # Streamlit thin client
-│   ├── api/                          # FastAPI + MLP + sklearn (Render)
-│   ├── db/                           # Supabase migrations + seed
-│   ├── shared/                       # Contract + synthetic tabular data
-│   ├── tests/                        # pytest suite
-│   └── README.md                     # Project documentation
-├── cloud-ml-see-sense/               # ⭐ Image classifier (same 3 clouds)
-│   ├── ui/                           # Streamlit thin client
-│   ├── api/                          # FastAPI + CNN + Grad-CAM (Render)
-│   ├── db/                           # Supabase migrations + seed
-│   ├── shared/                       # Contract + synthetic image data
-│   ├── tests/                        # pytest suite
-│   └── README.md                     # Project documentation
-├── cloud-ml-react-azure/             # Azure deployment
-│   ├── frontend/                     # React TypeScript app
-│   ├── backend/                      # FastAPI with Docker
-│   ├── README.md                     # Project documentation
-│   └── TUTORIAL.md                   # Step-by-step guide
-├── cloud-ml-react-render/            # Render deployment
-│   ├── frontend/                     # React app
-│   ├── backend/                      # FastAPI with ML
-│   └── README.md
-├── cloud-ml-react-vercel/            # Vercel + Railway
-│   ├── frontend/                     # React with Vite
-│   ├── backend/                      # FastAPI ML backend
-│   └── README.md
-├── cloud-ml-react-vercel-render/     # Vercel + Render
-│   ├── frontend/                     # React app
-│   ├── backend/                      # FastAPI ML backend
-│   └── README.md
-└── cloud-ml-react-local/             # Browser-based ML
-    ├── src/                          # React + TensorFlow.js
-    ├── public/
-    └── README.md
+└── Deep Learning/
+    ├── three-cloud/                  # ⭐ Reference architecture
+    │   ├── ui/                       # Streamlit thin client
+    │   ├── api/                      # FastAPI + PyTorch (Render)
+    │   ├── db/                       # Supabase migrations + seed
+    │   ├── shared/                   # Pydantic contract + data gen
+    │   ├── tests/                    # pytest suite
+    │   ├── README.md                 # Project documentation
+    │   └── TUTORIAL.md               # Step-by-step guide
+    ├── income-insight/              # ⭐ Tabular classifier (same 3 clouds)
+    │   ├── ui/                       # Streamlit thin client
+    │   ├── api/                      # FastAPI + MLP + sklearn (Render)
+    │   ├── db/                       # Supabase migrations + seed
+    │   ├── shared/                   # Contract + synthetic tabular data
+    │   ├── tests/                    # pytest suite
+    │   └── README.md                 # Project documentation
+    ├── see-sense/                   # ⭐ Image classifier (same 3 clouds)
+    │   ├── ui/                       # Streamlit thin client
+    │   ├── api/                      # FastAPI + CNN + Grad-CAM (Render)
+    │   ├── db/                       # Supabase migrations + seed
+    │   ├── shared/                   # Contract + synthetic image data
+    │   ├── tests/                    # pytest suite
+    │   └── README.md                 # Project documentation
+    ├── react-azure/                 # Azure deployment
+    │   ├── frontend/                 # React TypeScript app
+    │   ├── backend/                  # FastAPI with Docker
+    │   ├── README.md                 # Project documentation
+    │   └── TUTORIAL.md               # Step-by-step guide
+    ├── react-render/                # Render deployment
+    │   ├── frontend/                 # React app
+    │   ├── backend/                  # FastAPI with ML
+    │   └── README.md
+    ├── react-vercel/                # Vercel + Railway
+    │   ├── frontend/                 # React with Vite
+    │   ├── backend/                  # FastAPI ML backend
+    │   └── README.md
+    ├── react-vercel-render/         # Vercel + Render
+    │   ├── frontend/                 # React app
+    │   ├── backend/                  # FastAPI ML backend
+    │   └── README.md
+    └── react-local/                 # Browser-based ML
+        ├── src/                      # React + TensorFlow.js
+        ├── public/
+        └── README.md
 ```
 
 ---

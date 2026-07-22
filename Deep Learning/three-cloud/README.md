@@ -48,7 +48,7 @@ See [`TUTORIAL.md`](./TUTORIAL.md) for the full step-by-step build and deploy gu
 ## Project structure
 
 ```
-cloud-ml-three-cloud/
+three-cloud/
 ├── TUTORIAL.md               # Full build + deploy guide (start here)
 ├── README.md                 # This file
 ├── MODEL_CARD.md             # Model details, intended use, limitations
@@ -77,7 +77,7 @@ cloud-ml-three-cloud/
 ## Quickstart (local)
 
 ```bash
-cd cloud-ml-three-cloud
+cd three-cloud
 
 # 1. Install everything (both tiers + test tools)
 python -m venv .venv && source .venv/bin/activate
@@ -119,7 +119,7 @@ The three-cloud split and the file layout stay identical for every product. Swap
 only the model in `api/training.py`, the Pydantic contract in `shared/schemas.py`,
 the tables in `db/migrations/`, and the UI tabs — the UI stays a thin client and
 Supabase stays the single source of truth. Two worked examples
-(`cloud-ml-income-insight`, `cloud-ml-see-sense`) live alongside this one; see the
+(`income-insight`, `see-sense`) live alongside this one; see the
 final section of [`TUTORIAL.md`](./TUTORIAL.md).
 
 ## Checklist

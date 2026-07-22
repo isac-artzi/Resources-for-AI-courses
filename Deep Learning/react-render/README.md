@@ -16,7 +16,7 @@ An image classification web app where users can upload images and get AI-powered
 ## 🏗️ Project Structure
 
 ```
-cloud-ml-react-render/
+react-render/
 ├── backend/                    # FastAPI backend
 │   ├── app.py                 # Main FastAPI application
 │   ├── model.py               # Deep learning model
@@ -75,7 +75,7 @@ By completing this tutorial, you will learn:
 
 ```bash
 # Navigate to project directory
-cd cloud-ml-react-render
+cd react-render
 
 # Setup backend
 cd backend

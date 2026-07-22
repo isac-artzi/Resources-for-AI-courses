@@ -5,7 +5,7 @@
 > swapped for a **PyTorch MLP + sklearn preprocessing pipeline** doing tabular
 > binary classification. Start from *Regress-It*; the deploy steps are identical,
 > so follow the main
-> [three-cloud TUTORIAL](../cloud-ml-three-cloud/TUTORIAL.md).
+> [three-cloud TUTORIAL](../three-cloud/TUTORIAL.md).
 
 ## Live deployment URLs (fill these in)
 
@@ -66,7 +66,7 @@ categories — is unchanged.
 ## Project structure
 
 ```
-cloud-ml-income-insight/
+income-insight/
 ├── README.md                 # This file
 ├── MODEL_CARD.md             # Model details, fairness, limitations
 ├── shared/
@@ -94,7 +94,7 @@ cloud-ml-income-insight/
 ## Quickstart (local)
 
 ```bash
-cd cloud-ml-income-insight
+cd income-insight
 
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
@@ -109,7 +109,7 @@ streamlit run ui/app.py                                # terminal 2
 ```
 
 To deploy to the three clouds, follow **Part E** of the main
-[TUTORIAL](../cloud-ml-three-cloud/TUTORIAL.md): apply
+[TUTORIAL](../three-cloud/TUTORIAL.md): apply
 `db/migrations/001_init.sql` in the Supabase SQL Editor → deploy the API from
 `render.yaml` on Render → deploy the UI on Streamlit Community Cloud.
 

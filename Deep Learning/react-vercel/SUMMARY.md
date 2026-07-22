@@ -31,7 +31,7 @@ You now have a **complete, production-ready** deep learning web application with
 ## 📁 Project Structure
 
 ```
-cloud-ml-react-vercel/
+react-vercel/
 │
 ├── 📖 Documentation (6 files)
 │   ├── README.md              ⭐ START HERE

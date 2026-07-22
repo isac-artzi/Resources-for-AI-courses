@@ -301,7 +301,7 @@ GET  /model-info # Model information
 ## File Structure
 
 ```
-cloud-ml-react-render/
+react-render/
 │
 ├── README.md                    # Main documentation
 ├── QUICKSTART.md               # Quick start guide

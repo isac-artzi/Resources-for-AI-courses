@@ -69,7 +69,7 @@ A handwritten digit recognition app that:
 ### Step 1: Navigate to Project Directory
 
 ```bash
-cd cloud-ml-react-local
+cd react-local
 ```
 
 ### Step 2: Install Dependencies
@@ -125,7 +125,7 @@ In your browser, you should see:
 ### Project Structure
 
 ```
-cloud-ml-react-local/
+react-local/
 │
 ├── public/
 │   └── index.html              # HTML template (rarely modified)

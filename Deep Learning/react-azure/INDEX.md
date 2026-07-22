@@ -121,7 +121,7 @@ npm run dev
 ## 📁 Directory Structure
 
 ```
-cloud-ml-react-azure/
+react-azure/
 ├── Documentation (7 files)
 ├── Backend (7 files)
 │   └── app/ (4 Python files)

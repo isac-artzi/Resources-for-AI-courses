@@ -21,7 +21,7 @@ This project includes comprehensive documentation to guide you from setup to dep
 ## 🏗️ Complete Project Structure
 
 ```
-cloud-ml-react-azure/
+react-azure/
 │
 ├── Documentation/
 │   ├── README.md                          # Project overview
