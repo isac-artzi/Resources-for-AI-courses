@@ -1,44 +1,42 @@
-# AIT-204 Cloud Deployment Projects
+# Cloud ML Deployment Templates
 
-A collection of full-stack deep learning and web application tutorials demonstrating various cloud deployment strategies. Each project showcases different cloud platforms and deployment patterns for educational purposes.
+A collection of full-stack deep learning and web application templates demonstrating various cloud deployment strategies. Each project showcases different cloud platforms and deployment patterns.
 
 ## Projects Overview
 
 This repository contains **8 complete projects** that demonstrate modern web development and cloud deployment techniques. Each project has its own detailed README and tutorial.
 
-> **Taking the AIT-204 course? Start with the three-cloud architecture below.**
-> It is the canonical reference pattern the syllabus requires for all 7 course
-> products, and Topics 2–3 (Income-Insight, See-Sense) show the same pattern
-> reused. The five React projects are supplementary examples of other deployment
-> stacks.
+> **New here? Start with the three-cloud architecture below.** It is the
+> canonical reference pattern, and *Income-Insight* and *See-Sense* show the same
+> pattern reused for different models. The five React projects are supplementary
+> examples of other deployment stacks.
 
 ---
 
-### ⭐ AIT-204-3-cloud-architecture (required course architecture)
+### ⭐ cloud-ml-three-cloud (reference architecture)
 **Regress-It — Streamlit + FastAPI + Supabase**
 
-The three-cloud reference product for AIT-204: an interactive linear-regression
-demo split cleanly across three managed clouds. This is the pattern the syllabus
-requires for every product (Topics 1–7), with a complete working, forkable
-template.
+The three-cloud reference template: an interactive linear-regression demo split
+cleanly across three managed clouds. This is the pattern the other Streamlit
+templates reuse, provided as a complete working, forkable template.
 
 - **UI**: Streamlit on Streamlit Community Cloud (thin client, no model code)
 - **API**: FastAPI on Render.com (PyTorch training, owns all writes)
 - **Data**: Supabase Postgres (single source of truth, Row Level Security)
 - **Highlights**: clean separation of concerns, service-role vs anon keys, RLS,
-  pytest suite, model card, reusable for all 7 course products
+  pytest suite, model card, reusable across models
 - **Cost**: Free tier on all three platforms
 
-[→ View Project README](./AIT-204-3-cloud-architecture/README.md) | [→ Tutorial](./AIT-204-3-cloud-architecture/TUTORIAL.md)
+[→ View Project README](./cloud-ml-three-cloud/README.md) | [→ Tutorial](./cloud-ml-three-cloud/TUTORIAL.md)
 
 ---
 
-### ⭐ AIT-204-topic2-income-insight (Topic 2 product)
+### ⭐ cloud-ml-income-insight
 **Income-Insight — Tabular MLP Classifier on the same three clouds**
 
-The second course product, reusing the three-cloud architecture with the model
-box swapped for a PyTorch MLP + sklearn preprocessing pipeline doing binary
-income classification (Adult-Income shaped, synthetic data).
+Reuses the three-cloud architecture with the model box swapped for a PyTorch MLP
++ sklearn preprocessing pipeline doing binary income classification (Adult-Income
+shaped, synthetic data).
 
 - **UI**: Streamlit on Streamlit Community Cloud (thin client, form built from `/schema`)
 - **API**: FastAPI on Render.com (MLP + `ColumnTransformer`, owns all writes)
@@ -47,16 +45,16 @@ income classification (Adult-Income shaped, synthetic data).
   `/predict_batch`, `/schema`, and a fairness `/audit` endpoint; pytest suite
 - **Cost**: Free tier on all three platforms
 
-[→ View Project README](./AIT-204-topic2-income-insight/README.md) | [→ Tutorial](./AIT-204-3-cloud-architecture/TUTORIAL.md)
+[→ View Project README](./cloud-ml-income-insight/README.md) | [→ Tutorial](./cloud-ml-three-cloud/TUTORIAL.md)
 
 ---
 
-### ⭐ AIT-204-topic3-see-sense (Topic 3 product)
+### ⭐ cloud-ml-see-sense
 **See-Sense — CNN Image Classifier + Grad-CAM on the same three clouds**
 
-The third course product, reusing the three-cloud architecture with the model
-box swapped for a PyTorch CNN doing image classification, plus **Grad-CAM**
-heatmaps that show *where the network looked* (synthetic shape images).
+Reuses the three-cloud architecture with the model box swapped for a PyTorch CNN
+doing image classification, plus **Grad-CAM** heatmaps that show *where the
+network looked* (synthetic shape images).
 
 - **UI**: Streamlit on Streamlit Community Cloud (thin client, image upload + Grad-CAM view)
 - **API**: FastAPI on Render.com (CNN + Grad-CAM, owns all writes)
@@ -65,11 +63,11 @@ heatmaps that show *where the network looked* (synthetic shape images).
   privacy invariant, accuracy/macro-F1 metrics, `/predict_sample`; pytest suite
 - **Cost**: Free tier on all three platforms
 
-[→ View Project README](./AIT-204-topic3-see-sense/README.md) | [→ Tutorial](./AIT-204-3-cloud-architecture/TUTORIAL.md)
+[→ View Project README](./cloud-ml-see-sense/README.md) | [→ Tutorial](./cloud-ml-three-cloud/TUTORIAL.md)
 
 ---
 
-### 1. AIT-204-React-Azure
+### 1. cloud-ml-react-azure
 **Full-Stack Todo Application on Azure**
 
 A production-ready todo application built with React and FastAPI, deployed on Microsoft Azure.
@@ -80,11 +78,11 @@ A production-ready todo application built with React and FastAPI, deployed on Mi
 - **Highlights**: Containerized deployment, free-tier Azure services
 - **Cost**: ~$5/month (Azure Container Registry only)
 
-[→ View Project README](./AIT-204-React-Azure/README.md) | [→ Tutorial](./AIT-204-React-Azure/TUTORIAL.md)
+[→ View Project README](./cloud-ml-react-azure/README.md) | [→ Tutorial](./cloud-ml-react-azure/TUTORIAL.md)
 
 ---
 
-### 2. AIT-204-React-Render
+### 2. cloud-ml-react-render
 **Image Classification with Deep Learning**
 
 A full-stack deep learning application for image classification using PyTorch/TensorFlow.
@@ -95,11 +93,11 @@ A full-stack deep learning application for image classification using PyTorch/Te
 - **Highlights**: Complete ML pipeline, educational deep learning tutorial
 - **Cost**: Free tier available
 
-[→ View Project README](./AIT-204-React-Render/README.md)
+[→ View Project README](./cloud-ml-react-render/README.md)
 
 ---
 
-### 3. AIT-204-React-Vercel
+### 3. cloud-ml-react-vercel
 **Deep Learning Deployment with Vercel + Railway**
 
 Image classification application demonstrating Vercel and Railway deployment.
@@ -110,11 +108,11 @@ Image classification application demonstrating Vercel and Railway deployment.
 - **Highlights**: Hybrid cloud deployment, optimized for ML workloads
 - **Cost**: Free tier available on both platforms
 
-[→ View Project README](./AIT-204-React-Vercel/README.md)
+[→ View Project README](./cloud-ml-react-vercel/README.md)
 
 ---
 
-### 4. AIT-204-React-Vercel-Render
+### 4. cloud-ml-react-vercel-render
 **Vercel + Render Deployment Pattern**
 
 Alternative deployment approach using Vercel for frontend and Render for ML backend.
@@ -125,11 +123,11 @@ Alternative deployment approach using Vercel for frontend and Render for ML back
 - **Highlights**: Cost-effective hybrid deployment, detailed deployment guide
 - **Cost**: Free tier available
 
-[→ View Project README](./AIT-204-React-Vercel-Render/README.md)
+[→ View Project README](./cloud-ml-react-vercel-render/README.md)
 
 ---
 
-### 5. AIT-204-React-local
+### 5. cloud-ml-react-local
 **Browser-Based Deep Learning (No Backend Required)**
 
 Handwritten digit recognition running entirely in the browser using TensorFlow.js.
@@ -140,7 +138,7 @@ Handwritten digit recognition running entirely in the browser using TensorFlow.j
 - **Highlights**: No server costs, privacy-friendly, WebGL acceleration
 - **Cost**: Free (static hosting only)
 
-[→ View Project README](./AIT-204-React-local/README.md)
+[→ View Project README](./cloud-ml-react-local/README.md)
 
 ---
 
@@ -148,9 +146,9 @@ Handwritten digit recognition running entirely in the browser using TensorFlow.j
 
 | Project | Frontend Platform | Backend Platform | ML Framework | Use Case | Complexity |
 |---------|------------------|------------------|--------------|----------|------------|
-| **3-cloud-architecture** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch | Linear Regression (Regress-It) | Medium |
-| **topic2-income-insight** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch MLP + sklearn | Tabular Classification (Income-Insight) | Medium |
-| **topic3-see-sense** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch CNN + Grad-CAM | Image Classification (See-Sense) | Medium |
+| **three-cloud** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch | Linear Regression (Regress-It) | Medium |
+| **income-insight** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch MLP + sklearn | Tabular Classification (Income-Insight) | Medium |
+| **see-sense** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch CNN + Grad-CAM | Image Classification (See-Sense) | Medium |
 | React-Azure | Azure Static Web Apps | Azure Container Apps | None | Todo App | Medium |
 | React-Render | Render | Render | PyTorch/TensorFlow | Image Classification | Medium |
 | React-Vercel | Vercel | Railway | TensorFlow | Image Classification | Medium |
@@ -211,18 +209,18 @@ By working through these projects, you will learn:
 ### Choose Your Learning Path
 
 **Path 1: Start Simple** (Recommended for beginners)
-1. Start with **AIT-204-React-local** (no backend, browser-only)
-2. Move to **AIT-204-React-Render** (add backend deployment)
-3. Try **AIT-204-React-Vercel** (learn multi-platform deployment)
+1. Start with **cloud-ml-react-local** (no backend, browser-only)
+2. Move to **cloud-ml-react-render** (add backend deployment)
+3. Try **cloud-ml-react-vercel** (learn multi-platform deployment)
 
 **Path 2: Cloud Platform Focus**
-1. Learn **AIT-204-React-Azure** (Microsoft Azure ecosystem)
-2. Compare with **AIT-204-React-Vercel-Render** (alternative platforms)
+1. Learn **cloud-ml-react-azure** (Microsoft Azure ecosystem)
+2. Compare with **cloud-ml-react-vercel-render** (alternative platforms)
 
 **Path 3: Deep Learning Focus**
-1. Explore **AIT-204-React-local** (browser-based ML)
-2. Scale up with **AIT-204-React-Render** (server-based ML)
-3. Deploy to **AIT-204-React-Vercel** (production ML)
+1. Explore **cloud-ml-react-local** (browser-based ML)
+2. Scale up with **cloud-ml-react-render** (server-based ML)
+3. Deploy to **cloud-ml-react-vercel** (production ML)
 
 ### General Setup Steps
 
@@ -231,12 +229,12 @@ Each project follows a similar workflow:
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd AIT-204-cloud-deployment
+   cd cloud-ml-deployment
    ```
 
 2. **Navigate to a project**
    ```bash
-   cd AIT-204-React-[project-name]
+   cd cloud-ml-[project-name]
    ```
 
 3. **Follow the project's README**
@@ -249,9 +247,9 @@ Each project follows a similar workflow:
 ## Project Structure
 
 ```
-AIT-204-cloud-deployment/
+cloud-ml-deployment/
 ├── README.md                          # This file
-├── AIT-204-3-cloud-architecture/     # ⭐ Required course architecture
+├── cloud-ml-three-cloud/             # ⭐ Reference architecture
 │   ├── ui/                           # Streamlit thin client
 │   ├── api/                          # FastAPI + PyTorch (Render)
 │   ├── db/                           # Supabase migrations + seed
@@ -259,38 +257,38 @@ AIT-204-cloud-deployment/
 │   ├── tests/                        # pytest suite
 │   ├── README.md                     # Project documentation
 │   └── TUTORIAL.md                   # Step-by-step guide
-├── AIT-204-topic2-income-insight/    # ⭐ Topic 2 product (same 3 clouds)
+├── cloud-ml-income-insight/          # ⭐ Tabular classifier (same 3 clouds)
 │   ├── ui/                           # Streamlit thin client
 │   ├── api/                          # FastAPI + MLP + sklearn (Render)
 │   ├── db/                           # Supabase migrations + seed
 │   ├── shared/                       # Contract + synthetic tabular data
 │   ├── tests/                        # pytest suite
 │   └── README.md                     # Project documentation
-├── AIT-204-topic3-see-sense/         # ⭐ Topic 3 product (same 3 clouds)
+├── cloud-ml-see-sense/               # ⭐ Image classifier (same 3 clouds)
 │   ├── ui/                           # Streamlit thin client
 │   ├── api/                          # FastAPI + CNN + Grad-CAM (Render)
 │   ├── db/                           # Supabase migrations + seed
 │   ├── shared/                       # Contract + synthetic image data
 │   ├── tests/                        # pytest suite
 │   └── README.md                     # Project documentation
-├── AIT-204-React-Azure/              # Azure deployment
+├── cloud-ml-react-azure/             # Azure deployment
 │   ├── frontend/                     # React TypeScript app
 │   ├── backend/                      # FastAPI with Docker
 │   ├── README.md                     # Project documentation
 │   └── TUTORIAL.md                   # Step-by-step guide
-├── AIT-204-React-Render/             # Render deployment
+├── cloud-ml-react-render/            # Render deployment
 │   ├── frontend/                     # React app
 │   ├── backend/                      # FastAPI with ML
 │   └── README.md
-├── AIT-204-React-Vercel/             # Vercel + Railway
+├── cloud-ml-react-vercel/            # Vercel + Railway
 │   ├── frontend/                     # React with Vite
 │   ├── backend/                      # FastAPI ML backend
 │   └── README.md
-├── AIT-204-React-Vercel-Render/      # Vercel + Render
+├── cloud-ml-react-vercel-render/     # Vercel + Render
 │   ├── frontend/                     # React app
 │   ├── backend/                      # FastAPI ML backend
 │   └── README.md
-└── AIT-204-React-local/              # Browser-based ML
+└── cloud-ml-react-local/             # Browser-based ML
     ├── src/                          # React + TensorFlow.js
     ├── public/
     └── README.md
@@ -398,7 +396,7 @@ For project-specific issues, consult individual README files.
 
 ## Contributing
 
-This is an educational repository for AIT-204 students. Contributions are welcome:
+This is an educational repository. Contributions are welcome:
 
 1. Fork the repository
 2. Create a feature branch
@@ -425,14 +423,13 @@ MIT License - Free for educational and commercial use.
 For questions and support:
 - Check individual project README files
 - Review troubleshooting sections
-- Consult your course instructor
 - Open an issue on GitHub
 
 ---
 
 ## Acknowledgments
 
-These projects are designed for the **AIT-204 Cloud Deployment** course, demonstrating modern web development and cloud deployment best practices.
+These projects demonstrate modern web development and cloud deployment best practices.
 
 **Happy Learning & Building!** 🚀
 

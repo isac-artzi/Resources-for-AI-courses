@@ -1,0 +1,717 @@
+/**
+ * Application Styles
+ * ==================
+ *
+ * Comprehensive styling for the Deep Learning Image Classifier
+ *
+ * Organization:
+ * 1. CSS Variables (Custom Properties)
+ * 2. Reset & Base Styles
+ * 3. Layout Styles
+ * 4. Component Styles
+ * 5. Animations
+ * 6. Responsive Design
+ *
+ * Author: Cloud ML Deployment
+ */
+
+/* ==========================================================================
+   1. CSS Variables
+   ========================================================================== */
+
+:root {
+  /* Color Palette */
+  --primary-color: #4f46e5;      /* Indigo - primary actions */
+  --primary-hover: #4338ca;       /* Darker indigo */
+  --secondary-color: #64748b;     /* Slate gray - secondary actions */
+  --success-color: #10b981;       /* Green - success states */
+  --warning-color: #f59e0b;       /* Amber - warnings */
+  --error-color: #ef4444;         /* Red - errors */
+
+  /* Neutral Colors */
+  --bg-primary: #ffffff;          /* White background */
+  --bg-secondary: #f8fafc;        /* Light gray background */
+  --bg-tertiary: #f1f5f9;         /* Lighter gray */
+  --text-primary: #1e293b;        /* Dark text */
+  --text-secondary: #64748b;      /* Medium gray text */
+  --text-tertiary: #94a3b8;       /* Light gray text */
+
+  /* Border Colors */
+  --border-light: #e2e8f0;
+  --border-medium: #cbd5e1;
+  --border-dark: #94a3b8;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;   /* 4px */
+  --spacing-sm: 0.5rem;    /* 8px */
+  --spacing-md: 1rem;      /* 16px */
+  --spacing-lg: 1.5rem;    /* 24px */
+  --spacing-xl: 2rem;      /* 32px */
+  --spacing-2xl: 3rem;     /* 48px */
+
+  /* Border Radius */
+  --radius-sm: 0.375rem;   /* 6px */
+  --radius-md: 0.5rem;     /* 8px */
+  --radius-lg: 0.75rem;    /* 12px */
+  --radius-xl: 1rem;       /* 16px */
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+  /* Transitions */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 250ms ease-in-out;
+  --transition-slow: 350ms ease-in-out;
+
+  /* Fonts */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* ==========================================================================
+   2. Reset & Base Styles
+   ========================================================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================================
+   3. Layout Styles
+   ========================================================================== */
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.app-header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: var(--spacing-xl) var(--spacing-lg);
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  border-bottom: 3px solid var(--primary-color);
+}
+
+.app-header h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-sm);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.subtitle {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.course-tag {
+  display: inline-block;
+  background: var(--primary-color);
+  color: white;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Main Content */
+.app-main {
+  flex: 1;
+  padding: var(--spacing-2xl) var(--spacing-lg);
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Card Component */
+.card {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-light);
+  transition: transform var(--transition-normal),
+              box-shadow var(--transition-normal);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+}
+
+.card h2 {
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-lg);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* Instructions Card */
+.instructions {
+  background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+  border-left: 4px solid var(--primary-color);
+}
+
+.instructions h2 {
+  margin-bottom: var(--spacing-md);
+}
+
+.instructions ol {
+  margin-left: var(--spacing-lg);
+}
+
+.instructions li {
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+/* Footer */
+.app-footer {
+  background: rgba(255, 255, 255, 0.95);
+  padding: var(--spacing-lg);
+  text-align: center;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-light);
+}
+
+.app-footer a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   4. Component Styles
+   ========================================================================== */
+
+/* Button Styles */
+.button-group {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.btn {
+  flex: 1;
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  font-family: var(--font-sans);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.btn-secondary {
+  background: var(--secondary-color);
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #475569;
+}
+
+/* Image Upload Component */
+.image-upload h2 {
+  margin-bottom: var(--spacing-lg);
+}
+
+.drop-zone {
+  border: 3px dashed var(--border-medium);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-2xl);
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  background: var(--bg-secondary);
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drop-zone:hover:not(.disabled) {
+  border-color: var(--primary-color);
+  background: var(--bg-tertiary);
+  transform: scale(1.02);
+}
+
+.drop-zone.dragging {
+  border-color: var(--primary-color);
+  background: var(--primary-color)15;
+  transform: scale(1.05);
+}
+
+.drop-zone.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.upload-instructions {
+  width: 100%;
+}
+
+.upload-icon {
+  font-size: 4rem;
+  margin-bottom: var(--spacing-md);
+  animation: float 3s ease-in-out infinite;
+}
+
+.upload-text {
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+}
+
+.upload-subtext {
+  color: var(--text-tertiary);
+  font-size: 0.875rem;
+}
+
+/* Preview Styles */
+.preview-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 400px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  object-fit: contain;
+}
+
+.preview-text {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+.file-info {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--success-color)15;
+  border-left: 3px solid var(--success-color);
+  border-radius: var(--radius-sm);
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  text-align: center;
+  padding: var(--spacing-xl);
+}
+
+.spinner {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.spinner-circle {
+  width: 16px;
+  height: 16px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  animation: bounce 1.4s ease-in-out infinite;
+}
+
+.spinner-circle:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.spinner-circle:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.loading-message {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Error Card */
+.error-card {
+  background: var(--error-color)10;
+  border-left: 4px solid var(--error-color);
+}
+
+.error-card h3 {
+  color: var(--error-color);
+  margin-bottom: var(--spacing-md);
+}
+
+.error-card p {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Results Component */
+.results h2 {
+  margin-bottom: var(--spacing-lg);
+}
+
+.top-prediction {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+  color: white;
+  padding: var(--spacing-xl);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+}
+
+.prediction-label {
+  font-size: 0.875rem;
+  opacity: 0.9;
+  margin-bottom: var(--spacing-xs);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.prediction-value {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: var(--spacing-sm);
+}
+
+.prediction-confidence {
+  font-size: 1.125rem;
+  opacity: 0.9;
+}
+
+/* Predictions List */
+.predictions-list {
+  margin-bottom: var(--spacing-lg);
+}
+
+.predictions-list h3 {
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+  font-size: 1.125rem;
+}
+
+.prediction-item {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  transition: all var(--transition-fast);
+}
+
+.prediction-item:hover {
+  background: var(--bg-tertiary);
+  transform: translateX(4px);
+}
+
+.prediction-item.top-item {
+  background: var(--primary-color)10;
+  border: 2px solid var(--primary-color)30;
+}
+
+.prediction-rank {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 50px;
+}
+
+.rank-number {
+  font-weight: 700;
+  color: var(--text-secondary);
+  font-size: 1.25rem;
+}
+
+.rank-medal {
+  font-size: 1.5rem;
+}
+
+.prediction-details {
+  flex: 1;
+}
+
+.prediction-class {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+  font-size: 1.125rem;
+}
+
+/* Confidence Bar */
+.confidence-bar-container {
+  width: 100%;
+}
+
+.confidence-bar-bg {
+  width: 100%;
+  height: 32px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.confidence-bar-fill {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 var(--spacing-md);
+  border-radius: var(--radius-md);
+  transition: width var(--transition-slow);
+  animation: fillBar 0.8s ease-out;
+}
+
+.confidence-high {
+  background: linear-gradient(90deg, var(--success-color), #059669);
+}
+
+.confidence-medium {
+  background: linear-gradient(90deg, var(--warning-color), #d97706);
+}
+
+.confidence-low {
+  background: linear-gradient(90deg, var(--error-color), #dc2626);
+}
+
+.confidence-text {
+  color: white;
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Results Info */
+.results-info {
+  background: var(--bg-secondary);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  margin-top: var(--spacing-lg);
+}
+
+.info-text {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin-bottom: var(--spacing-sm);
+}
+
+.info-text:last-child {
+  margin-bottom: 0;
+}
+
+.no-results {
+  text-align: center;
+  color: var(--text-tertiary);
+  padding: var(--spacing-xl);
+  font-style: italic;
+}
+
+/* ==========================================================================
+   5. Animations
+   ========================================================================== */
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fillBar {
+  from {
+    width: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeIn var(--transition-normal);
+}
+
+/* ==========================================================================
+   6. Responsive Design
+   ========================================================================== */
+
+/* Tablets */
+@media (max-width: 768px) {
+  .app-header h1 {
+    font-size: 2rem;
+  }
+
+  .container {
+    max-width: 100%;
+  }
+
+  .card {
+    padding: var(--spacing-lg);
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .prediction-value {
+    font-size: 1.5rem;
+  }
+}
+
+/* Mobile Phones */
+@media (max-width: 480px) {
+  .app-header {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+
+  .app-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+
+  .app-main {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+
+  .card {
+    padding: var(--spacing-md);
+  }
+
+  .drop-zone {
+    padding: var(--spacing-lg);
+    min-height: 250px;
+  }
+
+  .upload-icon {
+    font-size: 3rem;
+  }
+
+  .upload-text {
+    font-size: 1rem;
+  }
+
+  .top-prediction {
+    padding: var(--spacing-md);
+  }
+
+  .prediction-value {
+    font-size: 1.25rem;
+  }
+
+  .prediction-class {
+    font-size: 1rem;
+  }
+}
+
+/* Print Styles */
+@media print {
+  body {
+    background: white;
+  }
+
+  .button-group,
+  .app-footer {
+    display: none;
+  }
+
+  .card {
+    box-shadow: none;
+    border: 1px solid var(--border-medium);
+  }
+}
