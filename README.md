@@ -4,12 +4,13 @@ A collection of full-stack deep learning and web application tutorials demonstra
 
 ## Projects Overview
 
-This repository contains **7 complete projects** that demonstrate modern web development and cloud deployment techniques. Each project has its own detailed README and tutorial.
+This repository contains **8 complete projects** that demonstrate modern web development and cloud deployment techniques. Each project has its own detailed README and tutorial.
 
 > **Taking the AIT-204 course? Start with the three-cloud architecture below.**
 > It is the canonical reference pattern the syllabus requires for all 7 course
-> products, and Topic 2 (Income-Insight) shows the same pattern reused. The five
-> React projects are supplementary examples of other deployment stacks.
+> products, and Topics 2–3 (Income-Insight, See-Sense) show the same pattern
+> reused. The five React projects are supplementary examples of other deployment
+> stacks.
 
 ---
 
@@ -47,6 +48,24 @@ income classification (Adult-Income shaped, synthetic data).
 - **Cost**: Free tier on all three platforms
 
 [→ View Project README](./AIT-204-topic2-income-insight/README.md) | [→ Tutorial](./AIT-204-3-cloud-architecture/TUTORIAL.md)
+
+---
+
+### ⭐ AIT-204-topic3-see-sense (Topic 3 product)
+**See-Sense — CNN Image Classifier + Grad-CAM on the same three clouds**
+
+The third course product, reusing the three-cloud architecture with the model
+box swapped for a PyTorch CNN doing image classification, plus **Grad-CAM**
+heatmaps that show *where the network looked* (synthetic shape images).
+
+- **UI**: Streamlit on Streamlit Community Cloud (thin client, image upload + Grad-CAM view)
+- **API**: FastAPI on Render.com (CNN + Grad-CAM, owns all writes)
+- **Data**: Supabase Postgres (datasets · runs · run_artifacts · image_metadata, RLS)
+- **Highlights**: Grad-CAM explainability, "store the image hash not the pixels"
+  privacy invariant, accuracy/macro-F1 metrics, `/predict_sample`; pytest suite
+- **Cost**: Free tier on all three platforms
+
+[→ View Project README](./AIT-204-topic3-see-sense/README.md) | [→ Tutorial](./AIT-204-3-cloud-architecture/TUTORIAL.md)
 
 ---
 
@@ -131,6 +150,7 @@ Handwritten digit recognition running entirely in the browser using TensorFlow.j
 |---------|------------------|------------------|--------------|----------|------------|
 | **3-cloud-architecture** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch | Linear Regression (Regress-It) | Medium |
 | **topic2-income-insight** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch MLP + sklearn | Tabular Classification (Income-Insight) | Medium |
+| **topic3-see-sense** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch CNN + Grad-CAM | Image Classification (See-Sense) | Medium |
 | React-Azure | Azure Static Web Apps | Azure Container Apps | None | Todo App | Medium |
 | React-Render | Render | Render | PyTorch/TensorFlow | Image Classification | Medium |
 | React-Vercel | Vercel | Railway | TensorFlow | Image Classification | Medium |
@@ -244,6 +264,13 @@ AIT-204-cloud-deployment/
 │   ├── api/                          # FastAPI + MLP + sklearn (Render)
 │   ├── db/                           # Supabase migrations + seed
 │   ├── shared/                       # Contract + synthetic tabular data
+│   ├── tests/                        # pytest suite
+│   └── README.md                     # Project documentation
+├── AIT-204-topic3-see-sense/         # ⭐ Topic 3 product (same 3 clouds)
+│   ├── ui/                           # Streamlit thin client
+│   ├── api/                          # FastAPI + CNN + Grad-CAM (Render)
+│   ├── db/                           # Supabase migrations + seed
+│   ├── shared/                       # Contract + synthetic image data
 │   ├── tests/                        # pytest suite
 │   └── README.md                     # Project documentation
 ├── AIT-204-React-Azure/              # Azure deployment
