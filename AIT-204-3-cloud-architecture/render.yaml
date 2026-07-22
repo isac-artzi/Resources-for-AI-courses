@@ -1,0 +1,21 @@
+# Render.com blueprint for the FastAPI model service (Cloud #2).
+# In the Render dashboard: New -> Blueprint -> point at this repo.
+# Set SUPABASE_URL and SUPABASE_SERVICE_KEY as environment variables (secrets)
+# in the service settings after the first deploy.
+services:
+  - type: web
+    name: regress-it-api
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r api/requirements.txt"
+    startCommand: "uvicorn api.main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: "*"

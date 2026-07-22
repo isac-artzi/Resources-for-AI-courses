@@ -4,7 +4,31 @@ A collection of full-stack deep learning and web application tutorials demonstra
 
 ## Projects Overview
 
-This repository contains **5 complete projects** that demonstrate modern web development and cloud deployment techniques. Each project has its own detailed README and tutorial.
+This repository contains **6 complete projects** that demonstrate modern web development and cloud deployment techniques. Each project has its own detailed README and tutorial.
+
+> **Taking the AIT-204 course? Start with the three-cloud architecture below.**
+> It is the canonical reference pattern the syllabus requires for all 7 course
+> products. The five React projects are supplementary examples of other
+> deployment stacks.
+
+---
+
+### ⭐ AIT-204-3-cloud-architecture (required course architecture)
+**Regress-It — Streamlit + FastAPI + Supabase**
+
+The three-cloud reference product for AIT-204: an interactive linear-regression
+demo split cleanly across three managed clouds. This is the pattern the syllabus
+requires for every product (Topics 1–7), with a complete working, forkable
+template.
+
+- **UI**: Streamlit on Streamlit Community Cloud (thin client, no model code)
+- **API**: FastAPI on Render.com (PyTorch training, owns all writes)
+- **Data**: Supabase Postgres (single source of truth, Row Level Security)
+- **Highlights**: clean separation of concerns, service-role vs anon keys, RLS,
+  pytest suite, model card, reusable for all 7 course products
+- **Cost**: Free tier on all three platforms
+
+[→ View Project README](./AIT-204-3-cloud-architecture/README.md) | [→ Tutorial](./AIT-204-3-cloud-architecture/TUTORIAL.md)
 
 ---
 
@@ -87,6 +111,7 @@ Handwritten digit recognition running entirely in the browser using TensorFlow.j
 
 | Project | Frontend Platform | Backend Platform | ML Framework | Use Case | Complexity |
 |---------|------------------|------------------|--------------|----------|------------|
+| **3-cloud-architecture** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch | Linear Regression (Regress-It) | Medium |
 | React-Azure | Azure Static Web Apps | Azure Container Apps | None | Todo App | Medium |
 | React-Render | Render | Render | PyTorch/TensorFlow | Image Classification | Medium |
 | React-Vercel | Vercel | Railway | TensorFlow | Image Classification | Medium |
@@ -187,6 +212,14 @@ Each project follows a similar workflow:
 ```
 AIT-204-cloud-deployment/
 ├── README.md                          # This file
+├── AIT-204-3-cloud-architecture/     # ⭐ Required course architecture
+│   ├── ui/                           # Streamlit thin client
+│   ├── api/                          # FastAPI + PyTorch (Render)
+│   ├── db/                           # Supabase migrations + seed
+│   ├── shared/                       # Pydantic contract + data gen
+│   ├── tests/                        # pytest suite
+│   ├── README.md                     # Project documentation
+│   └── TUTORIAL.md                   # Step-by-step guide
 ├── AIT-204-React-Azure/              # Azure deployment
 │   ├── frontend/                     # React TypeScript app
 │   ├── backend/                      # FastAPI with Docker
@@ -247,6 +280,8 @@ All projects can be deployed on **free tiers**:
 
 | Platform | Free Tier | Limitations |
 |----------|-----------|-------------|
+| Streamlit Community Cloud | Unlimited public apps | Sleeps after inactivity |
+| Supabase | 500 MB database, 2 projects | Pauses after 1 week idle |
 | Azure Static Web Apps | 100 GB bandwidth/month | Sufficient for learning |
 | Azure Container Apps | 180,000 vCPU-seconds/month | Good for demos |
 | Vercel | 100 GB bandwidth | Hobby projects |
@@ -298,6 +333,8 @@ For project-specific issues, consult individual README files.
 - [Azure Documentation](https://docs.microsoft.com/azure)
 - [Vercel Documentation](https://vercel.com/docs)
 - [Render Documentation](https://render.com/docs)
+- [Streamlit Documentation](https://docs.streamlit.io/)
+- [Supabase Documentation](https://supabase.com/docs)
 
 ### Tutorials & Courses
 - [Full Stack Deep Learning](https://fullstackdeeplearning.com/)
