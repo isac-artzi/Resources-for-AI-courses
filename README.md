@@ -4,12 +4,12 @@ A collection of full-stack deep learning and web application tutorials demonstra
 
 ## Projects Overview
 
-This repository contains **6 complete projects** that demonstrate modern web development and cloud deployment techniques. Each project has its own detailed README and tutorial.
+This repository contains **7 complete projects** that demonstrate modern web development and cloud deployment techniques. Each project has its own detailed README and tutorial.
 
 > **Taking the AIT-204 course? Start with the three-cloud architecture below.**
 > It is the canonical reference pattern the syllabus requires for all 7 course
-> products. The five React projects are supplementary examples of other
-> deployment stacks.
+> products, and Topic 2 (Income-Insight) shows the same pattern reused. The five
+> React projects are supplementary examples of other deployment stacks.
 
 ---
 
@@ -29,6 +29,24 @@ template.
 - **Cost**: Free tier on all three platforms
 
 [→ View Project README](./AIT-204-3-cloud-architecture/README.md) | [→ Tutorial](./AIT-204-3-cloud-architecture/TUTORIAL.md)
+
+---
+
+### ⭐ AIT-204-topic2-income-insight (Topic 2 product)
+**Income-Insight — Tabular MLP Classifier on the same three clouds**
+
+The second course product, reusing the three-cloud architecture with the model
+box swapped for a PyTorch MLP + sklearn preprocessing pipeline doing binary
+income classification (Adult-Income shaped, synthetic data).
+
+- **UI**: Streamlit on Streamlit Community Cloud (thin client, form built from `/schema`)
+- **API**: FastAPI on Render.com (MLP + `ColumnTransformer`, owns all writes)
+- **Data**: Supabase Postgres (datasets · runs · run_artifacts · predictions, RLS)
+- **Highlights**: classification metrics (accuracy/precision/recall/F1/AUC),
+  `/predict_batch`, `/schema`, and a fairness `/audit` endpoint; pytest suite
+- **Cost**: Free tier on all three platforms
+
+[→ View Project README](./AIT-204-topic2-income-insight/README.md) | [→ Tutorial](./AIT-204-3-cloud-architecture/TUTORIAL.md)
 
 ---
 
@@ -112,6 +130,7 @@ Handwritten digit recognition running entirely in the browser using TensorFlow.j
 | Project | Frontend Platform | Backend Platform | ML Framework | Use Case | Complexity |
 |---------|------------------|------------------|--------------|----------|------------|
 | **3-cloud-architecture** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch | Linear Regression (Regress-It) | Medium |
+| **topic2-income-insight** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch MLP + sklearn | Tabular Classification (Income-Insight) | Medium |
 | React-Azure | Azure Static Web Apps | Azure Container Apps | None | Todo App | Medium |
 | React-Render | Render | Render | PyTorch/TensorFlow | Image Classification | Medium |
 | React-Vercel | Vercel | Railway | TensorFlow | Image Classification | Medium |
@@ -220,6 +239,13 @@ AIT-204-cloud-deployment/
 │   ├── tests/                        # pytest suite
 │   ├── README.md                     # Project documentation
 │   └── TUTORIAL.md                   # Step-by-step guide
+├── AIT-204-topic2-income-insight/    # ⭐ Topic 2 product (same 3 clouds)
+│   ├── ui/                           # Streamlit thin client
+│   ├── api/                          # FastAPI + MLP + sklearn (Render)
+│   ├── db/                           # Supabase migrations + seed
+│   ├── shared/                       # Contract + synthetic tabular data
+│   ├── tests/                        # pytest suite
+│   └── README.md                     # Project documentation
 ├── AIT-204-React-Azure/              # Azure deployment
 │   ├── frontend/                     # React TypeScript app
 │   ├── backend/                      # FastAPI with Docker

@@ -1,0 +1,8 @@
+# Local development + running the test suite from the repo root.
+# Installs both tiers plus pytest. On the actual clouds, each tier installs only
+# its own requirements (api/requirements.txt or ui/requirements.txt).
+-r api/requirements.txt
+-r ui/requirements.txt
+pytest==8.3.3
+httpx==0.27.2
+PyYAML==6.0.2

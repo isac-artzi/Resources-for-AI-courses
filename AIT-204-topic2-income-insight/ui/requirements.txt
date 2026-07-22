@@ -1,0 +1,6 @@
+# UI tier (deployed on Streamlit Community Cloud)
+# No torch, no sklearn, no model code here -- a thin client on purpose.
+streamlit==1.38.0
+requests==2.32.3
+pandas==2.2.2
+supabase==2.7.4
