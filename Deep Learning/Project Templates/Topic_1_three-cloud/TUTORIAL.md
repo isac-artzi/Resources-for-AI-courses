@@ -357,16 +357,22 @@ SUPABASE_URL=... SUPABASE_SERVICE_KEY=... pytest tests/test_supabase_roundtrip.p
 
 Every later product is the **same three clouds** with the middle box swapped. Keep
 `shared/schemas.py`, `api/db.py`, `api/main.py` (endpoint shape), `ui/app.py` (tab
-shape), and the test skeleton — only the model and the tables change. Two worked
-examples live alongside this one in the repository:
+shape), and the test skeleton — only the model and the tables change. Six worked
+examples live alongside this one in the repository, one per topic:
 
-| Example | Model in `api/training.py` | Supabase tables | New endpoints |
+| Example | Model in `api/training.py` | Supabase tables | Endpoints beyond the base set |
 |---|---|---|---|
-| Income-Insight | PyTorch **MLP** + sklearn pipeline (tabular) | `datasets`, `runs`, `run_artifacts`, `predictions` | `/predict_batch`, `/schema`, `/audit` |
-| See-Sense | **CNN** + Grad-CAM (image classification) | `datasets`, `runs`, `run_artifacts`, `image_metadata` | `/predict` (multipart), `/predict_sample`, `/classes` |
+| **Income-Insight** (Topic 2) | PyTorch **MLP** + sklearn pipeline (tabular classification) | `datasets`, `runs`, `run_artifacts`, `predictions` | `/predict_batch`, `/schema`, `/audit` |
+| **See-Sense** (Topic 3) | **CNN** + Grad-CAM (image classification) | `datasets`, `runs`, `run_artifacts`, `image_metadata` | `/predict` (multipart), `/predict_sample`, `/classes` |
+| **Attend-It** (Topic 4) | **LSTM + additive (Bahdanau) attention** (sequence classification) | `datasets`, `runs`, `run_artifacts`, `sequence_metadata` | `/predict` (returns attention), `/predict_sample`, `/classes` |
+| **Former-It** (Topic 5) | from-scratch **Transformer encoder** (algorithmic sequences) | `datasets`, `runs`, `run_artifacts`, `sequence_metadata` | `/predict` (per-head attention), `/predict_sample`, `/classes` |
+| **Fine-It** (Topic 6) | causal **char Transformer**, pretrain → fine-tune (transfer learning) | `datasets`, `runs` (`run_type`), `run_artifacts`, `sequence_metadata` | `/pretrain`, `/finetune`, `/generate`, `/predict_sample`, `/classes` |
+| **Gen-It** (Topic 7) | **variational autoencoder (VAE)**, 2-D latent (generative) | `datasets`, `runs`, `run_artifacts`, `image_metadata` | `/generate`, `/reconstruct`, `/interpolate`, `/latent_scatter`, `/classes` |
 
-The same skeleton extends naturally to sequence models (LSTM/GRU + attention),
-transformer pipelines, fine-tuning workflows, and generative models (VAE/DDPM).
+The base template (**Regress-It**) plus these six cover regression, tabular and
+image classification, attention, transformers, fine-tuning, and generative
+modelling — each is a fork of this exact skeleton with a different model and
+tables.
 
 The invariants that carry across every variant:
 - UI is a thin client; **no model code, no SQL writes** in Streamlit.
