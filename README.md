@@ -171,13 +171,13 @@ just the concepts and hands-on practice:
 
 | Topic | Subject |
 |-------|---------|
-| 1 | SQL Basics — [Tutorial](./Intro%20to%20Machine%20Learning/Topic_1_SQL_Basics_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Topic_1_SQL_Basics_Exercises.html) |
-| 2 | Data Quality — [Tutorial](./Intro%20to%20Machine%20Learning/Topic_2_Data_Quality_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Topic_2_Data_Quality_Exercises.html) |
-| 3 | Linear Regression — [Tutorial](./Intro%20to%20Machine%20Learning/Topic_3_Linear_Regression_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Topic_3_Linear_Regression_Exercises.html) |
-| 4 | Naive Bayes — [Tutorial](./Intro%20to%20Machine%20Learning/Topic_4_Naive_Bayes_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Topic_4_Naive_Bayes_Exercises.html) |
-| 5 | Classification — [Tutorial](./Intro%20to%20Machine%20Learning/Topic_5_Classification_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Topic_5_Classification_Exercises.html) |
-| 6 | Clustering — [Tutorial](./Intro%20to%20Machine%20Learning/Topic_6_Clustering_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Topic_6_Clustering_Exercises.html) |
-| 7 | Data Version Control & Features — [Tutorial](./Intro%20to%20Machine%20Learning/Topic_7_DVC_Features_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Topic_7_DVC_Features_Exercises.html) |
+| 1 | SQL Basics — [Tutorial](./Intro%20to%20Machine%20Learning/Tutorials/Topic_1_SQL_Basics_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Tutorials/Topic_1_SQL_Basics_Exercises.html) |
+| 2 | Data Quality — [Tutorial](./Intro%20to%20Machine%20Learning/Tutorials/Topic_2_Data_Quality_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Tutorials/Topic_2_Data_Quality_Exercises.html) |
+| 3 | Linear Regression — [Tutorial](./Intro%20to%20Machine%20Learning/Tutorials/Topic_3_Linear_Regression_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Tutorials/Topic_3_Linear_Regression_Exercises.html) |
+| 4 | Naive Bayes — [Tutorial](./Intro%20to%20Machine%20Learning/Tutorials/Topic_4_Naive_Bayes_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Tutorials/Topic_4_Naive_Bayes_Exercises.html) |
+| 5 | Classification — [Tutorial](./Intro%20to%20Machine%20Learning/Tutorials/Topic_5_Classification_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Tutorials/Topic_5_Classification_Exercises.html) |
+| 6 | Clustering — [Tutorial](./Intro%20to%20Machine%20Learning/Tutorials/Topic_6_Clustering_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Tutorials/Topic_6_Clustering_Exercises.html) |
+| 7 | Data Version Control & Features — [Tutorial](./Intro%20to%20Machine%20Learning/Tutorials/Topic_7_DVC_Features_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Tutorials/Topic_7_DVC_Features_Exercises.html) |
 
 > GitHub renders `.html` files as source. Clone or download the folder (or enable
 > GitHub Pages) to view them as formatted pages in a browser.
