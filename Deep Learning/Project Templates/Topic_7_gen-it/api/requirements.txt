@@ -1,0 +1,10 @@
+# API tier (deployed on Render.com)
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic==2.9.2
+# CPU-only torch keeps the Render build small and free-tier friendly.
+torch==2.4.1
+numpy==1.26.4
+pillow==10.4.0
+supabase==2.7.4
+python-dotenv==1.0.1

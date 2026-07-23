@@ -1,0 +1,16 @@
+# Secrets — never commit these
+.env
+.env.*
+!.env.example
+ui/.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# OS
+.DS_Store

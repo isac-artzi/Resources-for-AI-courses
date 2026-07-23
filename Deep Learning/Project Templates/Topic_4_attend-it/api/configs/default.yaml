@@ -1,0 +1,7 @@
+# Default hyperparameters for a training run.
+# The API accepts these from the request body; this file documents sane starting
+# values and gives later products (with CLI training) a config to load.
+lr: 0.01
+batch_size: 32
+epochs: 12
+test_size: 0.2

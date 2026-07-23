@@ -1,0 +1,9 @@
+# UI tier (deployed on Streamlit Community Cloud)
+# No torch, no model code here -- a thin client on purpose.
+# Attention matrices arrive as plain numbers from the API; matplotlib is used
+# only to render them as per-head heatmaps in the browser.
+streamlit==1.38.0
+requests==2.32.3
+pandas==2.2.2
+matplotlib==3.9.2
+supabase==2.7.4

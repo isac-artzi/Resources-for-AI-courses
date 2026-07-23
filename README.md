@@ -5,15 +5,16 @@ groups the projects and tutorials for one subject area.
 
 ## Deep Learning
 
-The [`Deep Learning/`](./Deep%20Learning) folder contains **8 complete projects**
+The [`Deep Learning/`](./Deep%20Learning) folder contains **12 complete projects**
 demonstrating full-stack deep learning and various cloud deployment strategies.
 Each project showcases different cloud platforms and deployment patterns, and has
 its own detailed README and tutorial.
 
 > **New here? Start with the three-cloud architecture below.** It is the
-> canonical reference pattern, and *Income-Insight* and *See-Sense* show the same
-> pattern reused for different models. The five React projects are supplementary
-> examples of other deployment stacks.
+> canonical reference pattern; the six templates that follow it
+> (*Income-Insight*, *See-Sense*, *Attend-It*, *Former-It*, *Fine-It*, *Gen-It*)
+> reuse the same pattern with only the model box swapped. The five React projects
+> are supplementary examples of other deployment stacks.
 
 ---
 
@@ -68,6 +69,79 @@ network looked* (synthetic shape images).
 - **Cost**: Free tier on all three platforms
 
 [→ View Project README](./Deep%20Learning/Project%20Templates/Topic_3_see-sense/README.md) | [→ Tutorial](./Deep%20Learning/Project%20Templates/Topic_1_three-cloud/TUTORIAL.md)
+
+---
+
+### ⭐ attend-it
+**Attend-It — LSTM + Attention Sequence Classifier on the same three clouds**
+
+Reuses the three-cloud architecture with the model box swapped for an LSTM with
+**additive (Bahdanau) attention** classifying synthetic token sequences whose
+label depends on a randomly-placed trigger token.
+
+- **UI**: Streamlit on Streamlit Community Cloud (thin client, per-timestep attention view)
+- **API**: FastAPI on Render.com (LSTM + attention, owns all writes)
+- **Data**: Supabase Postgres (datasets · runs · run_artifacts · sequence_metadata, RLS)
+- **Highlights**: attention-weight explainability, accuracy/macro-F1 metrics,
+  "store the sequence hash not the tokens" privacy invariant; pytest suite
+- **Cost**: Free tier on all three platforms
+
+[→ View Project README](./Deep%20Learning/Project%20Templates/Topic_4_attend-it/README.md) | [→ Tutorial](./Deep%20Learning/Project%20Templates/Topic_1_three-cloud/TUTORIAL.md)
+
+---
+
+### ⭐ former-it
+**Former-It — From-Scratch Transformer Encoder on the same three clouds**
+
+Reuses the three-cloud architecture with the model box swapped for a
+from-scratch tiny **Transformer encoder** (positional encoding + multi-head
+self-attention) solving an algorithmic sequence task (palindrome detection).
+
+- **UI**: Streamlit on Streamlit Community Cloud (thin client, per-head attention heatmaps)
+- **API**: FastAPI on Render.com (Transformer encoder, owns all writes)
+- **Data**: Supabase Postgres (datasets · runs · run_artifacts · sequence_metadata, RLS)
+- **Highlights**: per-head N×N attention heatmaps, accuracy metric, hash-not-tokens
+  privacy invariant; pytest suite
+- **Cost**: Free tier on all three platforms
+
+[→ View Project README](./Deep%20Learning/Project%20Templates/Topic_5_former-it/README.md) | [→ Tutorial](./Deep%20Learning/Project%20Templates/Topic_1_three-cloud/TUTORIAL.md)
+
+---
+
+### ⭐ fine-it
+**Fine-It — Pretrain + Fine-Tune Char Transformer on the same three clouds**
+
+Reuses the three-cloud architecture with the model box swapped for a causal
+character **Transformer** trained in two phases — self-supervised next-character
+**pretraining**, then classifier **fine-tuning** — to make the transfer gap
+visible against a from-scratch baseline.
+
+- **UI**: Streamlit on Streamlit Community Cloud (thin client, pretrained-vs-scratch bar + text generation)
+- **API**: FastAPI on Render.com (char Transformer, LM + classifier heads, owns all writes)
+- **Data**: Supabase Postgres (datasets · runs · run_artifacts · sequence_metadata, RLS)
+- **Highlights**: transfer-learning demo (`/pretrain`, `/finetune`, `/generate`),
+  temperature text sampling, hash-not-characters privacy invariant; pytest suite
+- **Cost**: Free tier on all three platforms
+
+[→ View Project README](./Deep%20Learning/Project%20Templates/Topic_6_fine-it/README.md) | [→ Tutorial](./Deep%20Learning/Project%20Templates/Topic_1_three-cloud/TUTORIAL.md)
+
+---
+
+### ⭐ gen-it
+**Gen-It — Variational Autoencoder on the same three clouds**
+
+Reuses the three-cloud architecture with the model box swapped for a
+**variational autoencoder (VAE)** that learns a 2-D latent space over synthetic
+images and then generates, reconstructs, and interpolates in it.
+
+- **UI**: Streamlit on Streamlit Community Cloud (thin client, latent sliders + interpolation + 2-D scatter)
+- **API**: FastAPI on Render.com (VAE encoder/decoder, owns all writes)
+- **Data**: Supabase Postgres (datasets · runs · run_artifacts · image_metadata, RLS)
+- **Highlights**: latent-space `/generate` `/reconstruct` `/interpolate` `/latent_scatter`,
+  reconstruction-loss/KL/ELBO metrics, hash-not-pixels privacy invariant; pytest suite
+- **Cost**: Free tier on all three platforms
+
+[→ View Project README](./Deep%20Learning/Project%20Templates/Topic_7_gen-it/README.md) | [→ Tutorial](./Deep%20Learning/Project%20Templates/Topic_1_three-cloud/TUTORIAL.md)
 
 ---
 
@@ -153,6 +227,10 @@ Handwritten digit recognition running entirely in the browser using TensorFlow.j
 | **three-cloud** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch | Linear Regression (Regress-It) | Medium |
 | **income-insight** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch MLP + sklearn | Tabular Classification (Income-Insight) | Medium |
 | **see-sense** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch CNN + Grad-CAM | Image Classification (See-Sense) | Medium |
+| **attend-it** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch LSTM + Attention | Sequence Classification (Attend-It) | Medium |
+| **former-it** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch Transformer Encoder | Algorithmic Sequences (Former-It) | Medium |
+| **fine-it** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch Char Transformer | Pretrain + Fine-Tune (Fine-It) | Medium |
+| **gen-it** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch VAE | Generative Modelling (Gen-It) | Medium |
 | React-Azure | Azure Static Web Apps | Azure Container Apps | None | Todo App | Medium |
 | React-Render | Render | Render | PyTorch/TensorFlow | Image Classification | Medium |
 | React-Vercel | Vercel | Railway | TensorFlow | Image Classification | Medium |
@@ -270,13 +348,17 @@ Resources-for-AI-courses/
     │   │   ├── shared/               # Contract + synthetic tabular data
     │   │   ├── tests/                # pytest suite
     │   │   └── README.md             # Project documentation
-    │   └── Topic_3_see-sense/        # ⭐ Image classifier (same 3 clouds)
-    │       ├── ui/                   # Streamlit thin client
-    │       ├── api/                  # FastAPI + CNN + Grad-CAM (Render)
-    │       ├── db/                   # Supabase migrations + seed
-    │       ├── shared/               # Contract + synthetic image data
-    │       ├── tests/                # pytest suite
-    │       └── README.md             # Project documentation
+    │   ├── Topic_3_see-sense/        # ⭐ Image classifier (same 3 clouds)
+    │   │   ├── ui/                   # Streamlit thin client
+    │   │   ├── api/                  # FastAPI + CNN + Grad-CAM (Render)
+    │   │   ├── db/                   # Supabase migrations + seed
+    │   │   ├── shared/               # Contract + synthetic image data
+    │   │   ├── tests/                # pytest suite
+    │   │   └── README.md             # Project documentation
+    │   ├── Topic_4_attend-it/        # ⭐ LSTM + attention (same 3 clouds)
+    │   ├── Topic_5_former-it/        # ⭐ Transformer encoder (same 3 clouds)
+    │   ├── Topic_6_fine-it/          # ⭐ Pretrain + fine-tune char Transformer
+    │   └── Topic_7_gen-it/           # ⭐ Variational autoencoder (same 3 clouds)
     ├── Cloud deployment models/      # Supplementary React deployment stacks
     │   ├── react-azure/              # Azure deployment
     │   │   ├── frontend/             # React TypeScript app
@@ -443,4 +525,4 @@ These projects demonstrate modern web development and cloud deployment best prac
 
 ---
 
-*Last Updated: February 2026*
+*Last Updated: July 2026*

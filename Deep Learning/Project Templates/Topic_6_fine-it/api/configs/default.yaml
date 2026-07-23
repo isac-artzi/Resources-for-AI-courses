@@ -1,0 +1,12 @@
+# Default hyperparameters. The API accepts these from the request body; this file
+# documents sane starting values for both training phases.
+pretrain:
+  lr: 0.005
+  batch_size: 64
+  epochs: 8
+finetune:
+  n_labeled: 240
+  lr: 0.004
+  batch_size: 32
+  epochs: 6
+  test_size: 0.25

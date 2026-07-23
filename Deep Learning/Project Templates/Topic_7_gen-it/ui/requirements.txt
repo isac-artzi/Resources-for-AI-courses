@@ -1,0 +1,7 @@
+# UI tier (deployed on Streamlit Community Cloud)
+# No torch, no pillow, no model code here -- a thin client on purpose.
+# Decoded images arrive already rendered from the API; the UI just base64-decodes.
+streamlit==1.38.0
+requests==2.32.3
+pandas==2.2.2
+supabase==2.7.4
