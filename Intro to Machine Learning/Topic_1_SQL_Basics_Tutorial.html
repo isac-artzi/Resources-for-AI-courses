@@ -1,0 +1,906 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Topic 1 · SQL Basics &amp; Reading into pandas — Tutorial</title>
+<style>
+:root {
+  --c-bg:        #f7f9fc;
+  --c-card:      #ffffff;
+  --c-text:      #1f2937;
+  --c-text-soft: #4b5563;
+  --c-muted:     #6b7280;
+  --c-line:      #e5e7eb;
+  --c-primary:   #1f3864;
+  --c-accent:    #2e5597;
+  --c-soft-blue: #d9e2f3;
+  --c-code-bg:   #f1f4f9;
+  --c-code-text: #0f172a;
+  --c-success:   #16a34a;
+  --c-success-bg:#dcfce7;
+  --c-warn:      #b45309;
+  --c-warn-bg:   #fef3c7;
+  --c-error:     #b91c1c;
+  --c-error-bg:  #fee2e2;
+  --radius:      10px;
+  --shadow:      0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+}
+.page { max-width: 920px; margin: 0 auto; padding: 32px 24px 80px; }
+header.brand {
+  display: flex; align-items: baseline; gap: 12px;
+  border-bottom: 1px solid var(--c-line); padding-bottom: 16px; margin-bottom: 28px;
+}
+header.brand .crumb { color: var(--c-muted); font-size: 13px; }
+h1, h2, h3, h4 { color: var(--c-primary); margin: 1.4em 0 .5em; line-height: 1.25; }
+h1 { font-size: 28px; margin-top: 0; }
+h2 { font-size: 22px; border-bottom: 1px solid var(--c-line); padding-bottom: 6px; }
+h3 { font-size: 18px; }
+h4 { font-size: 16px; color: var(--c-accent); }
+p, li { color: var(--c-text); }
+.lead { color: var(--c-text-soft); font-size: 17px; }
+.card {
+  background: var(--c-card); border: 1px solid var(--c-line);
+  border-radius: var(--radius); padding: 20px 22px; margin: 16px 0;
+  box-shadow: var(--shadow);
+}
+.callout {
+  background: var(--c-soft-blue);
+  border-left: 4px solid var(--c-accent);
+  padding: 12px 16px; border-radius: 6px; margin: 14px 0;
+  font-size: 15px;
+}
+.callout.warn { background: var(--c-warn-bg); border-color: var(--c-warn); }
+.callout strong.label { color: var(--c-primary); }
+code, pre, kbd, samp {
+  font-family: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+code { background: var(--c-code-bg); padding: 1px 6px; border-radius: 4px; font-size: 14px; }
+pre {
+  background: var(--c-code-bg); color: var(--c-code-text);
+  padding: 14px 16px; border-radius: 8px; overflow-x: auto;
+  font-size: 14px; line-height: 1.55;
+  border: 1px solid var(--c-line);
+}
+pre code { background: transparent; padding: 0; }
+.btn {
+  display: inline-block; padding: 8px 14px; font-size: 14px;
+  background: var(--c-primary); color: #fff; border: none;
+  border-radius: 6px; cursor: pointer; font-weight: 600;
+}
+.btn:hover { background: var(--c-accent); }
+.btn.ghost {
+  background: #fff; color: var(--c-primary);
+  border: 1px solid var(--c-primary);
+}
+.btn.ghost:hover { background: var(--c-soft-blue); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+input[type=text], input[type=number], select, textarea {
+  font: inherit; padding: 6px 10px; border: 1px solid var(--c-line);
+  border-radius: 6px; background: #fff; color: var(--c-text);
+}
+input[type=range] { width: 100%; }
+label.field { display: block; font-size: 14px; color: var(--c-text-soft); margin: 8px 0 4px; }
+table.data { border-collapse: collapse; margin: 10px 0; font-size: 14px; }
+table.data th, table.data td {
+  border: 1px solid var(--c-line); padding: 6px 10px; text-align: left;
+}
+table.data th { background: var(--c-soft-blue); color: var(--c-primary); }
+.row { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
+.col { flex: 1 1 280px; }
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 14px; }
+.feedback {
+  padding: 10px 14px; border-radius: 6px; margin-top: 10px; font-size: 14px;
+  border: 1px solid transparent;
+}
+.feedback.ok    { background: var(--c-success-bg); border-color: var(--c-success); color: #14532d; }
+.feedback.bad   { background: var(--c-error-bg);   border-color: var(--c-error);   color: #7f1d1d; }
+.feedback.info  { background: var(--c-soft-blue);  border-color: var(--c-accent);  color: var(--c-primary); }
+ul.choices { list-style: none; padding: 0; margin: 8px 0; }
+ul.choices li {
+  background: #fff; border: 1px solid var(--c-line); padding: 10px 14px;
+  border-radius: 6px; margin: 6px 0; cursor: pointer; font-size: 15px;
+}
+ul.choices li:hover { background: var(--c-soft-blue); }
+ul.choices li.selected { background: var(--c-soft-blue); border-color: var(--c-primary); }
+ul.choices li.correct  { background: var(--c-success-bg); border-color: var(--c-success); }
+ul.choices li.incorrect{ background: var(--c-error-bg);   border-color: var(--c-error); }
+.progress {
+  background: var(--c-line); border-radius: 4px; height: 6px;
+  overflow: hidden; margin: 8px 0;
+}
+.progress > div {
+  background: var(--c-accent); height: 100%;
+  transition: width .35s ease;
+}
+svg.chart { display: block; max-width: 100%; height: auto; }
+.legend { display: flex; gap: 12px; font-size: 13px; color: var(--c-text-soft); margin: 6px 0; }
+.legend span.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+footer.brand {
+  margin-top: 60px; padding-top: 16px; border-top: 1px solid var(--c-line);
+  color: var(--c-muted); font-size: 13px; text-align: center;
+}
+.tag {
+  display: inline-block; padding: 2px 8px; font-size: 12px; font-weight: 600;
+  border-radius: 999px; background: var(--c-soft-blue); color: var(--c-primary);
+  margin-right: 6px;
+}
+.scope {
+  font-size: 13px; color: var(--c-muted); font-style: italic;
+}
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="brand">
+    <span class="tag">Machine Learning</span>
+    <span class="crumb">Tutorials · Topic 1</span>
+  </header>
+  
+<h1>Topic 1 · SQL Basics &amp; Reading Relational Data into pandas</h1>
+<p class="lead">
+  Topic 1 is your introduction to handling real data. By the end of this
+  tutorial you will understand what a relational database is, how to load
+  and query it with basic SQL, how to read its tables into pandas, and how
+  to combine and clean those tables — entirely in pandas — using the
+  build pattern.
+</p>
+<p class="scope">
+  Scope at the introductory level: CREATE TABLE · INSERT · single-table SELECT (with
+  WHERE / ORDER BY / LIMIT / simple GROUP BY) · UPDATE · DELETE.
+  JOINs, HAVING, subqueries, window functions, and CTEs are out of scope —
+  all multi-table work happens in pandas.
+</p>
+
+<div class="card">
+  <h2>1. What is a relational table?</h2>
+  <p>
+    A relational table is a grid of values — rows are records and columns
+    are attributes. Every column has a fixed type (integer, text, etc.)
+    and every row in a well-designed table has a <strong>primary key</strong>
+    that uniquely identifies it. Several tables can be related to each
+    other through shared column values (a customer_id in the invoices
+    table refers to the customer_id in the customers table).
+  </p>
+  <div class="row">
+    <div class="col">
+      <h4>customers</h4>
+      <table class="data">
+        <thead><tr><th>customer_id (PK)</th><th>name</th><th>country</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Ada Lovelace</td><td>UK</td></tr>
+          <tr><td>2</td><td>Bart Simpson</td><td>US</td></tr>
+          <tr><td>3</td><td>Citra Halim</td><td>ID</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col">
+      <h4>invoices</h4>
+      <table class="data">
+        <thead><tr><th>invoice_id (PK)</th><th>customer_id (FK)</th><th>total</th></tr></thead>
+        <tbody>
+          <tr><td>10</td><td>1</td><td>9.99</td></tr>
+          <tr><td>11</td><td>1</td><td>1.99</td></tr>
+          <tr><td>12</td><td>3</td><td>4.50</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="callout">
+    <strong class="label">PK / FK:</strong> A <em>primary key</em> uniquely identifies a
+    row inside one table. A <em>foreign key</em> is a column whose value
+    points to a primary key in another table — it is how relational
+    databases "link" tables together. We follow those links in
+    pandas, not in SQL.
+  </p>
+</div>
+
+<div class="card">
+  <h2>2. The four CRUD operations</h2>
+  <p>
+    Every database in the world supports four basic operations on rows.
+    Together they spell <strong>CRUD</strong>:
+  </p>
+  <table class="data">
+    <thead><tr><th>Letter</th><th>Operation</th><th>SQL keyword</th><th>Typical use</th></tr></thead>
+    <tbody>
+      <tr><td>C</td><td>Create</td><td><code>CREATE TABLE</code>, <code>INSERT</code></td><td>build_sqlite.py loads each CSV into its own table.</td></tr>
+      <tr><td>R</td><td>Read</td><td><code>SELECT</code></td><td>The Streamlit app reads one table at a time into pandas.</td></tr>
+      <tr><td>U</td><td>Update</td><td><code>UPDATE</code></td><td>Correcting a known typo or test row in the database.</td></tr>
+      <tr><td>D</td><td>Delete</td><td><code>DELETE</code></td><td>Removing a small number of test or duplicate rows.</td></tr>
+    </tbody>
+  </table>
+  <p class="callout">
+    <strong class="label">Try it:</strong> click the buttons below to perform
+    CRUD operations on a tiny in-page "notes" table. The table updates in
+    real time, and the SQL log on the right shows the exact statement
+    that was issued.
+  </p>
+  <div id="crud-demo"></div>
+</div>
+
+<div class="card">
+  <h2>3. SELECT — the read operation in detail</h2>
+  <p>
+    Almost every interaction with a database starts with a SELECT.
+    SELECT has a simple anatomy at the introductory level:
+  </p>
+<pre><code>SELECT &lt;columns&gt;
+FROM   &lt;one table&gt;
+WHERE  &lt;row filter&gt;
+GROUP BY &lt;column&gt;            -- optional, for COUNT/SUM per group
+ORDER BY &lt;column&gt; [ASC|DESC] -- optional
+LIMIT  &lt;n&gt;                  -- optional</code></pre>
+  <p>
+    Use the builder below to compose simple SELECT queries against a
+    small sample table. Tick the columns you want, choose a WHERE filter
+    on country, optionally GROUP BY country, and optionally limit the
+    number of rows. The generated SQL — and the rows it would return —
+    appear below.
+  </p>
+  <div id="select-builder"></div>
+</div>
+
+<div class="card">
+  <h2>4. WHERE operators you need at the introductory level</h2>
+  <p>
+    WHERE filters rows before any aggregation. The operators below cover
+    almost everything you will need in this course.
+  </p>
+  <table class="data">
+    <thead><tr><th>Operator</th><th>Example</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>=</code>, <code>!=</code></td><td><code>country = 'US'</code></td><td>Exact match (and its negation).</td></tr>
+      <tr><td><code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code></td><td><code>total &gt; 100</code></td><td>Numeric comparison.</td></tr>
+      <tr><td><code>LIKE</code></td><td><code>name LIKE 'A%'</code></td><td>Pattern match. <code>%</code> stands for any string; <code>_</code> for a single char.</td></tr>
+      <tr><td><code>IN</code></td><td><code>country IN ('US','UK')</code></td><td>Match any value in a small list.</td></tr>
+      <tr><td><code>IS NULL</code></td><td><code>country IS NULL</code></td><td>Test for missing values. <em>Do not</em> use <code>=</code> for NULL — it always returns false.</td></tr>
+      <tr><td><code>AND</code>, <code>OR</code></td><td><code>x &gt; 5 AND x &lt; 10</code></td><td>Combine conditions.</td></tr>
+    </tbody>
+  </table>
+  <p class="callout warn">
+    <strong class="label">Watch out:</strong>
+    SQL strings are enclosed in single quotes <code>'US'</code>, not double
+    quotes. And NULL is not equal to anything — even to itself — so
+    <code>x = NULL</code> never matches. Use <code>IS NULL</code> instead.
+  </p>
+</div>
+
+<div class="card">
+  <h2>5. GROUP BY — counting per category</h2>
+  <p>
+    GROUP BY collapses rows that share a value into a single row, and
+    lets you compute an aggregate (COUNT, SUM, AVG, MIN, MAX) for each
+    group. At the introductory level we use only the simplest form: one column
+    in the GROUP BY, one aggregate in the SELECT.
+  </p>
+  <p>
+    Click each aggregate below to see the equivalent SQL and result
+    on the sample table.
+  </p>
+  <div id="groupby-demo"></div>
+</div>
+
+<div class="card">
+  <h2>6. Reading a SQLite table into pandas</h2>
+  <p>
+    Once data is in SQLite, the standard way to work with it is:
+    read each table into its own pandas DataFrame and do everything else
+    in pandas.
+  </p>
+<pre><code>import sqlite3, pandas as pd
+
+con = sqlite3.connect("db/chinook.sqlite")
+
+# read each table into its own DataFrame
+customers = pd.read_sql("SELECT * FROM customers", con)
+invoices  = pd.read_sql("SELECT * FROM invoices",  con)
+
+con.close()
+
+print(customers.shape)   # (rows, columns)
+print(customers.head())  # first 5 rows
+print(customers.dtypes)  # column types as pandas inferred them</code></pre>
+  <p>
+    Three things to notice:
+  </p>
+  <ul>
+    <li><code>pd.read_sql</code> accepts any SQL string. We keep ours simple.</li>
+    <li>Each call touches one table. There is no JOIN.</li>
+    <li>It returns a regular pandas DataFrame, so every method you have learned in pandas works directly.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>7. Joining tables in pandas: <code>DataFrame.merge</code></h2>
+  <p>
+    Below are two small DataFrames — customers and invoices. Use the
+    selectors to switch the merge type and which key column you join on.
+    The result panel updates immediately. Watch how the row count and the
+    NaN cells change with each option.
+  </p>
+  <div class="row">
+    <div class="col">
+      <h4>customers</h4>
+      <table class="data" id="cust-table"></table>
+      <h4>invoices</h4>
+      <table class="data" id="inv-table"></table>
+    </div>
+    <div class="col">
+      <label class="field">how (the type of merge)</label>
+      <select id="how-select">
+        <option value="inner">inner — only rows present in both tables</option>
+        <option value="left">left  — keep every customer, NaN if no invoice</option>
+        <option value="outer">outer — keep every row from both tables</option>
+      </select>
+      <h4>merged result</h4>
+      <table class="data" id="merged-table"></table>
+      <p>Row count: <span class="mono" id="merged-count">—</span></p>
+      <div class="callout" id="merge-explain"></div>
+    </div>
+  </div>
+  <p>
+    Equivalent pandas code:
+  </p>
+<pre><code>combined = customers.merge(
+    invoices,
+    on='customer_id',
+    how='left',     # or 'inner', 'outer'
+)</code></pre>
+</div>
+
+<div class="card">
+  <h2>8. Aggregating in pandas: <code>DataFrame.groupby</code></h2>
+  <p>
+    Once two tables are merged in pandas, you usually want an aggregate
+    per category. <code>DataFrame.groupby</code> is the pandas equivalent
+    of GROUP BY. The interactive panel below applies several aggregates
+    to the merged customers-invoices DataFrame so you can see how each
+    one reshapes the data.
+  </p>
+  <div id="pd-groupby-demo"></div>
+</div>
+
+<div class="card">
+  <h2>9. Common pitfalls</h2>
+  <table class="data">
+    <thead><tr><th>Pitfall</th><th>What happens</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr><td>Doing cleaning in SQL instead of pandas</td><td>Splits attention across two cleaning toolkits and departs from the build pattern</td><td>Keep SQL to CRUD; do cleaning in pandas</td></tr>
+      <tr><td>f-string interpolating user input into SQL</td><td>Classic SQL injection vulnerability</td><td>Use parameter placeholders: <code>execute("SELECT * FROM t WHERE id = ?", (uid,))</code></td></tr>
+      <tr><td><code>COUNT(*)</code> vs <code>COUNT(col)</code></td><td>The first counts all rows; the second skips rows where <code>col</code> is NULL</td><td>Pick consciously and document the choice</td></tr>
+      <tr><td>Writing back to bundled SQLite on Streamlit Cloud</td><td>Writes vanish on every redeploy</td><td>Persist derived state as versioned CSV</td></tr>
+      <tr><td>Using <code>x = NULL</code></td><td>Always evaluates false; nothing matches</td><td>Use <code>x IS NULL</code> / <code>x IS NOT NULL</code></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h2>10. The data flow at a glance</h2>
+  <p>
+    The diagram below is the contract every Topic-1 project follows.
+    Hover each box to see the file(s) involved at that step.
+  </p>
+  <svg id="flow-chart" class="chart" viewBox="0 0 640 220" style="background:#fff;border:1px solid var(--c-line); border-radius:6px;"></svg>
+  <ol>
+    <li><strong>build_sqlite.py</strong> — CREATE TABLE + INSERT, one table at a time. No JOINs.</li>
+    <li><strong>Read</strong> — <code>pd.read_sql("SELECT * FROM …", con)</code>, one call per table.</li>
+    <li><strong>Clean &amp; combine</strong> — <code>DataFrame.merge</code>, <code>DataFrame.groupby</code>, <code>DataFrame.dropna</code>, <code>DataFrame.fillna</code>.</li>
+    <li><strong>Persist</strong> — <code>DataFrame.to_csv("data/derived/&lt;name&gt;_&lt;YYYYMMDD&gt;.csv", index=False)</code>.</li>
+    <li><strong>Deploy</strong> — Streamlit app reads the CSV and tells a clear product story.</li>
+  </ol>
+</div>
+
+<div class="card">
+  <h2>11. Stewardship: every filter changes the population</h2>
+  <p>
+    Every <code>WHERE</code> clause (or pandas boolean filter) silently
+    changes the population the report represents. A report that says
+    "average revenue per customer is $120" is misleading if the underlying
+    query quietly excluded all customers in the smallest country. At the
+    introductory level, stewardship starts with one habit: <em>name the rows you
+    kept, name the rows you dropped, and say why.</em>
+  </p>
+  <p>
+    Compose a one-paragraph "rows-and-reasons" note for every analytical
+    page in your Streamlit app. Future you, your team, and your
+    stakeholders all benefit when the population is no longer hidden.
+  </p>
+</div>
+
+<div class="callout">
+  <strong class="label">Next step:</strong>
+  open <code>Topic-1-SQL-Basics-Exercises.html</code> and try the practice
+  exercises. Then return to the assignment template and apply what you
+  learned to the Chinook dataset.
+</div>
+
+  <footer class="brand">© 2026 · Intro to Machine Learning</footer>
+</div>
+<script>
+// ---- exercise framework ----
+function el(tag, attrs, ...kids){
+  const e = document.createElement(tag);
+  for (const k in (attrs||{})) {
+    if (k === 'class') e.className = attrs[k];
+    else if (k === 'html') e.innerHTML = attrs[k];
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else if (attrs[k] !== false && attrs[k] != null) e.setAttribute(k, attrs[k]);
+  }
+  for (const kid of kids.flat()) {
+    if (kid == null) continue;
+    e.appendChild(kid.nodeType ? kid : document.createTextNode(kid));
+  }
+  return e;
+}
+function feedback(host, kind, msg){
+  let f = host.querySelector('.feedback');
+  if (!f) { f = el('div', {class:'feedback'}); host.appendChild(f); }
+  f.className = 'feedback ' + kind;
+  f.innerHTML = msg;
+}
+function renderMCQ(host, q){
+  host.appendChild(el('p', {class:'lead'}, q.stem));
+  const ul = el('ul', {class:'choices'});
+  let answered = false;
+  q.choices.forEach((c, i) => {
+    const li = el('li', {tabindex:'0'}, c);
+    li.addEventListener('click', () => {
+      if (answered) return;
+      answered = true;
+      Array.from(ul.children).forEach(x => x.classList.remove('selected'));
+      li.classList.add('selected');
+      if (i === q.answer) {
+        li.classList.add('correct');
+        feedback(host, 'ok', '<strong>Correct.</strong> ' + (q.rationale||''));
+      } else {
+        li.classList.add('incorrect');
+        ul.children[q.answer].classList.add('correct');
+        feedback(host, 'bad', '<strong>Not quite.</strong> The correct answer is highlighted in green. ' + (q.rationale||''));
+      }
+    });
+    ul.appendChild(li);
+  });
+  host.appendChild(ul);
+}
+function renderTextEx(host, q){
+  host.appendChild(el('p', {class:'lead'}, q.stem));
+  const input = el('input', {type:'text', placeholder: q.placeholder || 'Your answer…', style:'width:60%;'});
+  const btn = el('button', {class:'btn'}, 'Check');
+  const row = el('div', {class:'btn-row'}, input, btn);
+  host.appendChild(row);
+  btn.addEventListener('click', () => {
+    const v = (input.value || '').trim();
+    if (q.check(v)) feedback(host, 'ok', '<strong>Correct.</strong> ' + (q.rationale||''));
+    else feedback(host, 'bad', '<strong>Not quite.</strong> ' + (q.hint||q.rationale||''));
+  });
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') btn.click(); });
+}
+function buildExerciseSet(rootSel, items){
+  const root = document.querySelector(rootSel);
+  let correct = 0, attempted = 0;
+  items.forEach((q, idx) => {
+    const card = el('div', {class:'card'});
+    card.appendChild(el('h3', {}, 'Exercise ' + (idx+1) + ' — ' + q.type));
+    if (q.kind === 'mcq') renderMCQ(card, q);
+    else if (q.kind === 'text') renderTextEx(card, q);
+    else if (q.kind === 'custom') q.render(card);
+    root.appendChild(card);
+  });
+}
+</script>
+<script>
+// ---------- CRUD demo ----------
+(function(){
+  let notes = [
+    { id: 1, txt: 'hello' },
+    { id: 2, txt: 'world' },
+  ];
+  let nextId = 3;
+  const host = document.getElementById('crud-demo');
+
+  function render(){
+    host.innerHTML = '';
+    const tbl = el('table', {class:'data'});
+    const thead = el('thead', {}, el('tr', {}, el('th',{},'id'), el('th',{},'txt')));
+    const tbody = el('tbody');
+    notes.forEach(n => tbody.appendChild(el('tr', {}, el('td',{},String(n.id)), el('td',{},n.txt))));
+    tbl.appendChild(thead); tbl.appendChild(tbody);
+    host.appendChild(tbl);
+
+    const row = el('div', {class:'btn-row'});
+    const input = el('input', {type:'text', placeholder:'note text', value:'note ' + nextId});
+    const insertBtn = el('button', {class:'btn'}, 'INSERT');
+    const updateBtn = el('button', {class:'btn ghost'}, 'UPDATE id=1');
+    const deleteBtn = el('button', {class:'btn ghost'}, 'DELETE last row');
+    const resetBtn  = el('button', {class:'btn ghost'}, 'Reset');
+    insertBtn.addEventListener('click', () => {
+      notes.push({ id: nextId++, txt: input.value || ('note ' + nextId) });
+      logSQL('INSERT INTO notes (txt) VALUES (\'' + (input.value || ('note ' + (nextId-1))) + '\');');
+      render();
+    });
+    updateBtn.addEventListener('click', () => {
+      const t = notes.find(n => n.id === 1);
+      if (t) { t.txt = input.value || (t.txt + '!'); logSQL("UPDATE notes SET txt = '" + t.txt + "' WHERE id = 1;"); render(); }
+    });
+    deleteBtn.addEventListener('click', () => {
+      if (notes.length === 0) return;
+      const last = notes[notes.length-1];
+      notes = notes.slice(0, -1);
+      logSQL('DELETE FROM notes WHERE id = ' + last.id + ';');
+      render();
+    });
+    resetBtn.addEventListener('click', () => {
+      notes = [{id:1,txt:'hello'},{id:2,txt:'world'}]; nextId = 3;
+      logSQL("-- reset"); render();
+    });
+    row.appendChild(input);
+    row.appendChild(insertBtn);
+    row.appendChild(updateBtn);
+    row.appendChild(deleteBtn);
+    row.appendChild(resetBtn);
+    host.appendChild(row);
+
+    const log = el('div', {id:'sql-log'});
+    log.appendChild(el('h4', {}, 'SQL issued (most recent at top):'));
+    const pre = el('pre', {id:'sql-log-pre'}, window._sqlLog ? window._sqlLog : '-- click a button above to issue a SQL statement');
+    log.appendChild(pre);
+    host.appendChild(log);
+  }
+  function logSQL(s){
+    window._sqlLog = s + '\n' + (window._sqlLog || '');
+    const pre = document.getElementById('sql-log-pre');
+    if (pre) pre.textContent = window._sqlLog;
+  }
+  render();
+})();
+
+// ---------- SELECT query builder ----------
+(function(){
+  const host = document.getElementById('select-builder');
+  const data = [
+    { customer_id:1, name:'Ada Lovelace',  country:'UK', age:36 },
+    { customer_id:2, name:'Bart Simpson',  country:'US', age:10 },
+    { customer_id:3, name:'Citra Halim',   country:'ID', age:29 },
+    { customer_id:4, name:'Devon Clark',   country:'BR', age:42 },
+    { customer_id:5, name:'Elena Ortega',  country:'US', age:31 },
+    { customer_id:6, name:'Fern Park',     country:'UK', age:58 },
+  ];
+  const allCols = ['customer_id','name','country','age'];
+  let state = {
+    selected: ['name','country','age'],
+    where: 'none',
+    groupBy: 'none',
+    orderBy: 'none',
+    limit: 'none',
+  };
+  function build(){
+    host.innerHTML = '';
+    const colsBox = el('div', {});
+    colsBox.appendChild(el('label', {class:'field'}, 'SELECT columns'));
+    allCols.forEach(c => {
+      const lbl = el('label', {style:'display:inline-block; margin-right:14px; font-size:14px;'});
+      const cb  = el('input', {type:'checkbox'});
+      cb.checked = state.selected.includes(c);
+      cb.addEventListener('change', () => {
+        state.selected = allCols.filter((_, i) => {
+          const inps = host.querySelectorAll('input[type=checkbox]');
+          return inps[i].checked;
+        });
+        update();
+      });
+      lbl.appendChild(cb); lbl.appendChild(document.createTextNode(' ' + c));
+      colsBox.appendChild(lbl);
+    });
+    host.appendChild(colsBox);
+
+    const row = el('div', {class:'row', style:'margin-top:8px;'});
+    function picker(labelText, key, options) {
+      const c = el('div', {class:'col', style:'flex:1 1 200px;'});
+      c.appendChild(el('label', {class:'field'}, labelText));
+      const sel = el('select');
+      options.forEach(o => {
+        const op = el('option', {value:o.v}, o.t);
+        if (state[key] === o.v) op.selected = true;
+        sel.appendChild(op);
+      });
+      sel.addEventListener('change', () => { state[key] = sel.value; update(); });
+      c.appendChild(sel);
+      return c;
+    }
+    row.appendChild(picker('WHERE', 'where', [
+      {v:'none', t:'(no filter)'},
+      {v:"country = 'US'", t:"country = 'US'"},
+      {v:"country = 'UK'", t:"country = 'UK'"},
+      {v:'age > 30', t:'age > 30'},
+      {v:'age < 30', t:'age < 30'},
+      {v:"name LIKE 'A%'", t:"name LIKE 'A%'"},
+    ]));
+    row.appendChild(picker('GROUP BY', 'groupBy', [
+      {v:'none', t:'(no grouping)'},
+      {v:'country', t:'country (with COUNT(*))'},
+    ]));
+    row.appendChild(picker('ORDER BY', 'orderBy', [
+      {v:'none', t:'(no sort)'},
+      {v:'age ASC',  t:'age ascending'},
+      {v:'age DESC', t:'age descending'},
+      {v:'name ASC', t:'name A→Z'},
+    ]));
+    row.appendChild(picker('LIMIT', 'limit', [
+      {v:'none', t:'(no limit)'},
+      {v:'3', t:'first 3'},
+      {v:'5', t:'first 5'},
+    ]));
+    host.appendChild(row);
+
+    const out = el('div', {style:'margin-top:14px;'});
+    host.appendChild(out);
+    update();
+    function update(){
+      const cols = state.selected.length ? state.selected : ['*'];
+      let sql = 'SELECT ' + (state.groupBy !== 'none' ? state.groupBy + ', COUNT(*) AS n' : cols.join(', ')) + '\nFROM customers';
+      if (state.where !== 'none')   sql += '\nWHERE ' + state.where;
+      if (state.groupBy !== 'none') sql += '\nGROUP BY ' + state.groupBy;
+      if (state.orderBy !== 'none') sql += '\nORDER BY ' + state.orderBy;
+      if (state.limit !== 'none')   sql += '\nLIMIT ' + state.limit;
+      sql += ';';
+
+      // run
+      let rows = data.slice();
+      if (state.where !== 'none') {
+        rows = rows.filter(r => {
+          if (state.where.startsWith("country = '")) return r.country === state.where.split("'")[1];
+          if (state.where === 'age > 30') return r.age > 30;
+          if (state.where === 'age < 30') return r.age < 30;
+          if (state.where.startsWith("name LIKE 'A")) return r.name.startsWith('A');
+          return true;
+        });
+      }
+      if (state.groupBy === 'country') {
+        const g = {};
+        rows.forEach(r => g[r.country] = (g[r.country] || 0) + 1);
+        rows = Object.entries(g).map(([country, n]) => ({ country, n }));
+      }
+      if (state.orderBy !== 'none') {
+        const [col, dir] = state.orderBy.split(' ');
+        rows.sort((a, b) => (a[col] > b[col] ? 1 : -1) * (dir === 'DESC' ? -1 : 1));
+      }
+      if (state.limit !== 'none') rows = rows.slice(0, parseInt(state.limit));
+
+      const showCols = state.groupBy === 'country' ? ['country','n'] : cols;
+      out.innerHTML = '';
+      out.appendChild(el('h4', {}, 'Generated SQL'));
+      out.appendChild(el('pre', {html:'<code>' + sql.replace(/</g,'&lt;') + '</code>'}));
+      out.appendChild(el('h4', {}, 'Result: ' + rows.length + ' row(s)'));
+      const tbl = el('table', {class:'data'});
+      tbl.appendChild(el('thead', {}, el('tr', {}, ...showCols.map(c => el('th', {}, c)))));
+      const tbody = el('tbody');
+      rows.forEach(r => tbody.appendChild(el('tr', {}, ...showCols.map(c => el('td', {}, r[c]===undefined ? '—' : String(r[c]))))));
+      tbl.appendChild(tbody);
+      out.appendChild(tbl);
+    }
+  }
+  build();
+})();
+
+// ---------- SQL GROUP BY demo ----------
+(function(){
+  const host = document.getElementById('groupby-demo');
+  const rows = [
+    { country:'US', total:9.99 },
+    { country:'US', total:1.99 },
+    { country:'UK', total:4.50 },
+    { country:'UK', total:7.20 },
+    { country:'UK', total:12.30 },
+    { country:'BR', total:3.50 },
+  ];
+  const aggs = [
+    { key:'count', sql:'SELECT country, COUNT(*) AS n FROM invoices GROUP BY country;',
+      compute: groups => Object.entries(groups).map(([k, vs]) => ({country:k, n:vs.length})), cols:['country','n'] },
+    { key:'sum',   sql:'SELECT country, SUM(total) AS total FROM invoices GROUP BY country;',
+      compute: groups => Object.entries(groups).map(([k, vs]) => ({country:k, total: vs.reduce((s,v)=>s+v.total,0).toFixed(2)})), cols:['country','total'] },
+    { key:'avg',   sql:'SELECT country, AVG(total) AS avg FROM invoices GROUP BY country;',
+      compute: groups => Object.entries(groups).map(([k, vs]) => ({country:k, avg: (vs.reduce((s,v)=>s+v.total,0)/vs.length).toFixed(2)})), cols:['country','avg'] },
+    { key:'max',   sql:'SELECT country, MAX(total) AS max FROM invoices GROUP BY country;',
+      compute: groups => Object.entries(groups).map(([k, vs]) => ({country:k, max: Math.max(...vs.map(v=>v.total)).toFixed(2)})), cols:['country','max'] },
+  ];
+  const labels = { count:'COUNT(*)', sum:'SUM(total)', avg:'AVG(total)', max:'MAX(total)' };
+  host.innerHTML = '';
+  const btnRow = el('div', {class:'btn-row'});
+  aggs.forEach(a => {
+    const b = el('button', {class:'btn ghost'}, labels[a.key]);
+    b.addEventListener('click', () => render(a));
+    btnRow.appendChild(b);
+  });
+  host.appendChild(btnRow);
+
+  const sample = el('div', {style:'margin-top:8px;'});
+  sample.appendChild(el('h4', {}, 'Underlying rows'));
+  const tbl0 = el('table', {class:'data'});
+  tbl0.appendChild(el('thead', {}, el('tr', {}, el('th',{},'country'), el('th',{},'total'))));
+  const tb0 = el('tbody');
+  rows.forEach(r => tb0.appendChild(el('tr', {}, el('td',{},r.country), el('td',{},String(r.total)))));
+  tbl0.appendChild(tb0);
+  sample.appendChild(tbl0);
+  host.appendChild(sample);
+
+  const out = el('div', {style:'margin-top:14px;'});
+  host.appendChild(out);
+  function render(a){
+    const groups = {};
+    rows.forEach(r => (groups[r.country] = groups[r.country] || []).push(r));
+    const result = a.compute(groups);
+    out.innerHTML = '';
+    out.appendChild(el('h4', {}, 'SQL'));
+    out.appendChild(el('pre', {html:'<code>' + a.sql.replace(/</g,'&lt;') + '</code>'}));
+    out.appendChild(el('h4', {}, 'Result'));
+    const tbl = el('table', {class:'data'});
+    tbl.appendChild(el('thead', {}, el('tr', {}, ...a.cols.map(c => el('th',{},c)))));
+    const tb = el('tbody');
+    result.forEach(r => tb.appendChild(el('tr', {}, ...a.cols.map(c => el('td',{}, r[c])))));
+    tbl.appendChild(tb);
+    out.appendChild(tbl);
+  }
+  render(aggs[0]);
+})();
+
+// ---------- pandas merge demo ----------
+(function(){
+  const customers = [
+    { customer_id:1, name:'Ada',    country:'US' },
+    { customer_id:2, name:'Bart',   country:'CA' },
+    { customer_id:3, name:'Citra',  country:'US' },
+    { customer_id:4, name:'Devon',  country:'BR' },
+  ];
+  const invoices = [
+    { invoice_id:10, customer_id:1, total:9.99 },
+    { invoice_id:11, customer_id:1, total:1.99 },
+    { invoice_id:12, customer_id:3, total:4.50 },
+    { invoice_id:13, customer_id:9, total:12.0 }, // orphan: belongs to nobody in customers
+  ];
+  function table(host, rows, cols){
+    host.innerHTML = '';
+    const thead = el('thead', {}, el('tr', {}, ...cols.map(c => el('th',{},c))));
+    const tbody = el('tbody');
+    rows.forEach(r => {
+      tbody.appendChild(el('tr', {}, ...cols.map(c => el('td',{}, r[c]===undefined||r[c]===null ? '—' : String(r[c])))));
+    });
+    host.appendChild(thead); host.appendChild(tbody);
+  }
+  function merge(how){
+    const out = [];
+    const usedInvoices = new Set();
+    customers.forEach(c => {
+      const matches = invoices.filter(i => i.customer_id === c.customer_id);
+      matches.forEach(m => { usedInvoices.add(m.invoice_id); });
+      if (matches.length === 0) {
+        if (how === 'left' || how === 'outer') out.push({ ...c, invoice_id: null, total: null });
+      } else {
+        matches.forEach(m => out.push({ ...c, invoice_id: m.invoice_id, total: m.total }));
+      }
+    });
+    if (how === 'outer') {
+      invoices.forEach(i => {
+        if (!usedInvoices.has(i.invoice_id)) {
+          out.push({ customer_id: i.customer_id, name: null, country: null, invoice_id: i.invoice_id, total: i.total });
+        }
+      });
+    }
+    return out;
+  }
+  const cols = ['customer_id','name','country','invoice_id','total'];
+  table(document.getElementById('cust-table'), customers, ['customer_id','name','country']);
+  table(document.getElementById('inv-table'),  invoices,  ['invoice_id','customer_id','total']);
+  function update(){
+    const how = document.getElementById('how-select').value;
+    const merged = merge(how);
+    table(document.getElementById('merged-table'), merged, cols);
+    document.getElementById('merged-count').textContent = merged.length;
+    const explain = document.getElementById('merge-explain');
+    const msg = ({
+      inner: '<strong class="label">how=\'inner\':</strong> only rows whose customer_id appears in BOTH tables survive. Devon (no invoice) and the orphan invoice 13 (no customer 9) both disappear.',
+      left:  '<strong class="label">how=\'left\':</strong> every customer appears at least once. Devon and Bart are kept with NaN totals. The orphan invoice 13 is dropped because no customer matches it.',
+      outer: '<strong class="label">how=\'outer\':</strong> every row from both tables appears at least once. Devon stays (no invoice); the orphan invoice 13 stays (no customer name).',
+    })[how];
+    explain.innerHTML = msg;
+  }
+  document.getElementById('how-select').addEventListener('change', update);
+  update();
+})();
+
+// ---------- pandas groupby demo ----------
+(function(){
+  const host = document.getElementById('pd-groupby-demo');
+  const merged = [
+    { customer_id:1, country:'US', total:9.99 },
+    { customer_id:1, country:'US', total:1.99 },
+    { customer_id:3, country:'UK', total:4.50 },
+    { customer_id:3, country:'UK', total:7.20 },
+    { customer_id:5, country:'UK', total:12.30 },
+    { customer_id:6, country:'BR', total:3.50 },
+  ];
+  const aggs = [
+    { code:"merged.groupby('country')['total'].count()", label:'count' },
+    { code:"merged.groupby('country')['total'].sum()",   label:'sum' },
+    { code:"merged.groupby('country')['total'].mean()",  label:'mean' },
+    { code:"merged.groupby('country')['total'].max()",   label:'max' },
+  ];
+  host.innerHTML = '';
+  const btnRow = el('div', {class:'btn-row'});
+  aggs.forEach(a => {
+    const b = el('button', {class:'btn ghost'}, a.label);
+    b.addEventListener('click', () => render(a));
+    btnRow.appendChild(b);
+  });
+  host.appendChild(btnRow);
+  const out = el('div', {style:'margin-top:10px;'});
+  host.appendChild(out);
+  function render(a){
+    out.innerHTML = '';
+    out.appendChild(el('pre', {html:'<code>' + a.code + '</code>'}));
+    const groups = {};
+    merged.forEach(r => (groups[r.country] = groups[r.country] || []).push(r.total));
+    const tbl = el('table', {class:'data'});
+    tbl.appendChild(el('thead', {}, el('tr', {}, el('th',{},'country'), el('th',{},a.label))));
+    const tb = el('tbody');
+    Object.entries(groups).forEach(([k, vs]) => {
+      let v;
+      if (a.label === 'count') v = vs.length;
+      else if (a.label === 'sum') v = vs.reduce((s,x)=>s+x,0).toFixed(2);
+      else if (a.label === 'mean') v = (vs.reduce((s,x)=>s+x,0)/vs.length).toFixed(2);
+      else v = Math.max(...vs).toFixed(2);
+      tb.appendChild(el('tr', {}, el('td',{},k), el('td',{},String(v))));
+    });
+    tbl.appendChild(tb);
+    out.appendChild(tbl);
+  }
+  render(aggs[0]);
+})();
+
+// ---------- data-flow diagram ----------
+(function(){
+  const svg = document.getElementById('flow-chart');
+  if (!svg) return;
+  const boxes = [
+    { id:'csv', x: 60,  y: 100, label:'raw CSV',         hint:'data/raw/customers.csv (committed to Git)' },
+    { id:'sql', x: 200, y: 100, label:'SQLite (CRUD)',   hint:'db/chinook.sqlite — built by build_sqlite.py' },
+    { id:'pd',  x: 340, y: 100, label:'pandas',          hint:'one DataFrame per table; merge + groupby live here' },
+    { id:'csv2',x: 480, y: 100, label:'derived CSV',     hint:'data/derived/<name>_<YYYYMMDD>.csv' },
+    { id:'app', x: 590, y: 100, label:'Streamlit',       hint:'deployed app — reads the derived CSV(s)' },
+  ];
+  const defs = '<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2e5597"/></marker></defs>';
+  const lines = [];
+  for (let i = 0; i < boxes.length - 1; i++) {
+    const a = boxes[i], b = boxes[i+1];
+    lines.push(`<line x1="${a.x + 50}" y1="${a.y}" x2="${b.x - 50}" y2="${b.y}" stroke="#2e5597" stroke-width="2" marker-end="url(#arrow)"/>`);
+  }
+  boxes.forEach(box => {
+    lines.push(`<rect x="${box.x-50}" y="${box.y-22}" width="100" height="44" rx="8" ry="8" fill="#d9e2f3" stroke="#1f3864" stroke-width="2" style="cursor:pointer" data-id="${box.id}"/>`);
+    lines.push(`<text x="${box.x}" y="${box.y+5}" text-anchor="middle" font-size="13" fill="#1f3864" font-weight="600" style="pointer-events:none">${box.label}</text>`);
+  });
+  lines.push('<g id="flow-tip"></g>');
+  svg.innerHTML = defs + lines.join('');
+  svg.querySelectorAll('rect[data-id]').forEach(r => {
+    r.addEventListener('mouseenter', () => {
+      const box = boxes.find(b => b.id === r.getAttribute('data-id'));
+      document.getElementById('flow-tip').innerHTML =
+        `<rect x="60" y="170" width="520" height="36" rx="6" fill="#f1f4f9" stroke="#cbd5e1"/>` +
+        `<text x="80" y="192" font-size="12" fill="#374151"><tspan font-weight="bold">${box.label}: </tspan>${box.hint}</text>`;
+    });
+    r.addEventListener('mouseleave', () => { document.getElementById('flow-tip').innerHTML = ''; });
+  });
+})();
+</script>
+</body>
+</html>

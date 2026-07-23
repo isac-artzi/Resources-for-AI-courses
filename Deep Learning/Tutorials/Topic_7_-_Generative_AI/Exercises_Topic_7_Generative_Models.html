@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 7 Exercises — Generative Models</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family:-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+       margin:0; background:#F7F9FC; color:#1A1A1A; line-height:1.6; }
+.container { max-width:940px; margin:24px auto 48px; background:white;
+             padding:32px 48px; box-shadow:0 2px 8px rgba(0,0,0,0.06); border-radius:8px; }
+.brand { color:#888; font-size:0.85em; letter-spacing:0.05em; text-transform:uppercase; }
+h1 { color:#1F4E79; font-size:1.9em; border-bottom:3px solid #1F4E79;
+     padding-bottom:10px; margin:6px 0 8px; }
+.subtitle { color:#555; font-style:italic; margin-bottom:24px; }
+.score { position:sticky; top:0; background:white; padding:10px 14px;
+         border:1px solid #E0E5EB; border-radius:8px; margin-bottom:12px;
+         color:#1F4E79; font-weight:600; z-index:10;
+         display:flex; justify-content:space-between; align-items:center; }
+.score .bar { background:#E0E5EB; border-radius:999px; height:8px; width:240px; overflow:hidden; }
+.score .bar > div { background:#1F4E79; height:100%; transition:width 0.3s; }
+.exercise { border:1px solid #E0E5EB; border-radius:8px; padding:22px 26px;
+            margin:22px 0; background:#FCFDFE; }
+.exercise h3 { margin:0 0 4px; color:#1F4E79; font-size:1.1em; }
+.exercise .qtype { color:#888; font-size:0.8em; text-transform:uppercase;
+                   letter-spacing:0.05em; margin-bottom:14px; }
+.stem { margin-bottom:14px; }
+.stem code, code { font-family:"SF Mono",Consolas,Monaco,monospace; background:#F2F4F7;
+       padding:2px 6px; border-radius:3px; font-size:0.92em; }
+pre { background:#F2F4F7; padding:14px 18px; border-radius:6px;
+      overflow-x:auto; border-left:4px solid #1F4E79;
+      font-family:"SF Mono",Consolas,Monaco,monospace; font-size:0.92em; }
+.options { display:flex; flex-direction:column; gap:8px; margin:10px 0 14px; }
+.options label { cursor:pointer; padding:10px 14px; background:white;
+                 border:1px solid #D0D8E0; border-radius:6px; }
+.options label:hover { border-color:#1F4E79; background:#F7FAFC; }
+.options input[type="radio"] { margin-right:10px; }
+.numeric-row { display:flex; gap:12px; align-items:center; margin:10px 0 14px; }
+.numeric-row input { padding:8px 12px; border:1px solid #D0D8E0; border-radius:6px;
+                     font-family:inherit; font-size:1em; width:160px; }
+button { background:#1F4E79; color:white; border:0; padding:9px 18px;
+         border-radius:6px; cursor:pointer; font-family:inherit; font-size:0.95em; }
+button:hover { background:#2D5C8C; } button:disabled { background:#B8C2CB; cursor:not-allowed; }
+.feedback { padding:12px 16px; border-radius:6px; margin-top:10px; font-size:0.95em; display:none; }
+.feedback.show { display:block; }
+.feedback.correct { background:#E8F5E9; border-left:4px solid #2E7D32; color:#1B5E20; }
+.feedback.incorrect { background:#FDECEA; border-left:4px solid #C00000; color:#6E1414; }
+.feedback strong { display:block; margin-bottom:4px; }
+.help { color:#777; font-size:0.85em; margin-top:6px; }
+.nav { display:flex; justify-content:space-between; margin-top:36px;
+       padding-top:16px; border-top:1px solid #E0E5EB; font-size:0.9em; }
+.nav a { color:#1F4E79; text-decoration:none; } .nav a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">Practice exercises</div>
+<h1>Topic 7 — Generative Models</h1>
+<p class="subtitle">Ten self-graded problems on the ELBO, DDPM math, GAN stabilization, FID/IS interpretation, and provenance manifests.</p>
+
+<div class="score">
+  <span id="scoreText">Score: 0 / 10</span>
+  <div class="bar"><div id="scoreBar" style="width:0%"></div></div>
+</div>
+
+<div class="exercise" data-q="1">
+  <div class="qtype">Theoretical · ELBO</div>
+  <h3>Question 1</h3>
+  <div class="stem">The ELBO is:</div>
+  <div class="options">
+    <label><input type="radio" name="q1" value="a"> An upper bound on log p(x).</label>
+    <label><input type="radio" name="q1" value="b"> A lower bound on log p(x), equal to E_q[log p(x|z)] − KL(q(z|x) ‖ p(z)).</label>
+    <label><input type="radio" name="q1" value="c"> The training loss of a DDPM at step T.</label>
+    <label><input type="radio" name="q1" value="d"> A constant — it does not depend on the model.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="2">
+  <div class="qtype">Theoretical · KL term role</div>
+  <h3>Question 2</h3>
+  <div class="stem">What happens if you drop the KL term from the VAE objective?</div>
+  <div class="options">
+    <label><input type="radio" name="q2" value="a"> Nothing — the model trains identically.</label>
+    <label><input type="radio" name="q2" value="b"> The posterior q(z|x) collapses toward a delta function and the latent space loses its smooth, generative structure (posterior collapse).</label>
+    <label><input type="radio" name="q2" value="c"> The decoder stops working entirely.</label>
+    <label><input type="radio" name="q2" value="d"> The reconstruction term becomes infinite.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="3">
+  <div class="qtype">Theoretical · DDPM forward step</div>
+  <h3>Question 3</h3>
+  <div class="stem">In a DDPM, the forward (noising) step at time t produces:</div>
+  <div class="options">
+    <label><input type="radio" name="q3" value="a"> x_t = √(ᾱ_t) · x₀ + √(1 − ᾱ_t) · ε,  ε ∼ 𝒩(0, I)</label>
+    <label><input type="radio" name="q3" value="b"> x_t = x₀ · α_t (no noise added)</label>
+    <label><input type="radio" name="q3" value="c"> x_t = noise · 0 (constant)</label>
+    <label><input type="radio" name="q3" value="d"> x_t = x₀ (unchanged)</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="4">
+  <div class="qtype">Theoretical · DDPM training loss</div>
+  <h3>Question 4</h3>
+  <div class="stem">What is the standard (simple) training loss for a DDPM whose network ε_θ predicts the noise component?</div>
+  <div class="options">
+    <label><input type="radio" name="q4" value="a"> Cross-entropy between predicted and true class labels.</label>
+    <label><input type="radio" name="q4" value="b"> MSE between the predicted noise and the actually-added noise: <span>‖ ε − ε_θ(x_t, t) ‖²</span>.</label>
+    <label><input type="radio" name="q4" value="c"> Inception Score.</label>
+    <label><input type="radio" name="q4" value="d"> Discriminator BCE.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="5">
+  <div class="qtype">Theoretical · WGAN-GP</div>
+  <h3>Question 5</h3>
+  <div class="stem">Wasserstein GAN with gradient penalty (WGAN-GP) stabilizes adversarial training. Which is the most accurate explanation?</div>
+  <div class="options">
+    <label><input type="radio" name="q5" value="a"> The Wasserstein objective is smoother than JS-divergence-based GANs, and the gradient penalty softly enforces the 1-Lipschitz constraint on the critic; together this reduces mode collapse and vanishing gradients.</label>
+    <label><input type="radio" name="q5" value="b"> WGAN-GP removes the critic entirely.</label>
+    <label><input type="radio" name="q5" value="c"> WGAN-GP replaces softmax with sinusoidal positional encoding.</label>
+    <label><input type="radio" name="q5" value="d"> WGAN-GP is mathematically identical to a VAE.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="6">
+  <div class="qtype">Theoretical · FID interpretation</div>
+  <h3>Question 6</h3>
+  <div class="stem">Two generators are compared on the same dataset. Generator A has FID = 12; Generator B has FID = 45. Which statement is most accurate?</div>
+  <div class="options">
+    <label><input type="radio" name="q6" value="a"> Generator A's samples are, on average, closer to the real-data distribution in Inception feature space than B's; lower FID is better.</label>
+    <label><input type="radio" name="q6" value="b"> Generator B is better because its FID is larger.</label>
+    <label><input type="radio" name="q6" value="c"> FID values are not comparable across models.</label>
+    <label><input type="radio" name="q6" value="d"> FID requires the labels of every generated sample.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="7">
+  <div class="qtype">Theoretical · Inception Score</div>
+  <h3>Question 7</h3>
+  <div class="stem">Inception Score combines two properties of the generated batch. Which two?</div>
+  <div class="options">
+    <label><input type="radio" name="q7" value="a"> Diversity (entropy of marginal predicted-class distribution) and per-image confidence (low entropy of the conditional predicted-class distribution).</label>
+    <label><input type="radio" name="q7" value="b"> Pixel resolution and color depth.</label>
+    <label><input type="radio" name="q7" value="c"> Training loss at epoch 0 and final epoch.</label>
+    <label><input type="radio" name="q7" value="d"> Discriminator accuracy and generator throughput.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="8">
+  <div class="qtype">Application · Provenance manifest</div>
+  <h3>Question 8</h3>
+  <div class="stem">A signed provenance manifest attached to a generated image proves:</div>
+  <div class="options">
+    <label><input type="radio" name="q8" value="a"> That the image is harmless and legal.</label>
+    <label><input type="radio" name="q8" value="b"> That a known signer asserted, at a particular time, the parameters of generation for that sample — and nothing more.</label>
+    <label><input type="radio" name="q8" value="c"> That downstream copies remain intact under cropping or recompression.</label>
+    <label><input type="radio" name="q8" value="d"> That the absence of a manifest implies the absence of synthesis.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="9">
+  <div class="qtype">Theoretical · VAE vs DDPM trade-off</div>
+  <h3>Question 9</h3>
+  <div class="stem">Compared with a DDPM, a VAE tends to have:</div>
+  <div class="options">
+    <label><input type="radio" name="q9" value="a"> Sharper samples but slower sampling.</label>
+    <label><input type="radio" name="q9" value="b"> A smooth, easily-interpolatable latent space and fast single-pass sampling, but often blurrier samples.</label>
+    <label><input type="radio" name="q9" value="c"> Lower FID on every dataset.</label>
+    <label><input type="radio" name="q9" value="d"> Identical training and sampling characteristics.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="10">
+  <div class="qtype">Application · Persisting samples</div>
+  <h3>Question 10</h3>
+  <div class="stem">For the Topic 7 sampler, what does the <code>samples</code> table in Supabase persist for each generated image?</div>
+  <div class="options">
+    <label><input type="radio" name="q10" value="a"> Raw image bytes plus all denoising intermediates.</label>
+    <label><input type="radio" name="q10" value="b"> A SHA-256 hash, generation parameters, and a small base64 thumbnail (≤ 4 KB) — never raw image bytes.</label>
+    <label><input type="radio" name="q10" value="c"> Only the predicted class label.</label>
+    <label><input type="radio" name="q10" value="d"> Nothing — samples are stateless.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="nav">
+  <a href="Tutorial_Topic_7_Generative_Models.html">← Back to tutorial</a>
+  <a href="../Topic_1_-_Derivatives_and_Partial_Derivatives/Tutorial_Topic_1_Background_Math_and_Gradient_Descent.html">Back to Topic 1 →</a>
+</div>
+
+</div>
+<script>
+const KEY = {
+  1:{type:'mc', accept:'b', ok:'Correct. The ELBO is a lower bound on log p(x); training the VAE maximizes it, which encourages good reconstruction while keeping the posterior close to the prior.', no:'Not quite. ELBO = Evidence Lower BOund — a lower bound on log p(x).'},
+  2:{type:'mc', accept:'b', ok:'Correct. Without the KL regularizer, q(z|x) can collapse to a delta and the latent space loses its smoothness — the failure mode known as posterior collapse.', no:'Not quite. The KL term keeps q(z|x) close to the prior; remove it and the latent space collapses.'},
+  3:{type:'mc', accept:'a', ok:'Correct. The forward process adds Gaussian noise in a closed-form way using the cumulative product of (1 − β_t).', no:'Not quite. The forward step has the closed-form x_t = √(ᾱ_t)·x₀ + √(1 − ᾱ_t)·ε.'},
+  4:{type:'mc', accept:'b', ok:'Correct. The simple ε-prediction MSE is the standard practical DDPM loss.', no:'Not quite. Training a DDPM in practice uses an MSE on the predicted noise component.'},
+  5:{type:'mc', accept:'a', ok:'Correct. The Wasserstein loss landscape is smoother and the gradient penalty enforces (approximate) 1-Lipschitz on the critic — together a real stabilizer.', no:'Not quite. WGAN-GP\'s benefits are smoother landscape + 1-Lipschitz critic via a gradient penalty.'},
+  6:{type:'mc', accept:'a', ok:'Correct. FID is a distance in Inception feature space; lower means generated samples are closer to the real distribution.', no:'Not quite. FID is a distance, so lower is better. A is the right reading.'},
+  7:{type:'mc', accept:'a', ok:'Correct. IS rewards diverse generations whose conditional class distribution is sharp under the Inception classifier.', no:'Not quite. IS combines diversity (marginal entropy) and per-image confidence (low conditional entropy).'},
+  8:{type:'mc', accept:'b', ok:'Correct. The manifest is an authenticated assertion by the signer; it does not prove harmlessness, integrity under transforms, or that absence = no synthesis.', no:'Not quite. A signed manifest authenticates the signer\'s assertion of generation parameters — nothing more.'},
+  9:{type:'mc', accept:'b', ok:'Correct. VAEs offer a clean latent space and fast sampling, at the cost of blurrier outputs than a DDPM.', no:'Not quite. VAEs win on latent structure and sampling speed; DDPMs win on sample sharpness.'},
+  10:{type:'mc', accept:'b', ok:'Correct. The data-handling policy stores only the hash plus generation parameters and a tiny thumbnail — never raw bytes.', no:'Not quite. The samples table stores SHA-256 + parameters + thumbnail; raw image bytes are deliberately excluded.'},
+};
+const solved = new Set();
+document.querySelectorAll('.exercise').forEach(ex => {
+  const qid = +ex.dataset.q; const btn = ex.querySelector('[data-check]'); const fb = ex.querySelector('[data-feedback]');
+  btn.addEventListener('click', () => {
+    const k = KEY[qid]; let user;
+    if (k.type==='numeric') {
+      user = parseFloat(ex.querySelector('[data-input]').value);
+      if (Number.isNaN(user)) { fb.className='feedback incorrect show'; fb.innerHTML='<strong>Please enter a number.</strong>'; return; }
+    } else {
+      const picked = ex.querySelector('input[type=radio]:checked');
+      if (!picked) { fb.className='feedback incorrect show'; fb.innerHTML='<strong>Please select an option.</strong>'; return; }
+      user = picked.value;
+    }
+    const ok = (k.type==='numeric') ? Math.abs(user - k.accept) <= k.tol : user === k.accept;
+    if (ok) { fb.className='feedback correct show'; fb.innerHTML='<strong>Correct.</strong> '+k.ok;
+      if (!solved.has(qid)) { solved.add(qid); updateScore(); } btn.disabled=true;
+    } else { fb.className='feedback incorrect show'; fb.innerHTML='<strong>Not quite.</strong> '+k.no; }
+  });
+});
+function updateScore() {
+  const total = Object.keys(KEY).length;
+  document.getElementById('scoreText').textContent = `Score: ${solved.size} / ${total}`;
+  document.getElementById('scoreBar').style.width = `${(solved.size/total*100).toFixed(0)}%`;
+}
+</script>
+</body>
+</html>

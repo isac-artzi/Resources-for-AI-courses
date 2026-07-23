@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 4 Exercises — Sequence Models &amp; Attention</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family:-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+       margin:0; background:#F7F9FC; color:#1A1A1A; line-height:1.6; }
+.container { max-width:940px; margin:24px auto 48px; background:white;
+             padding:32px 48px; box-shadow:0 2px 8px rgba(0,0,0,0.06); border-radius:8px; }
+.brand { color:#888; font-size:0.85em; letter-spacing:0.05em; text-transform:uppercase; }
+h1 { color:#1F4E79; font-size:1.9em; border-bottom:3px solid #1F4E79;
+     padding-bottom:10px; margin:6px 0 8px; }
+.subtitle { color:#555; font-style:italic; margin-bottom:24px; }
+.score { position:sticky; top:0; background:white; padding:10px 14px;
+         border:1px solid #E0E5EB; border-radius:8px; margin-bottom:12px;
+         color:#1F4E79; font-weight:600; z-index:10;
+         display:flex; justify-content:space-between; align-items:center; }
+.score .bar { background:#E0E5EB; border-radius:999px; height:8px; width:240px; overflow:hidden; }
+.score .bar > div { background:#1F4E79; height:100%; transition:width 0.3s; }
+.exercise { border:1px solid #E0E5EB; border-radius:8px; padding:22px 26px;
+            margin:22px 0; background:#FCFDFE; }
+.exercise h3 { margin:0 0 4px; color:#1F4E79; font-size:1.1em; }
+.exercise .qtype { color:#888; font-size:0.8em; text-transform:uppercase;
+                   letter-spacing:0.05em; margin-bottom:14px; }
+.stem { margin-bottom:14px; }
+.stem code, code { font-family:"SF Mono",Consolas,Monaco,monospace; background:#F2F4F7;
+       padding:2px 6px; border-radius:3px; font-size:0.92em; }
+pre { background:#F2F4F7; padding:14px 18px; border-radius:6px;
+      overflow-x:auto; border-left:4px solid #1F4E79;
+      font-family:"SF Mono",Consolas,Monaco,monospace; font-size:0.92em; }
+.options { display:flex; flex-direction:column; gap:8px; margin:10px 0 14px; }
+.options label { cursor:pointer; padding:10px 14px; background:white;
+                 border:1px solid #D0D8E0; border-radius:6px; }
+.options label:hover { border-color:#1F4E79; background:#F7FAFC; }
+.options input[type="radio"] { margin-right:10px; }
+.numeric-row { display:flex; gap:12px; align-items:center; margin:10px 0 14px; }
+.numeric-row input { padding:8px 12px; border:1px solid #D0D8E0; border-radius:6px;
+                     font-family:inherit; font-size:1em; width:160px; }
+button { background:#1F4E79; color:white; border:0; padding:9px 18px;
+         border-radius:6px; cursor:pointer; font-family:inherit; font-size:0.95em; }
+button:hover { background:#2D5C8C; } button:disabled { background:#B8C2CB; cursor:not-allowed; }
+.feedback { padding:12px 16px; border-radius:6px; margin-top:10px;
+            font-size:0.95em; display:none; }
+.feedback.show { display:block; }
+.feedback.correct { background:#E8F5E9; border-left:4px solid #2E7D32; color:#1B5E20; }
+.feedback.incorrect { background:#FDECEA; border-left:4px solid #C00000; color:#6E1414; }
+.feedback strong { display:block; margin-bottom:4px; }
+.help { color:#777; font-size:0.85em; margin-top:6px; }
+.nav { display:flex; justify-content:space-between; margin-top:36px;
+       padding-top:16px; border-top:1px solid #E0E5EB; font-size:0.9em; }
+.nav a { color:#1F4E79; text-decoration:none; } .nav a:hover { text-decoration:underline; }
+.eq { font-family:"Cambria Math","Times New Roman",serif; font-style:italic; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">Practice exercises</div>
+<h1>Topic 4 — Sequence Models &amp; Attention</h1>
+<p class="subtitle">Ten self-graded problems covering attention math, LSTM trade-offs, and product surface.</p>
+
+<div class="score">
+  <span id="scoreText">Score: 0 / 10</span>
+  <div class="bar"><div id="scoreBar" style="width:0%"></div></div>
+</div>
+
+<div class="exercise" data-q="1">
+  <div class="qtype">Computational · Attention output</div>
+  <h3>Question 1</h3>
+  <div class="stem">Given attention weights <code>α = [0.1, 0.6, 0.3]</code> and value vectors <code>V = [[1], [2], [3]]</code> (each value is a scalar), what is the output <code>α · V</code>?</div>
+  <div class="numeric-row">
+    <input type="number" step="0.01" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="2">
+  <div class="qtype">Theoretical · Why √dₖ</div>
+  <h3>Question 2</h3>
+  <div class="stem">Why is the dot product scaled by 1/√dₖ in scaled-dot-product attention?</div>
+  <div class="options">
+    <label><input type="radio" name="q2" value="a"> It is a stylistic choice with no theoretical basis.</label>
+    <label><input type="radio" name="q2" value="b"> The variance of the dot product grows with dₖ; without scaling, softmax saturates and gradients on the non-maximal keys vanish.</label>
+    <label><input type="radio" name="q2" value="c"> It accelerates the GPU matrix multiplication.</label>
+    <label><input type="radio" name="q2" value="d"> It guarantees attention weights sum to 1.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="3">
+  <div class="qtype">Theoretical · Padding mask</div>
+  <h3>Question 3</h3>
+  <div class="stem">To mask out padded positions in attention, what value is added to the attention <em>scores</em> at those positions before applying softmax?</div>
+  <div class="options">
+    <label><input type="radio" name="q3" value="a"> +∞</label>
+    <label><input type="radio" name="q3" value="b"> 0</label>
+    <label><input type="radio" name="q3" value="c"> −∞ (so softmax assigns weight zero)</label>
+    <label><input type="radio" name="q3" value="d"> 1</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="4">
+  <div class="qtype">Theoretical · LSTM vs attention parallelism</div>
+  <h3>Question 4</h3>
+  <div class="stem">Compared with an LSTM, single-head self-attention has:</div>
+  <div class="options">
+    <label><input type="radio" name="q4" value="a"> Worse parallelism because each token waits for the previous token's hidden state.</label>
+    <label><input type="radio" name="q4" value="b"> Better parallelism (all positions are processed simultaneously), but quadratic memory in sequence length.</label>
+    <label><input type="radio" name="q4" value="c"> Identical compute and memory.</label>
+    <label><input type="radio" name="q4" value="d"> Lower asymptotic FLOPs in all settings.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="5">
+  <div class="qtype">Computational · PyTorch LSTM shape</div>
+  <h3>Question 5</h3>
+  <div class="stem">What is the shape of <code>out</code>?</div>
+<pre>x = torch.randn(2, 4, 8)   # (B, T, D)
+lstm = torch.nn.LSTM(input_size=8, hidden_size=16, batch_first=True)
+out, (h_n, c_n) = lstm(x)</pre>
+  <div class="options">
+    <label><input type="radio" name="q5" value="a"> (2, 16) — final hidden state only.</label>
+    <label><input type="radio" name="q5" value="b"> (2, 4, 16) — per-time-step hidden output for each batch element.</label>
+    <label><input type="radio" name="q5" value="c"> (4, 2, 16) — without batch_first.</label>
+    <label><input type="radio" name="q5" value="d"> (2, 4, 8) — same as input.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="6">
+  <div class="qtype">Theoretical · Positional information</div>
+  <h3>Question 6</h3>
+  <div class="stem">Self-attention by itself is permutation-equivariant. What is the practical consequence for text, and how is it fixed?</div>
+  <div class="options">
+    <label><input type="radio" name="q6" value="a"> No consequence; attention naturally learns order.</label>
+    <label><input type="radio" name="q6" value="b"> Permuting tokens leaves the output the same (up to permutation), so order information is lost — fixed by adding positional encoding to the embeddings.</label>
+    <label><input type="radio" name="q6" value="c"> The model crashes; fix is to use ReLU.</label>
+    <label><input type="radio" name="q6" value="d"> Output dimensions change; fix is to truncate.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="7">
+  <div class="qtype">Theoretical · Compute complexity</div>
+  <h3>Question 7</h3>
+  <div class="stem">For sequence length <code>n</code> and hidden dim <code>d</code>, the per-layer compute order of a vanilla LSTM and self-attention are, respectively:</div>
+  <div class="options">
+    <label><input type="radio" name="q7" value="a"> O(n · d²) and O(n² · d)</label>
+    <label><input type="radio" name="q7" value="b"> O(n²) and O(n)</label>
+    <label><input type="radio" name="q7" value="c"> O(d²) and O(d)</label>
+    <label><input type="radio" name="q7" value="d"> O(n) and O(d²)</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="8">
+  <div class="qtype">Computational · Sliding window</div>
+  <h3>Question 8</h3>
+  <div class="stem">A 1-D series of length 1,000 is reshaped into sliding windows of length L = 24 to forecast the next value. How many (X, y) examples does this produce?</div>
+  <div class="numeric-row">
+    <input type="number" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · For windows of length L predicting one step ahead, you get <span class="eq">1000 − L</span> training examples.</div>
+</div>
+
+<div class="exercise" data-q="9">
+  <div class="qtype">Application · IMDB tokenization</div>
+  <h3>Question 9</h3>
+  <div class="stem">Which is the correct call to a Hugging Face tokenizer for an IMDB sentiment task?</div>
+  <div class="options">
+    <label><input type="radio" name="q9" value="a"><code>tok = AutoTokenizer.from_pretrained("distilbert-base-uncased")<br>ids = tok(reviews, padding=True, truncation=True, max_length=256, return_tensors="pt")</code></label>
+    <label><input type="radio" name="q9" value="b"><code>ids = [hash(r) for r in reviews]</code></label>
+    <label><input type="radio" name="q9" value="c"><code>ids = "".join(reviews).split()</code></label>
+    <label><input type="radio" name="q9" value="d"><code>ids = torch.tensor(reviews)</code></label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="10">
+  <div class="qtype">Application · Persisting attention</div>
+  <h3>Question 10</h3>
+  <div class="stem">Why does the Topic 4 product persist the per-prediction attention vector to Supabase alongside each prediction?</div>
+  <div class="options">
+    <label><input type="radio" name="q10" value="a"> The model cannot predict without persistence.</label>
+    <label><input type="radio" name="q10" value="b"> Persistence supports reproducible drill-downs and audits: any past prediction can be re-inspected to see which tokens drove it.</label>
+    <label><input type="radio" name="q10" value="c"> Supabase requires every endpoint to log an attention vector.</label>
+    <label><input type="radio" name="q10" value="d"> Streamlit cannot render attention without the data in Postgres.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="nav">
+  <a href="Tutorial_Topic_4_Sequence_Models_and_Attention.html">← Back to tutorial</a>
+  <span>Topic 4 of 7</span>
+</div>
+
+</div>
+<script>
+const KEY = {
+  1:{type:'numeric', accept:0.1*1 + 0.6*2 + 0.3*3, tol:0.01,
+     ok:'Correct. 0.1·1 + 0.6·2 + 0.3·3 = 2.2. Attention weights sum to 1 (here 1.0); the output is a convex combination of values.',
+     no:'Not quite. The output is the weighted sum Σᵢ αᵢ · Vᵢ.'},
+  2:{type:'mc', accept:'b',
+     ok:'Correct. Without scaling, large dₖ pushes softmax into a region where one weight is near 1 and the others are near 0 — and the gradients on the near-zero weights vanish.',
+     no:'Not quite. The scaling has a real statistical reason: it normalizes the variance of the dot product so softmax stays in a learnable regime.'},
+  3:{type:'mc', accept:'c',
+     ok:'Correct. Setting padding-position scores to −∞ makes softmax assign exactly zero weight to those positions.',
+     no:'Not quite. The standard padding-mask trick is to add −∞ to the scores at padded positions before softmax.'},
+  4:{type:'mc', accept:'b',
+     ok:'Correct. Attention has full parallelism across positions but O(n² · d) memory; LSTMs are serial but cheaper per token at long sequences.',
+     no:'Not quite. Attention parallelizes across positions; the cost is quadratic memory in sequence length.'},
+  5:{type:'mc', accept:'b',
+     ok:'Correct. With batch_first=True, the output is (B, T, hidden_size) = (2, 4, 16).',
+     no:'Not quite. PyTorch LSTM with batch_first=True returns (B, T, hidden_size).'},
+  6:{type:'mc', accept:'b',
+     ok:'Correct. Attention without positional information treats the sequence as a set; positional encoding restores order.',
+     no:'Not quite. Permutation-equivariance means token order is invisible to attention; positional encoding fixes this.'},
+  7:{type:'mc', accept:'a',
+     ok:'Correct. LSTM per layer is O(n · d²); self-attention per layer is O(n² · d).',
+     no:'Not quite. LSTM scales linearly with n and quadratically with d; attention scales quadratically with n and linearly with d.'},
+  8:{type:'numeric', accept:976, tol:0.5,
+     ok:'Correct. 1000 − 24 = 976 (X, y) pairs of windows of length 24 predicting the next single value.',
+     no:'Not quite. With length-L windows and a one-step target, you get N − L examples.'},
+  9:{type:'mc', accept:'a',
+     ok:'Correct. AutoTokenizer + padding + truncation + return_tensors="pt" is the canonical pattern.',
+     no:'Not quite. Hash-based or whitespace-split approaches lose vocabulary alignment with the pretrained model.'},
+  10:{type:'mc', accept:'b',
+     ok:'Correct. Persisting the attention vector lets you drill from any past prediction back into the explanation surface — that is the auditable product behavior.',
+     no:'Not quite. The persistence is an explainability and audit feature, not a model requirement.'},
+};
+const solved = new Set();
+document.querySelectorAll('.exercise').forEach(ex => {
+  const qid = +ex.dataset.q; const btn = ex.querySelector('[data-check]'); const fb = ex.querySelector('[data-feedback]');
+  btn.addEventListener('click', () => {
+    const k = KEY[qid]; let user;
+    if (k.type==='numeric') {
+      user = parseFloat(ex.querySelector('[data-input]').value);
+      if (Number.isNaN(user)) { fb.className='feedback incorrect show'; fb.innerHTML='<strong>Please enter a number.</strong>'; return; }
+    } else {
+      const picked = ex.querySelector('input[type=radio]:checked');
+      if (!picked) { fb.className='feedback incorrect show'; fb.innerHTML='<strong>Please select an option.</strong>'; return; }
+      user = picked.value;
+    }
+    const ok = (k.type==='numeric') ? Math.abs(user - k.accept) <= k.tol : user === k.accept;
+    if (ok) { fb.className='feedback correct show'; fb.innerHTML='<strong>Correct.</strong> '+k.ok;
+      if (!solved.has(qid)) { solved.add(qid); updateScore(); } btn.disabled=true;
+    } else { fb.className='feedback incorrect show'; fb.innerHTML='<strong>Not quite.</strong> '+k.no; }
+  });
+});
+function updateScore() {
+  const total = Object.keys(KEY).length;
+  document.getElementById('scoreText').textContent = `Score: ${solved.size} / ${total}`;
+  document.getElementById('scoreBar').style.width = `${(solved.size/total*100).toFixed(0)}%`;
+}
+</script>
+</body>
+</html>

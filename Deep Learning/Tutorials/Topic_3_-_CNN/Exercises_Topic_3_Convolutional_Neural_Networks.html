@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 3 Exercises — Convolutional Neural Networks</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+       margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6; }
+.container { max-width: 940px; margin: 24px auto 48px; background: white;
+             padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color:#888; font-size:0.85em; letter-spacing:0.05em; text-transform:uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color:#555; font-style:italic; margin-bottom:24px; }
+.score { position:sticky; top:0; background:white; padding:10px 14px;
+         border:1px solid #E0E5EB; border-radius:8px; margin-bottom:12px;
+         color:#1F4E79; font-weight:600; z-index:10;
+         display:flex; justify-content:space-between; align-items:center; }
+.score .bar { background:#E0E5EB; border-radius:999px; height:8px; width:240px; overflow:hidden; }
+.score .bar > div { background:#1F4E79; height:100%; transition:width 0.3s; }
+.exercise { border:1px solid #E0E5EB; border-radius:8px; padding:22px 26px;
+            margin:22px 0; background:#FCFDFE; }
+.exercise h3 { margin:0 0 4px; color:#1F4E79; font-size:1.1em; }
+.exercise .qtype { color:#888; font-size:0.8em; text-transform:uppercase;
+                   letter-spacing:0.05em; margin-bottom:14px; }
+.stem { margin-bottom:14px; }
+.stem code, code { font-family:"SF Mono",Consolas,Monaco,monospace; background:#F2F4F7;
+       padding:2px 6px; border-radius:3px; font-size:0.92em; }
+pre { background:#F2F4F7; padding:14px 18px; border-radius:6px;
+      overflow-x:auto; border-left:4px solid #1F4E79;
+      font-family:"SF Mono",Consolas,Monaco,monospace; font-size:0.92em; }
+.options { display:flex; flex-direction:column; gap:8px; margin:10px 0 14px; }
+.options label { cursor:pointer; padding:10px 14px; background:white;
+                 border:1px solid #D0D8E0; border-radius:6px; }
+.options label:hover { border-color:#1F4E79; background:#F7FAFC; }
+.options input[type="radio"] { margin-right:10px; }
+.numeric-row { display:flex; gap:12px; align-items:center; margin:10px 0 14px; }
+.numeric-row input { padding:8px 12px; border:1px solid #D0D8E0; border-radius:6px;
+                     font-family:inherit; font-size:1em; width:160px; }
+button { background:#1F4E79; color:white; border:0; padding:9px 18px; border-radius:6px;
+         cursor:pointer; font-family:inherit; font-size:0.95em; }
+button:hover { background:#2D5C8C; } button:disabled { background:#B8C2CB; cursor:not-allowed; }
+.feedback { padding:12px 16px; border-radius:6px; margin-top:10px; font-size:0.95em; display:none; }
+.feedback.show { display:block; }
+.feedback.correct { background:#E8F5E9; border-left:4px solid #2E7D32; color:#1B5E20; }
+.feedback.incorrect { background:#FDECEA; border-left:4px solid #C00000; color:#6E1414; }
+.feedback strong { display:block; margin-bottom:4px; }
+.help { color:#777; font-size:0.85em; margin-top:6px; }
+.nav { display:flex; justify-content:space-between; margin-top:36px;
+       padding-top:16px; border-top:1px solid #E0E5EB; font-size:0.9em; }
+.nav a { color:#1F4E79; text-decoration:none; } .nav a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">Practice exercises</div>
+<h1>Topic 3 — Convolutional Neural Networks</h1>
+<p class="subtitle">Ten self-graded problems on convolution arithmetic, regularization, Grad-CAM, and the three-cloud product surface.</p>
+
+<div class="score">
+  <span id="scoreText">Score: 0 / 10</span>
+  <div class="bar"><div id="scoreBar" style="width:0%"></div></div>
+</div>
+
+<div class="exercise" data-q="1">
+  <div class="qtype">Computational · Output spatial size</div>
+  <h3>Question 1</h3>
+  <div class="stem">A <code>nn.Conv2d(in=3, out=32, kernel_size=3, stride=1, padding=1)</code> is applied to a 32×32 input. What is the spatial size of the output (height = width)?</div>
+  <div class="numeric-row">
+    <input type="number" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · O = ⌊(I − K + 2P) / S⌋ + 1.</div>
+</div>
+
+<div class="exercise" data-q="2">
+  <div class="qtype">Theoretical · Receptive field</div>
+  <h3>Question 2</h3>
+  <div class="stem">What is the receptive field of three stacked 3×3 convolutions with stride 1 (no dilation)?</div>
+  <div class="options">
+    <label><input type="radio" name="q2" value="a"> 3 × 3</label>
+    <label><input type="radio" name="q2" value="b"> 5 × 5</label>
+    <label><input type="radio" name="q2" value="c"> 7 × 7</label>
+    <label><input type="radio" name="q2" value="d"> 9 × 9</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="3">
+  <div class="qtype">Theoretical · Stride to halve</div>
+  <h3>Question 3</h3>
+  <div class="stem">If you want a Conv2d layer to halve its spatial size with K = 3 and P = 1, what stride do you set?</div>
+  <div class="numeric-row">
+    <input type="number" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="4">
+  <div class="qtype">Application · Augmentation choice</div>
+  <h3>Question 4</h3>
+  <div class="stem">Which augmentation composition is most appropriate for training a CIFAR-10 classifier?</div>
+  <div class="options">
+    <label><input type="radio" name="q4" value="a"><code>transforms.Compose([transforms.Resize((1,1))])</code></label>
+    <label><input type="radio" name="q4" value="b"><code>transforms.Compose([transforms.RandomCrop(32, padding=4), transforms.RandomHorizontalFlip(), transforms.ToTensor(), transforms.Normalize(mean, std)])</code></label>
+    <label><input type="radio" name="q4" value="c"><code>transforms.Compose([transforms.RandomVerticalFlip(p=1)])</code></label>
+    <label><input type="radio" name="q4" value="d"><code>transforms.Compose([])</code> — no augmentation at all.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="5">
+  <div class="qtype">Theoretical · Strided conv vs max pool</div>
+  <h3>Question 5</h3>
+  <div class="stem">A modern CNN architecture often replaces max pooling with strided convolutions. The most defensible reason is:</div>
+  <div class="options">
+    <label><input type="radio" name="q5" value="a"> Max pooling is non-differentiable and breaks backprop.</label>
+    <label><input type="radio" name="q5" value="b"> Strided convolutions are learnable down-samplers — the model itself decides what to keep at each down-sampling step.</label>
+    <label><input type="radio" name="q5" value="c"> Max pooling requires labeled data; strided convs do not.</label>
+    <label><input type="radio" name="q5" value="d"> Strided convolutions remove the need for activation functions.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="6">
+  <div class="qtype">Theoretical · Grad-CAM interpretation</div>
+  <h3>Question 6</h3>
+  <div class="stem">A Grad-CAM overlay on a horse-classifier's correct predictions consistently highlights a small watermark in the corner of the image. What does this most likely indicate?</div>
+  <div class="options">
+    <label><input type="radio" name="q6" value="a"> Grad-CAM is broken and should be ignored.</label>
+    <label><input type="radio" name="q6" value="b"> The dataset has a spurious correlation: horse images carry the watermark more often than non-horse images, and the model has learned the shortcut.</label>
+    <label><input type="radio" name="q6" value="c"> The model is using a residual connection incorrectly.</label>
+    <label><input type="radio" name="q6" value="d"> The classifier is calibrated; the watermark is the most informative feature.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="7">
+  <div class="qtype">Application · BatchNorm at inference</div>
+  <h3>Question 7</h3>
+  <div class="stem">Why does the FastAPI service call <code>model.eval()</code> before running predictions?</div>
+  <div class="options">
+    <label><input type="radio" name="q7" value="a"> To enable training-time dropout for stochastic predictions.</label>
+    <label><input type="radio" name="q7" value="b"> To switch BatchNorm to its <em>running statistics</em> mode and disable dropout, so predictions match how the test set was evaluated.</label>
+    <label><input type="radio" name="q7" value="c"> To clear gradients from the previous training run.</label>
+    <label><input type="radio" name="q7" value="d"> To re-initialize the model weights.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="8">
+  <div class="qtype">Application · Data-handling policy</div>
+  <h3>Question 8</h3>
+  <div class="stem">For the Topic 3 vision-classification product, what is persisted to Supabase for each uploaded image?</div>
+  <div class="options">
+    <label><input type="radio" name="q8" value="a"> The raw image bytes plus the predicted class.</label>
+    <label><input type="radio" name="q8" value="b"> A SHA-256 hash of the upload plus metadata (predicted label, top-5, served_by_run_id) — never the raw image bytes.</label>
+    <label><input type="radio" name="q8" value="c"> Nothing; predictions are stateless.</label>
+    <label><input type="radio" name="q8" value="d"> The Grad-CAM overlay only, with no class information.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="9">
+  <div class="qtype">Application · Upload encoding</div>
+  <h3>Question 9</h3>
+  <div class="stem">Which HTTP method and content type are used for the image upload in <code>POST /predict</code> of the Topic 3 product?</div>
+  <div class="options">
+    <label><input type="radio" name="q9" value="a"> GET, application/json</label>
+    <label><input type="radio" name="q9" value="b"> POST, multipart/form-data</label>
+    <label><input type="radio" name="q9" value="c"> POST, application/x-www-form-urlencoded</label>
+    <label><input type="radio" name="q9" value="d"> WebSocket, binary frames</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="10">
+  <div class="qtype">Computational · Residual block forward</div>
+  <h3>Question 10</h3>
+  <div class="stem">In a residual block, the forward pass computes <code>y = activation(x + body(x))</code>. If <code>body</code> outputs all zeros for some input, what is <code>y</code> (assuming <code>activation = ReLU</code>)?</div>
+  <div class="options">
+    <label><input type="radio" name="q10" value="a"> y = 0 — the residual branch erases the input.</label>
+    <label><input type="radio" name="q10" value="b"> y = ReLU(x) — the block becomes an identity (for non-negative x).</label>
+    <label><input type="radio" name="q10" value="c"> y = −x — the residual flips the sign.</label>
+    <label><input type="radio" name="q10" value="d"> The forward pass crashes.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="nav">
+  <a href="Tutorial_Topic_3_Convolutional_Neural_Networks.html">← Back to tutorial</a>
+  <span>Topic 3 of 7</span>
+</div>
+
+</div>
+<script>
+const KEY = {
+  1:{type:'numeric', accept:32, tol:0.001, ok:'Correct. O = ⌊(32 − 3 + 2·1)/1⌋ + 1 = 32. Padding=1 with K=3, stride=1 preserves spatial size.', no:'Not quite. Plug into O = ⌊(I − K + 2P)/S⌋ + 1 with I=32, K=3, S=1, P=1.'},
+  2:{type:'mc', accept:'c', ok:'Correct. RF = 1 + n·(K − 1) = 1 + 3·2 = 7.', no:'Not quite. Each additional 3×3 conv (stride 1) extends the receptive field by 2 per dimension.'},
+  3:{type:'numeric', accept:2, tol:0.001, ok:'Correct. With K=3, P=1 and stride 2, the output is roughly I/2.', no:'Not quite. Stride 2 with K=3, P=1 produces an output roughly half the input size.'},
+  4:{type:'mc', accept:'b', ok:'Correct. RandomCrop with padding + horizontal flip + normalization is the standard CIFAR-10 augmentation.', no:'Not quite. Resize-to-1 destroys signal; full vertical flip distorts most natural images; no-augmentation is allowed but is the baseline, not the recommended training-time augmentation.'},
+  5:{type:'mc', accept:'b', ok:'Correct. Strided convolutions are learnable down-samplers; the model picks what to keep instead of relying on a fixed pooling rule.', no:'Not quite. Max pooling is differentiable. The key advantage of strided convs is learnability.'},
+  6:{type:'mc', accept:'b', ok:'Correct. The classifier has learned a shortcut: the watermark, not the horse. Mitigation is dataset cleaning or augmentation that breaks the spurious correlation.', no:'Not quite. Grad-CAM is reliable here — the issue is in the dataset, not the explanation method.'},
+  7:{type:'mc', accept:'b', ok:'Correct. eval() switches BatchNorm to running stats and disables dropout — required for deterministic inference.', no:'Not quite. eval() flips BatchNorm and dropout into inference mode; the optimizer and weights are not touched.'},
+  8:{type:'mc', accept:'b', ok:'Correct. The data-handling policy stores only the SHA-256 hash plus prediction metadata — raw image bytes are deliberately not persisted.', no:'Not quite. The policy is "minimum exposure": hash + metadata only.'},
+  9:{type:'mc', accept:'b', ok:'Correct. POST with multipart/form-data is the standard encoding for image uploads.', no:'Not quite. Image uploads use POST + multipart/form-data; GET has URL-length limits and is for resource retrieval.'},
+  10:{type:'mc', accept:'b', ok:'Correct. With body(x) = 0, the block reduces to ReLU(x), which is the identity for non-negative x. That is exactly why residual connections make deep networks easy to optimize.', no:'Not quite. y = ReLU(x + 0) = ReLU(x). Residual blocks can collapse to identity, which is the optimization benefit.'},
+};
+const solved = new Set();
+document.querySelectorAll('.exercise').forEach(ex => {
+  const qid = +ex.dataset.q; const btn = ex.querySelector('[data-check]'); const fb = ex.querySelector('[data-feedback]');
+  btn.addEventListener('click', () => {
+    const k = KEY[qid]; let user;
+    if (k.type === 'numeric') {
+      const inp = ex.querySelector('[data-input]'); user = parseFloat(inp.value);
+      if (Number.isNaN(user)) { fb.className='feedback incorrect show'; fb.innerHTML='<strong>Please enter a number.</strong>'; return; }
+    } else {
+      const picked = ex.querySelector('input[type=radio]:checked');
+      if (!picked) { fb.className='feedback incorrect show'; fb.innerHTML='<strong>Please select an option.</strong>'; return; }
+      user = picked.value;
+    }
+    const ok = (k.type==='numeric') ? Math.abs(user - k.accept) <= k.tol : user === k.accept;
+    if (ok) { fb.className='feedback correct show'; fb.innerHTML='<strong>Correct.</strong> '+k.ok;
+      if (!solved.has(qid)) { solved.add(qid); updateScore(); } btn.disabled=true;
+    } else { fb.className='feedback incorrect show'; fb.innerHTML='<strong>Not quite.</strong> '+k.no; }
+  });
+});
+function updateScore() {
+  const total = Object.keys(KEY).length;
+  document.getElementById('scoreText').textContent = `Score: ${solved.size} / ${total}`;
+  document.getElementById('scoreBar').style.width = `${(solved.size/total*100).toFixed(0)}%`;
+}
+</script>
+</body>
+</html>

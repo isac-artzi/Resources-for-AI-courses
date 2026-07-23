@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Topic 2 · Data Quality — Exercises</title>
+<style>
+:root {
+  --c-bg:        #f7f9fc;
+  --c-card:      #ffffff;
+  --c-text:      #1f2937;
+  --c-text-soft: #4b5563;
+  --c-muted:     #6b7280;
+  --c-line:      #e5e7eb;
+  --c-primary:   #1f3864;
+  --c-accent:    #2e5597;
+  --c-soft-blue: #d9e2f3;
+  --c-code-bg:   #f1f4f9;
+  --c-code-text: #0f172a;
+  --c-success:   #16a34a;
+  --c-success-bg:#dcfce7;
+  --c-warn:      #b45309;
+  --c-warn-bg:   #fef3c7;
+  --c-error:     #b91c1c;
+  --c-error-bg:  #fee2e2;
+  --radius:      10px;
+  --shadow:      0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+}
+.page { max-width: 920px; margin: 0 auto; padding: 32px 24px 80px; }
+header.brand {
+  display: flex; align-items: baseline; gap: 12px;
+  border-bottom: 1px solid var(--c-line); padding-bottom: 16px; margin-bottom: 28px;
+}
+header.brand .crumb { color: var(--c-muted); font-size: 13px; }
+h1, h2, h3, h4 { color: var(--c-primary); margin: 1.4em 0 .5em; line-height: 1.25; }
+h1 { font-size: 28px; margin-top: 0; }
+h2 { font-size: 22px; border-bottom: 1px solid var(--c-line); padding-bottom: 6px; }
+h3 { font-size: 18px; }
+h4 { font-size: 16px; color: var(--c-accent); }
+p, li { color: var(--c-text); }
+.lead { color: var(--c-text-soft); font-size: 17px; }
+.card {
+  background: var(--c-card); border: 1px solid var(--c-line);
+  border-radius: var(--radius); padding: 20px 22px; margin: 16px 0;
+  box-shadow: var(--shadow);
+}
+.callout {
+  background: var(--c-soft-blue);
+  border-left: 4px solid var(--c-accent);
+  padding: 12px 16px; border-radius: 6px; margin: 14px 0;
+  font-size: 15px;
+}
+.callout.warn { background: var(--c-warn-bg); border-color: var(--c-warn); }
+.callout strong.label { color: var(--c-primary); }
+code, pre, kbd, samp {
+  font-family: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+code { background: var(--c-code-bg); padding: 1px 6px; border-radius: 4px; font-size: 14px; }
+pre {
+  background: var(--c-code-bg); color: var(--c-code-text);
+  padding: 14px 16px; border-radius: 8px; overflow-x: auto;
+  font-size: 14px; line-height: 1.55;
+  border: 1px solid var(--c-line);
+}
+pre code { background: transparent; padding: 0; }
+.btn {
+  display: inline-block; padding: 8px 14px; font-size: 14px;
+  background: var(--c-primary); color: #fff; border: none;
+  border-radius: 6px; cursor: pointer; font-weight: 600;
+}
+.btn:hover { background: var(--c-accent); }
+.btn.ghost {
+  background: #fff; color: var(--c-primary);
+  border: 1px solid var(--c-primary);
+}
+.btn.ghost:hover { background: var(--c-soft-blue); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+input[type=text], input[type=number], select, textarea {
+  font: inherit; padding: 6px 10px; border: 1px solid var(--c-line);
+  border-radius: 6px; background: #fff; color: var(--c-text);
+}
+input[type=range] { width: 100%; }
+label.field { display: block; font-size: 14px; color: var(--c-text-soft); margin: 8px 0 4px; }
+table.data { border-collapse: collapse; margin: 10px 0; font-size: 14px; }
+table.data th, table.data td {
+  border: 1px solid var(--c-line); padding: 6px 10px; text-align: left;
+}
+table.data th { background: var(--c-soft-blue); color: var(--c-primary); }
+.row { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
+.col { flex: 1 1 280px; }
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 14px; }
+.feedback {
+  padding: 10px 14px; border-radius: 6px; margin-top: 10px; font-size: 14px;
+  border: 1px solid transparent;
+}
+.feedback.ok    { background: var(--c-success-bg); border-color: var(--c-success); color: #14532d; }
+.feedback.bad   { background: var(--c-error-bg);   border-color: var(--c-error);   color: #7f1d1d; }
+.feedback.info  { background: var(--c-soft-blue);  border-color: var(--c-accent);  color: var(--c-primary); }
+ul.choices { list-style: none; padding: 0; margin: 8px 0; }
+ul.choices li {
+  background: #fff; border: 1px solid var(--c-line); padding: 10px 14px;
+  border-radius: 6px; margin: 6px 0; cursor: pointer; font-size: 15px;
+}
+ul.choices li:hover { background: var(--c-soft-blue); }
+ul.choices li.selected { background: var(--c-soft-blue); border-color: var(--c-primary); }
+ul.choices li.correct  { background: var(--c-success-bg); border-color: var(--c-success); }
+ul.choices li.incorrect{ background: var(--c-error-bg);   border-color: var(--c-error); }
+.progress {
+  background: var(--c-line); border-radius: 4px; height: 6px;
+  overflow: hidden; margin: 8px 0;
+}
+.progress > div {
+  background: var(--c-accent); height: 100%;
+  transition: width .35s ease;
+}
+svg.chart { display: block; max-width: 100%; height: auto; }
+.legend { display: flex; gap: 12px; font-size: 13px; color: var(--c-text-soft); margin: 6px 0; }
+.legend span.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+footer.brand {
+  margin-top: 60px; padding-top: 16px; border-top: 1px solid var(--c-line);
+  color: var(--c-muted); font-size: 13px; text-align: center;
+}
+.tag {
+  display: inline-block; padding: 2px 8px; font-size: 12px; font-weight: 600;
+  border-radius: 999px; background: var(--c-soft-blue); color: var(--c-primary);
+  margin-right: 6px;
+}
+.scope {
+  font-size: 13px; color: var(--c-muted); font-style: italic;
+}
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="brand">
+    <span class="tag">Machine Learning</span>
+    <span class="crumb">Exercises · Topic 2</span>
+  </header>
+  
+<h1>Topic 2 · Practice Exercises</h1>
+<p class="lead">
+  Eight short exercises on ETL vs ELT, profiling, pandera, cleaning, and
+  the CSV-persist habit.
+</p>
+<div id="ex-root"></div>
+
+  <footer class="brand">© 2026 · Intro to Machine Learning</footer>
+</div>
+<script>
+// ---- exercise framework ----
+function el(tag, attrs, ...kids){
+  const e = document.createElement(tag);
+  for (const k in (attrs||{})) {
+    if (k === 'class') e.className = attrs[k];
+    else if (k === 'html') e.innerHTML = attrs[k];
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else if (attrs[k] !== false && attrs[k] != null) e.setAttribute(k, attrs[k]);
+  }
+  for (const kid of kids.flat()) {
+    if (kid == null) continue;
+    e.appendChild(kid.nodeType ? kid : document.createTextNode(kid));
+  }
+  return e;
+}
+function feedback(host, kind, msg){
+  let f = host.querySelector('.feedback');
+  if (!f) { f = el('div', {class:'feedback'}); host.appendChild(f); }
+  f.className = 'feedback ' + kind;
+  f.innerHTML = msg;
+}
+function renderMCQ(host, q){
+  host.appendChild(el('p', {class:'lead'}, q.stem));
+  const ul = el('ul', {class:'choices'});
+  let answered = false;
+  q.choices.forEach((c, i) => {
+    const li = el('li', {tabindex:'0'}, c);
+    li.addEventListener('click', () => {
+      if (answered) return;
+      answered = true;
+      Array.from(ul.children).forEach(x => x.classList.remove('selected'));
+      li.classList.add('selected');
+      if (i === q.answer) {
+        li.classList.add('correct');
+        feedback(host, 'ok', '<strong>Correct.</strong> ' + (q.rationale||''));
+      } else {
+        li.classList.add('incorrect');
+        ul.children[q.answer].classList.add('correct');
+        feedback(host, 'bad', '<strong>Not quite.</strong> The correct answer is highlighted in green. ' + (q.rationale||''));
+      }
+    });
+    ul.appendChild(li);
+  });
+  host.appendChild(ul);
+}
+function renderTextEx(host, q){
+  host.appendChild(el('p', {class:'lead'}, q.stem));
+  const input = el('input', {type:'text', placeholder: q.placeholder || 'Your answer…', style:'width:60%;'});
+  const btn = el('button', {class:'btn'}, 'Check');
+  const row = el('div', {class:'btn-row'}, input, btn);
+  host.appendChild(row);
+  btn.addEventListener('click', () => {
+    const v = (input.value || '').trim();
+    if (q.check(v)) feedback(host, 'ok', '<strong>Correct.</strong> ' + (q.rationale||''));
+    else feedback(host, 'bad', '<strong>Not quite.</strong> ' + (q.hint||q.rationale||''));
+  });
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') btn.click(); });
+}
+function buildExerciseSet(rootSel, items){
+  const root = document.querySelector(rootSel);
+  let correct = 0, attempted = 0;
+  items.forEach((q, idx) => {
+    const card = el('div', {class:'card'});
+    card.appendChild(el('h3', {}, 'Exercise ' + (idx+1) + ' — ' + q.type));
+    if (q.kind === 'mcq') renderMCQ(card, q);
+    else if (q.kind === 'text') renderTextEx(card, q);
+    else if (q.kind === 'custom') q.render(card);
+    root.appendChild(card);
+  });
+}
+</script>
+<script>
+const items = [
+  { type:'Theory', kind:'mcq',
+    stem:'Which statement most accurately distinguishes ETL from ELT?',
+    choices:[
+      'ETL stands for "Extract Then Load"; ELT stands for "Extract Last Time".',
+      'ETL transforms data BEFORE loading; ELT loads raw data first and transforms inside the warehouse.',
+      'They are identical; the names are interchangeable.',
+      'ETL is for spreadsheets; ELT is for text files.',
+      'ETL is mandatory under the GDPR; ELT is forbidden.',
+    ],
+    answer:1,
+    rationale:'ETL = transform first; ELT = load first. ELT is dominant in modern cloud platforms.' },
+
+  { type:'Profiling', kind:'mcq',
+    stem:'During profiling you find a categorical column with 8,000 distinct values on a 50,000-row dataset. The most defensible introductory next step is to…',
+    choices:[
+      'One-hot encode the column into 8,000 binary columns.',
+      'Consider a higher-level encoding (e.g., frequency encoding or county/state grouping) and document the choice.',
+      'Delete the column.',
+      'Ignore the cardinality — it never affects downstream models.',
+      'Cast it to integer and treat it as continuous.',
+    ],
+    answer:1,
+    rationale:'High cardinality breaks naive one-hot. Frequency/region encoding or grouping is more defensible.' },
+
+  { type:'pandera', kind:'mcq',
+    stem:'Which check style is appropriate inside a column-level pandera rule for an integer "age" column expected to be between 0 and 120?',
+    choices:[
+      'Check(lambda s: s == 42)',
+      'Check(lambda s: s.between(0, 120))',
+      'Check.startswith("age")',
+      'Check.cumsum()',
+      'Check.dropna()',
+    ],
+    answer:1,
+    rationale:'pandera Check accepts a callable that takes the Series and returns a boolean Series; Series.between(0, 120) is correct.' },
+
+  { type:'pandera', kind:'mcq',
+    stem:'Your pandera schema fails on a row where email = "not-an-email". The most defensible introductory response is…',
+    choices:[
+      'Suppress the error with try/except and move on.',
+      'Inspect the offending row, decide whether to drop it or fix it, encode the decision as a cleaning function, and re-run validation.',
+      'Delete the schema.',
+      'Convert email to integer.',
+      'Re-train the model on the failed row only.',
+    ],
+    answer:1,
+    rationale:'Schema failures are signals, not noise. Diagnose and encode the decision.' },
+
+  { type:'Cleaning', kind:'mcq',
+    stem:'Which pandas call removes ROWS that have any null in the columns "name" or "email"?',
+    choices:[
+      'df.dropna(subset=["name","email"])',
+      'df.fillna(["name","email"])',
+      'df.drop(columns=["name","email"])',
+      'df.where(["name","email"])',
+      'df.merge(["name","email"])',
+    ],
+    answer:0,
+    rationale:'DataFrame.dropna(subset=...) drops rows where any of the listed columns is null.' },
+
+  { type:'Imputation', kind:'mcq',
+    stem:'You impute missing "income" with the column median. In which scenario is this most likely to cause harm?',
+    choices:[
+      'When income is roughly symmetric and only 1% of rows are missing.',
+      'When the missingness is INFORMATIVE — i.e., the fact that income is missing is itself a signal about the row.',
+      'When the column is integer-valued.',
+      'When the column has no nulls.',
+      'When the column is the DataFrame index.',
+    ],
+    answer:1,
+    rationale:'Informative missingness destroys the signal that "missing" itself carried.' },
+
+  { type:'Persist', kind:'text',
+    stem:"Fill in the blank — the persist convention is: cleaned.____('data/derived/cleaned_orders_20260104.csv', index=False)",
+    placeholder:'method name only',
+    check: v => v.toLowerCase().replace(/[^a-z_]/g,'') === 'to_csv',
+    rationale:'DataFrame.to_csv with index=False writes the cleaned DataFrame as a versioned, reviewable artifact.' },
+
+  { type:'Ethics', kind:'mcq',
+    stem:'Which is the strongest ethical case for catching data-quality issues programmatically rather than by visual inspection?',
+    choices:[
+      'Programmatic checks are cheaper than human review.',
+      'Programmatic checks make assumptions explicit, run on every commit, and catch regressions before they reach a model whose outputs affect real people — making accountability auditable.',
+      'Programmatic checks eliminate all bias from any downstream model.',
+      'Programmatic checks are required by the SQL standard.',
+      'Programmatic checks remove the need for any human judgment.',
+    ],
+    answer:1,
+    rationale:'The ethical case is auditability + early detection, not cost or compliance.' },
+];
+buildExerciseSet('#ex-root', items);
+</script>
+</body>
+</html>

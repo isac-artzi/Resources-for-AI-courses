@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 6 Exercises — Pre-Training &amp; Fine-Tuning LLMs</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family:-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+       margin:0; background:#F7F9FC; color:#1A1A1A; line-height:1.6; }
+.container { max-width:940px; margin:24px auto 48px; background:white;
+             padding:32px 48px; box-shadow:0 2px 8px rgba(0,0,0,0.06); border-radius:8px; }
+.brand { color:#888; font-size:0.85em; letter-spacing:0.05em; text-transform:uppercase; }
+h1 { color:#1F4E79; font-size:1.9em; border-bottom:3px solid #1F4E79;
+     padding-bottom:10px; margin:6px 0 8px; }
+.subtitle { color:#555; font-style:italic; margin-bottom:24px; }
+.score { position:sticky; top:0; background:white; padding:10px 14px;
+         border:1px solid #E0E5EB; border-radius:8px; margin-bottom:12px;
+         color:#1F4E79; font-weight:600; z-index:10;
+         display:flex; justify-content:space-between; align-items:center; }
+.score .bar { background:#E0E5EB; border-radius:999px; height:8px; width:240px; overflow:hidden; }
+.score .bar > div { background:#1F4E79; height:100%; transition:width 0.3s; }
+.exercise { border:1px solid #E0E5EB; border-radius:8px; padding:22px 26px;
+            margin:22px 0; background:#FCFDFE; }
+.exercise h3 { margin:0 0 4px; color:#1F4E79; font-size:1.1em; }
+.exercise .qtype { color:#888; font-size:0.8em; text-transform:uppercase;
+                   letter-spacing:0.05em; margin-bottom:14px; }
+.stem { margin-bottom:14px; }
+.stem code, code { font-family:"SF Mono",Consolas,Monaco,monospace; background:#F2F4F7;
+       padding:2px 6px; border-radius:3px; font-size:0.92em; }
+pre { background:#F2F4F7; padding:14px 18px; border-radius:6px;
+      overflow-x:auto; border-left:4px solid #1F4E79;
+      font-family:"SF Mono",Consolas,Monaco,monospace; font-size:0.92em; }
+.options { display:flex; flex-direction:column; gap:8px; margin:10px 0 14px; }
+.options label { cursor:pointer; padding:10px 14px; background:white;
+                 border:1px solid #D0D8E0; border-radius:6px; }
+.options label:hover { border-color:#1F4E79; background:#F7FAFC; }
+.options input[type="radio"] { margin-right:10px; }
+.numeric-row { display:flex; gap:12px; align-items:center; margin:10px 0 14px; }
+.numeric-row input { padding:8px 12px; border:1px solid #D0D8E0; border-radius:6px;
+                     font-family:inherit; font-size:1em; width:160px; }
+button { background:#1F4E79; color:white; border:0; padding:9px 18px;
+         border-radius:6px; cursor:pointer; font-family:inherit; font-size:0.95em; }
+button:hover { background:#2D5C8C; } button:disabled { background:#B8C2CB; cursor:not-allowed; }
+.feedback { padding:12px 16px; border-radius:6px; margin-top:10px;
+            font-size:0.95em; display:none; }
+.feedback.show { display:block; }
+.feedback.correct { background:#E8F5E9; border-left:4px solid #2E7D32; color:#1B5E20; }
+.feedback.incorrect { background:#FDECEA; border-left:4px solid #C00000; color:#6E1414; }
+.feedback strong { display:block; margin-bottom:4px; }
+.help { color:#777; font-size:0.85em; margin-top:6px; }
+.nav { display:flex; justify-content:space-between; margin-top:36px;
+       padding-top:16px; border-top:1px solid #E0E5EB; font-size:0.9em; }
+.nav a { color:#1F4E79; text-decoration:none; } .nav a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">Practice exercises</div>
+<h1>Topic 6 — Pre-Training &amp; Fine-Tuning LLMs</h1>
+<p class="subtitle">Ten self-graded problems on pre-training objectives, the Hugging Face Trainer API, evaluation, and product hygiene.</p>
+
+<div class="score">
+  <span id="scoreText">Score: 0 / 10</span>
+  <div class="bar"><div id="scoreBar" style="width:0%"></div></div>
+</div>
+
+<div class="exercise" data-q="1">
+  <div class="qtype">Theoretical · MLM vs CLM</div>
+  <h3>Question 1</h3>
+  <div class="stem">Which pre-training objective is used by BERT, and what does it train the model to do?</div>
+  <div class="options">
+    <label><input type="radio" name="q1" value="a"> CLM (causal language modeling) — predict the next token given the past.</label>
+    <label><input type="radio" name="q1" value="b"> MLM (masked language modeling) — predict randomly masked tokens given bidirectional context.</label>
+    <label><input type="radio" name="q1" value="c"> Span corruption — reconstruct entire spans of consecutive tokens.</label>
+    <label><input type="radio" name="q1" value="d"> Contrastive — pull positives together and push negatives apart.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="2">
+  <div class="qtype">Theoretical · T5 objective</div>
+  <h3>Question 2</h3>
+  <div class="stem">T5 uses a "span-corruption" objective. Which best describes it?</div>
+  <div class="options">
+    <label><input type="radio" name="q2" value="a"> Replace one random token with [MASK] and predict it.</label>
+    <label><input type="radio" name="q2" value="b"> Replace consecutive token spans with sentinel tokens, and train the encoder–decoder to reconstruct the spans in a single output sequence.</label>
+    <label><input type="radio" name="q2" value="c"> Predict the next token autoregressively.</label>
+    <label><input type="radio" name="q2" value="d"> Use a contrastive loss on paired sentences.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="3">
+  <div class="qtype">Theoretical · ROUGE-L</div>
+  <h3>Question 3</h3>
+  <div class="stem">When is ROUGE-L the right headline metric?</div>
+  <div class="options">
+    <label><input type="radio" name="q3" value="a"> Binary classification with imbalanced classes.</label>
+    <label><input type="radio" name="q3" value="b"> Summarization or generation — ROUGE-L measures longest-common-subsequence overlap with the reference.</label>
+    <label><input type="radio" name="q3" value="c"> Image classification.</label>
+    <label><input type="radio" name="q3" value="d"> Regression on a continuous target.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="4">
+  <div class="qtype">Theoretical · Perplexity</div>
+  <h3>Question 4</h3>
+  <div class="stem">Perplexity is defined as the exponential of which quantity?</div>
+  <div class="options">
+    <label><input type="radio" name="q4" value="a"> The training loss at epoch 0.</label>
+    <label><input type="radio" name="q4" value="b"> The average per-token negative log-likelihood on held-out text; lower perplexity is better.</label>
+    <label><input type="radio" name="q4" value="c"> The maximum gradient norm during training.</label>
+    <label><input type="radio" name="q4" value="d"> The number of trainable parameters.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="5">
+  <div class="qtype">Computational · Bootstrap CI</div>
+  <h3>Question 5</h3>
+  <div class="stem">After 1,000 bootstrap resamples of the test set, the resampled F1 scores have 2.5th percentile = 0.78 and 97.5th percentile = 0.86. What is the 95% bootstrap CI for F1?</div>
+  <div class="options">
+    <label><input type="radio" name="q5" value="a"> [0.78, 0.86]</label>
+    <label><input type="radio" name="q5" value="b"> [0.50, 0.95]</label>
+    <label><input type="radio" name="q5" value="c"> [0.83, 0.83]</label>
+    <label><input type="radio" name="q5" value="d"> [0.00, 1.00]</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="6">
+  <div class="qtype">Computational · Task-class choice</div>
+  <h3>Question 6</h3>
+  <div class="stem">You want to fine-tune DistilBERT for binary sentiment classification. Which Hugging Face class should you load?</div>
+  <div class="options">
+    <label><input type="radio" name="q6" value="a"><code>AutoModel.from_pretrained(...)</code> — bare encoder, no head.</label>
+    <label><input type="radio" name="q6" value="b"><code>AutoModelForSequenceClassification.from_pretrained(..., num_labels=2)</code> — encoder with a classification head, ready to fine-tune.</label>
+    <label><input type="radio" name="q6" value="c"><code>AutoModelForCausalLM.from_pretrained(...)</code> — for generation tasks.</label>
+    <label><input type="radio" name="q6" value="d"><code>AutoModelForImageClassification.from_pretrained(...)</code></label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="7">
+  <div class="qtype">Theoretical · Catastrophic forgetting</div>
+  <h3>Question 7</h3>
+  <div class="stem">A fine-tuned model achieves higher F1 on its target classification task at epoch 12 than at epoch 3 — but on general-purpose evaluation it has gotten dramatically worse. What is the most likely diagnosis?</div>
+  <div class="options">
+    <label><input type="radio" name="q7" value="a"> The optimizer is broken.</label>
+    <label><input type="radio" name="q7" value="b"> Catastrophic forgetting: too many epochs on a narrow dataset have erased the general capability the pre-trained model started with.</label>
+    <label><input type="radio" name="q7" value="c"> The model is faster but less accurate.</label>
+    <label><input type="radio" name="q7" value="d"> The dataset is mislabeled.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="8">
+  <div class="qtype">Application · DistilBERT vs BERT-large</div>
+  <h3>Question 8</h3>
+  <div class="stem">Why might a free-tier-friendly fine-tuning workflow start with DistilBERT rather than BERT-large?</div>
+  <div class="options">
+    <label><input type="radio" name="q8" value="a"> DistilBERT has more parameters than BERT-large.</label>
+    <label><input type="radio" name="q8" value="b"> DistilBERT is a distilled, smaller version of BERT that retains most of BERT's downstream-task accuracy at substantially lower training and inference cost; that fits free-tier Render and Colab budgets.</label>
+    <label><input type="radio" name="q8" value="c"> DistilBERT cannot be fine-tuned, which simplifies the workflow.</label>
+    <label><input type="radio" name="q8" value="d"> DistilBERT requires the largest available GPUs.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="9">
+  <div class="qtype">Theoretical · Trainer learning rate</div>
+  <h3>Question 9</h3>
+  <div class="stem">Why is a learning rate around <code>2e-5</code> a typical starting point for fine-tuning DistilBERT, rather than <code>2e-3</code>?</div>
+  <div class="options">
+    <label><input type="radio" name="q9" value="a"> Hugging Face's Trainer rejects learning rates above 1e-4.</label>
+    <label><input type="radio" name="q9" value="b"> Pre-trained transformers are already at a useful initialization, so small learning rates prevent destructive updates and reduce catastrophic forgetting.</label>
+    <label><input type="radio" name="q9" value="c"> Learning rate has no effect on transformers.</label>
+    <label><input type="radio" name="q9" value="d"> Large learning rates speed up training without any downside.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="10">
+  <div class="qtype">Application · Data persisted in the predictions table</div>
+  <h3>Question 10</h3>
+  <div class="stem">Your fine-tuned model serves an SMS spam classifier. Which is the most defensible row to log to Supabase per request?</div>
+  <div class="options">
+    <label><input type="radio" name="q10" value="a"> The raw SMS body plus the predicted label and probability.</label>
+    <label><input type="radio" name="q10" value="b"> A SHA-256 hash of the request body, the predicted label, latency_ms, and a reference to the experiment that served it. Never the raw text.</label>
+    <label><input type="radio" name="q10" value="c"> Nothing — predictions are stateless.</label>
+    <label><input type="radio" name="q10" value="d"> The raw text encrypted with a single shared key.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="nav">
+  <a href="Tutorial_Topic_6_Pre_Training_and_Fine_Tuning_LLMs.html">← Back to tutorial</a>
+  <span>Topic 6 of 7</span>
+</div>
+
+</div>
+<script>
+const KEY = {
+  1:{type:'mc', accept:'b', ok:'Correct. BERT uses MLM — randomly mask tokens, predict them with bidirectional context.', no:'Not quite. BERT is the canonical masked-language model.'},
+  2:{type:'mc', accept:'b', ok:'Correct. T5 corrupts consecutive token spans with sentinels and trains the encoder–decoder to reconstruct them.', no:'Not quite. T5 corrupts spans (not single tokens) and reconstructs them with an encoder–decoder.'},
+  3:{type:'mc', accept:'b', ok:'Correct. ROUGE-L is the standard for summarization/generation; it captures fluency and content via longest-common-subsequence.', no:'Not quite. ROUGE-L is a sequence-overlap metric for generation tasks.'},
+  4:{type:'mc', accept:'b', ok:'Correct. Perplexity = exp(mean per-token NLL); lower = better calibration on held-out text.', no:'Not quite. Perplexity is exp of the average per-token negative log-likelihood.'},
+  5:{type:'mc', accept:'a', ok:'Correct. The 2.5th and 97.5th percentiles of the bootstrap distribution form the 95% CI.', no:'Not quite. The CI is just the two specified percentiles of the bootstrap distribution.'},
+  6:{type:'mc', accept:'b', ok:'Correct. AutoModelForSequenceClassification adds the classification head needed for fine-tuning.', no:'Not quite. AutoModel returns the bare encoder; you need a task-matched class with a head.'},
+  7:{type:'mc', accept:'b', ok:'Correct. The model overfits to the narrow distribution and loses general capability — exactly the catastrophic-forgetting failure mode.', no:'Not quite. The pattern is the textbook description of catastrophic forgetting.'},
+  8:{type:'mc', accept:'b', ok:'Correct. DistilBERT is smaller and cheaper while retaining most of BERT\'s downstream accuracy — ideal for free-tier compute.', no:'Not quite. DistilBERT is a smaller distillation of BERT — that is the entire point.'},
+  9:{type:'mc', accept:'b', ok:'Correct. Pre-trained weights are already useful; small learning rates adapt without destroying them.', no:'Not quite. Pre-trained weights are at a good initialization; a large LR overshoots and erases that signal.'},
+  10:{type:'mc', accept:'b', ok:'Correct. Persist a hash + prediction + latency + experiment id; avoid retaining raw user-supplied text.', no:'Not quite. The data-handling policy is "minimum exposure": hash + metadata only.'},
+};
+const solved = new Set();
+document.querySelectorAll('.exercise').forEach(ex => {
+  const qid = +ex.dataset.q; const btn = ex.querySelector('[data-check]'); const fb = ex.querySelector('[data-feedback]');
+  btn.addEventListener('click', () => {
+    const k = KEY[qid]; let user;
+    if (k.type==='numeric') {
+      user = parseFloat(ex.querySelector('[data-input]').value);
+      if (Number.isNaN(user)) { fb.className='feedback incorrect show'; fb.innerHTML='<strong>Please enter a number.</strong>'; return; }
+    } else {
+      const picked = ex.querySelector('input[type=radio]:checked');
+      if (!picked) { fb.className='feedback incorrect show'; fb.innerHTML='<strong>Please select an option.</strong>'; return; }
+      user = picked.value;
+    }
+    const ok = (k.type==='numeric') ? Math.abs(user - k.accept) <= k.tol : user === k.accept;
+    if (ok) { fb.className='feedback correct show'; fb.innerHTML='<strong>Correct.</strong> '+k.ok;
+      if (!solved.has(qid)) { solved.add(qid); updateScore(); } btn.disabled=true;
+    } else { fb.className='feedback incorrect show'; fb.innerHTML='<strong>Not quite.</strong> '+k.no; }
+  });
+});
+function updateScore() {
+  const total = Object.keys(KEY).length;
+  document.getElementById('scoreText').textContent = `Score: ${solved.size} / ${total}`;
+  document.getElementById('scoreBar').style.width = `${(solved.size/total*100).toFixed(0)}%`;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 3 Tutorial — Convolutional Neural Networks</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+       margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6; }
+.container { max-width: 980px; margin: 24px auto 48px; background: white;
+             padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.35em; margin-top: 40px;
+     border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+h4 { color: #555; font-size: 1.0em; margin-top: 18px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 6px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7;
+       padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px; overflow-x: auto;
+      border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79;
+           padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px;
+        margin: 14px 0; border-radius: 4px; font-size: 0.93em; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+        padding: 22px; margin: 22px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.controls { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 180px; }
+.control input[type="number"] { width: 80px; padding: 4px 8px;
+            border: 1px solid #CFD7DF; border-radius: 4px; font-family: inherit; }
+.control select { padding: 5px 8px; border: 1px solid #CFD7DF; border-radius: 4px;
+                  font-family: inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px;
+           border-radius: 6px; font-family: "SF Mono", Consolas, monospace;
+           font-size: 0.88em; min-width: 220px; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 16px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.93em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; }
+.row { display: flex; gap: 16px; flex-wrap: wrap; }
+.col { flex: 1; min-width: 280px; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+      background: #F2F4F7; padding: 4px 8px; border-radius: 4px; }
+.eq-block { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+            background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+            text-align: center; margin: 14px 0; display: block; }
+.nav { display: flex; justify-content: space-between; margin-top: 40px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; }
+.nav a:hover { text-decoration: underline; }
+.toc { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+       padding: 16px 22px; margin-bottom: 28px; font-size: 0.92em; }
+.toc h3 { margin: 0 0 8px; color: #1F4E79; font-size: 1.0em; }
+.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 24px; }
+.toc a { color: #1F4E79; text-decoration: none; } .toc a:hover { text-decoration: underline; }
+.tag { display: inline-block; padding: 2px 8px; background: #E0E5EB;
+       border-radius: 12px; font-size: 0.75em; color: #555;
+       text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px; }
+.tag.interactive { background: #E1F0EA; color: #1B5E20; }
+.tag.code { background: #F2F4F7; color: #555; }
+.tag.math { background: #FCE8EE; color: #6E1414; }
+table.cmp { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 0.92em; }
+table.cmp th, table.cmp td { border: 1px solid #E0E5EB; padding: 8px 12px; text-align: left; }
+table.cmp th { background: #F2F4F7; color: #1F4E79; }
+.kernel-input { display: grid; grid-template-columns: repeat(3, 56px); gap: 4px; }
+.kernel-input input { width: 56px; height: 40px; text-align: center;
+       font-family: "SF Mono", Consolas, monospace; padding: 4px;
+       border: 1px solid #CFD7DF; border-radius: 4px; font-size: 0.9em; }
+.preset-btns { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+.preset-btns button { padding: 6px 12px; font-size: 0.85em; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="brand">Tutorial · ~ 75 min read</div>
+<h1>Topic 3 — Convolutional Neural Networks</h1>
+<p class="subtitle">From a single kernel sliding over a 6×6 image to a parameter-counted, augmented, scheduled small CNN with Grad-CAM saliency on top. By the end you should be able to compute every shape, every parameter count, and every receptive field by hand.</p>
+
+<div class="callout">
+  <strong>What you should walk away with.</strong> (1) The convolution operation as a sliding dot product, including multi-channel inputs. (2) Output-size and receptive-field arithmetic, in your head. (3) The parameter count of any conv layer. (4) The difference between max pooling and strided convolutions; why modern networks prefer the latter. (5) The role of residual connections, batch norm, augmentation, and LR scheduling. (6) Grad-CAM as an explainability surface, including its failure modes.
+</div>
+
+<div class="toc">
+  <h3>What's in this tutorial</h3>
+  <ol>
+    <li><a href="#s1">The convolution operation</a></li>
+    <li><a href="#s2">Output-size arithmetic</a></li>
+    <li><a href="#s3">Stack-of-layers calculator</a></li>
+    <li><a href="#s4">Parameters per conv layer</a></li>
+    <li><a href="#s5">Multi-channel convolutions</a></li>
+    <li><a href="#s6">Padding modes</a></li>
+    <li><a href="#s7">Receptive field of stacked kernels</a></li>
+    <li><a href="#s8">Pooling vs strided convolutions</a></li>
+    <li><a href="#s9">Dilated convolutions</a></li>
+    <li><a href="#s10">Residual blocks</a></li>
+    <li><a href="#s11">Batch normalization in CNNs</a></li>
+    <li><a href="#s12">Data augmentation</a></li>
+    <li><a href="#s13">Learning-rate scheduling</a></li>
+    <li><a href="#s14">Transfer learning</a></li>
+    <li><a href="#s15">Grad-CAM: what is the model looking at?</a></li>
+    <li><a href="#s16">Architecture &amp; product reminder</a></li>
+  </ol>
+</div>
+
+<!-- §1 Convolution -->
+<h2 id="s1">1 · The convolution operation <span class="tag interactive">interactive</span><span class="tag math">math</span></h2>
+<p>A 2-D convolution slides a small kernel <code>K</code> over an input feature map and at each position computes a dot product between the kernel and the local patch. The same kernel is used at every position — that is the <em>weight sharing</em> property that makes CNNs parameter-efficient.</p>
+<p class="eq-block">out[i, j] = Σ<sub>r=0..K-1</sub> Σ<sub>c=0..K-1</sub> K[r, c] · in[i+r, j+c]</p>
+<p>Three classical kernels you'll see in any textbook:</p>
+<table class="cmp">
+  <tr><th>Kernel</th><th>Effect</th></tr>
+  <tr><td>Identity (1 in the center)</td><td>Output = input</td></tr>
+  <tr><td>Edge (Laplacian, 8 in the center, −1 around)</td><td>Highlights intensity changes</td></tr>
+  <tr><td>Box blur (1/9 everywhere)</td><td>Local averaging</td></tr>
+  <tr><td>Sharpen (5 in the center, −1 cross)</td><td>Boosts local contrast</td></tr>
+</table>
+
+<div class="demo">
+  <h3>Demo · Slide a 3×3 kernel over a 6×6 image</h3>
+  <p>Pick a preset or edit kernel values directly. Drag the row/col sliders to step the kernel; the highlighted patch on the left and the matching cell on the right show what the dot product evaluates to.</p>
+  <div class="row">
+    <div>
+      <div style="font-size: 0.85em; color: #555; margin-bottom: 4px;">Kernel (3×3)</div>
+      <div class="kernel-input" id="kernel">
+        <input value="0"><input value="-1"><input value="0">
+        <input value="-1"><input value="5"><input value="-1">
+        <input value="0"><input value="-1"><input value="0">
+      </div>
+      <div class="preset-btns">
+        <button data-kpreset="identity" class="secondary">Identity</button>
+        <button data-kpreset="edge" class="secondary">Edge</button>
+        <button data-kpreset="sharpen" class="secondary">Sharpen</button>
+        <button data-kpreset="blur" class="secondary">Blur</button>
+      </div>
+    </div>
+    <div style="flex: 1; min-width: 280px;">
+      <div class="controls" style="margin: 0 0 8px;">
+        <div class="control"><label for="conv-row">Kernel row</label>
+          <input type="range" id="conv-row" min="0" max="3" step="1" value="1"></div>
+        <div class="control"><label for="conv-col">Kernel col</label>
+          <input type="range" id="conv-col" min="0" max="3" step="1" value="1"></div>
+      </div>
+      <div class="readout" id="conv-readout"></div>
+    </div>
+  </div>
+  <canvas id="conv-canvas" width="880" height="300" style="margin-top: 14px;"></canvas>
+</div>
+
+<!-- §2 Output size -->
+<h2 id="s2">2 · Output-size arithmetic <span class="tag math">math</span></h2>
+<p>For a square input of side <code>I</code>, square kernel <code>K</code>, stride <code>S</code>, and padding <code>P</code>:</p>
+<p class="eq-block">O = ⌊ (I − K + 2P) / S ⌋ + 1</p>
+<p>Three configurations you should memorize because they show up everywhere:</p>
+<table class="cmp">
+  <tr><th>Layer</th><th>I</th><th>K</th><th>S</th><th>P</th><th>O</th></tr>
+  <tr><td>"same" 3×3 conv</td><td>32</td><td>3</td><td>1</td><td>1</td><td>32 (preserves size)</td></tr>
+  <tr><td>Strided 3×3 down-sample</td><td>32</td><td>3</td><td>2</td><td>1</td><td>16 (halves size)</td></tr>
+  <tr><td>"valid" 7×7 (no padding)</td><td>32</td><td>7</td><td>1</td><td>0</td><td>26</td></tr>
+</table>
+
+<!-- §3 Stack calculator -->
+<h2 id="s3">3 · Stack-of-layers calculator <span class="tag interactive">interactive</span></h2>
+<div class="demo">
+  <h3>Demo · Compute output sizes through a stack</h3>
+  <div class="controls">
+    <div class="control"><label>Input I</label><input type="number" id="os-I" value="32" min="1"></div>
+    <div class="control"><label>K</label><input type="number" id="os-K" value="3" min="1"></div>
+    <div class="control"><label>S</label><input type="number" id="os-S" value="1" min="1"></div>
+    <div class="control"><label>P</label><input type="number" id="os-P" value="1" min="0"></div>
+    <div class="control"><label>Pool after?</label>
+      <select id="os-pool">
+        <option value="0">no</option>
+        <option value="2" selected>MaxPool(2)</option>
+        <option value="4">MaxPool(4)</option>
+      </select></div>
+    <div class="control"><label>Stack depth</label><input type="number" id="os-depth" value="3" min="1" max="8"></div>
+  </div>
+  <pre id="os-out"></pre>
+</div>
+
+<!-- §4 Parameter count -->
+<h2 id="s4">4 · Parameters per conv layer <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>For a convolutional layer with <code>C_in</code> input channels, <code>C_out</code> output channels, and square kernel <code>K</code>:</p>
+<p class="eq-block">params = C_out · ( C_in · K · K + 1 )</p>
+<p>The <code>+1</code> is the per-output-channel bias. Crucially, the parameter count does <em>not</em> depend on spatial size — the same kernel is shared across every spatial position. That is why CNNs scale to 224×224 inputs without exploding parameters.</p>
+
+<div class="demo">
+  <h3>Demo · Compare conv layer to a fully connected layer on the same input</h3>
+  <p>For input <code>(B, C_in, H, W)</code>, a fully connected layer that reads all pixels would have <code>(C_in · H · W) · (C_out · H · W)</code> weights — astronomical. The conv layer reuses the same small kernel across every position.</p>
+  <div class="controls">
+    <div class="control"><label>C_in</label><input type="number" id="pp-Cin" value="3" min="1"></div>
+    <div class="control"><label>C_out</label><input type="number" id="pp-Cout" value="64" min="1"></div>
+    <div class="control"><label>kernel K</label><input type="number" id="pp-K" value="3" min="1"></div>
+    <div class="control"><label>H</label><input type="number" id="pp-H" value="32" min="1"></div>
+    <div class="control"><label>W</label><input type="number" id="pp-W" value="32" min="1"></div>
+  </div>
+  <pre id="pp-out"></pre>
+</div>
+
+<!-- §5 Multi-channel -->
+<h2 id="s5">5 · Multi-channel convolutions <span class="tag math">math</span></h2>
+<p>Real images have multiple input channels (e.g., 3 for RGB). A multi-channel kernel is actually a small <em>3-D</em> tensor of shape <code>(C_in, K, K)</code>; you have <code>C_out</code> of them stacked, so the weight tensor is <code>(C_out, C_in, K, K)</code>.</p>
+<p>At each spatial position, the output for channel <code>j</code> is the sum across all input channels of the channel-wise dot products:</p>
+<p class="eq-block">out[j, i, k] = Σ<sub>c=0..C_in-1</sub> Σ<sub>r, s</sub> W[j, c, r, s] · in[c, i+r, k+s]</p>
+
+<pre># PyTorch
+conv = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, padding=1)
+# weight shape: (64, 3, 3, 3) — i.e., 64 different 3×3×3 mini-volumes
+# bias shape:   (64,)
+print(sum(p.numel() for p in conv.parameters()))    # 64*3*3*3 + 64 = 1792</pre>
+
+<!-- §6 Padding modes -->
+<h2 id="s6">6 · Padding modes <span class="tag interactive">interactive</span></h2>
+<p>Padding controls what to put at the borders so the kernel can "reach" edge pixels. Three common choices:</p>
+<ul>
+  <li><strong>Zero padding</strong> (the PyTorch default). Pads with 0s; introduces a small boundary artifact.</li>
+  <li><strong>Reflection padding</strong>. Mirrors the image at the boundary. Common for image-restoration tasks.</li>
+  <li><strong>Replication padding</strong>. Extends edge pixels.</li>
+</ul>
+<div class="demo">
+  <h3>Demo · See what each padding mode "shows" the kernel at the boundary</h3>
+  <div class="controls">
+    <div class="control">
+      <label for="pad-mode">padding mode</label>
+      <select id="pad-mode">
+        <option value="zeros">zeros</option>
+        <option value="reflect">reflect</option>
+        <option value="replicate">replicate</option>
+      </select>
+    </div>
+    <div class="readout" id="pad-readout"></div>
+  </div>
+  <canvas id="pad-canvas" width="880" height="240"></canvas>
+</div>
+
+<!-- §7 Receptive field -->
+<h2 id="s7">7 · Receptive field of stacked kernels <span class="tag interactive">interactive</span></h2>
+<p>The receptive field of a neuron is the spatial region of the input that affects it. For stride-1 stacks of K×K convolutions:</p>
+<p class="eq-block">RF<sub>n</sub> = 1 + n · (K − 1)</p>
+<p>So three stacked 3×3 convolutions reach a 7×7 region; five stacked 3×3 convolutions reach 11×11. <strong>This is why "small kernels, deeper stack" became the design pattern</strong>: same receptive field as a single 7×7 with ~55% fewer parameters and three non-linearities instead of one.</p>
+<div class="demo">
+  <h3>Demo · Receptive field grows with depth</h3>
+  <div class="controls">
+    <div class="control"><label for="rf-depth">Layers stacked</label>
+      <input type="range" id="rf-depth" min="1" max="6" step="1" value="3"></div>
+    <div class="control"><label for="rf-K">kernel K</label>
+      <input type="range" id="rf-K" min="3" max="7" step="2" value="3"></div>
+    <div class="readout" id="rf-readout"></div>
+  </div>
+  <canvas id="rf-canvas" width="880" height="240"></canvas>
+</div>
+
+<!-- §8 Pooling vs strided -->
+<h2 id="s8">8 · Pooling vs strided convolutions <span class="tag interactive">interactive</span></h2>
+<p>Both halve spatial size; they differ in <em>how</em> they pick what to keep.</p>
+<table class="cmp">
+  <tr><th>Down-sampler</th><th>Parameters?</th><th>Learnable?</th><th>Modern use</th></tr>
+  <tr><td>MaxPool</td><td>0</td><td>No</td><td>Common in older CNNs (VGG, AlexNet)</td></tr>
+  <tr><td>AvgPool</td><td>0</td><td>No</td><td>Common as a final global pool ("global avg pool")</td></tr>
+  <tr><td>Strided Conv (S = 2)</td><td>C_out · (C_in · K · K + 1)</td><td>Yes</td><td>Default in ResNet and most modern backbones</td></tr>
+</table>
+
+<div class="demo">
+  <h3>Demo · Max vs Average pooling on the same 4×4 input</h3>
+  <canvas id="pool-canvas" width="880" height="200"></canvas>
+</div>
+
+<!-- §9 Dilated -->
+<h2 id="s9">9 · Dilated convolutions <span class="tag math">math</span></h2>
+<p>Dilation inserts gaps between kernel positions. A 3×3 conv with dilation <code>d</code> has the same parameter count as a regular 3×3 conv but covers a 1 + 2·d region. This was popularized by WaveNet (1-D dilations) and DeepLab (semantic segmentation):</p>
+<table class="cmp">
+  <tr><th>Dilation d</th><th>Receptive field of a 3×3 kernel</th></tr>
+  <tr><td>1 (no dilation)</td><td>3 × 3</td></tr>
+  <tr><td>2</td><td>5 × 5</td></tr>
+  <tr><td>4</td><td>9 × 9</td></tr>
+  <tr><td>8</td><td>17 × 17</td></tr>
+</table>
+<p>Exponentially-growing dilation across layers gives an enormous receptive field without sub-sampling.</p>
+
+<!-- §10 Residual -->
+<h2 id="s10">10 · Residual blocks <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>A residual (skip) connection adds the input of a block to its output:</p>
+<p class="eq-block">y = ReLU( x + F(x) )</p>
+<p>where <code>F</code> is the block's main path (usually two convs with batch norm). Three reasons this is the single most important architectural idea in modern CNNs:</p>
+<ul>
+  <li><strong>Identity is free.</strong> If <code>F(x) = 0</code>, the block reduces to <code>ReLU(x)</code> — so the model can choose to do nothing on this block. Deep networks are not forced to compute through every layer.</li>
+  <li><strong>Gradients flow.</strong> The additive path lets gradient flow back through the skip even when <code>F</code>'s gradient is small. This is what made networks like ResNet-152 trainable in the first place.</li>
+  <li><strong>Empirical accuracy.</strong> Deep residual networks consistently outperform plain networks of equivalent depth.</li>
+</ul>
+
+<div class="demo">
+  <h3>Demo · A residual block, shape annotated</h3>
+  <canvas id="res-canvas" width="880" height="280"></canvas>
+</div>
+
+<!-- §11 BN -->
+<h2 id="s11">11 · Batch normalization in CNNs <span class="tag math">math</span></h2>
+<p>BatchNorm in 2-D normalizes per <em>channel</em> across the batch and the spatial dimensions:</p>
+<p class="eq-block">μ_c = mean over (B, H, W) of x[:, c, :, :],  σ²_c = variance over same;
+  out = γ_c · (x − μ_c) / √(σ²_c + ε) + β_c</p>
+<p>The two parameters per channel <code>γ_c</code> and <code>β_c</code> are learned; <code>μ_c</code> and <code>σ²_c</code> use a running average at inference (which is what <code>model.eval()</code> turns on). BN typically goes right after Conv2d and before ReLU:</p>
+<pre>nn.Sequential(
+    nn.Conv2d(64, 64, 3, padding=1),
+    nn.BatchNorm2d(64),     # 128 learned params: 64 γ's + 64 β's
+    nn.ReLU(inplace=True),
+)</pre>
+
+<!-- §12 Augmentation -->
+<h2 id="s12">12 · Data augmentation <span class="tag interactive">interactive</span></h2>
+<p>Augmentation expands the training set by applying label-preserving transformations. For natural images, the standard CIFAR-10 recipe is:</p>
+<pre>transforms.Compose([
+    transforms.RandomCrop(32, padding=4),    # crop after padding
+    transforms.RandomHorizontalFlip(),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.49, 0.48, 0.44],
+                         std =[0.25, 0.24, 0.26]),
+])</pre>
+
+<div class="demo">
+  <h3>Demo · See augmentation samples from one base image</h3>
+  <p>Click <strong>Resample</strong> to draw a new batch of random augmentations.</p>
+  <div class="controls">
+    <button id="aug-step">Resample</button>
+    <div class="control"><label>flip prob</label><input type="range" id="aug-flip" min="0" max="1" step="0.05" value="0.5"></div>
+    <div class="control"><label>crop padding</label><input type="range" id="aug-pad" min="0" max="8" step="1" value="4"></div>
+    <div class="control"><label>rotation ±°</label><input type="range" id="aug-rot" min="0" max="45" step="1" value="10"></div>
+  </div>
+  <canvas id="aug-canvas" width="880" height="180"></canvas>
+</div>
+
+<!-- §13 LR scheduling -->
+<h2 id="s13">13 · Learning-rate scheduling <span class="tag interactive">interactive</span></h2>
+<p>A constant LR for the whole training run is rarely optimal. Three common schedules:</p>
+<ul>
+  <li><strong>Step decay.</strong> Multiply LR by 0.1 at fixed milestones (e.g., epoch 30, 60).</li>
+  <li><strong>Cosine annealing.</strong> LR follows a half-cosine from <code>η_max</code> down to (approximately) 0 across the training horizon. Standard for image classifiers.</li>
+  <li><strong>Cosine with warmup.</strong> Linearly ramp from a tiny LR up to <code>η_max</code> for the first ~5% of training, then anneal as cosine. Required for transformers.</li>
+</ul>
+<div class="demo">
+  <h3>Demo · LR schedule shapes</h3>
+  <div class="controls">
+    <div class="control"><label>η_max</label><input type="range" id="sch-lr" min="0.001" max="0.5" step="0.001" value="0.1"></div>
+    <div class="control"><label>warmup epochs</label><input type="range" id="sch-warmup" min="0" max="20" step="1" value="5"></div>
+    <div class="control"><label>total epochs</label><input type="range" id="sch-total" min="20" max="200" step="10" value="100"></div>
+  </div>
+  <canvas id="sch-canvas" width="880" height="240"></canvas>
+</div>
+
+<!-- §14 Transfer learning -->
+<h2 id="s14">14 · Transfer learning <span class="tag math">math</span></h2>
+<p>When you have a small dataset, training from scratch is the wrong move. Transfer learning loads a backbone pre-trained on ImageNet (say, ResNet-50) and fine-tunes it on your target task. Two standard variants:</p>
+<table class="cmp">
+  <tr><th>Variant</th><th>What you change</th><th>When to use</th></tr>
+  <tr><td>Linear probe</td><td>Freeze all backbone weights; train a fresh classifier head only.</td><td>Tiny dataset (&lt; 1k images); want fast iteration.</td></tr>
+  <tr><td>Fine-tune the whole backbone</td><td>Train every weight at a very small LR (e.g., 1e-4 to 1e-5).</td><td>Moderate dataset (10k+ images); want maximum accuracy.</td></tr>
+</table>
+<pre>from torchvision.models import resnet50, ResNet50_Weights
+
+m = resnet50(weights=ResNet50_Weights.IMAGENET1K_V2)
+for p in m.parameters(): p.requires_grad = False          # freeze
+m.fc = nn.Linear(m.fc.in_features, num_classes)            # fresh head
+# only fc parameters will receive gradients</pre>
+
+<!-- §15 Grad-CAM -->
+<h2 id="s15">15 · Grad-CAM: what is the model looking at? <span class="tag interactive">interactive</span><span class="tag math">math</span></h2>
+<p>Grad-CAM produces a class-discriminative saliency map by weighting the feature maps of a target conv layer by the global-average-pooled gradients of a chosen class score with respect to those feature maps:</p>
+<p class="eq-block">L_GradCAM<sup>(c)</sup> = ReLU( Σ<sub>k</sub> α<sup>(c)</sup><sub>k</sub> · A<sup>k</sup> ),  α<sup>(c)</sup><sub>k</sub> = mean<sub>i, j</sub> ∂y<sup>c</sup> / ∂A<sup>k</sup><sub>i, j</sub></p>
+<p>Useful diagnostic: if the saliency highlights a watermark, background, or other shortcut feature, you have a <em>dataset</em> failure, not a model failure.</p>
+
+<div class="demo">
+  <h3>Demo · Grad-CAM on a synthetic image</h3>
+  <p>This is a working toy: a tiny model classifies whether a circle is in the top or bottom half of the image; Grad-CAM is computed on the feature maps and overlaid. Drag the circle to see the saliency follow it.</p>
+  <div class="controls">
+    <div class="control"><label for="gc-x">circle x</label>
+      <input type="range" id="gc-x" min="20" max="180" step="1" value="100"></div>
+    <div class="control"><label for="gc-y">circle y</label>
+      <input type="range" id="gc-y" min="20" max="180" step="1" value="60"></div>
+    <div class="control">
+      <label for="gc-overlay">overlay</label>
+      <select id="gc-overlay">
+        <option value="cam">Grad-CAM</option>
+        <option value="image">image only</option>
+        <option value="features">feature map</option>
+      </select>
+    </div>
+    <div class="readout" id="gc-readout"></div>
+  </div>
+  <canvas id="gc-canvas" width="600" height="280"></canvas>
+</div>
+
+<!-- §16 Architecture reminder -->
+<h2 id="s16">16 · Architecture &amp; product reminder</h2>
+<div class="callout">
+  <strong>Topic 3 deployment surface.</strong> The "See-Sense" product accepts a multipart image upload at <code>POST /predict</code> and returns JSON: predicted label, top-5 probabilities, and a base64-encoded Grad-CAM PNG. The Supabase <code>predictions</code> table stores a SHA-256 hash of the upload plus the prediction metadata — never raw image bytes. The Streamlit "Recent Classifications" tab uses the Supabase <em>anon</em> key to query that table read-only. Render's free-tier cold-start latency is masked in Streamlit with an <code>st.spinner</code> and a graceful error state for &gt; 30 s timeouts.
+</div>
+
+<div class="nav">
+  <a href="../Topic_2_-_Matrices/Tutorial_Topic_2_Matrices_and_Feed_Forward_Neural_Networks.html">← Topic 2</a>
+  <a href="Exercises_Topic_3_Convolutional_Neural_Networks.html">Practice exercises →</a>
+</div>
+
+</div>
+
+<script>
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+/* §1 Convolution stepper */
+(function () {
+  const c = document.getElementById('conv-canvas'); const ctx = c.getContext('2d');
+  const inputs = document.querySelectorAll('#kernel input');
+  const rowIn = document.getElementById('conv-row');
+  const colIn = document.getElementById('conv-col');
+  const readout = document.getElementById('conv-readout');
+  const image = [
+    [1,1,2,3,3,2],[1,3,5,6,6,4],[2,5,7,8,8,5],
+    [3,6,8,9,9,7],[3,6,8,9,8,6],[2,4,5,7,6,4],
+  ];
+  function K(){return Array.from(inputs).map(i=>parseFloat(i.value)||0).reduce((a,v,i)=>{const r=Math.floor(i/3),c=i%3; if(!a[r])a[r]=[]; a[r][c]=v; return a;},[]);}
+  function presets(name){
+    const m={identity:[0,0,0,0,1,0,0,0,0], edge:[-1,-1,-1,-1,8,-1,-1,-1,-1],
+             sharpen:[0,-1,0,-1,5,-1,0,-1,0], blur:[1/9,1/9,1/9,1/9,1/9,1/9,1/9,1/9,1/9]}[name];
+    inputs.forEach((inp,i)=>inp.value=(Math.round(m[i]*1000)/1000)); draw();
+  }
+  document.querySelectorAll('[data-kpreset]').forEach(b=>b.onclick=()=>presets(b.dataset.kpreset));
+  function compute(){const k=K(); const out=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+    for(let i=0;i<4;i++) for(let j=0;j<4;j++){let s=0; for(let r=0;r<3;r++) for(let c=0;c<3;c++) s+=k[r][c]*image[i+r][j+c]; out[i][j]=s;} return out;}
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const cs=38, gap=18;
+    const ix=20, iy=60;
+    ctx.fillStyle='#555'; ctx.font='bold 12px sans-serif'; ctx.fillText('Input (6 × 6)', ix, iy-16);
+    for(let r=0;r<6;r++) for(let c=0;c<6;c++){
+      ctx.fillStyle='#F2F4F7'; ctx.strokeStyle='#CFD7DF';
+      ctx.fillRect(ix+c*cs, iy+r*cs, cs, cs); ctx.strokeRect(ix+c*cs, iy+r*cs, cs, cs);
+      ctx.fillStyle='#333'; ctx.font='12px sans-serif';
+      ctx.fillText(image[r][c], ix+c*cs+cs/2-4, iy+r*cs+cs/2+4);
+    }
+    const r0=parseInt(rowIn.value), c0=parseInt(colIn.value);
+    ctx.strokeStyle='#C00000'; ctx.lineWidth=3;
+    ctx.strokeRect(ix+c0*cs, iy+r0*cs, 3*cs, 3*cs);
+    ctx.lineWidth=1;
+    const ox=ix+6*cs+gap+80, oy=iy;
+    ctx.fillStyle='#555'; ctx.font='bold 12px sans-serif'; ctx.fillText('Output (4 × 4)', ox, oy-16);
+    const out=compute();
+    for(let r=0;r<4;r++) for(let c=0;c<4;c++){
+      const v=out[r][c]; const intensity=Math.max(0, Math.min(255, 128-v*12));
+      const hi=(r===r0 && c===c0);
+      ctx.fillStyle=hi?'#FCE4EC':`rgb(${intensity},${intensity},${intensity})`;
+      ctx.strokeStyle=hi?'#C00000':'#CFD7DF'; ctx.lineWidth=hi?2.5:1;
+      ctx.fillRect(ox+c*cs, oy+r*cs, cs, cs); ctx.strokeRect(ox+c*cs, oy+r*cs, cs, cs);
+      ctx.fillStyle=intensity>128?'#333':'#FFF'; ctx.font='11px sans-serif';
+      ctx.fillText(v.toFixed(1), ox+c*cs+6, oy+r*cs+cs/2+4);
+    }
+    ctx.lineWidth=1;
+    ctx.strokeStyle='#555';
+    const yMid=iy+3*cs;
+    ctx.beginPath(); ctx.moveTo(ix+6*cs+12, yMid); ctx.lineTo(ox-14, yMid); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox-14, yMid); ctx.lineTo(ox-22, yMid-6); ctx.lineTo(ox-22, yMid+6); ctx.closePath(); ctx.fill();
+    const k=K(); let line='output[' + r0 + ',' + c0 + '] = '; let s=0; const terms=[];
+    for(let r=0;r<3;r++) for(let c=0;c<3;c++){const kv=k[r][c], v=image[r0+r][c0+c]; s+=kv*v; if(kv!==0) terms.push(`${kv}·${v}`);}
+    readout.textContent = line + (terms.length? terms.join(' + ') + ' = ' + s.toFixed(2) : '0');
+  }
+  inputs.forEach(i=>i.oninput=draw); rowIn.oninput=draw; colIn.oninput=draw; draw();
+})();
+
+/* §3 Stack calculator */
+(function () {
+  const ids=['os-I','os-K','os-S','os-P','os-pool','os-depth'];
+  const out=document.getElementById('os-out');
+  function compute(){
+    const I=+document.getElementById('os-I').value;
+    const K=+document.getElementById('os-K').value;
+    const S=+document.getElementById('os-S').value;
+    const P=+document.getElementById('os-P').value;
+    const pool=+document.getElementById('os-pool').value;
+    const D=+document.getElementById('os-depth').value;
+    let size=I; const lines=[`Input: ${size} × ${size}`];
+    for(let i=1;i<=D;i++){
+      size=Math.floor((size-K+2*P)/S)+1;
+      lines.push(`After conv ${i} (K=${K}, S=${S}, P=${P}): ${size} × ${size}`);
+      if(pool>1){size=Math.floor(size/pool); lines.push(`After MaxPool(${pool}): ${size} × ${size}`);}
+    }
+    out.textContent=lines.join('\n');
+  }
+  ids.forEach(i=>document.getElementById(i).oninput=compute);
+  ids.forEach(i=>document.getElementById(i).onchange=compute);
+  compute();
+})();
+
+/* §4 Parameter count comparison */
+(function(){
+  const ids=['pp-Cin','pp-Cout','pp-K','pp-H','pp-W']; const out=document.getElementById('pp-out');
+  function up(){
+    const [Cin,Cout,K,H,W]=ids.map(i=>+document.getElementById(i).value);
+    const convParams=Cout*(Cin*K*K+1);
+    const fcParams=(Cin*H*W)*(Cout*H*W) + Cout*H*W;
+    const ratio=fcParams/convParams;
+    out.textContent =
+`# Convolution (kernel-shared)
+weight shape : (C_out, C_in, K, K) = (${Cout}, ${Cin}, ${K}, ${K})
+params       : C_out * (C_in * K * K + 1) = ${Cout} * (${Cin} * ${K} * ${K} + 1)
+             = ${convParams.toLocaleString()}
+
+# Fully connected on the same input → same-size output
+weight shape : (C_in * H * W, C_out * H * W) = (${(Cin*H*W).toLocaleString()}, ${(Cout*H*W).toLocaleString()})
+params       : ${fcParams.toLocaleString()}
+
+# Ratio (FC / Conv)
+                ≈ ${ratio.toExponential(2)}    ← that is why CNNs scale`;
+  }
+  ids.forEach(i=>document.getElementById(i).oninput=up); up();
+})();
+
+/* §6 Padding modes */
+(function(){
+  const c=document.getElementById('pad-canvas'), ctx=c.getContext('2d');
+  const sel=document.getElementById('pad-mode'); const out=document.getElementById('pad-readout');
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const cs=22;
+    const img=[[1,2,3,4,5],[6,7,8,9,10],[11,12,13,14,15],[16,17,18,19,20],[21,22,23,24,25]];
+    const mode=sel.value; const pad=2;
+    function val(r,c){
+      if(r>=0 && r<5 && c>=0 && c<5) return img[r][c];
+      if(mode==='zeros') return 0;
+      if(mode==='reflect') return img[Math.abs(r)%(5*2-2)<5? Math.abs(r): 5*2-2-Math.abs(r)][Math.abs(c)%(5*2-2)<5? Math.abs(c): 5*2-2-Math.abs(c)];
+      if(mode==='replicate') return img[clamp(r,0,4)][clamp(c,0,4)];
+      return 0;
+    }
+    const ox=40, oy=20;
+    const N=5, P=2;
+    for(let r=-P;r<N+P;r++) for(let c=-P;c<N+P;c++){
+      const inside = (r>=0 && r<N && c>=0 && c<N);
+      const v = val(r, c);
+      ctx.fillStyle = inside ? 'white' : '#FCE4EC';
+      ctx.strokeStyle = inside ? '#CFD7DF' : '#C00000';
+      ctx.fillRect(ox+(c+P)*cs, oy+(r+P)*cs, cs, cs);
+      ctx.strokeRect(ox+(c+P)*cs, oy+(r+P)*cs, cs, cs);
+      ctx.fillStyle = inside ? '#1F4E79' : '#6E1414';
+      ctx.font = '10px monospace';
+      ctx.fillText(typeof v==='number' ? Math.round(v) : '?', ox+(c+P)*cs+4, oy+(r+P)*cs+cs/2+4);
+    }
+    ctx.fillStyle='#555'; ctx.font='12px sans-serif';
+    ctx.fillText(`Original 5×5 (white). Padding of ${P} added on each side (pink) under "${mode}" mode.`, 280, 60);
+    ctx.fillText('• zeros: pads with 0', 280, 90);
+    ctx.fillText('• reflect: mirrors at the boundary', 280, 110);
+    ctx.fillText('• replicate: extends the edge pixel', 280, 130);
+    out.textContent = `padding_mode = "${mode}"`;
+  }
+  sel.onchange=draw; draw();
+})();
+
+/* §7 Receptive field demo */
+(function(){
+  const c=document.getElementById('rf-canvas'), ctx=c.getContext('2d');
+  const depthIn=document.getElementById('rf-depth'), KIn=document.getElementById('rf-K');
+  const out=document.getElementById('rf-readout');
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const D=+depthIn.value, K=+KIn.value;
+    const RF = 1 + D*(K-1);
+    const cs=12, gridW=33, gridH=15;
+    const ox=(W-gridW*cs)/2, oy=(H-gridH*cs)/2;
+    ctx.strokeStyle='#CFD7DF';
+    for(let r=0;r<gridH;r++) for(let c=0;c<gridW;c++){ctx.strokeRect(ox+c*cs, oy+r*cs, cs, cs);}
+    const cR=Math.floor(gridH/2), cC=Math.floor(gridW/2);
+    ctx.fillStyle='#C00000'; ctx.fillRect(ox+cC*cs, oy+cR*cs, cs, cs);
+    const half=Math.min((RF-1)/2, Math.min(cC, gridW-1-cC, cR, gridH-1-cR));
+    ctx.strokeStyle='#1F4E79'; ctx.lineWidth=3;
+    ctx.strokeRect(ox+(cC-half)*cs, oy+(cR-half)*cs, (2*half+1)*cs, (2*half+1)*cs);
+    ctx.fillStyle='#1A1A1A'; ctx.font='14px sans-serif';
+    ctx.fillText(`K = ${K}, depth = ${D}  →  receptive field ${RF} × ${RF}`, 20, 24);
+    out.textContent = `RF = 1 + ${D}·(${K}−1) = ${RF}`;
+  }
+  depthIn.oninput=draw; KIn.oninput=draw; draw();
+})();
+
+/* §8 Pooling */
+(function(){
+  const c=document.getElementById('pool-canvas'), ctx=c.getContext('2d');
+  const input=[[3,8,1,2],[4,9,5,3],[2,6,7,8],[1,4,3,7]];
+  function pool(red){
+    const r=[[0,0],[0,0]];
+    for(let i=0;i<2;i++) for(let j=0;j<2;j++){
+      const b=[input[2*i][2*j],input[2*i][2*j+1],input[2*i+1][2*j],input[2*i+1][2*j+1]];
+      r[i][j]=red(b);
+    }
+    return r;
+  }
+  function drawMat(x,y,m,title){
+    const cs=34;
+    ctx.fillStyle='#555'; ctx.font='bold 12px sans-serif'; ctx.fillText(title, x, y-8);
+    for(let i=0;i<m.length;i++) for(let j=0;j<m[i].length;j++){
+      const v=m[i][j];
+      ctx.fillStyle='#F2F4F7'; ctx.strokeStyle='#CFD7DF';
+      ctx.fillRect(x+j*cs, y+i*cs, cs, cs); ctx.strokeRect(x+j*cs, y+i*cs, cs, cs);
+      ctx.fillStyle='#333'; ctx.font='12px sans-serif';
+      ctx.fillText(v.toFixed(m===input?0:1), x+j*cs+8, y+i*cs+cs/2+4);
+    }
+  }
+  drawMat(40, 60, input, 'Input (4 × 4)');
+  drawMat(280, 60, pool(b=>Math.max(...b)), 'MaxPool(2) → (2 × 2)');
+  drawMat(500, 60, pool(b=>b.reduce((a,c)=>a+c,0)/b.length), 'AvgPool(2) → (2 × 2)');
+})();
+
+/* §10 Residual block diagram */
+(function(){
+  const c=document.getElementById('res-canvas'), ctx=c.getContext('2d');
+  function box(x, y, w, h, fill, stroke, lines){
+    ctx.fillStyle=fill; ctx.strokeStyle=stroke; ctx.lineWidth=2;
+    if(ctx.roundRect){ctx.beginPath(); ctx.roundRect(x,y,w,h,8); ctx.fill(); ctx.stroke();}
+    else{ctx.fillRect(x,y,w,h); ctx.strokeRect(x,y,w,h);}
+    ctx.fillStyle='#1A1A1A'; ctx.font='12px sans-serif';
+    lines.forEach((l,i)=>{ ctx.font=i===0?'bold 12px sans-serif':'11px monospace';
+      ctx.fillText(l, x+10, y+18+i*14); });
+  }
+  function arrow(x1,y1,x2,y2){
+    ctx.strokeStyle='#555'; ctx.lineWidth=1.6;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    const ang=Math.atan2(y2-y1,x2-x1);
+    ctx.beginPath(); ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-9*Math.cos(ang-0.35), y2-9*Math.sin(ang-0.35));
+    ctx.lineTo(x2-9*Math.cos(ang+0.35), y2-9*Math.sin(ang+0.35));
+    ctx.closePath(); ctx.fillStyle='#555'; ctx.fill();
+  }
+  // input
+  box(40, 110, 160, 60, '#EAF1F8', '#1F4E79', ['Input x', '(B, 64, H, W)']);
+  arrow(200, 140, 260, 140);
+  // F(x) sequence
+  box(260, 50, 200, 50, '#FFF', '#1F4E79', ['Conv2d(64, 64, 3, p=1)', '(B, 64, H, W)']);
+  arrow(360, 100, 360, 120);
+  box(260, 120, 200, 50, '#FFF', '#1F4E79', ['BatchNorm2d(64) + ReLU', '(B, 64, H, W)']);
+  arrow(360, 170, 360, 190);
+  box(260, 190, 200, 50, '#FFF', '#1F4E79', ['Conv2d(64, 64, 3, p=1)', '(B, 64, H, W)']);
+  arrow(460, 215, 540, 215);
+  // skip arrow
+  ctx.strokeStyle='#C00000'; ctx.lineWidth=2.5;
+  ctx.beginPath(); ctx.moveTo(120, 110); ctx.bezierCurveTo(120, 30, 540, 30, 540, 140); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(540, 140); ctx.lineTo(534, 132); ctx.lineTo(534, 148); ctx.closePath();
+  ctx.fillStyle='#C00000'; ctx.fill();
+  ctx.fillStyle='#C00000'; ctx.font='bold 11px sans-serif';
+  ctx.fillText('skip (identity)', 250, 24);
+  // sum
+  box(540, 130, 80, 50, '#FCE4EC', '#C00000', ['x + F(x)']);
+  arrow(620, 155, 660, 155);
+  box(660, 130, 180, 50, '#EAF1F8', '#1F4E79', ['ReLU', 'y = ReLU(x + F(x))']);
+})();
+
+/* §12 Augmentation */
+(function(){
+  const c=document.getElementById('aug-canvas'), ctx=c.getContext('2d');
+  const flipIn=document.getElementById('aug-flip');
+  const padIn=document.getElementById('aug-pad');
+  const rotIn=document.getElementById('aug-rot');
+  const stepBtn=document.getElementById('aug-step');
+  function baseImage(off){
+    // tiny smiley as a 24x24 array of intensities
+    const I=24, img=[];
+    for(let r=0;r<I;r++){const row=[]; for(let col=0;col<I;col++){
+      const dx=col-I/2, dy=r-I/2; const dist=Math.sqrt(dx*dx+dy*dy);
+      let v = dist < I*0.45 ? 0.55 : 0.95;
+      if((r>=8 && r<=10 && col>=6 && col<=8) || (r>=8 && r<=10 && col>=15 && col<=17)) v=0.05;
+      if(r===15 && col>=8 && col<=15) v=0.05;
+      if(r===16 && (col===7 || col===16)) v=0.05;
+      row.push(v);
+    } img.push(row);} return img;
+  }
+  function rotate(img, deg){
+    const I=img.length, rad=deg*Math.PI/180, cx=I/2, cy=I/2;
+    const out=[]; for(let r=0;r<I;r++){const row=[]; for(let c=0;c<I;c++){
+      const x=(c-cx)*Math.cos(rad)+(r-cy)*Math.sin(rad)+cx;
+      const y=-(c-cx)*Math.sin(rad)+(r-cy)*Math.cos(rad)+cy;
+      const xi=Math.round(x), yi=Math.round(y);
+      row.push(xi>=0 && xi<I && yi>=0 && yi<I ? img[yi][xi] : 1.0);
+    } out.push(row);} return out;
+  }
+  function flip(img){return img.map(r=>r.slice().reverse());}
+  function randomCrop(img, pad){
+    const I=img.length, padded=[];
+    for(let r=0;r<I+2*pad;r++){const row=[]; for(let c=0;c<I+2*pad;c++){
+      row.push(r>=pad && r<I+pad && c>=pad && c<I+pad ? img[r-pad][c-pad] : 1.0);
+    } padded.push(row);}
+    const r0=Math.floor(Math.random()*(2*pad+1)), c0=Math.floor(Math.random()*(2*pad+1));
+    const out=[]; for(let r=0;r<I;r++){const row=[]; for(let c=0;c<I;c++) row.push(padded[r+r0][c+c0]); out.push(row);}
+    return out;
+  }
+  function drawImg(img, ox, oy, label, color){
+    const cs=4, I=img.length;
+    if(color){ctx.strokeStyle=color; ctx.lineWidth=2; ctx.strokeRect(ox-2, oy-2, I*cs+4, I*cs+4);}
+    for(let r=0;r<I;r++) for(let c=0;c<I;c++){
+      const v=Math.round(img[r][c]*255);
+      ctx.fillStyle=`rgb(${v},${v},${v})`;
+      ctx.fillRect(ox+c*cs, oy+r*cs, cs, cs);
+    }
+    if(label){ctx.fillStyle='#555'; ctx.font='10px sans-serif'; ctx.fillText(label, ox, oy-6);}
+  }
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const base=baseImage();
+    drawImg(base, 30, 40, 'base image', '#1F4E79');
+    let x=200;
+    for(let i=0;i<6;i++){
+      let img=base;
+      if(Math.random() < +flipIn.value) img=flip(img);
+      img=rotate(img, (Math.random()*2-1)*(+rotIn.value));
+      img=randomCrop(img, +padIn.value);
+      drawImg(img, x, 40, 'augmented #'+(i+1));
+      x += 110;
+    }
+  }
+  stepBtn.onclick=draw; flipIn.oninput=draw; padIn.oninput=draw; rotIn.oninput=draw; draw();
+})();
+
+/* §13 LR schedule */
+(function(){
+  const c=document.getElementById('sch-canvas'), ctx=c.getContext('2d');
+  const lrIn=document.getElementById('sch-lr');
+  const warmIn=document.getElementById('sch-warmup');
+  const totIn=document.getElementById('sch-total');
+  function constant(e, lr){return lr;}
+  function step(e, lr){return e<30 ? lr : e<60 ? lr*0.1 : lr*0.01;}
+  function cosine(e, lr, total){return 0.5*lr*(1+Math.cos(Math.PI*e/total));}
+  function warmupCos(e, lr, total, warm){
+    if(e < warm) return lr * (e+1)/warm;
+    return 0.5*lr*(1+Math.cos(Math.PI*(e-warm)/(total-warm)));
+  }
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const lr=+lrIn.value, warm=+warmIn.value, total=+totIn.value;
+    const px=e=>40+e/total*(W-60), py=v=>H-30-v/(lr*1.1)*(H-50);
+    ctx.strokeStyle='#CFD7DF';
+    ctx.beginPath(); ctx.moveTo(40, py(0)); ctx.lineTo(W-20, py(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(40, 20); ctx.lineTo(40, H-30); ctx.stroke();
+    ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+    [0, 0.25, 0.5, 0.75, 1.0].forEach(t=>{const v=lr*t; ctx.fillText(v.toFixed(3), 4, py(v)+3);});
+    ctx.fillText('epoch', W-50, H-10);
+    const curves=[
+      {fn: e=>constant(e, lr), color:'#888', label:'constant'},
+      {fn: e=>step(e, lr), color:'#C00000', label:'step decay'},
+      {fn: e=>cosine(e, lr, total), color:'#1F4E79', label:'cosine'},
+      {fn: e=>warmupCos(e, lr, total, warm), color:'#1B7340', label:`warmup+cosine (warmup=${warm})`},
+    ];
+    curves.forEach(c2=>{
+      ctx.strokeStyle=c2.color; ctx.lineWidth=2.2; ctx.beginPath();
+      for(let e=0;e<=total;e++){(e===0?ctx.moveTo:ctx.lineTo).call(ctx, px(e), py(c2.fn(e)));}
+      ctx.stroke();
+    });
+    curves.forEach((c2,i)=>{ctx.fillStyle=c2.color; ctx.font='bold 12px sans-serif';
+      ctx.fillText(c2.label, W-220, 30+i*16);});
+  }
+  lrIn.oninput=draw; warmIn.oninput=draw; totIn.oninput=draw; draw();
+})();
+
+/* §15 Grad-CAM toy */
+(function(){
+  const c=document.getElementById('gc-canvas'), ctx=c.getContext('2d');
+  const xIn=document.getElementById('gc-x'), yIn=document.getElementById('gc-y');
+  const ovSel=document.getElementById('gc-overlay'); const out=document.getElementById('gc-readout');
+  const N=200;
+  // build an image with a circle
+  function makeImage(cx, cy, r){
+    const img=new Uint8ClampedArray(N*N);
+    for(let y=0;y<N;y++) for(let x=0;x<N;x++){
+      const dx=x-cx, dy=y-cy;
+      img[y*N+x] = dx*dx+dy*dy < r*r ? 200 : 250;
+    }
+    return img;
+  }
+  // "feature map" — high response where pixels are dark (the circle)
+  function featureMap(img){
+    const fm=new Float32Array((N/4)*(N/4));
+    for(let y=0;y<N/4;y++) for(let x=0;x<N/4;x++){
+      let s=0;
+      for(let dy=0;dy<4;dy++) for(let dx=0;dx<4;dx++){
+        s += (255 - img[(y*4+dy)*N + (x*4+dx)]);
+      }
+      fm[y*(N/4)+x] = s / 16;
+    }
+    return fm;
+  }
+  // "Grad-CAM": weight feature map by where the "top half" classifier looks
+  // Top-half score gets gradient = +1 where row < N/8; bottom-half = +1 below.
+  function cam(fm, cy){
+    const cam = new Float32Array(fm.length);
+    const useTop = cy < N/2;
+    for(let y=0;y<N/4;y++) for(let x=0;x<N/4;x++){
+      const wt = useTop ? (y < N/8 ? 1 : 0.1) : (y >= N/8 ? 1 : 0.1);
+      cam[y*(N/4)+x] = wt * fm[y*(N/4)+x];
+    }
+    // ReLU + normalize
+    let mx = 0; for(const v of cam) if(v>mx) mx=v;
+    for(let i=0;i<cam.length;i++) cam[i] = Math.max(0, cam[i]) / Math.max(1e-6, mx);
+    return cam;
+  }
+  function draw(){
+    const cx=+xIn.value, cy=+yIn.value;
+    const img = makeImage(cx, cy, 20);
+    // draw image
+    const ox=20, oy=40, scale=200/N;
+    const id = ctx.createImageData(200, 200);
+    for(let y=0;y<200;y++) for(let x=0;x<200;x++){
+      const sx = Math.floor(x/scale), sy = Math.floor(y/scale);
+      const v = img[sy*N+sx];
+      const i=(y*200+x)*4; id.data[i]=v; id.data[i+1]=v; id.data[i+2]=v; id.data[i+3]=255;
+    }
+    ctx.putImageData(id, ox, oy);
+    ctx.strokeStyle='#CFD7DF'; ctx.strokeRect(ox, oy, 200, 200);
+    // overlay
+    const mode=ovSel.value;
+    if(mode !== 'image'){
+      const fm = featureMap(img);
+      const arr = mode === 'cam' ? cam(fm, cy) : (() => {let m=Math.max(...fm); return fm.map(v=>v/Math.max(1e-6,m));})();
+      // draw overlay scaled
+      const ov_W = 200, ov_H = 200;
+      const fmSide = N/4;
+      const id2 = ctx.createImageData(ov_W, ov_H);
+      for(let y=0;y<ov_H;y++) for(let x=0;x<ov_W;x++){
+        const sx = Math.floor(x/ov_W*fmSide), sy = Math.floor(y/ov_H*fmSide);
+        const v = arr[sy*fmSide+sx];
+        const r = Math.round(255), g = Math.round(255 - v*150), b = Math.round(255 - v*180);
+        const i=(y*ov_W+x)*4; id2.data[i]=r; id2.data[i+1]=g; id2.data[i+2]=b;
+        id2.data[i+3] = Math.round(120 + v*135);
+      }
+      const off = document.createElement('canvas'); off.width=ov_W; off.height=ov_H;
+      off.getContext('2d').putImageData(id2, 0, 0);
+      ctx.globalAlpha = 0.6; ctx.drawImage(off, 240, oy); ctx.globalAlpha = 1.0;
+      ctx.fillStyle='#555'; ctx.font='12px sans-serif';
+      ctx.fillText(mode === 'cam' ? 'Grad-CAM overlay' : 'feature map', 240, 28);
+    }
+    ctx.fillStyle='#555'; ctx.font='12px sans-serif';
+    ctx.fillText('input image', ox, 28);
+    const top = cy < N/2;
+    out.textContent = `circle at (${cx}, ${cy}) — predicted class: ${top ? '"top"' : '"bottom"'} (score ≈ 0.9); Grad-CAM concentrates on the circle's region.`;
+  }
+  xIn.oninput=draw; yIn.oninput=draw; ovSel.onchange=draw; draw();
+})();
+</script>
+</body>
+</html>

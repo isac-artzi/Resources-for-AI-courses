@@ -31,7 +31,7 @@ templates reuse, provided as a complete working, forkable template.
   pytest suite, model card, reusable across models
 - **Cost**: Free tier on all three platforms
 
-[→ View Project README](./Deep%20Learning/three-cloud/README.md) | [→ Tutorial](./Deep%20Learning/three-cloud/TUTORIAL.md)
+[→ View Project README](./Deep%20Learning/Project%20Templates/Topic_1_three-cloud/README.md) | [→ Tutorial](./Deep%20Learning/Project%20Templates/Topic_1_three-cloud/TUTORIAL.md)
 
 ---
 
@@ -49,7 +49,7 @@ shaped, synthetic data).
   `/predict_batch`, `/schema`, and a fairness `/audit` endpoint; pytest suite
 - **Cost**: Free tier on all three platforms
 
-[→ View Project README](./Deep%20Learning/income-insight/README.md) | [→ Tutorial](./Deep%20Learning/three-cloud/TUTORIAL.md)
+[→ View Project README](./Deep%20Learning/Project%20Templates/Topic_2_income-insight/README.md) | [→ Tutorial](./Deep%20Learning/Project%20Templates/Topic_1_three-cloud/TUTORIAL.md)
 
 ---
 
@@ -67,7 +67,7 @@ network looked* (synthetic shape images).
   privacy invariant, accuracy/macro-F1 metrics, `/predict_sample`; pytest suite
 - **Cost**: Free tier on all three platforms
 
-[→ View Project README](./Deep%20Learning/see-sense/README.md) | [→ Tutorial](./Deep%20Learning/three-cloud/TUTORIAL.md)
+[→ View Project README](./Deep%20Learning/Project%20Templates/Topic_3_see-sense/README.md) | [→ Tutorial](./Deep%20Learning/Project%20Templates/Topic_1_three-cloud/TUTORIAL.md)
 
 ---
 
@@ -82,7 +82,7 @@ A production-ready todo application built with React and FastAPI, deployed on Mi
 - **Highlights**: Containerized deployment, free-tier Azure services
 - **Cost**: ~$5/month (Azure Container Registry only)
 
-[→ View Project README](./Deep%20Learning/react-azure/README.md) | [→ Tutorial](./Deep%20Learning/react-azure/TUTORIAL.md)
+[→ View Project README](./Deep%20Learning/Cloud%20deployment%20models/react-azure/README.md) | [→ Tutorial](./Deep%20Learning/Cloud%20deployment%20models/react-azure/TUTORIAL.md)
 
 ---
 
@@ -97,7 +97,7 @@ A full-stack deep learning application for image classification using PyTorch/Te
 - **Highlights**: Complete ML pipeline, educational deep learning tutorial
 - **Cost**: Free tier available
 
-[→ View Project README](./Deep%20Learning/react-render/README.md)
+[→ View Project README](./Deep%20Learning/Cloud%20deployment%20models/react-render/README.md)
 
 ---
 
@@ -112,7 +112,7 @@ Image classification application demonstrating Vercel and Railway deployment.
 - **Highlights**: Hybrid cloud deployment, optimized for ML workloads
 - **Cost**: Free tier available on both platforms
 
-[→ View Project README](./Deep%20Learning/react-vercel/README.md)
+[→ View Project README](./Deep%20Learning/Cloud%20deployment%20models/react-vercel/README.md)
 
 ---
 
@@ -127,7 +127,7 @@ Alternative deployment approach using Vercel for frontend and Render for ML back
 - **Highlights**: Cost-effective hybrid deployment, detailed deployment guide
 - **Cost**: Free tier available
 
-[→ View Project README](./Deep%20Learning/react-vercel-render/README.md)
+[→ View Project README](./Deep%20Learning/Cloud%20deployment%20models/react-vercel-render/README.md)
 
 ---
 
@@ -142,7 +142,7 @@ Handwritten digit recognition running entirely in the browser using TensorFlow.j
 - **Highlights**: No server costs, privacy-friendly, WebGL acceleration
 - **Cost**: Free (static hosting only)
 
-[→ View Project README](./Deep%20Learning/react-local/README.md)
+[→ View Project README](./Deep%20Learning/Cloud%20deployment%20models/react-local/README.md)
 
 ---
 
@@ -254,49 +254,52 @@ Each project follows a similar workflow:
 Resources-for-AI-courses/
 ├── README.md                          # This file
 └── Deep Learning/
-    ├── three-cloud/                  # ⭐ Reference architecture
-    │   ├── ui/                       # Streamlit thin client
-    │   ├── api/                      # FastAPI + PyTorch (Render)
-    │   ├── db/                       # Supabase migrations + seed
-    │   ├── shared/                   # Pydantic contract + data gen
-    │   ├── tests/                    # pytest suite
-    │   ├── README.md                 # Project documentation
-    │   └── TUTORIAL.md               # Step-by-step guide
-    ├── income-insight/              # ⭐ Tabular classifier (same 3 clouds)
-    │   ├── ui/                       # Streamlit thin client
-    │   ├── api/                      # FastAPI + MLP + sklearn (Render)
-    │   ├── db/                       # Supabase migrations + seed
-    │   ├── shared/                   # Contract + synthetic tabular data
-    │   ├── tests/                    # pytest suite
-    │   └── README.md                 # Project documentation
-    ├── see-sense/                   # ⭐ Image classifier (same 3 clouds)
-    │   ├── ui/                       # Streamlit thin client
-    │   ├── api/                      # FastAPI + CNN + Grad-CAM (Render)
-    │   ├── db/                       # Supabase migrations + seed
-    │   ├── shared/                   # Contract + synthetic image data
-    │   ├── tests/                    # pytest suite
-    │   └── README.md                 # Project documentation
-    ├── react-azure/                 # Azure deployment
-    │   ├── frontend/                 # React TypeScript app
-    │   ├── backend/                  # FastAPI with Docker
-    │   ├── README.md                 # Project documentation
-    │   └── TUTORIAL.md               # Step-by-step guide
-    ├── react-render/                # Render deployment
-    │   ├── frontend/                 # React app
-    │   ├── backend/                  # FastAPI with ML
-    │   └── README.md
-    ├── react-vercel/                # Vercel + Railway
-    │   ├── frontend/                 # React with Vite
-    │   ├── backend/                  # FastAPI ML backend
-    │   └── README.md
-    ├── react-vercel-render/         # Vercel + Render
-    │   ├── frontend/                 # React app
-    │   ├── backend/                  # FastAPI ML backend
-    │   └── README.md
-    └── react-local/                 # Browser-based ML
-        ├── src/                      # React + TensorFlow.js
-        ├── public/
-        └── README.md
+    ├── Project Templates/            # ⭐ Streamlit + FastAPI + Supabase templates
+    │   ├── Topic_1_three-cloud/      # ⭐ Reference architecture
+    │   │   ├── ui/                   # Streamlit thin client
+    │   │   ├── api/                  # FastAPI + PyTorch (Render)
+    │   │   ├── db/                   # Supabase migrations + seed
+    │   │   ├── shared/               # Pydantic contract + data gen
+    │   │   ├── tests/                # pytest suite
+    │   │   ├── README.md             # Project documentation
+    │   │   └── TUTORIAL.md           # Step-by-step guide
+    │   ├── Topic_2_income-insight/   # ⭐ Tabular classifier (same 3 clouds)
+    │   │   ├── ui/                   # Streamlit thin client
+    │   │   ├── api/                  # FastAPI + MLP + sklearn (Render)
+    │   │   ├── db/                   # Supabase migrations + seed
+    │   │   ├── shared/               # Contract + synthetic tabular data
+    │   │   ├── tests/                # pytest suite
+    │   │   └── README.md             # Project documentation
+    │   └── Topic_3_see-sense/        # ⭐ Image classifier (same 3 clouds)
+    │       ├── ui/                   # Streamlit thin client
+    │       ├── api/                  # FastAPI + CNN + Grad-CAM (Render)
+    │       ├── db/                   # Supabase migrations + seed
+    │       ├── shared/               # Contract + synthetic image data
+    │       ├── tests/                # pytest suite
+    │       └── README.md             # Project documentation
+    ├── Cloud deployment models/      # Supplementary React deployment stacks
+    │   ├── react-azure/              # Azure deployment
+    │   │   ├── frontend/             # React TypeScript app
+    │   │   ├── backend/              # FastAPI with Docker
+    │   │   ├── README.md             # Project documentation
+    │   │   └── TUTORIAL.md           # Step-by-step guide
+    │   ├── react-render/             # Render deployment
+    │   │   ├── frontend/             # React app
+    │   │   ├── backend/              # FastAPI with ML
+    │   │   └── README.md
+    │   ├── react-vercel/             # Vercel + Railway
+    │   │   ├── frontend/             # React with Vite
+    │   │   ├── backend/              # FastAPI ML backend
+    │   │   └── README.md
+    │   ├── react-vercel-render/      # Vercel + Render
+    │   │   ├── frontend/             # React app
+    │   │   ├── backend/              # FastAPI ML backend
+    │   │   └── README.md
+    │   └── react-local/              # Browser-based ML
+    │       ├── src/                  # React + TensorFlow.js
+    │       ├── public/
+    │       └── README.md
+    └── Tutorials/                    # HTML + DOCX topic tutorials
 ```
 
 ---

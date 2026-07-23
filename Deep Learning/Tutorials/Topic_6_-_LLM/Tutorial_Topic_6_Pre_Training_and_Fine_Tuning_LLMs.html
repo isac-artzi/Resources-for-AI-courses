@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 6 Tutorial — Pre-Training &amp; Fine-Tuning LLMs</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+       margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6; }
+.container { max-width: 980px; margin: 24px auto 48px; background: white;
+             padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.35em; margin-top: 40px;
+     border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+h4 { color: #555; font-size: 1.0em; margin-top: 18px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 6px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7;
+       padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px; overflow-x: auto;
+      border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79;
+           padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px;
+        margin: 14px 0; border-radius: 4px; font-size: 0.93em; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+        padding: 22px; margin: 22px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.controls { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 180px; }
+.control input[type="number"] { width: 80px; padding: 4px 8px;
+            border: 1px solid #CFD7DF; border-radius: 4px; font-family: inherit; }
+.control select { padding: 5px 8px; border: 1px solid #CFD7DF; border-radius: 4px;
+                  font-family: inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px;
+           border-radius: 6px; font-family: "SF Mono", Consolas, monospace;
+           font-size: 0.88em; min-width: 220px; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 16px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.93em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+      background: #F2F4F7; padding: 4px 8px; border-radius: 4px; }
+.eq-block { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+            background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+            text-align: center; margin: 14px 0; display: block; }
+.nav { display: flex; justify-content: space-between; margin-top: 40px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+       padding: 16px 22px; margin-bottom: 28px; font-size: 0.92em; }
+.toc h3 { margin: 0 0 8px; color: #1F4E79; font-size: 1.0em; }
+.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 24px; }
+.toc a { color: #1F4E79; text-decoration: none; } .toc a:hover { text-decoration: underline; }
+.tag { display: inline-block; padding: 2px 8px; background: #E0E5EB;
+       border-radius: 12px; font-size: 0.75em; color: #555;
+       text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px; }
+.tag.interactive { background: #E1F0EA; color: #1B5E20; }
+.tag.code { background: #F2F4F7; color: #555; }
+.tag.math { background: #FCE8EE; color: #6E1414; }
+table.cmp { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 0.92em; }
+table.cmp th, table.cmp td { border: 1px solid #E0E5EB; padding: 8px 12px; text-align: left; }
+table.cmp th { background: #F2F4F7; color: #1F4E79; }
+.tokrow { display: flex; gap: 4px; flex-wrap: wrap; margin: 8px 0; }
+.tok { padding: 6px 10px; background: white; border: 1px solid #D0D8E0;
+       border-radius: 6px; font-family: "SF Mono", Consolas, monospace; font-size: 0.9em; }
+.tok.masked { background: #FBD9D6; color: #6E1414; border-color: #C00000; }
+.tok.span { background: #FFF8E1; color: #5F4400; border-color: #F9A825; }
+.tok.sentinel { background: #E8F5E9; color: #1B5E20; border-color: #2E7D32; }
+.method-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.method-tabs button { flex: 1; padding: 8px 12px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="brand">Tutorial · ~ 70 min read</div>
+<h1>Topic 6 — Pre-Training &amp; Fine-Tuning LLMs</h1>
+<p class="subtitle">The four classical pre-training objectives, the mechanics of fine-tuning, the metrics, the cost story — and the parameter-efficient methods that let you fine-tune billion-parameter models on a laptop.</p>
+
+<div class="callout">
+  <strong>What you should walk away with.</strong> (1) How MLM, CLM, span-corruption, and contrastive objectives differ as training signals. (2) Tokenizer output (input_ids, attention_mask) and what each tensor does. (3) The Hugging Face Trainer loop end to end. (4) Cross-entropy, F1, ROUGE-L, and perplexity with worked examples. (5) Bootstrap confidence intervals. (6) Catastrophic forgetting and parameter-efficient fine-tuning (LoRA) at a high level. (7) An honest cost-and-quality comparison for fine-tuned-small vs zero-shot-frontier.
+</div>
+
+<div class="toc">
+  <h3>What's in this tutorial</h3>
+  <ol>
+    <li><a href="#s1">Four pre-training objectives</a></li>
+    <li><a href="#s2">Tokenizer output, in detail</a></li>
+    <li><a href="#s3">From pre-training to fine-tuning</a></li>
+    <li><a href="#s4">Learning-rate schedules: warmup + cosine</a></li>
+    <li><a href="#s5">The Hugging Face Trainer loop</a></li>
+    <li><a href="#s6">Cross-entropy, focal loss, label smoothing</a></li>
+    <li><a href="#s7">Precision, recall, F1 — worked</a></li>
+    <li><a href="#s8">ROUGE-1 and ROUGE-L</a></li>
+    <li><a href="#s9">Perplexity</a></li>
+    <li><a href="#s10">95% bootstrap confidence intervals</a></li>
+    <li><a href="#s11">Zero-shot, few-shot, fine-tuned</a></li>
+    <li><a href="#s12">Catastrophic forgetting</a></li>
+    <li><a href="#s13">LoRA and parameter-efficient fine-tuning</a></li>
+    <li><a href="#s14">Cost &amp; latency: fine-tuned-small vs frontier-API</a></li>
+  </ol>
+</div>
+
+<!-- §1 Four objectives -->
+<h2 id="s1">1 · Four pre-training objectives <span class="tag interactive">interactive</span></h2>
+<p>The same sentence, corrupted four different ways. Each pattern is the training signal for one family of models.</p>
+
+<div class="demo">
+  <h3>Demo · How each objective corrupts the input</h3>
+  <p>Sentence: <code>The quick brown fox jumps over the lazy dog</code>.</p>
+  <div class="method-tabs">
+    <button data-method="mlm">MLM (BERT)</button>
+    <button data-method="clm" class="secondary">CLM (GPT)</button>
+    <button data-method="span" class="secondary">Span corruption (T5)</button>
+    <button data-method="contrastive" class="secondary">Contrastive (SimCSE)</button>
+  </div>
+  <div id="m-explain" style="background: white; border: 1px solid #E0E5EB; border-radius: 6px; padding: 14px;"></div>
+  <div id="m-input" class="tokrow"></div>
+  <div id="m-target" class="tokrow" style="margin-top: 8px;"></div>
+</div>
+
+<table class="cmp">
+  <tr><th>Objective</th><th>Loss</th><th>Native task</th><th>Example checkpoint</th></tr>
+  <tr><td>MLM</td><td>cross-entropy on masked positions only</td><td>classification, embeddings</td><td>bert-base-uncased</td></tr>
+  <tr><td>CLM</td><td>cross-entropy on next-token prediction</td><td>open-ended generation</td><td>gpt2, Llama-3-8B</td></tr>
+  <tr><td>Span corruption</td><td>encoder-decoder cross-entropy reconstructing spans</td><td>conditional generation</td><td>t5-small</td></tr>
+  <tr><td>Contrastive</td><td>InfoNCE; pull positives, push negatives</td><td>embeddings (sentence + cross-modal)</td><td>princeton-nlp/sup-simcse-bert-base-uncased</td></tr>
+</table>
+
+<!-- §2 Tokenizer in detail -->
+<h2 id="s2">2 · Tokenizer output, in detail <span class="tag code">code</span><span class="tag interactive">interactive</span></h2>
+<p>Every Hugging Face tokenizer call returns a dict-like object with these keys, all PyTorch tensors:</p>
+<ul>
+  <li><strong><code>input_ids</code></strong> — the token IDs for each input. Shape <code>(B, T_max)</code>.</li>
+  <li><strong><code>attention_mask</code></strong> — 1 for real tokens, 0 for padding. Shape <code>(B, T_max)</code>. Passed to the model so attention zeros out padded positions.</li>
+  <li><strong><code>token_type_ids</code></strong> (some models) — 0/1 indicating segment A vs B for sentence-pair tasks.</li>
+</ul>
+
+<div class="demo">
+  <h3>Demo · Tokenize a small batch with padding and truncation</h3>
+  <div class="controls">
+    <div class="control"><label>max_length</label><input type="number" id="tk-max" value="10" min="3"></div>
+    <div class="control"><label>padding</label>
+      <select id="tk-pad">
+        <option value="true">padding=True</option>
+        <option value="false">padding=False</option>
+      </select></div>
+    <div class="control"><label>truncation</label>
+      <select id="tk-trunc">
+        <option value="true">truncation=True</option>
+        <option value="false">truncation=False</option>
+      </select></div>
+  </div>
+  <pre id="tk-out"></pre>
+</div>
+
+<!-- §3 Pre-training → fine-tuning -->
+<h2 id="s3">3 · From pre-training to fine-tuning <span class="tag math">math</span></h2>
+<p>Pre-training is the expensive part: train a transformer on hundreds of billions of tokens with a self-supervised objective, optimizing all parameters from scratch. Fine-tuning is the cheap part: start from the pre-trained weights, attach a small task-specific head, and continue training on your labeled data.</p>
+<p>The key insight: pre-trained features <em>already work</em> on your task. You just need small, gentle updates to specialize them. That is why fine-tuning uses learning rates like 2e-5 instead of the 1e-3 typical for training from scratch.</p>
+
+<table class="cmp">
+  <tr><th></th><th>Pre-training</th><th>Fine-tuning</th></tr>
+  <tr><td>Dataset size</td><td>Hundreds of billions of tokens</td><td>Hundreds to thousands of labeled examples</td></tr>
+  <tr><td>Compute</td><td>Days on hundreds of GPUs</td><td>Minutes to hours on one GPU (or Colab free tier)</td></tr>
+  <tr><td>Learning rate</td><td>1e-3 to 1e-4 with warmup</td><td>2e-5 to 5e-5 with short warmup</td></tr>
+  <tr><td>Epochs</td><td>1-2 over the corpus</td><td>2-5 over the fine-tuning set</td></tr>
+  <tr><td>Loss</td><td>Self-supervised (MLM, CLM, …)</td><td>Task-specific (cross-entropy on labels)</td></tr>
+</table>
+
+<!-- §4 LR scheduling -->
+<h2 id="s4">4 · Learning-rate schedules: warmup + cosine <span class="tag interactive">interactive</span></h2>
+<p>For transformers, a constant learning rate basically never works. The standard schedule is:</p>
+<ol>
+  <li><strong>Linear warmup</strong> from 0 to <code>η_max</code> over the first <code>warmup_steps</code> (typically 5-10% of training).</li>
+  <li><strong>Cosine decay</strong> from <code>η_max</code> down to (approximately) 0 over the rest of training.</li>
+</ol>
+
+<div class="demo">
+  <h3>Demo · The standard fine-tuning schedule</h3>
+  <div class="controls">
+    <div class="control"><label>η_max</label><input type="range" id="sch-lr" min="0.000005" max="0.0005" step="0.000005" value="0.00002"></div>
+    <div class="control"><label>warmup steps</label><input type="range" id="sch-warm" min="0" max="1000" step="50" value="100"></div>
+    <div class="control"><label>total steps</label><input type="range" id="sch-total" min="500" max="5000" step="100" value="1500"></div>
+    <div class="readout" id="sch-readout"></div>
+  </div>
+  <canvas id="sch-canvas" width="880" height="240"></canvas>
+</div>
+
+<!-- §5 Trainer loop -->
+<h2 id="s5">5 · The Hugging Face Trainer loop <span class="tag code">code</span></h2>
+<p>The <code>Trainer</code> owns the loop so you don't have to write it. The minimal recipe:</p>
+<pre>from transformers import (AutoTokenizer, AutoModelForSequenceClassification,
+                          TrainingArguments, Trainer)
+import evaluate
+
+tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+model     = AutoModelForSequenceClassification.from_pretrained(
+    "distilbert-base-uncased", num_labels=2)
+
+def tokenize(batch):
+    return tokenizer(batch["text"], padding="max_length", truncation=True, max_length=256)
+
+ds = ds.map(tokenize, batched=True)
+
+f1_metric = evaluate.load("f1")
+def compute_metrics(eval_pred):
+    logits, labels = eval_pred
+    preds = np.argmax(logits, axis=-1)
+    return f1_metric.compute(predictions=preds, references=labels, average="binary")
+
+args = TrainingArguments(
+    output_dir              = "out",
+    num_train_epochs        = 3,
+    per_device_train_batch_size = 16,
+    per_device_eval_batch_size  = 64,
+    learning_rate           = 2e-5,
+    warmup_ratio            = 0.06,
+    weight_decay            = 0.01,
+    eval_strategy           = "epoch",
+    save_strategy           = "epoch",
+    load_best_model_at_end  = True,
+    metric_for_best_model   = "f1",
+    greater_is_better       = True,
+)
+
+trainer = Trainer(model=model, args=args,
+    train_dataset=ds["train"], eval_dataset=ds["test"],
+    compute_metrics=compute_metrics, tokenizer=tokenizer)
+
+trainer.train()
+trainer.save_model("models/spam-classifier-v1")</pre>
+
+<p>What the Trainer does at each step:</p>
+<ol>
+  <li>Pull a mini-batch from the train DataLoader.</li>
+  <li>Tokenize (if not already done), move to device, run the forward pass.</li>
+  <li>Compute the loss (returned by the model when labels are passed).</li>
+  <li>Call <code>loss.backward()</code>, clip gradients, step the optimizer, step the scheduler.</li>
+  <li>If on an eval step, switch to eval mode, run over the eval DataLoader, call <code>compute_metrics</code>, log results.</li>
+  <li>Save the best checkpoint according to <code>metric_for_best_model</code>.</li>
+</ol>
+
+<!-- §6 Loss functions -->
+<h2 id="s6">6 · Cross-entropy, focal loss, label smoothing <span class="tag math">math</span></h2>
+<p>For most classification fine-tuning, cross-entropy is what you want. Two variants you should know:</p>
+<ul>
+  <li><strong>Label smoothing</strong>. Replace one-hot targets with <code>(1 − ε) · one_hot + ε / C</code>. Discourages the model from being arbitrarily confident; improves calibration. Standard in transformer training (ε ≈ 0.1).</li>
+  <li><strong>Focal loss</strong>. Multiply CE by <code>(1 − pₜ)<sup>γ</sup></code>; down-weights easy examples and up-weights hard ones. Useful for severely imbalanced classification (e.g., detection).</li>
+</ul>
+<pre>L_CE         = −log p_y                                    # standard
+L_smooth     = −(1-ε) · log p_y − (ε/C) · Σⱼ log pⱼ        # label smoothing
+L_focal      = −(1 − p_y)^γ · log p_y                       # focal
+</pre>
+
+<!-- §7 F1 worked -->
+<h2 id="s7">7 · Precision, recall, F1 — worked <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>For binary spam classification with TP = 84, FN = 16, FP = 10, TN = 90:</p>
+<pre>precision = TP / (TP + FP) = 84 / (84 + 10) = 84 / 94  = 0.894
+recall    = TP / (TP + FN) = 84 / (84 + 16) = 84 / 100 = 0.840
+F1        = 2 · P · R / (P + R) = 2 · 0.894 · 0.840 / (0.894 + 0.840)
+          ≈ 0.866</pre>
+
+<div class="demo">
+  <h3>Demo · Compute F1 from any confusion matrix</h3>
+  <div class="controls">
+    <div class="control"><label>TP</label><input type="number" id="f1-tp" value="84"></div>
+    <div class="control"><label>FN</label><input type="number" id="f1-fn" value="16"></div>
+    <div class="control"><label>FP</label><input type="number" id="f1-fp" value="10"></div>
+    <div class="control"><label>TN</label><input type="number" id="f1-tn" value="90"></div>
+  </div>
+  <pre id="f1-out"></pre>
+</div>
+
+<!-- §8 ROUGE -->
+<h2 id="s8">8 · ROUGE-1 and ROUGE-L <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>For summarization, ROUGE compares the model's summary against the reference.</p>
+<ul>
+  <li><strong>ROUGE-1</strong>: token-level F1 of unigram overlap.</li>
+  <li><strong>ROUGE-2</strong>: token-level F1 of bigram overlap (consecutive token pairs).</li>
+  <li><strong>ROUGE-L</strong>: F1 based on the length of the longest common subsequence (LCS) — captures fluency and order without requiring strict contiguity.</li>
+</ul>
+
+<div class="demo">
+  <h3>Demo · Compute ROUGE-1 and ROUGE-L for a candidate vs reference</h3>
+  <div class="controls">
+    <div class="control" style="flex:1; min-width:300px;">
+      <label>candidate</label>
+      <input type="text" id="r-cand" value="the cat sat on the warm mat"
+             style="width:100%; padding:6px 10px; border:1px solid #CFD7DF; border-radius:4px; font-family:'SF Mono',monospace;">
+    </div>
+    <div class="control" style="flex:1; min-width:300px;">
+      <label>reference</label>
+      <input type="text" id="r-ref" value="the cat sat on the mat"
+             style="width:100%; padding:6px 10px; border:1px solid #CFD7DF; border-radius:4px; font-family:'SF Mono',monospace;">
+    </div>
+  </div>
+  <pre id="r-out"></pre>
+</div>
+
+<!-- §9 Perplexity -->
+<h2 id="s9">9 · Perplexity <span class="tag math">math</span></h2>
+<p>Perplexity is the exponential of the average per-token negative log-likelihood:</p>
+<p class="eq-block">PPL = exp( − (1/N) · Σᵢ log pᵢ(yᵢ) )</p>
+<p>Interpretation: "the effective vocabulary size the model is uncertain over at each step." A perplexity of 1 means perfect prediction; perplexity equal to <code>V</code> (vocab size) means random guessing. Strong language models on web text typically have perplexity in the 10-30 range.</p>
+
+<table class="cmp">
+  <tr><th>PPL</th><th>Reading</th></tr>
+  <tr><td>1</td><td>Perfect: model assigns probability 1 to every next token</td></tr>
+  <tr><td>30</td><td>Strong large model on web text</td></tr>
+  <tr><td>100</td><td>Small model or out-of-distribution text</td></tr>
+  <tr><td>30 000</td><td>Random guessing on a 30 K vocab</td></tr>
+</table>
+
+<!-- §10 Bootstrap CI -->
+<h2 id="s10">10 · 95 % bootstrap confidence intervals <span class="tag interactive">interactive</span></h2>
+<p>A single F1 number from one test set is uncertain. The bootstrap estimates that uncertainty by resampling the test set with replacement many times and recomputing F1 on each resample. The 2.5th and 97.5th percentiles form the 95 % CI.</p>
+
+<div class="demo">
+  <h3>Demo · Build a bootstrap CI</h3>
+  <div class="controls">
+    <button id="boot-step">Resample (50 draws)</button>
+    <button id="boot-reset" class="secondary">Reset</button>
+    <div class="readout" id="boot-readout"></div>
+  </div>
+  <canvas id="boot-canvas" width="880" height="240"></canvas>
+</div>
+
+<!-- §11 Zero-shot / few-shot / fine-tuned -->
+<h2 id="s11">11 · Zero-shot, few-shot, fine-tuned <span class="tag math">math</span></h2>
+<table class="cmp">
+  <tr><th></th><th>Zero-shot</th><th>Few-shot (in-context)</th><th>Fine-tuned</th></tr>
+  <tr><td>Examples shown</td><td>0</td><td>2-20 in the prompt</td><td>100s-1000s in training data</td></tr>
+  <tr><td>Parameter updates?</td><td>No</td><td>No</td><td>Yes (full or partial)</td></tr>
+  <tr><td>Per-request cost</td><td>One large-model call</td><td>One large-model call (longer prompt)</td><td>One small-model call (cheaper)</td></tr>
+  <tr><td>Cold-start time</td><td>Seconds</td><td>Seconds</td><td>Hours to fine-tune; then fast inference</td></tr>
+  <tr><td>Latency at serving</td><td>High (large model)</td><td>High (large model + long prompt)</td><td>Low (small model)</td></tr>
+  <tr><td>When to prefer</td><td>Generic task, no labels</td><td>A few examples easily expressible</td><td>Many labels and tight latency/cost target</td></tr>
+</table>
+
+<!-- §12 Catastrophic forgetting -->
+<h2 id="s12">12 · Catastrophic forgetting <span class="tag interactive">interactive</span></h2>
+<p>Fine-tune for too long on a narrow distribution and the model gets better on the target task at the cost of losing general capability:</p>
+
+<div class="demo">
+  <h3>Demo · Headline metric vs general capability across epochs</h3>
+  <p>Drag the slider; watch the target-task accuracy keep climbing while the general-benchmark accuracy decays after a few epochs.</p>
+  <div class="controls">
+    <div class="control">
+      <label for="ft-effort">Fine-tuning epochs</label>
+      <input type="range" id="ft-effort" min="0" max="20" step="1" value="3">
+    </div>
+    <div class="readout" id="ft-readout"></div>
+  </div>
+  <canvas id="ftcanvas" width="880" height="260"></canvas>
+</div>
+
+<!-- §13 LoRA -->
+<h2 id="s13">13 · LoRA and parameter-efficient fine-tuning <span class="tag math">math</span></h2>
+<p>Full fine-tuning updates every weight in a 7-billion-parameter model — feasible only with a lot of GPU memory. Parameter-efficient fine-tuning (PEFT) freezes the original weights and adds a tiny set of trainable parameters elsewhere.</p>
+<p>The most popular flavor is <strong>LoRA</strong> (Low-Rank Adaptation). For a frozen weight matrix <code>W</code> of shape <code>(d, d)</code>, LoRA adds <code>ΔW = B · A</code> with <code>B: (d, r)</code> and <code>A: (r, d)</code> for some small rank <code>r</code> (8, 16, 64). At inference, the forward pass becomes:</p>
+<p class="eq-block">x → x · W + x · B · A    (instead of just x · W)</p>
+<p>The trainable parameters drop from <code>d²</code> per matrix to <code>2 · d · r</code>. For <code>d = 4096, r = 8</code> that is ≈ 16 M → 65 K — a 250× reduction. LoRA reaches ≈ 95-99% of full fine-tuning quality on most tasks at a tiny fraction of the cost.</p>
+
+<!-- §14 Cost story -->
+<h2 id="s14">14 · Cost &amp; latency: fine-tuned-small vs frontier-API <span class="tag interactive">interactive</span></h2>
+<p>The product-mindset answer to "should we fine-tune or prompt a frontier API?" is a number, not an opinion.</p>
+
+<div class="demo">
+  <h3>Demo · Cost comparison for one million predictions / month</h3>
+  <div class="controls">
+    <div class="control"><label>frontier $ per 1K tok</label>
+      <input type="range" id="c-ftcost" min="0.001" max="0.1" step="0.001" value="0.01"></div>
+    <div class="control"><label>avg input tokens</label>
+      <input type="range" id="c-intoks" min="50" max="2000" step="50" value="300"></div>
+    <div class="control"><label>render $/month free-tier</label>
+      <input type="range" id="c-rendercost" min="0" max="50" step="1" value="7"></div>
+    <div class="control"><label>frontier p95 latency (ms)</label>
+      <input type="range" id="c-fp95" min="200" max="3000" step="50" value="1100"></div>
+    <div class="control"><label>distilbert p95 latency (ms)</label>
+      <input type="range" id="c-dp95" min="20" max="400" step="10" value="80"></div>
+    <div class="readout" id="c-readout"></div>
+  </div>
+  <canvas id="ccanvas" width="880" height="260"></canvas>
+</div>
+
+<div class="callout">
+  <strong>Architecture reminder.</strong> The Topic 6 "FineTuneFleet" product persists each Trainer run as a row in a Supabase <code>experiments</code> table (hyperparameters, headline metric, training duration). The Streamlit "Experiment Leaderboard" tab is a Supabase anon-key query against that table. Each <code>/predict</code> call writes a row to a <code>predictions</code> table that logs only a SHA-256 hash of the input — never raw text. The behavioral test "fine-tuned strictly beats zero-shot on the held-out set" is in <code>tests/</code> and runs in CI.
+</div>
+
+<div class="nav">
+  <a href="../Topic_5_-_Transformers/Tutorial_Topic_5_Transformer_Architecture.html">← Topic 5</a>
+  <a href="Exercises_Topic_6_Pre_Training_and_Fine_Tuning_LLMs.html">Practice exercises →</a>
+</div>
+
+</div>
+
+<script>
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+/* §1 Pre-training objectives */
+(function(){
+  const tokens=['The','quick','brown','fox','jumps','over','the','lazy','dog'];
+  const input=document.getElementById('m-input');
+  const target=document.getElementById('m-target');
+  const explain=document.getElementById('m-explain');
+  const btns=document.querySelectorAll('[data-method]');
+  function setActive(method){btns.forEach(b=>b.classList.toggle('secondary', b.dataset.method!==method));}
+  function render(method){
+    setActive(method);
+    input.innerHTML=''; target.innerHTML='';
+    if(method==='mlm'){
+      explain.innerHTML='<strong>MLM (BERT)</strong> — randomly mask ~15% of tokens; predict the masked tokens given the full bidirectional context. The loss is cross-entropy on masked positions <em>only</em>.';
+      tokens.forEach((t,i)=>{const div=document.createElement('div'); const mask=(i===2||i===7);
+        div.className=mask?'tok masked':'tok'; div.textContent=mask?'[MASK]':t; input.appendChild(div);});
+      const lab=document.createElement('div'); lab.style.color='#555'; lab.style.fontSize='0.85em';
+      lab.textContent='Targets (at masked positions only): brown, lazy'; target.appendChild(lab);
+    } else if(method==='clm'){
+      explain.innerHTML='<strong>CLM (GPT)</strong> — autoregressive next-token prediction with causal attention. Loss is cross-entropy on every position predicting the next token.';
+      tokens.forEach((t,i)=>{const div=document.createElement('div'); div.className=(i<4)?'tok':'tok masked'; div.textContent=t; input.appendChild(div);});
+      const lab=document.createElement('div'); lab.style.color='#555'; lab.style.fontSize='0.85em';
+      lab.textContent='At each position, predict the NEXT token; loss summed across positions.'; target.appendChild(lab);
+    } else if(method==='span'){
+      explain.innerHTML='<strong>Span corruption (T5)</strong> — replace consecutive token spans with sentinel tokens; the encoder–decoder reconstructs the corrupted spans in a single output sequence.';
+      tokens.forEach((t,i)=>{const div=document.createElement('div');
+        if(i===2){div.className='tok sentinel'; div.textContent='<extra_id_0>'; input.appendChild(div); return;}
+        if(i===3) return;
+        if(i===6){div.className='tok sentinel'; div.textContent='<extra_id_1>'; input.appendChild(div); return;}
+        if(i===7) return;
+        div.className='tok'; div.textContent=t; input.appendChild(div);});
+      const lab=document.createElement('div'); lab.style.color='#555'; lab.style.fontSize='0.85em';
+      lab.innerHTML='Target: <code>&lt;extra_id_0&gt; brown fox &lt;extra_id_1&gt; lazy dog &lt;extra_id_2&gt;</code>'; target.appendChild(lab);
+    } else if(method==='contrastive'){
+      explain.innerHTML='<strong>Contrastive (SimCSE)</strong> — apply two independent dropout masks to the same sentence; train so the two views\' embeddings are close, while embeddings of unrelated sentences are far.';
+      tokens.forEach(t=>{const div=document.createElement('div'); div.className='tok'; div.textContent=t; input.appendChild(div);});
+      const lab=document.createElement('div'); lab.style.color='#555'; lab.style.fontSize='0.85em';
+      lab.innerHTML='+ view A (dropout mask 1) and + view B (dropout mask 2) are PULLED together; embeddings of OTHER sentences in the batch are PUSHED away.';
+      target.appendChild(lab);
+    }
+  }
+  btns.forEach(b=>b.onclick=()=>render(b.dataset.method));
+  render('mlm');
+})();
+
+/* §2 Tokenizer */
+(function(){
+  const max=document.getElementById('tk-max'), pad=document.getElementById('tk-pad'), trunc=document.getElementById('tk-trunc');
+  const out=document.getElementById('tk-out');
+  const sentences = ['"This is spam!"', '"Hi mom, I made it home."', '"Click here for a prize, prize, prize, prize, prize!"'];
+  function tokenize(s){
+    // simulated: word-level
+    const wp = s.replace(/[!"',]/g,' $& ').split(/\s+/).filter(Boolean);
+    // map to fake ids
+    return wp.map((w,i) => 100 + (w.charCodeAt(0) * 7 + i) % 800);
+  }
+  function up(){
+    const T=+max.value, doPad=(pad.value==='true'), doTrunc=(trunc.value==='true');
+    let rows=[];
+    sentences.forEach(s=>{
+      let ids=tokenize(s);
+      if(doTrunc && ids.length>T) ids=ids.slice(0, T);
+      const real=ids.length;
+      const mask = ids.map(()=>1);
+      if(doPad){ while(ids.length<T){ids.push(0); mask.push(0);} }
+      rows.push({s, ids, mask, real});
+    });
+    let text = `# tokenizer(sentences, padding=${doPad}, truncation=${doTrunc}, max_length=${T}, return_tensors="pt")\n\n`;
+    rows.forEach((r,i)=>{
+      text += `[${i}] ${r.s}\n`;
+      text += `    input_ids       : [${r.ids.join(', ')}]\n`;
+      text += `    attention_mask  : [${r.mask.join(', ')}]\n`;
+      text += `    real tokens     : ${r.real} of ${r.ids.length}\n\n`;
+    });
+    out.textContent = text.trimEnd();
+  }
+  [max,pad,trunc].forEach(e=>{e.oninput=up; e.onchange=up;}); up();
+})();
+
+/* §4 LR schedule */
+(function(){
+  const c=document.getElementById('sch-canvas'), ctx=c.getContext('2d');
+  const lrIn=document.getElementById('sch-lr'), wIn=document.getElementById('sch-warm'), tIn=document.getElementById('sch-total');
+  const out=document.getElementById('sch-readout');
+  function lr(step, max, warm, total){
+    if(step < warm) return max * step / warm;
+    return 0.5 * max * (1 + Math.cos(Math.PI * (step - warm) / Math.max(1, total - warm)));
+  }
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const m=+lrIn.value, w=+wIn.value, t=+tIn.value;
+    const px=s=>40+s/t*(W-60), py=v=>H-30-v/(m*1.1)*(H-50);
+    ctx.strokeStyle='#CFD7DF';
+    ctx.beginPath(); ctx.moveTo(40, py(0)); ctx.lineTo(W-20, py(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(40, 20); ctx.lineTo(40, H-30); ctx.stroke();
+    ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+    [0, 0.25, 0.5, 0.75, 1.0].forEach(f=>{const v=m*f; ctx.fillText(v.toExponential(1), 4, py(v)+3);});
+    ctx.fillText('step', W-30, H-12);
+    // warmup region
+    ctx.fillStyle='rgba(249,168,37,0.15)';
+    ctx.fillRect(40, 20, w/t*(W-60), H-50);
+    ctx.fillStyle='#F9A825'; ctx.font='11px sans-serif';
+    ctx.fillText('warmup', 50, 36);
+    // curve
+    ctx.strokeStyle='#1F4E79'; ctx.lineWidth=2.5; ctx.beginPath();
+    for(let s=0;s<=t;s+=Math.max(1,Math.floor(t/200))){(s===0?ctx.moveTo:ctx.lineTo).call(ctx, px(s), py(lr(s,m,w,t)));}
+    ctx.stroke();
+    out.textContent = `η_max = ${m.toExponential(1)}, warmup = ${w}, total = ${t}`;
+  }
+  lrIn.oninput=draw; wIn.oninput=draw; tIn.oninput=draw; draw();
+})();
+
+/* §7 F1 */
+(function(){
+  const ids=['f1-tp','f1-fn','f1-fp','f1-tn']; const out=document.getElementById('f1-out');
+  function up(){
+    const [TP,FN,FP,TN]=ids.map(i=>Math.max(0,+document.getElementById(i).value||0));
+    const total=TP+FN+FP+TN;
+    if(total===0){out.textContent='—'; return;}
+    const P=TP/Math.max(1,TP+FP), R=TP/Math.max(1,TP+FN);
+    const F1=2*P*R/Math.max(1e-9,P+R);
+    out.textContent =
+`precision = TP / (TP + FP) = ${TP} / (${TP} + ${FP}) = ${TP} / ${TP+FP} = ${P.toFixed(4)}
+recall    = TP / (TP + FN) = ${TP} / (${TP} + ${FN}) = ${TP} / ${TP+FN} = ${R.toFixed(4)}
+F1        = 2 · P · R / (P + R)
+          = 2 · ${P.toFixed(3)} · ${R.toFixed(3)} / (${P.toFixed(3)} + ${R.toFixed(3)})
+          = ${F1.toFixed(4)}`;
+  }
+  ids.forEach(i=>document.getElementById(i).oninput=up); up();
+})();
+
+/* §8 ROUGE */
+(function(){
+  const cI=document.getElementById('r-cand'), rI=document.getElementById('r-ref'); const out=document.getElementById('r-out');
+  function tokens(s){return s.toLowerCase().split(/\s+/).filter(Boolean);}
+  function rouge1(c, r){
+    // F1 of unigram overlap
+    const cs=new Set(c), rs=new Set(r);
+    let overlap=0; for(const t of c) if(rs.has(t)) overlap++;
+    const P = overlap/Math.max(1,c.length), R = overlap/Math.max(1,r.length);
+    const F = 2*P*R/Math.max(1e-9, P+R);
+    return {P, R, F, overlap};
+  }
+  function lcs(a, b){
+    const m=a.length, n=b.length;
+    const dp=Array.from({length:m+1}, ()=>new Array(n+1).fill(0));
+    for(let i=1;i<=m;i++) for(let j=1;j<=n;j++){
+      if(a[i-1]===b[j-1]) dp[i][j]=dp[i-1][j-1]+1;
+      else dp[i][j]=Math.max(dp[i-1][j], dp[i][j-1]);
+    }
+    return dp[m][n];
+  }
+  function rougeL(c, r){
+    const L=lcs(c,r);
+    const P=L/Math.max(1,c.length), R=L/Math.max(1,r.length);
+    const F=2*P*R/Math.max(1e-9, P+R);
+    return {P, R, F, L};
+  }
+  function up(){
+    const c=tokens(cI.value), r=tokens(rI.value);
+    const r1=rouge1(c, r), rl=rougeL(c, r);
+    out.textContent =
+`candidate tokens : [${c.join(', ')}] (n = ${c.length})
+reference tokens : [${r.join(', ')}] (n = ${r.length})
+
+ROUGE-1 (unigram F1):
+  overlap = ${r1.overlap}
+  P = ${r1.overlap} / ${c.length} = ${r1.P.toFixed(3)}
+  R = ${r1.overlap} / ${r.length} = ${r1.R.toFixed(3)}
+  F = ${r1.F.toFixed(3)}
+
+ROUGE-L (LCS-based F1):
+  longest common subsequence length = ${rl.L}
+  P = ${rl.L} / ${c.length} = ${rl.P.toFixed(3)}
+  R = ${rl.L} / ${r.length} = ${rl.R.toFixed(3)}
+  F = ${rl.F.toFixed(3)}`;
+  }
+  cI.oninput=up; rI.oninput=up; up();
+})();
+
+/* §10 Bootstrap CI */
+(function(){
+  const c=document.getElementById('boot-canvas'), ctx=c.getContext('2d');
+  const stepBtn=document.getElementById('boot-step'), resetBtn=document.getElementById('boot-reset');
+  const out=document.getElementById('boot-readout');
+  const samples=[];
+  function rng(){return Math.random()*2-1;}
+  function draw1(){return 0.83 + 0.04 * (rng()+rng())/2;}
+  function step(){for(let i=0;i<50;i++) samples.push(draw1()); draw();}
+  function reset(){samples.length=0; draw();}
+  function quantile(arr, q){const s=arr.slice().sort((a,b)=>a-b); const i=q*(s.length-1);
+    const lo=Math.floor(i), hi=Math.ceil(i); return s[lo]+(s[hi]-s[lo])*(i-lo);}
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const xmin=0.7, xmax=0.95;
+    const px=v=>40+(v-xmin)/(xmax-xmin)*(W-60), py=h=>H-30-h;
+    ctx.strokeStyle='#CFD7DF';
+    ctx.beginPath(); ctx.moveTo(40, py(0)); ctx.lineTo(W-20, py(0)); ctx.stroke();
+    ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+    [0.70,0.75,0.80,0.85,0.90,0.95].forEach(v=>{ctx.fillText(v.toFixed(2), px(v)-12, H-10);
+      ctx.beginPath(); ctx.moveTo(px(v), py(0)); ctx.lineTo(px(v), py(0)+4); ctx.strokeStyle='#888'; ctx.stroke();});
+    if(samples.length===0){ctx.fillStyle='#888'; ctx.font='13px sans-serif';
+      ctx.fillText('Click "Resample" to start.', W/2-80, H/2); out.textContent='—'; return;}
+    const bins=40, counts=new Array(bins).fill(0);
+    for(const s of samples){const b=Math.max(0, Math.min(bins-1, Math.floor((s-xmin)/(xmax-xmin)*bins))); counts[b]++;}
+    const max=Math.max(...counts); const bw=(W-60)/bins;
+    for(let b=0;b<bins;b++){const h=counts[b]/max*(H-60); ctx.fillStyle='#1F4E79';
+      ctx.fillRect(40+b*bw, py(h), bw-1, h);}
+    const lo=quantile(samples,0.025), hi=quantile(samples,0.975), med=quantile(samples,0.5);
+    ctx.strokeStyle='#C00000'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(px(lo),20); ctx.lineTo(px(lo),H-30); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px(hi),20); ctx.lineTo(px(hi),H-30); ctx.stroke();
+    ctx.strokeStyle='#1B7340';
+    ctx.beginPath(); ctx.moveTo(px(med),20); ctx.lineTo(px(med),H-30); ctx.stroke();
+    ctx.fillStyle='#C00000'; ctx.font='bold 11px sans-serif';
+    ctx.fillText('2.5%', px(lo)-14, 16); ctx.fillText('97.5%', px(hi)-14, 16);
+    ctx.fillStyle='#1B7340'; ctx.fillText('median', px(med)-18, 32);
+    out.textContent = `n = ${samples.length} resamples · median F1 = ${med.toFixed(3)} · 95% CI = [${lo.toFixed(3)}, ${hi.toFixed(3)}]`;
+  }
+  stepBtn.onclick=step; resetBtn.onclick=reset; draw();
+})();
+
+/* §12 Catastrophic forgetting */
+(function(){
+  const c=document.getElementById('ftcanvas'), ctx=c.getContext('2d');
+  const inp=document.getElementById('ft-effort'); const out=document.getElementById('ft-readout');
+  function targetMetric(e){return 0.55 + 0.4 * (1 - Math.exp(-e/2.0));}
+  function generalMetric(e){return Math.max(0.5, 0.78 - Math.max(0, (e-4)) * 0.018);}
+  function zeroShot(){return 0.62;}
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const xmin=0, xmax=20, ymin=0.5, ymax=1.0;
+    const px=e=>50+e/(xmax-xmin)*(W-80);
+    const py=m=>H-35-(m-ymin)/(ymax-ymin)*(H-60);
+    ctx.strokeStyle='#CFD7DF';
+    ctx.beginPath(); ctx.moveTo(50, py(ymin)); ctx.lineTo(W-20, py(ymin)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(50, 20); ctx.lineTo(50, py(ymin)); ctx.stroke();
+    ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+    [0.5,0.6,0.7,0.8,0.9,1.0].forEach(y=>ctx.fillText(y.toFixed(1), 20, py(y)+3));
+    [0,5,10,15,20].forEach(e=>ctx.fillText('e='+e, px(e)-12, H-12));
+    ctx.strokeStyle='#888'; ctx.setLineDash([5,4]); ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(50, py(zeroShot())); ctx.lineTo(W-20, py(zeroShot())); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+    ctx.fillText('zero-shot baseline ≈ '+zeroShot().toFixed(2), W-200, py(zeroShot())-6);
+    ctx.strokeStyle='#1F4E79'; ctx.lineWidth=2.5; ctx.beginPath();
+    for(let e=0;e<=20;e+=0.2)(e===0?ctx.moveTo:ctx.lineTo).call(ctx, px(e), py(targetMetric(e))); ctx.stroke();
+    ctx.strokeStyle='#C00000'; ctx.lineWidth=2.5; ctx.beginPath();
+    for(let e=0;e<=20;e+=0.2)(e===0?ctx.moveTo:ctx.lineTo).call(ctx, px(e), py(generalMetric(e))); ctx.stroke();
+    const e=+inp.value;
+    ctx.fillStyle='#1F4E79'; ctx.beginPath(); ctx.arc(px(e), py(targetMetric(e)), 6, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle='#C00000'; ctx.beginPath(); ctx.arc(px(e), py(generalMetric(e)), 6, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 12px sans-serif';
+    ctx.fillText('Fine-tuned model on TARGET task', 60, 30);
+    ctx.fillStyle='#C00000';
+    ctx.fillText('Same model on GENERAL benchmarks (catastrophic forgetting after ~5 epochs)', 60, 48);
+    out.textContent = `epoch ${e}: target = ${targetMetric(e).toFixed(3)}, general = ${generalMetric(e).toFixed(3)}, zero-shot baseline = ${zeroShot().toFixed(2)}`;
+  }
+  inp.oninput=draw; draw();
+})();
+
+/* §14 Cost story */
+(function(){
+  const c=document.getElementById('ccanvas'), ctx=c.getContext('2d');
+  const ids=['c-ftcost','c-intoks','c-rendercost','c-fp95','c-dp95'];
+  const out=document.getElementById('c-readout');
+  function up(){
+    const [costPerK, intoks, render, fp95, dp95] = ids.map(i=>+document.getElementById(i).value);
+    const reqs = 1e6;
+    const tokens = reqs * (intoks + 50);  // assume 50-token output
+    const frontierCost = tokens / 1000 * costPerK;
+    const fineTunedCost = render;          // flat free-tier cost
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    // bar chart
+    function bar(x, y, w, h, color, label, value){
+      ctx.fillStyle=color; ctx.fillRect(x, y, w, h);
+      ctx.fillStyle='#555'; ctx.font='12px sans-serif';
+      ctx.fillText(label, x, y-6); ctx.fillText(value, x, y+h+18);
+    }
+    const max = Math.max(frontierCost, fineTunedCost, 50);
+    const scale=(H-100)/Math.log10(1+max);
+    const hF = Math.log10(1+frontierCost) * scale;
+    const hL = Math.log10(1+fineTunedCost) * scale;
+    bar(80, H-50-hF, 120, hF, '#C00000', 'Frontier-API ($/mo)', '$' + frontierCost.toLocaleString(undefined, {maximumFractionDigits:0}));
+    bar(280, H-50-hL, 120, hL, '#1F4E79', 'Fine-tuned + Render ($/mo)', '$' + fineTunedCost.toLocaleString(undefined, {maximumFractionDigits:0}));
+    // latency comparison
+    const hLatF = fp95 / 5;
+    const hLatD = dp95 / 5;
+    bar(520, H-50-hLatF, 120, hLatF, '#C00000', 'Frontier p95 (ms)', fp95+' ms');
+    bar(700, H-50-hLatD, 120, hLatD, '#1F4E79', 'Fine-tuned p95 (ms)', dp95+' ms');
+    ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+    ctx.fillText('1M predictions / month  ·  log-scale cost axis  ·  linear latency axis', 80, 20);
+    out.textContent = `frontier: $${frontierCost.toFixed(0)}/mo, ${fp95}ms p95  ·  fine-tuned: $${fineTunedCost.toFixed(0)}/mo, ${dp95}ms p95`;
+  }
+  ids.forEach(i=>document.getElementById(i).oninput=up); up();
+})();
+</script>
+</body>
+</html>

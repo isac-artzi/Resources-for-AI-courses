@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 2 Tutorial — Matrices, Perceptrons &amp; Feed-Forward Networks</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+       margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6; }
+.container { max-width: 980px; margin: 24px auto 48px; background: white;
+             padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.35em; margin-top: 40px;
+     border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+h4 { color: #555; font-size: 1.0em; margin-top: 18px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 6px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7;
+       padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px; overflow-x: auto;
+      border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79;
+           padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px;
+        margin: 14px 0; border-radius: 4px; font-size: 0.93em; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+        padding: 22px; margin: 22px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.controls { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 180px; }
+.control input[type="number"] { width: 80px; padding: 4px 8px;
+            border: 1px solid #CFD7DF; border-radius: 4px; font-family: inherit; }
+.control select { padding: 5px 8px; border: 1px solid #CFD7DF; border-radius: 4px;
+                  font-family: inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px;
+           border-radius: 6px; font-family: "SF Mono", Consolas, monospace;
+           font-size: 0.88em; min-width: 220px; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 16px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.93em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; }
+.row { display: flex; gap: 16px; flex-wrap: wrap; }
+.col { flex: 1; min-width: 280px; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+      background: #F2F4F7; padding: 4px 8px; border-radius: 4px; }
+.eq-block { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+            background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+            text-align: center; margin: 14px 0; display: block; }
+.nav { display: flex; justify-content: space-between; margin-top: 40px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; }
+.nav a:hover { text-decoration: underline; }
+.kv { display: grid; grid-template-columns: max-content auto;
+      column-gap: 14px; row-gap: 4px; margin: 8px 0; }
+.kv div:nth-child(odd) { color: #555; }
+.kv div:nth-child(even) { font-family: "SF Mono", Consolas, monospace; }
+.toc { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+       padding: 16px 22px; margin-bottom: 28px; font-size: 0.92em; }
+.toc h3 { margin: 0 0 8px; color: #1F4E79; font-size: 1.0em; }
+.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 24px; }
+.toc a { color: #1F4E79; text-decoration: none; } .toc a:hover { text-decoration: underline; }
+.tag { display: inline-block; padding: 2px 8px; background: #E0E5EB;
+       border-radius: 12px; font-size: 0.75em; color: #555;
+       text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px; }
+.tag.interactive { background: #E1F0EA; color: #1B5E20; }
+.tag.code { background: #F2F4F7; color: #555; }
+.tag.math { background: #FCE8EE; color: #6E1414; }
+table.cmp { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 0.92em; }
+table.cmp th, table.cmp td { border: 1px solid #E0E5EB; padding: 8px 12px; text-align: left; }
+table.cmp th { background: #F2F4F7; color: #1F4E79; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="brand">Tutorial · ~ 70 min read</div>
+<h1>Topic 2 — Matrices, Perceptrons &amp; Feed-Forward Neural Networks</h1>
+<p class="subtitle">From the simplest linear classifier (perceptron) up to multi-layer networks, with the matrix-form forward pass, the backward pass, the four most common activations, the failure modes of deep stacks, and the bias audit that goes alongside every classifier shipped in this course.</p>
+
+<div class="callout">
+  <strong>What you should walk away with.</strong> (1) Why one perceptron cannot solve XOR and exactly how a hidden layer fixes it. (2) Fluent matrix-form forward propagation and per-layer shapes. (3) The four standard activations with their derivatives, and the deep-network pathologies they cause. (4) Working knowledge of weight init, dropout, and batch norm as the three classic stabilizers. (5) The confusion-matrix → precision/recall/F1 derivation and the bias-audit you must do before deploying.
+</div>
+
+<div class="toc">
+  <h3>What's in this tutorial</h3>
+  <ol>
+    <li><a href="#s1">The perceptron model</a></li>
+    <li><a href="#s2">XOR is not linearly separable</a></li>
+    <li><a href="#s3">A hidden layer fixes it</a></li>
+    <li><a href="#s4">Matrix-form forward propagation</a></li>
+    <li><a href="#s5">Shape calculator for an MLP</a></li>
+    <li><a href="#s6">Activations and their derivatives</a></li>
+    <li><a href="#s7">Backpropagation through a small MLP</a></li>
+    <li><a href="#s8">Vanishing and exploding gradients</a></li>
+    <li><a href="#s9">Weight initialization: zero, normal, Xavier, He</a></li>
+    <li><a href="#s10">Dropout, visualized</a></li>
+    <li><a href="#s11">Batch normalization, conceptually</a></li>
+    <li><a href="#s12">Loss for classification: BCE, cross-entropy, softmax</a></li>
+    <li><a href="#s13">Confusion matrix → precision, recall, F1</a></li>
+    <li><a href="#s14">ROC curve and AUC</a></li>
+    <li><a href="#s15">Calibration plots</a></li>
+    <li><a href="#s16">scikit-learn Pipeline structure</a></li>
+    <li><a href="#s17">Bias audit by protected attribute</a></li>
+  </ol>
+</div>
+
+<!-- ========== 1. Perceptron ========== -->
+<h2 id="s1">1 · The perceptron model <span class="tag math">math</span></h2>
+<p>The simplest neural unit. Given an input vector <code>x</code> and weights <code>w</code> with a bias <code>b</code>:</p>
+<p class="eq-block">
+  z = w · x + b,   ŷ = step(z) = { 1 if z ≥ 0,  0 otherwise }
+</p>
+<p>This is just a hyperplane separator. Geometrically, the weight vector <code>w</code> is the normal of the decision boundary, the bias <code>b</code> shifts it away from the origin, and points with positive <code>z</code> are on the positive side. Training originally used a "perceptron update rule": when a prediction is wrong, push <code>w</code> in the direction of the misclassified example. With modern losses and gradient descent (Topic 1), the picture is the same — just smoother.</p>
+
+<h4>What a single perceptron <em>cannot</em> learn</h4>
+<p>A single perceptron defines a single linear boundary. Anything you cannot separate with one straight line is out of reach. The canonical counter-example is XOR.</p>
+
+<!-- ========== 2. XOR not linearly separable ========== -->
+<h2 id="s2">2 · XOR is not linearly separable <span class="tag interactive">interactive</span></h2>
+<p>XOR returns 1 when its two inputs differ:</p>
+<table class="cmp">
+  <tr><th>x₁</th><th>x₂</th><th>XOR(x₁, x₂)</th></tr>
+  <tr><td>0</td><td>0</td><td>0</td></tr>
+  <tr><td>0</td><td>1</td><td>1</td></tr>
+  <tr><td>1</td><td>0</td><td>1</td></tr>
+  <tr><td>1</td><td>1</td><td>0</td></tr>
+</table>
+<p>Plot the four points and you see immediately that no straight line separates the 1's from the 0's: the positive class sits at <code>(0,1)</code> and <code>(1,0)</code> (one diagonal), the negative class sits at <code>(0,0)</code> and <code>(1,1)</code> (the other diagonal).</p>
+
+<div class="demo">
+  <h3>Demo · Try to separate XOR with one line</h3>
+  <p>Drag the angle and offset of the line. The green ring marks correct predictions; the red ring marks wrong ones. You will get to 2/4 at best — and you'll see exactly which pairs the line cannot resolve.</p>
+  <div class="controls">
+    <div class="control"><label for="xor-ang">Line angle (°)</label>
+      <input type="range" id="xor-ang" min="-90" max="90" step="1" value="45"></div>
+    <div class="control"><label for="xor-off">Offset</label>
+      <input type="range" id="xor-off" min="-1.5" max="1.5" step="0.01" value="0"></div>
+    <div class="readout" id="xor-readout">Misclassified: 0/4</div>
+  </div>
+  <canvas id="xor-canvas" width="520" height="320"></canvas>
+</div>
+
+<!-- ========== 3. MLP solves XOR ========== -->
+<h2 id="s3">3 · A hidden layer fixes XOR <span class="tag interactive">interactive</span></h2>
+<p>Add one hidden layer with a non-linear activation and the network can transform the input plane so the two classes become linearly separable in the new feature space. Geometrically: the hidden layer carves the plane with multiple lines, and the output layer combines them.</p>
+
+<div class="demo">
+  <h3>Demo · A 2-2-1 MLP with ReLU hidden and sigmoid output</h3>
+  <p>Press the buttons to load preset weights or run a few hundred steps of gradient descent. The colored heatmap is the network's probability of class 1 at every point; the four data points are drawn with their true label.</p>
+  <div class="controls">
+    <button data-mlp-preset="solved">Load solved weights</button>
+    <button data-mlp-preset="bad" class="secondary">Load bad weights</button>
+    <button data-mlp-preset="train" class="secondary">Train (500 steps)</button>
+    <span class="readout" id="mlp-readout">Test accuracy: —</span>
+  </div>
+  <canvas id="mlp-canvas" width="520" height="320"></canvas>
+</div>
+
+<!-- ========== 4. Matrix-form forward pass ========== -->
+<h2 id="s4">4 · Matrix-form forward propagation <span class="tag math">math</span></h2>
+<p>For a single input vector <code>x</code> of dimension <code>n_in</code>, a weight matrix <code>W</code> of shape <code>(n_in, n_hidden)</code>, a bias vector <code>b</code> of shape <code>(n_hidden,)</code>, and an elementwise activation σ:</p>
+<p class="eq-block">h = σ( W<sup>⊤</sup> · x + b )</p>
+<p>For a batch <code>X</code> of shape <code>(B, n_in)</code> — which is how PyTorch stores data — the formula is even cleaner because everything broadcasts:</p>
+<p class="eq-block">H = σ( X · W + b )</p>
+<p>That <code>X · W</code> has shape <code>(B, n_hidden)</code>; the bias broadcasts across the batch dimension; the activation is applied elementwise. <strong>You should know the shape of every intermediate tensor in any network you read.</strong></p>
+
+<h4>A worked two-layer pass</h4>
+<pre>x:   (4, 10)            # batch of 4 examples, 10 features each
+W1:  (10, 64)
+b1:  (64,)
+h1 = ReLU(x @ W1 + b1)  # shape (4, 64)
+W2:  (64, 1)
+b2:  (1,)
+out = h1 @ W2 + b2      # shape (4, 1)  -> 4 raw logits</pre>
+
+<!-- ========== 5. Shape calculator ========== -->
+<h2 id="s5">5 · Shape calculator for an MLP <span class="tag interactive">interactive</span></h2>
+<div class="demo">
+  <h3>Demo · Configure layer sizes, see every shape</h3>
+  <p>The exercise is to make this arithmetic automatic. Tweak any input and the calculator updates the shape of every tensor.</p>
+  <div class="controls">
+    <div class="control"><label>Batch B</label><input type="number" id="sh-B" value="4" min="1" max="64"></div>
+    <div class="control"><label>n_in</label><input type="number" id="sh-in" value="10" min="1" max="200"></div>
+    <div class="control"><label>hidden 1</label><input type="number" id="sh-h1" value="64" min="1" max="512"></div>
+    <div class="control"><label>hidden 2</label><input type="number" id="sh-h2" value="32" min="1" max="512"></div>
+    <div class="control"><label>n_out</label><input type="number" id="sh-out" value="1" min="1" max="100"></div>
+  </div>
+  <pre id="sh-pre"></pre>
+</div>
+
+<!-- ========== 6. Activations and derivatives ========== -->
+<h2 id="s6">6 · Activations and their derivatives <span class="tag interactive">interactive</span><span class="tag math">math</span></h2>
+<p>Activation functions are the source of non-linearity. The shape of an activation matters; the shape of its <em>derivative</em> matters even more — because that derivative is exactly what backprop multiplies through.</p>
+<table class="cmp">
+  <tr><th>Activation</th><th>σ(z)</th><th>σ′(z)</th><th>Typical use</th></tr>
+  <tr><td>Sigmoid</td><td>1 / (1 + e<sup>−z</sup>)</td><td>σ(z) · (1 − σ(z))</td><td>Binary output, gated mechanisms (e.g. LSTM gates)</td></tr>
+  <tr><td>tanh</td><td>(e<sup>z</sup> − e<sup>−z</sup>) / (e<sup>z</sup> + e<sup>−z</sup>)</td><td>1 − tanh²(z)</td><td>Zero-centered hidden activation in older nets</td></tr>
+  <tr><td>ReLU</td><td>max(0, z)</td><td>1 if z &gt; 0 else 0</td><td>Default for CNNs and MLPs</td></tr>
+  <tr><td>GELU</td><td>0.5 · z · (1 + tanh(√(2/π) · (z + 0.044715 z³)))</td><td>smooth, non-monotonic</td><td>Default in transformers</td></tr>
+</table>
+
+<div class="demo">
+  <h3>Demo · σ and σ′ side by side</h3>
+  <p>Notice how sigmoid and tanh both <em>saturate</em>: outside about ±3, the derivative is essentially zero. That is the source of the "vanishing gradient" problem in deep stacks (next section). ReLU's derivative is 0 or 1 — no saturation in the active region.</p>
+  <canvas id="act-canvas" width="880" height="320"></canvas>
+</div>
+
+<!-- ========== 7. Backprop on an MLP ========== -->
+<h2 id="s7">7 · Backpropagation through a small MLP <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>A two-layer MLP is the smallest model you can actually backprop by hand:</p>
+<p class="eq-block">
+  z₁ = W₁ · x + b₁,  a₁ = σ(z₁),  z₂ = W₂ · a₁ + b₂,  ŷ = σ(z₂),  L = ½(ŷ − y)²
+</p>
+<p>Applying the chain rule outward-in:</p>
+<pre>∂L/∂ŷ   = (ŷ − y)
+∂L/∂z₂  = ∂L/∂ŷ  ·  σ'(z₂)
+∂L/∂W₂  = ∂L/∂z₂ · a₁ᵀ        # shape matches W₂
+∂L/∂b₂  = ∂L/∂z₂
+
+∂L/∂a₁  = W₂ᵀ · ∂L/∂z₂          # backpropagated through W₂
+∂L/∂z₁  = ∂L/∂a₁ ⊙ σ'(z₁)       # ⊙ = elementwise multiply
+∂L/∂W₁  = ∂L/∂z₁ · xᵀ
+∂L/∂b₁  = ∂L/∂z₁</pre>
+<p>Every layer takes the gradient coming back from above, multiplies by the local activation derivative, and uses the input to that layer to compute the weight gradient. PyTorch's autograd does this for you, but you should know the pattern so you can debug shapes when something inevitably goes wrong.</p>
+
+<div class="demo">
+  <h3>Demo · Watch the gradient flow back through a 2-2-1 net</h3>
+  <p>Pick weights and an input; the demo computes the forward pass and then, on the right side, walks back the gradient layer by layer. Hover (or click) each panel to highlight the chain-rule term it represents.</p>
+  <div class="controls">
+    <div class="control"><label>x₁</label><input type="number" id="bp-x1" value="0.6" step="0.05"></div>
+    <div class="control"><label>x₂</label><input type="number" id="bp-x2" value="0.4" step="0.05"></div>
+    <div class="control"><label>target y</label><input type="number" id="bp-y" value="1.0" step="0.05"></div>
+    <button id="bp-rand" class="secondary">Random weights</button>
+  </div>
+  <pre id="bp-out"></pre>
+</div>
+
+<!-- ========== 8. Vanishing/exploding gradients ========== -->
+<h2 id="s8">8 · Vanishing and exploding gradients <span class="tag interactive">interactive</span></h2>
+<p>When you stack many layers with saturating activations, the gradient that reaches the early layers is a product of many small numbers (vanishing), or many large numbers (exploding). Symptoms and fixes:</p>
+<table class="cmp">
+  <tr><th>Pathology</th><th>Symptom</th><th>Fixes</th></tr>
+  <tr><td>Vanishing gradients</td><td>Early-layer weights barely change across many epochs while later-layer weights update normally; loss plateaus high.</td><td>ReLU/GELU activations, He/Xavier initialization, batch / layer norm, residual connections.</td></tr>
+  <tr><td>Exploding gradients</td><td>Loss spikes to NaN or to huge values; parameters become inf in a few iterations.</td><td>Gradient clipping (<code>nn.utils.clip_grad_norm_</code>), smaller learning rate, better init.</td></tr>
+</table>
+
+<div class="demo">
+  <h3>Demo · Gradient magnitude across depth</h3>
+  <p>Stack <code>N</code> layers of <code>sigmoid(W · x)</code> with chosen init scale. The chart plots the magnitude of the gradient at each layer (computed at a random input). Saturating activations and bad init combine to make the early-layer gradient effectively zero.</p>
+  <div class="controls">
+    <div class="control"><label for="ve-N">depth N</label><input type="range" id="ve-N" min="2" max="24" step="1" value="12"></div>
+    <div class="control">
+      <label for="ve-act">activation</label>
+      <select id="ve-act">
+        <option value="sigmoid">sigmoid</option>
+        <option value="tanh">tanh</option>
+        <option value="relu">ReLU</option>
+        <option value="gelu">GELU</option>
+      </select>
+    </div>
+    <div class="control">
+      <label for="ve-init">init scale</label>
+      <select id="ve-init">
+        <option value="he">He (Kaiming)</option>
+        <option value="xavier">Xavier</option>
+        <option value="big">big (var = 4)</option>
+        <option value="tiny">tiny (var = 0.01)</option>
+      </select>
+    </div>
+    <div class="readout" id="ve-readout"></div>
+  </div>
+  <canvas id="ve-canvas" width="880" height="260"></canvas>
+</div>
+
+<!-- ========== 9. Weight init ========== -->
+<h2 id="s9">9 · Weight initialization: zero, normal, Xavier, He <span class="tag interactive">interactive</span></h2>
+<p>Bad init is one of the most common reasons a network "won't train." Four standard schemes:</p>
+<ul>
+  <li><strong>All zeros.</strong> All hidden units learn the same thing — broken symmetry; the network reduces to a single linear unit. Never use for hidden layers.</li>
+  <li><strong>Random normal (large variance).</strong> Activations saturate fast; gradients explode.</li>
+  <li><strong>Xavier (Glorot)</strong>. <code>var(W) = 2 / (n_in + n_out)</code>. Designed for sigmoid/tanh.</li>
+  <li><strong>He (Kaiming)</strong>. <code>var(W) = 2 / n_in</code>. Designed for ReLU; the standard for modern ReLU/GELU nets.</li>
+</ul>
+
+<div class="demo">
+  <h3>Demo · Activation distribution at every layer</h3>
+  <p>Forward-propagate a Gaussian input through a 6-layer ReLU stack initialized four different ways. The histogram for each layer shows the distribution of activations. Healthy init: roughly constant variance across layers.</p>
+  <div class="controls">
+    <button data-init="he">He</button>
+    <button data-init="xavier" class="secondary">Xavier</button>
+    <button data-init="big" class="secondary">Big</button>
+    <button data-init="tiny" class="secondary">Tiny</button>
+    <div class="readout" id="init-readout"></div>
+  </div>
+  <canvas id="init-canvas" width="880" height="220"></canvas>
+</div>
+
+<!-- ========== 10. Dropout ========== -->
+<h2 id="s10">10 · Dropout, visualized <span class="tag interactive">interactive</span></h2>
+<p>Dropout randomly zeroes a fraction <code>p</code> of hidden units during training (and rescales the survivors by <code>1/(1−p)</code> to keep the expected activation the same). It prevents co-adaptation: the network cannot rely on any single unit always being there, so units learn more robust features. At inference time dropout is turned off (<code>model.eval()</code> handles this).</p>
+<div class="demo">
+  <h3>Demo · A single hidden layer under dropout</h3>
+  <p>Each column is a forward pass through a 1×12 hidden layer. Press <strong>Step</strong> to draw a new dropout mask. Notice how the same input produces different active subnetworks each step — at inference, all 12 units are always on.</p>
+  <div class="controls">
+    <div class="control"><label for="do-p">dropout p</label><input type="range" id="do-p" min="0" max="0.7" step="0.05" value="0.3"></div>
+    <button id="do-step">Step (new mask)</button>
+    <button id="do-eval" class="secondary">model.eval() mode</button>
+    <div class="readout" id="do-readout"></div>
+  </div>
+  <canvas id="do-canvas" width="880" height="200"></canvas>
+</div>
+
+<!-- ========== 11. Batch norm ========== -->
+<h2 id="s11">11 · Batch normalization, conceptually <span class="tag math">math</span></h2>
+<p>BatchNorm normalizes activations along the batch dimension at each layer:</p>
+<p class="eq-block">
+  ẑ = (z − μ_B) / √(σ²_B + ε),  out = γ · ẑ + β
+</p>
+<p>Here <code>μ_B</code> and <code>σ²_B</code> are the per-channel mean and variance of the batch; <code>γ</code> and <code>β</code> are learned scale and shift. At inference time, the running averages of <code>μ_B</code> and <code>σ²_B</code> collected during training are used — that is what <code>model.eval()</code> activates.</p>
+<p>The practical effects:</p>
+<ul>
+  <li>Stabilizes the distribution of layer inputs, so deeper stacks train without dying.</li>
+  <li>Allows higher learning rates than the same network without BN.</li>
+  <li>Acts as a mild regularizer because of the batch-dependent normalization.</li>
+</ul>
+<div class="warn">
+  <strong>Watch the batch size.</strong> Very small batches give noisy <code>μ_B</code> and <code>σ²_B</code> estimates, which can hurt training. Inference with <code>batch = 1</code> works fine because BatchNorm uses the running averages.
+</div>
+
+<!-- ========== 12. Loss functions for classification ========== -->
+<h2 id="s12">12 · Loss for classification: BCE, cross-entropy, softmax <span class="tag math">math</span><span class="tag code">code</span></h2>
+<p>For classification you almost always use a probabilistic loss. Three patterns you must recognize:</p>
+<h4>Binary classification</h4>
+<p>Output one logit <code>z</code>; apply sigmoid; use BCE.</p>
+<p class="eq-block">L_BCE = − [ y · log σ(z) + (1 − y) · log(1 − σ(z)) ]</p>
+<p>In PyTorch: <code>nn.BCEWithLogitsLoss()</code> (it applies the sigmoid inside, in a numerically-stable way).</p>
+<h4>Multi-class classification</h4>
+<p>Output a logit per class; apply softmax; use cross-entropy.</p>
+<p class="eq-block">softmax(z)<sub>i</sub> = exp(z<sub>i</sub>) / Σ<sub>j</sub> exp(z<sub>j</sub>),  L_CE = − log softmax(z)<sub>y</sub></p>
+<p>In PyTorch: <code>nn.CrossEntropyLoss()</code> takes <em>raw logits</em> (not soft-maxed) and integer class indices.</p>
+<div class="warn">
+  <strong>Do not double-softmax.</strong> Don't apply <code>nn.Softmax</code> to your logits before passing them to <code>nn.CrossEntropyLoss</code> — the loss applies log-softmax internally. Doing both shrinks the gradient and slows learning.
+</div>
+
+<!-- ========== 13. Confusion matrix derivation ========== -->
+<h2 id="s13">13 · Confusion matrix → precision, recall, F1 <span class="tag interactive">interactive</span></h2>
+<p>For a binary classifier the four cells of the confusion matrix are:</p>
+<table class="cmp">
+  <tr><th></th><th>predicted positive</th><th>predicted negative</th></tr>
+  <tr><td><strong>true positive class</strong></td><td>TP</td><td>FN</td></tr>
+  <tr><td><strong>true negative class</strong></td><td>FP</td><td>TN</td></tr>
+</table>
+<p>Derived metrics:</p>
+<p class="eq-block">
+  precision = TP / (TP + FP),   recall = TP / (TP + FN),  F1 = 2 · P · R / (P + R)
+</p>
+<p>Decision-threshold-dependent metrics:</p>
+<p class="eq-block">
+  FPR = FP / (FP + TN),   TPR = TP / (TP + FN) = recall
+</p>
+
+<div class="demo">
+  <h3>Demo · Edit a confusion matrix, see all derived metrics</h3>
+  <p>Set the four cells. Every derived metric updates live. Notice that accuracy is the diagonal sum divided by the total — it is just one summary of four numbers.</p>
+  <div class="controls">
+    <div class="control"><label>TP</label><input type="number" id="cm-tp" value="80" min="0"></div>
+    <div class="control"><label>FN</label><input type="number" id="cm-fn" value="20" min="0"></div>
+    <div class="control"><label>FP</label><input type="number" id="cm-fp" value="10" min="0"></div>
+    <div class="control"><label>TN</label><input type="number" id="cm-tn" value="90" min="0"></div>
+  </div>
+  <pre id="cm-out"></pre>
+</div>
+
+<!-- ========== 14. ROC ========== -->
+<h2 id="s14">14 · ROC curve and AUC <span class="tag interactive">interactive</span></h2>
+<p>Threshold a classifier's predicted probabilities at every possible value and plot (FPR, TPR) — that's the ROC curve. The area under it (AUC) is a single number summary; AUC = 1 is a perfect classifier, AUC = 0.5 is random guessing.</p>
+<p>AUC is also <em>threshold-free</em> — it does not depend on where you set the decision boundary. That is why teams report it alongside the threshold-dependent confusion matrix.</p>
+<div class="demo">
+  <h3>Demo · Move the decision threshold, watch the operating point on the ROC</h3>
+  <div class="controls">
+    <div class="control"><label for="roc-thr">decision threshold</label>
+      <input type="range" id="roc-thr" min="0" max="1" step="0.01" value="0.5"></div>
+    <div class="control"><label for="roc-quality">classifier quality</label>
+      <input type="range" id="roc-quality" min="0" max="1" step="0.01" value="0.7"></div>
+    <div class="readout" id="roc-readout"></div>
+  </div>
+  <canvas id="roc-canvas" width="880" height="320"></canvas>
+</div>
+
+<!-- ========== 15. Calibration ========== -->
+<h2 id="s15">15 · Calibration plots <span class="tag interactive">interactive</span></h2>
+<p>A calibration plot bins predictions by predicted probability and plots, for each bin, the empirical positive rate. A perfectly calibrated classifier lies on the diagonal: when it says "70%", the true positive rate among those predictions is also 70%.</p>
+<p>Most deep networks are <strong>over-confident</strong> — their predicted probabilities are too extreme. <em>Temperature scaling</em> (dividing logits by a scalar before softmax) is the standard cheap fix.</p>
+<div class="demo">
+  <h3>Demo · Calibrate by adjusting temperature</h3>
+  <div class="controls">
+    <div class="control"><label for="cal-T">temperature T</label>
+      <input type="range" id="cal-T" min="0.5" max="3.0" step="0.05" value="1.0"></div>
+    <div class="readout" id="cal-readout"></div>
+  </div>
+  <canvas id="cal-canvas" width="880" height="280"></canvas>
+</div>
+
+<!-- ========== 16. sklearn Pipeline ========== -->
+<h2 id="s16">16 · scikit-learn Pipeline structure <span class="tag code">code</span></h2>
+<p>For tabular data the preprocessing must travel with the model. The standard pattern combines a <code>ColumnTransformer</code> (different transforms for numeric and categorical columns) with a model in a single <code>Pipeline</code>:</p>
+<pre>num_cols = ["age", "education_num", "hours_per_week"]
+cat_cols = ["workclass", "occupation", "sex"]
+
+prep = ColumnTransformer([
+    ("num", StandardScaler(),                   num_cols),
+    ("cat", OneHotEncoder(handle_unknown="ignore"), cat_cols),
+])
+
+pipe = Pipeline([
+    ("prep", prep),
+    ("clf",  LogisticRegression(max_iter=1000)),
+])
+
+pipe.fit(X_train, y_train)
+joblib.dump(pipe, "model.joblib")    # the WHOLE pipeline, including the fitted scaler</pre>
+<p>Three benefits, all of which the product mindset cares about:</p>
+<ul>
+  <li><strong>No train/serve skew.</strong> Inference uses the exact same preprocessing as training.</li>
+  <li><strong>One artifact.</strong> A single pickle/joblib file ships the whole transformation chain.</li>
+  <li><strong>Cleaner cross-validation.</strong> CV folds re-fit the scaler on each training partition, so test-set statistics never leak.</li>
+</ul>
+
+<!-- ========== 17. Bias audit ========== -->
+<h2 id="s17">17 · Bias audit by protected attribute <span class="tag interactive">interactive</span></h2>
+<p>Overall accuracy hides per-group disparities. A defensible model card reports, for every protected attribute, both <em>false-positive rate</em> and <em>false-negative rate</em> per group, then comments on the gap.</p>
+<p class="eq-block">
+  FPR<sub>group g</sub> = FP<sub>g</sub> / (FP<sub>g</sub> + TN<sub>g</sub>),
+  &nbsp;&nbsp;
+  FNR<sub>group g</sub> = FN<sub>g</sub> / (FN<sub>g</sub> + TP<sub>g</sub>)
+</p>
+
+<div class="demo">
+  <h3>Demo · Compute FPR / FNR per group</h3>
+  <p>Two groups, A and B. Edit each group's confusion matrix and watch the per-group metrics and the disparity update.</p>
+  <div class="row">
+    <div class="col">
+      <h4>Group A</h4>
+      <div class="controls">
+        <div class="control"><label>TP_A</label><input type="number" id="ba-tp" value="60" min="0"></div>
+        <div class="control"><label>FN_A</label><input type="number" id="ba-fn" value="40" min="0"></div>
+        <div class="control"><label>FP_A</label><input type="number" id="ba-fp" value="20" min="0"></div>
+        <div class="control"><label>TN_A</label><input type="number" id="ba-tn" value="180" min="0"></div>
+      </div>
+    </div>
+    <div class="col">
+      <h4>Group B</h4>
+      <div class="controls">
+        <div class="control"><label>TP_B</label><input type="number" id="bb-tp" value="50" min="0"></div>
+        <div class="control"><label>FN_B</label><input type="number" id="bb-fn" value="50" min="0"></div>
+        <div class="control"><label>FP_B</label><input type="number" id="bb-fp" value="40" min="0"></div>
+        <div class="control"><label>TN_B</label><input type="number" id="bb-tn" value="160" min="0"></div>
+      </div>
+    </div>
+  </div>
+  <pre id="audit-out"></pre>
+</div>
+
+<div class="callout">
+  <strong>Architecture reminder.</strong> The Topic 2 product's scikit-learn <code>Pipeline</code> lives in <strong>FastAPI on Render</strong> — never embedded in the Streamlit process. The Streamlit "Bias Audit" tab calls a read-only <code>/audit</code> endpoint or queries the <code>predictions</code> table directly with the Supabase <em>anon</em> key. Writes are reserved for FastAPI using the service-role key.
+</div>
+
+<div class="nav">
+  <a href="../Topic_1_-_Derivatives_and_Partial_Derivatives/Tutorial_Topic_1_Background_Math_and_Gradient_Descent.html">← Topic 1</a>
+  <a href="Exercises_Topic_2_Matrices_and_Feed_Forward_Neural_Networks.html">Practice exercises →</a>
+</div>
+
+</div>
+
+<script>
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+/* §2 XOR not separable */
+(function(){
+  const c=document.getElementById('xor-canvas'), ctx=c.getContext('2d');
+  const angIn=document.getElementById('xor-ang'), offIn=document.getElementById('xor-off');
+  const out=document.getElementById('xor-readout');
+  const pts=[{x:0,y:0,lab:0},{x:1,y:1,lab:0},{x:0,y:1,lab:1},{x:1,y:0,lab:1}];
+  function draw(){
+    const W=c.width,H=c.height; ctx.clearRect(0,0,W,H);
+    const pad=40, px=x=>pad+x*(W-2*pad), py=y=>H-pad-y*(H-2*pad);
+    ctx.strokeStyle='#CFD7DF'; ctx.strokeRect(pad,pad,W-2*pad,H-2*pad);
+    const ang=(+angIn.value)*Math.PI/180, off=+offIn.value;
+    function sign(x,y){return Math.cos(ang)*(x-0.5)+Math.sin(ang)*(y-0.5)+off;}
+    ctx.strokeStyle='#1F4E79'; ctx.lineWidth=2; ctx.beginPath();
+    let started=false;
+    for(let i=0;i<=200;i++){
+      const x=i/200;
+      if(Math.abs(Math.sin(ang))>1e-3){
+        const y=0.5+(-Math.cos(ang)*(x-0.5)-off)/Math.sin(ang);
+        if(y>=0&&y<=1){if(!started){ctx.moveTo(px(x),py(y)); started=true;} else ctx.lineTo(px(x),py(y));}
+        else started=false;
+      }
+    }
+    if(Math.abs(Math.sin(ang))<1e-3){
+      const x=0.5-off/Math.cos(ang);
+      if(x>=0&&x<=1){ctx.moveTo(px(x),py(0)); ctx.lineTo(px(x),py(1));}
+    }
+    ctx.stroke();
+    let wrong=0;
+    for(const p of pts){
+      const s=sign(p.x,p.y), pred=s>0?1:0, ok=pred===p.lab;
+      if(!ok) wrong++;
+      ctx.fillStyle=p.lab===1?'#C00000':'#1F4E79';
+      ctx.strokeStyle=ok?'#1B7340':'#C00000'; ctx.lineWidth=ok?2:3;
+      ctx.beginPath(); ctx.arc(px(p.x),py(p.y),14,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle='white'; ctx.font='bold 13px sans-serif'; ctx.fillText(p.lab,px(p.x)-4,py(p.y)+5);
+    }
+    out.textContent=`Misclassified: ${wrong}/4`+(wrong===0?' — impossible! a straight line cannot do it':'');
+  }
+  angIn.oninput=draw; offIn.oninput=draw; draw();
+})();
+
+/* §3 MLP solving XOR */
+(function(){
+  const c=document.getElementById('mlp-canvas'), ctx=c.getContext('2d');
+  const out=document.getElementById('mlp-readout');
+  let W1=[[3,3],[3,3]],b1=[-1,-4],W2=[6,-6],b2=-1;
+  const data=[{x:[0,0],y:0},{x:[1,1],y:0},{x:[0,1],y:1},{x:[1,0],y:1}];
+  function relu(z){return Math.max(0,z);} function sig(z){return 1/(1+Math.exp(-z));}
+  function pred(x){
+    const h0=relu(W1[0][0]*x[0]+W1[1][0]*x[1]+b1[0]);
+    const h1=relu(W1[0][1]*x[0]+W1[1][1]*x[1]+b1[1]);
+    return sig(W2[0]*h0+W2[1]*h1+b2);
+  }
+  function load(name){
+    if(name==='solved'){W1=[[5,5],[5,5]]; b1=[-2,-8]; W2=[10,-10]; b2=-3;}
+    else if(name==='bad'){W1=[[1,-1],[1,-1]]; b1=[0,0]; W2=[1,1]; b2=0;}
+    else if(name==='train'){
+      const lr=0.5;
+      for(let it=0;it<500;it++){
+        for(const d of data){
+          const z0=W1[0][0]*d.x[0]+W1[1][0]*d.x[1]+b1[0];
+          const z1=W1[0][1]*d.x[0]+W1[1][1]*d.x[1]+b1[1];
+          const h0=relu(z0), h1=relu(z1);
+          const o=sig(W2[0]*h0+W2[1]*h1+b2); const dL=o-d.y;
+          const dW20=dL*h0, dW21=dL*h1, db2=dL;
+          const dh0=dL*W2[0]*(z0>0?1:0), dh1=dL*W2[1]*(z1>0?1:0);
+          W2[0]-=lr*dW20; W2[1]-=lr*dW21; b2-=lr*db2;
+          W1[0][0]-=lr*dh0*d.x[0]; W1[1][0]-=lr*dh0*d.x[1]; b1[0]-=lr*dh0;
+          W1[0][1]-=lr*dh1*d.x[0]; W1[1][1]-=lr*dh1*d.x[1]; b1[1]-=lr*dh1;
+        }
+      }
+    }
+    draw();
+  }
+  document.querySelectorAll('[data-mlp-preset]').forEach(b=>{b.onclick=()=>load(b.dataset.mlpPreset);});
+  function draw(){
+    const W=c.width,H=c.height; ctx.clearRect(0,0,W,H);
+    const pad=40, px=x=>pad+x*(W-2*pad), py=y=>H-pad-y*(H-2*pad);
+    const step=0.04;
+    for(let xv=0;xv<=1;xv+=step) for(let yv=0;yv<=1;yv+=step){
+      const p=pred([xv,yv]);
+      ctx.fillStyle=p>0.5?`rgba(192,0,0,${0.15+0.45*p})`:`rgba(31,78,121,${0.15+0.45*(1-p)})`;
+      ctx.fillRect(px(xv),py(yv+step),(W-2*pad)*step+1,(H-2*pad)*step+1);
+    }
+    ctx.strokeStyle='#CFD7DF'; ctx.strokeRect(pad,pad,W-2*pad,H-2*pad);
+    let correct=0;
+    for(const d of data){
+      const p=pred(d.x), pp=p>0.5?1:0; if(pp===d.y) correct++;
+      ctx.fillStyle=d.y===1?'#C00000':'#1F4E79';
+      ctx.strokeStyle=pp===d.y?'#1B7340':'#222'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(px(d.x[0]),py(d.x[1]),14,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle='white'; ctx.font='bold 13px sans-serif'; ctx.fillText(d.y,px(d.x[0])-4,py(d.x[1])+5);
+    }
+    out.textContent=`Test accuracy: ${correct}/4`;
+  }
+  draw();
+})();
+
+/* §5 Shape calculator */
+(function(){
+  const ids=['sh-B','sh-in','sh-h1','sh-h2','sh-out']; const out=document.getElementById('sh-pre');
+  function update(){
+    const [B,nin,h1,h2,nout]=ids.map(i=>+document.getElementById(i).value);
+    const p1=nin*h1+h1, p2=h1*h2+h2, p3=h2*nout+nout;
+    out.textContent=
+`# nn.Sequential(
+#   nn.Linear(${nin}, ${h1}), nn.ReLU(),
+#   nn.Linear(${h1}, ${h2}), nn.ReLU(),
+#   nn.Linear(${h2}, ${nout}))
+
+x        : (${B}, ${nin})
+W1       : (${nin}, ${h1})        params: ${p1.toLocaleString()}
+h1_pre   : x @ W1 + b1      -> (${B}, ${h1})
+h1       : ReLU(h1_pre)     -> (${B}, ${h1})
+
+W2       : (${h1}, ${h2})       params: ${p2.toLocaleString()}
+h2_pre   : h1 @ W2 + b2     -> (${B}, ${h2})
+h2       : ReLU(h2_pre)     -> (${B}, ${h2})
+
+W3       : (${h2}, ${nout})      params: ${p3.toLocaleString()}
+out      : h2 @ W3 + b3     -> (${B}, ${nout})
+
+# Total trainable parameters: ${(p1+p2+p3).toLocaleString()}`;
+  }
+  ids.forEach(i=>document.getElementById(i).oninput=update); update();
+})();
+
+/* §6 Activations + derivatives */
+(function(){
+  const c=document.getElementById('act-canvas'), ctx=c.getContext('2d');
+  function sig(z){return 1/(1+Math.exp(-z));}
+  function dsig(z){const s=sig(z); return s*(1-s);}
+  function tnh(z){return Math.tanh(z);}
+  function dtnh(z){const t=Math.tanh(z); return 1-t*t;}
+  function relu(z){return Math.max(0,z);}
+  function drelu(z){return z>0?1:0;}
+  function gelu(z){return 0.5*z*(1+Math.tanh(Math.sqrt(2/Math.PI)*(z+0.044715*z*z*z)));}
+  function dgelu(z){const h=1e-4; return (gelu(z+h)-gelu(z-h))/(2*h);}
+  const groups=[
+    {name:'Sigmoid', color:'#1F4E79', f:sig, fp:dsig},
+    {name:'tanh',    color:'#1B7340', f:tnh, fp:dtnh},
+    {name:'ReLU',    color:'#C00000', f:relu, fp:drelu},
+    {name:'GELU',    color:'#8E44AD', f:gelu, fp:dgelu},
+  ];
+  function panel(ox,oy,w,h,title,fn,ymin,ymax){
+    ctx.fillStyle='#FFF'; ctx.strokeStyle='#CFD7DF'; ctx.fillRect(ox,oy,w,h); ctx.strokeRect(ox,oy,w,h);
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 12px sans-serif'; ctx.fillText(title,ox+10,oy+18);
+    const xmin=-4,xmax=4;
+    const px=x=>ox+30+(x-xmin)/(xmax-xmin)*(w-50);
+    const py=y=>oy+h-20-(y-ymin)/(ymax-ymin)*(h-40);
+    ctx.strokeStyle='#EFF2F5';
+    ctx.beginPath(); ctx.moveTo(ox+30,py(0)); ctx.lineTo(ox+w-20,py(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px(0),oy+25); ctx.lineTo(px(0),oy+h-20); ctx.stroke();
+    for(const g of groups){
+      ctx.strokeStyle=g.color; ctx.lineWidth=2; ctx.beginPath();
+      for(let i=0;i<=200;i++){const x=xmin+(xmax-xmin)*i/200; const y=fn(g,x);
+        (i?ctx.lineTo:ctx.moveTo).call(ctx,px(x),py(y));}
+      ctx.stroke();
+    }
+  }
+  panel(20,20,420,280,'σ(z)',(g,x)=>g.f(x), -1.5, 2.5);
+  panel(460,20,400,280,"σ′(z)",(g,x)=>g.fp(x), -0.2, 1.2);
+  ctx.font='bold 12px sans-serif';
+  groups.forEach((g,i)=>{ctx.fillStyle=g.color; ctx.fillText(g.name, 50+i*100, 300);});
+})();
+
+/* §7 Backprop MLP demo */
+(function(){
+  const out=document.getElementById('bp-out');
+  let W1=[[0.4,-0.3],[0.2,0.7]], b1=[0.1,-0.1], W2=[[0.5],[-0.6]], b2=[0.2];
+  function sig(z){return 1/(1+Math.exp(-z));}
+  function run(){
+    const x1=+document.getElementById('bp-x1').value;
+    const x2=+document.getElementById('bp-x2').value;
+    const y=+document.getElementById('bp-y').value;
+    // forward
+    const z11=W1[0][0]*x1+W1[1][0]*x2+b1[0]; const z12=W1[0][1]*x1+W1[1][1]*x2+b1[1];
+    const a11=sig(z11), a12=sig(z12);
+    const z2=W2[0][0]*a11+W2[1][0]*a12+b2[0];
+    const yh=sig(z2);
+    const L=0.5*(yh-y)**2;
+    // backward
+    const dyh=yh-y, dz2=dyh*yh*(1-yh);
+    const dW2_0=dz2*a11, dW2_1=dz2*a12, db2_=dz2;
+    const da11=dz2*W2[0][0], da12=dz2*W2[1][0];
+    const dz11=da11*a11*(1-a11), dz12=da12*a12*(1-a12);
+    const dW1_00=dz11*x1, dW1_10=dz11*x2;
+    const dW1_01=dz12*x1, dW1_11=dz12*x2;
+    const db1_0=dz11, db1_1=dz12;
+    out.textContent =
+`# Forward pass
+z1 = W1ᵀ · x + b1
+   = [${z11.toFixed(3)}, ${z12.toFixed(3)}]
+a1 = σ(z1) = [${a11.toFixed(3)}, ${a12.toFixed(3)}]
+
+z2 = W2ᵀ · a1 + b2 = ${z2.toFixed(3)}
+ŷ  = σ(z2)         = ${yh.toFixed(3)}
+L  = ½(ŷ − y)²     = ${L.toFixed(5)}
+
+# Backward pass (chain rule)
+∂L/∂ŷ  = ŷ − y           = ${dyh.toFixed(4)}
+∂L/∂z₂ = (ŷ − y) · ŷ(1−ŷ) = ${dz2.toFixed(4)}
+
+∂L/∂W₂ = ∂L/∂z₂ · a₁ᵀ
+       = [${dW2_0.toFixed(4)}, ${dW2_1.toFixed(4)}]
+∂L/∂b₂ = ${db2_.toFixed(4)}
+
+∂L/∂a₁ = W₂ · ∂L/∂z₂        = [${da11.toFixed(4)}, ${da12.toFixed(4)}]
+∂L/∂z₁ = ∂L/∂a₁ ⊙ a₁(1−a₁)  = [${dz11.toFixed(4)}, ${dz12.toFixed(4)}]
+
+∂L/∂W₁ = ∂L/∂z₁ · xᵀ
+       = [[${dW1_00.toFixed(4)}, ${dW1_01.toFixed(4)}],
+          [${dW1_10.toFixed(4)}, ${dW1_11.toFixed(4)}]]
+∂L/∂b₁ = [${db1_0.toFixed(4)}, ${db1_1.toFixed(4)}]`;
+  }
+  document.getElementById('bp-x1').oninput=run;
+  document.getElementById('bp-x2').oninput=run;
+  document.getElementById('bp-y').oninput=run;
+  document.getElementById('bp-rand').onclick=()=>{
+    W1=[[Math.random()-0.5,Math.random()-0.5],[Math.random()-0.5,Math.random()-0.5]];
+    W2=[[Math.random()-0.5],[Math.random()-0.5]];
+    b1=[Math.random()-0.5, Math.random()-0.5]; b2=[Math.random()-0.5];
+    run();
+  };
+  run();
+})();
+
+/* §8 Vanishing/exploding gradient demo */
+(function(){
+  const c=document.getElementById('ve-canvas'), ctx=c.getContext('2d');
+  const NIn=document.getElementById('ve-N'), ActIn=document.getElementById('ve-act');
+  const InitIn=document.getElementById('ve-init'); const out=document.getElementById('ve-readout');
+  function actAndDeriv(name){
+    const f={sigmoid:(z)=>1/(1+Math.exp(-z)),
+             tanh:(z)=>Math.tanh(z),
+             relu:(z)=>Math.max(0,z),
+             gelu:(z)=>0.5*z*(1+Math.tanh(Math.sqrt(2/Math.PI)*(z+0.044715*z**3)))}[name];
+    const fp={sigmoid:(z)=>{const s=f(z); return s*(1-s);},
+              tanh:(z)=>1-Math.tanh(z)**2,
+              relu:(z)=>z>0?1:0,
+              gelu:(z)=>{const h=1e-3; return (f(z+h)-f(z-h))/(2*h);}}[name];
+    return {f, fp};
+  }
+  function initScale(name, nin){
+    return {he: Math.sqrt(2/nin),
+            xavier: Math.sqrt(1/nin),
+            big: 2.0,
+            tiny: 0.1}[name];
+  }
+  function gauss(){return Math.sqrt(-2*Math.log(Math.random()))*Math.cos(2*Math.PI*Math.random());}
+  function compute(){
+    const N=+NIn.value;
+    const {f, fp}=actAndDeriv(ActIn.value);
+    const dim=64;
+    const s=initScale(InitIn.value, dim);
+    // initialize weights
+    const Ws=[];
+    for(let l=0;l<N;l++){
+      const W=[]; for(let i=0;i<dim;i++){const r=[]; for(let j=0;j<dim;j++) r.push(s*gauss()); W.push(r);}
+      Ws.push(W);
+    }
+    // forward
+    const xs=[]; const a0=[]; for(let i=0;i<dim;i++) a0.push(gauss());
+    xs.push(a0);
+    const zs=[];
+    for(let l=0;l<N;l++){
+      const z=[]; for(let j=0;j<dim;j++){let s=0; for(let i=0;i<dim;i++) s+=Ws[l][i][j]*xs[l][i]; z.push(s);}
+      zs.push(z);
+      const a=z.map(f); xs.push(a);
+    }
+    // backprop gradient magnitudes
+    let g=[]; for(let i=0;i<dim;i++) g.push(1.0); // assume dL/dy = 1
+    const norms=[];
+    for(let l=N-1;l>=0;l--){
+      const dz=g.map((v,i)=>v*fp(zs[l][i]));
+      // gradient back into previous activation: g_prev_i = sum_j W[i][j]*dz[j]
+      const gPrev=[]; for(let i=0;i<dim;i++){let s=0; for(let j=0;j<dim;j++) s+=Ws[l][i][j]*dz[j]; gPrev.push(s);}
+      // norm
+      const n=Math.sqrt(gPrev.reduce((s,v)=>s+v*v,0));
+      norms.push(n);
+      g=gPrev;
+    }
+    norms.reverse();
+    return norms;
+  }
+  function draw(){
+    const W=c.width,H=c.height; ctx.clearRect(0,0,W,H);
+    const norms=compute();
+    const N=norms.length;
+    const max=Math.max(...norms, 1e-12);
+    const min=Math.min(...norms.filter(v=>v>0), 1e-12);
+    const logMax=Math.log10(max), logMin=Math.log10(min)-1;
+    const px=i=>40+i*(W-60)/(N-1);
+    const py=v=>H-30-(Math.log10(Math.max(v,1e-30))-logMin)/(logMax-logMin)*(H-50);
+    ctx.strokeStyle='#CFD7DF';
+    ctx.beginPath(); ctx.moveTo(40, py(min)); ctx.lineTo(W-20, py(min)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(40,20); ctx.lineTo(40,H-30); ctx.stroke();
+    ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+    [-20,-15,-10,-5,0,5].forEach(v=>{const y=py(Math.pow(10,v)); if(y>20 && y<H-30) ctx.fillText('10^'+v,8,y+3);});
+    ctx.fillText('layer (1 = closest to input)',W/2-80,H-12);
+    ctx.strokeStyle='#1F4E79'; ctx.lineWidth=2.4; ctx.beginPath();
+    norms.forEach((v,i)=>(i?ctx.lineTo:ctx.moveTo).call(ctx,px(i),py(v))); ctx.stroke();
+    ctx.fillStyle='#1F4E79';
+    norms.forEach((v,i)=>{ctx.beginPath(); ctx.arc(px(i),py(v),3,0,Math.PI*2); ctx.fill();});
+    out.textContent = `${ActIn.value} + ${InitIn.value} init at depth ${N}: ` +
+      `gradient ratio (layer 1 / layer N) = ${(norms[0]/norms[N-1]).toExponential(2)}`;
+  }
+  NIn.oninput=draw; ActIn.onchange=draw; InitIn.onchange=draw; draw();
+})();
+
+/* §9 Init: activation distribution at every layer */
+(function(){
+  const c=document.getElementById('init-canvas'), ctx=c.getContext('2d');
+  const out=document.getElementById('init-readout');
+  function gauss(){return Math.sqrt(-2*Math.log(Math.random()))*Math.cos(2*Math.PI*Math.random());}
+  function relu(z){return Math.max(0,z);}
+  function run(scheme){
+    const L=6, dim=128;
+    const init={he:Math.sqrt(2/dim), xavier:Math.sqrt(1/dim), big:2.0, tiny:0.05}[scheme];
+    let a=[]; for(let i=0;i<dim;i++) a.push(gauss());
+    const layers=[];
+    for(let l=0;l<L;l++){
+      const z=[];
+      for(let j=0;j<dim;j++){let s=0; for(let i=0;i<dim;i++) s+=init*gauss()*a[i]; z.push(s);}
+      a=z.map(relu);
+      layers.push({a, std: Math.sqrt(a.reduce((s,v)=>s+v*v,0)/a.length)});
+    }
+    return layers;
+  }
+  function draw(scheme){
+    const W=c.width,H=c.height; ctx.clearRect(0,0,W,H);
+    const layers=run(scheme);
+    const colW=(W-40)/layers.length;
+    layers.forEach((L,i)=>{
+      const ox=20+i*colW;
+      ctx.fillStyle='#1F4E79'; ctx.font='bold 11px sans-serif';
+      ctx.fillText('layer '+(i+1), ox+colW/2-22, 18);
+      ctx.fillStyle='#555'; ctx.font='10px monospace';
+      ctx.fillText('std='+L.std.toFixed(3), ox+colW/2-30, 32);
+      // histogram
+      const bins=25;
+      const counts=new Array(bins).fill(0);
+      const maxA=Math.max(...L.a, 0.01);
+      for(const v of L.a){const b=Math.min(bins-1, Math.floor(v/maxA*bins)); counts[b]++;}
+      const mx=Math.max(...counts);
+      const bw=(colW-20)/bins;
+      counts.forEach((c2,b)=>{
+        const h=c2/mx*(H-80);
+        ctx.fillStyle='#1F4E79';
+        ctx.fillRect(ox+10+b*bw, H-30-h, bw-0.5, h);
+      });
+    });
+    out.textContent = `${scheme} init: std at layer 1 → 6 should stay roughly constant; "tiny"/"big" diverge`;
+  }
+  document.querySelectorAll('[data-init]').forEach(b=>{b.onclick=()=>draw(b.dataset.init);});
+  draw('he');
+})();
+
+/* §10 Dropout */
+(function(){
+  const c=document.getElementById('do-canvas'), ctx=c.getContext('2d');
+  const pIn=document.getElementById('do-p');
+  const stepBtn=document.getElementById('do-step');
+  const evalBtn=document.getElementById('do-eval');
+  const out=document.getElementById('do-readout');
+  const N=12;
+  let cols=[]; let evalMode=false;
+  function newCol(){
+    const p=+pIn.value; const mask=[];
+    for(let i=0;i<N;i++) mask.push(evalMode? 1: (Math.random()>=p?1/(1-p):0));
+    return mask;
+  }
+  function step(){cols.push(newCol()); if(cols.length>8) cols.shift(); draw();}
+  function draw(){
+    const W=c.width,H=c.height; ctx.clearRect(0,0,W,H);
+    if(cols.length===0){ ctx.fillStyle='#888'; ctx.fillText('Press Step to draw a mask.',W/2-70,H/2); return; }
+    const cellH=(H-60)/N, cellW=(W-60)/cols.length;
+    ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+    ctx.fillText('hidden unit  i =',8, 30);
+    cols.forEach((mask,c2)=>{
+      ctx.fillStyle='#555'; ctx.fillText('t='+(c2+1), 50+c2*cellW + cellW/2-12, 24);
+      mask.forEach((v,i)=>{
+        const x=50+c2*cellW + 8, y=40+i*cellH;
+        ctx.fillStyle = v>0 ? '#1F4E79' : '#FBD9D6';
+        ctx.fillRect(x, y, cellW-16, cellH-4);
+        ctx.fillStyle = v>0 ? 'white' : '#6E1414';
+        ctx.font = '10px monospace';
+        ctx.fillText(v>0 ? v.toFixed(2) : '0', x+8, y+cellH/2);
+      });
+    });
+    for(let i=0;i<N;i++){
+      ctx.fillStyle='#555'; ctx.font='10px monospace';
+      ctx.fillText(i, 30, 40+i*cellH+cellH/2);
+    }
+    out.textContent = `mode = ${evalMode?'eval (no dropout)':'train'} · p = ${(+pIn.value).toFixed(2)} · drawn masks: ${cols.length}`;
+  }
+  stepBtn.onclick=step;
+  evalBtn.onclick=()=>{ evalMode=!evalMode; out.textContent='Mode toggled to '+(evalMode?'eval':'train'); step(); };
+  pIn.oninput=()=>{cols=[]; step();};
+  step();
+})();
+
+/* §13 Confusion matrix */
+(function(){
+  const ids=['cm-tp','cm-fn','cm-fp','cm-tn']; const out=document.getElementById('cm-out');
+  function up(){
+    const [TP,FN,FP,TN]=ids.map(i=>Math.max(0,+document.getElementById(i).value||0));
+    const total=TP+FN+FP+TN;
+    if(total===0){out.textContent='—'; return;}
+    const acc=(TP+TN)/total;
+    const prec=TP/Math.max(1,TP+FP);
+    const rec=TP/Math.max(1,TP+FN);
+    const f1=2*prec*rec/Math.max(1e-9,prec+rec);
+    const fpr=FP/Math.max(1,FP+TN);
+    const fnr=FN/Math.max(1,FN+TP);
+    out.textContent =
+`Confusion matrix (total ${total}):
+                 predicted +   predicted −
+   actual +      TP = ${TP}      FN = ${FN}
+   actual −      FP = ${FP}      TN = ${TN}
+
+Derived metrics:
+   accuracy   = (TP + TN) / total      = ${acc.toFixed(4)}
+   precision  = TP / (TP + FP)          = ${prec.toFixed(4)}
+   recall     = TP / (TP + FN)          = ${rec.toFixed(4)}
+   F1         = 2·P·R / (P + R)         = ${f1.toFixed(4)}
+   FPR        = FP / (FP + TN)          = ${fpr.toFixed(4)}
+   FNR        = FN / (FN + TP)          = ${fnr.toFixed(4)}`;
+  }
+  ids.forEach(i=>document.getElementById(i).oninput=up); up();
+})();
+
+/* §14 ROC */
+(function(){
+  const c=document.getElementById('roc-canvas'), ctx=c.getContext('2d');
+  const thrIn=document.getElementById('roc-thr');
+  const qIn=document.getElementById('roc-quality');
+  const out=document.getElementById('roc-readout');
+  function dist(){
+    // simulate score distributions: positives ~ N(q, 0.2), negatives ~ N(1-q, 0.2)
+    const q=+qIn.value;
+    return {posMean:0.5+0.45*q, negMean:0.5-0.45*q, sd:0.18};
+  }
+  function cdf(x, mean, sd){const z=(x-mean)/sd; return 0.5*(1+erf(z/Math.SQRT2));}
+  function erf(x){const a1=0.254829592, a2=-0.284496736, a3=1.421413741, a4=-1.453152027, a5=1.061405429, p=0.3275911;
+    const sign=x<0?-1:1; x=Math.abs(x); const t=1/(1+p*x);
+    const y=1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x); return sign*y;}
+  function curve(){
+    const {posMean,negMean,sd}=dist();
+    const pts=[];
+    for(let t=1.01; t>=-0.01; t-=0.01){
+      const tpr = 1 - cdf(t, posMean, sd);
+      const fpr = 1 - cdf(t, negMean, sd);
+      pts.push([fpr, tpr, t]);
+    }
+    return pts;
+  }
+  function auc(pts){
+    let s=0;
+    for(let i=1;i<pts.length;i++){
+      s += 0.5*(pts[i-1][1]+pts[i][1])*(pts[i][0]-pts[i-1][0]);
+    }
+    return s;
+  }
+  function draw(){
+    const W=c.width,H=c.height; ctx.clearRect(0,0,W,H);
+    const padX=80, padY=30;
+    const sx=(W-padX-20), sy=(H-padY-30);
+    const px=v=>padX+v*sx, py=v=>H-padY-v*sy;
+    // axes
+    ctx.strokeStyle='#CFD7DF';
+    ctx.strokeRect(padX, padY, sx, sy);
+    ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+    ctx.fillText('FPR', W/2, H-8);
+    ctx.save(); ctx.translate(20, H/2); ctx.rotate(-Math.PI/2); ctx.fillText('TPR', 0, 0); ctx.restore();
+    // diagonal
+    ctx.setLineDash([4,4]); ctx.strokeStyle='#888';
+    ctx.beginPath(); ctx.moveTo(px(0),py(0)); ctx.lineTo(px(1),py(1)); ctx.stroke(); ctx.setLineDash([]);
+    // curve
+    const pts=curve();
+    ctx.strokeStyle='#1F4E79'; ctx.lineWidth=2.5;
+    ctx.beginPath();
+    pts.forEach((p,i)=>(i?ctx.lineTo:ctx.moveTo).call(ctx, px(p[0]), py(p[1])));
+    ctx.stroke();
+    // operating point at threshold
+    const thr=+thrIn.value;
+    const {posMean,negMean,sd}=dist();
+    const opTpr = 1 - cdf(thr, posMean, sd);
+    const opFpr = 1 - cdf(thr, negMean, sd);
+    ctx.fillStyle='#C00000';
+    ctx.beginPath(); ctx.arc(px(opFpr), py(opTpr), 7, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle='#1A1A1A'; ctx.font='12px sans-serif';
+    ctx.fillText(`threshold = ${thr.toFixed(2)}`, px(opFpr)+10, py(opTpr)-8);
+    out.textContent = `AUC ≈ ${auc(pts).toFixed(3)} · @ threshold ${thr.toFixed(2)}: TPR = ${opTpr.toFixed(3)}, FPR = ${opFpr.toFixed(3)}`;
+  }
+  thrIn.oninput=draw; qIn.oninput=draw; draw();
+})();
+
+/* §15 Calibration */
+(function(){
+  const c=document.getElementById('cal-canvas'), ctx=c.getContext('2d');
+  const TIn=document.getElementById('cal-T'); const out=document.getElementById('cal-readout');
+  function softmax(z){const m=Math.max(...z); const e=z.map(v=>Math.exp(v-m)); const s=e.reduce((a,b)=>a+b,0); return e.map(v=>v/s);}
+  function simulate(T){
+    // a hypothetical classifier with strong over-confidence; we generate 10 bins of empirical vs predicted
+    const bins=[];
+    for(let b=0;b<10;b++){
+      const center=(b+0.5)/10;
+      // raw logit consistent with predicted prob = center
+      const z = Math.log(center/(1-center));
+      const pred = 1/(1+Math.exp(-z/T));
+      // empirical positive rate as if the underlying model is overconfident
+      const emp = clamp(0.5 + (center-0.5)*0.6, 0, 1);
+      bins.push({pred, emp});
+    }
+    return bins;
+  }
+  function ece(bins){let s=0; for(const b of bins) s+=Math.abs(b.pred-b.emp); return s/bins.length;}
+  function draw(){
+    const W=c.width,H=c.height; ctx.clearRect(0,0,W,H);
+    const padX=80, padY=30;
+    const sx=W-padX-20, sy=H-padY-30;
+    const px=v=>padX+v*sx, py=v=>H-padY-v*sy;
+    ctx.strokeStyle='#CFD7DF'; ctx.strokeRect(padX,padY,sx,sy);
+    ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+    ctx.fillText('predicted probability', W/2, H-8);
+    ctx.save(); ctx.translate(20, H/2); ctx.rotate(-Math.PI/2); ctx.fillText('empirical positive rate', 0, 0); ctx.restore();
+    // diagonal
+    ctx.setLineDash([4,4]); ctx.strokeStyle='#888';
+    ctx.beginPath(); ctx.moveTo(px(0),py(0)); ctx.lineTo(px(1),py(1)); ctx.stroke(); ctx.setLineDash([]);
+    const bins=simulate(+TIn.value);
+    // bars
+    bins.forEach(b=>{
+      const w=sx/12;
+      ctx.fillStyle='#C00000';
+      const h=b.emp*sy; const x=px(b.pred)-w/2;
+      ctx.globalAlpha=0.4;
+      ctx.fillRect(x, py(b.emp), w-2, h);
+      ctx.globalAlpha=1;
+    });
+    // line
+    ctx.strokeStyle='#1F4E79'; ctx.lineWidth=2;
+    ctx.beginPath();
+    bins.forEach((b,i)=>(i?ctx.lineTo:ctx.moveTo).call(ctx, px(b.pred), py(b.emp)));
+    ctx.stroke();
+    ctx.fillStyle='#1F4E79';
+    bins.forEach(b=>{ctx.beginPath(); ctx.arc(px(b.pred),py(b.emp),4,0,Math.PI*2); ctx.fill();});
+    out.textContent = `temperature T = ${(+TIn.value).toFixed(2)} · estimated ECE ≈ ${ece(bins).toFixed(3)} (lower is better)`;
+  }
+  TIn.oninput=draw; draw();
+})();
+
+/* §17 Bias audit */
+(function(){
+  const ids=['ba-tp','ba-fn','ba-fp','ba-tn','bb-tp','bb-fn','bb-fp','bb-tn'];
+  const out=document.getElementById('audit-out');
+  function up(){
+    const [TPa,FNa,FPa,TNa,TPb,FNb,FPb,TNb]=ids.map(i=>Math.max(0,+document.getElementById(i).value||0));
+    const fpr=(fp,tn)=>fp/Math.max(1,fp+tn), fnr=(fn,tp)=>fn/Math.max(1,fn+tp);
+    const acc=(tp,tn,fp,fn)=>(tp+tn)/Math.max(1,tp+tn+fp+fn);
+    const fpA=fpr(FPa,TNa), fnA=fnr(FNa,TPa), aA=acc(TPa,TNa,FPa,FNa);
+    const fpB=fpr(FPb,TNb), fnB=fnr(FNb,TPb), aB=acc(TPb,TNb,FPb,FNb);
+    out.textContent =
+`Group A:                                Group B:
+  accuracy = ${aA.toFixed(3)}                       accuracy = ${aB.toFixed(3)}
+  FPR      = ${fpA.toFixed(3)}                       FPR      = ${fpB.toFixed(3)}
+  FNR      = ${fnA.toFixed(3)}                       FNR      = ${fnB.toFixed(3)}
+
+DISPARITIES:
+  Δ accuracy = ${Math.abs(aA-aB).toFixed(3)}
+  Δ FPR      = ${Math.abs(fpA-fpB).toFixed(3)}  ← document in the model card
+  Δ FNR      = ${Math.abs(fnA-fnB).toFixed(3)}  ← document in the model card
+
+# A "fair" deployment story:
+#   - reports both per-group FPR and FNR
+#   - names the likely cause of the gap (sample size, label noise, …)
+#   - names the mitigation tried (re-weighting, threshold tuning, …)
+#   - lets the customer decide if the gap is acceptable for their use`;
+  }
+  ids.forEach(i=>document.getElementById(i).oninput=up); up();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 5 Exercises — Transformer Architecture</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family:-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+       margin:0; background:#F7F9FC; color:#1A1A1A; line-height:1.6; }
+.container { max-width:940px; margin:24px auto 48px; background:white;
+             padding:32px 48px; box-shadow:0 2px 8px rgba(0,0,0,0.06); border-radius:8px; }
+.brand { color:#888; font-size:0.85em; letter-spacing:0.05em; text-transform:uppercase; }
+h1 { color:#1F4E79; font-size:1.9em; border-bottom:3px solid #1F4E79;
+     padding-bottom:10px; margin:6px 0 8px; }
+.subtitle { color:#555; font-style:italic; margin-bottom:24px; }
+.score { position:sticky; top:0; background:white; padding:10px 14px;
+         border:1px solid #E0E5EB; border-radius:8px; margin-bottom:12px;
+         color:#1F4E79; font-weight:600; z-index:10;
+         display:flex; justify-content:space-between; align-items:center; }
+.score .bar { background:#E0E5EB; border-radius:999px; height:8px; width:240px; overflow:hidden; }
+.score .bar > div { background:#1F4E79; height:100%; transition:width 0.3s; }
+.exercise { border:1px solid #E0E5EB; border-radius:8px; padding:22px 26px;
+            margin:22px 0; background:#FCFDFE; }
+.exercise h3 { margin:0 0 4px; color:#1F4E79; font-size:1.1em; }
+.exercise .qtype { color:#888; font-size:0.8em; text-transform:uppercase;
+                   letter-spacing:0.05em; margin-bottom:14px; }
+.stem { margin-bottom:14px; }
+.stem code, code { font-family:"SF Mono",Consolas,Monaco,monospace; background:#F2F4F7;
+       padding:2px 6px; border-radius:3px; font-size:0.92em; }
+pre { background:#F2F4F7; padding:14px 18px; border-radius:6px;
+      overflow-x:auto; border-left:4px solid #1F4E79;
+      font-family:"SF Mono",Consolas,Monaco,monospace; font-size:0.92em; }
+.options { display:flex; flex-direction:column; gap:8px; margin:10px 0 14px; }
+.options label { cursor:pointer; padding:10px 14px; background:white;
+                 border:1px solid #D0D8E0; border-radius:6px; }
+.options label:hover { border-color:#1F4E79; background:#F7FAFC; }
+.options input[type="radio"] { margin-right:10px; }
+.numeric-row { display:flex; gap:12px; align-items:center; margin:10px 0 14px; }
+.numeric-row input { padding:8px 12px; border:1px solid #D0D8E0; border-radius:6px;
+                     font-family:inherit; font-size:1em; width:160px; }
+button { background:#1F4E79; color:white; border:0; padding:9px 18px;
+         border-radius:6px; cursor:pointer; font-family:inherit; font-size:0.95em; }
+button:hover { background:#2D5C8C; } button:disabled { background:#B8C2CB; cursor:not-allowed; }
+.feedback { padding:12px 16px; border-radius:6px; margin-top:10px; font-size:0.95em; display:none; }
+.feedback.show { display:block; }
+.feedback.correct { background:#E8F5E9; border-left:4px solid #2E7D32; color:#1B5E20; }
+.feedback.incorrect { background:#FDECEA; border-left:4px solid #C00000; color:#6E1414; }
+.feedback strong { display:block; margin-bottom:4px; }
+.help { color:#777; font-size:0.85em; margin-top:6px; }
+.nav { display:flex; justify-content:space-between; margin-top:36px;
+       padding-top:16px; border-top:1px solid #E0E5EB; font-size:0.9em; }
+.nav a { color:#1F4E79; text-decoration:none; } .nav a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">Practice exercises</div>
+<h1>Topic 5 — Transformer Architecture</h1>
+<p class="subtitle">Ten self-graded problems on multi-head attention, positional encoding, archetypes, and the Hugging Face API.</p>
+
+<div class="score">
+  <span id="scoreText">Score: 0 / 10</span>
+  <div class="bar"><div id="scoreBar" style="width:0%"></div></div>
+</div>
+
+<div class="exercise" data-q="1">
+  <div class="qtype">Computational · Multi-head shape</div>
+  <h3>Question 1</h3>
+  <div class="stem">With <code>d_model = 64</code> and <code>H = 8</code> heads, what is the per-head key dimension <code>d_k</code>?</div>
+  <div class="numeric-row">
+    <input type="number" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · d_k = d_model / H.</div>
+</div>
+
+<div class="exercise" data-q="2">
+  <div class="qtype">Theoretical · Multi-head benefit</div>
+  <h3>Question 2</h3>
+  <div class="stem">Why does multi-head attention usually beat single-head attention at the same total parameter budget?</div>
+  <div class="options">
+    <label><input type="radio" name="q2" value="a"> Multi-head simply has more parameters.</label>
+    <label><input type="radio" name="q2" value="b"> Each head can specialize in a different sub-pattern (positional or syntactic); concatenating heads yields a richer per-position representation than one head of equivalent size.</label>
+    <label><input type="radio" name="q2" value="c"> Multi-head removes the need for softmax.</label>
+    <label><input type="radio" name="q2" value="d"> Multi-head guarantees interpretability.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="3">
+  <div class="qtype">Theoretical · Positional encodings</div>
+  <h3>Question 3</h3>
+  <div class="stem">Why have rotary positional encodings (RoPE) become standard in modern LLMs?</div>
+  <div class="options">
+    <label><input type="radio" name="q3" value="a"> RoPE removes the need for self-attention.</label>
+    <label><input type="radio" name="q3" value="b"> RoPE rotates Q and K vectors so the attention score depends on the <em>relative</em> position between two tokens; this gives a clean inner-product interpretation and generalizes well to longer contexts.</label>
+    <label><input type="radio" name="q3" value="c"> RoPE is required by Hugging Face's tokenizer.</label>
+    <label><input type="radio" name="q3" value="d"> RoPE is identical to learned positional embeddings.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="4">
+  <div class="qtype">Computational · Causal mask</div>
+  <h3>Question 4</h3>
+  <div class="stem">A decoder-only transformer implements its causal mask by adding what value to the score at positions where <em>key > query</em>?</div>
+  <div class="options">
+    <label><input type="radio" name="q4" value="a"> +∞</label>
+    <label><input type="radio" name="q4" value="b"> 0</label>
+    <label><input type="radio" name="q4" value="c"> −∞ (so softmax assigns zero weight to "future" keys)</label>
+    <label><input type="radio" name="q4" value="d"> 1</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="5">
+  <div class="qtype">Theoretical · Archetype match</div>
+  <h3>Question 5</h3>
+  <div class="stem">Which archetype is the most natural fit for "summarize this paragraph"?</div>
+  <div class="options">
+    <label><input type="radio" name="q5" value="a"> Encoder-only (BERT)</label>
+    <label><input type="radio" name="q5" value="b"> Decoder-only (GPT)</label>
+    <label><input type="radio" name="q5" value="c"> Encoder–decoder (T5 / BART)</label>
+    <label><input type="radio" name="q5" value="d"> None of the above</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="6">
+  <div class="qtype">Theoretical · Pre-norm vs post-norm</div>
+  <h3>Question 6</h3>
+  <div class="stem">What is the most consistently reported benefit of pre-norm over post-norm in deep transformer stacks?</div>
+  <div class="options">
+    <label><input type="radio" name="q6" value="a"> Pre-norm has fewer parameters.</label>
+    <label><input type="radio" name="q6" value="b"> Pre-norm typically yields more stable training, tolerating higher learning rates without the warmup tricks post-norm requires.</label>
+    <label><input type="radio" name="q6" value="c"> Pre-norm is mathematically equivalent to post-norm.</label>
+    <label><input type="radio" name="q6" value="d"> Pre-norm replaces the residual connection.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="7">
+  <div class="qtype">Computational · AutoModel choice</div>
+  <h3>Question 7</h3>
+  <div class="stem">You want to serve GPT-2 next-token continuation behind FastAPI. Which Hugging Face task class should you load?</div>
+  <div class="options">
+    <label><input type="radio" name="q7" value="a"> AutoModelForSequenceClassification</label>
+    <label><input type="radio" name="q7" value="b"> AutoModelForCausalLM (with <code>model.generate(...)</code> for sampling/decoding)</label>
+    <label><input type="radio" name="q7" value="c"> AutoModelForMaskedLM</label>
+    <label><input type="radio" name="q7" value="d"> AutoModelForImageClassification</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="8">
+  <div class="qtype">Computational · Pipeline shortcut</div>
+  <h3>Question 8</h3>
+  <div class="stem">Which Hugging Face pipeline shortcut produces masked-token fill predictions with BERT?</div>
+  <div class="options">
+    <label><input type="radio" name="q8" value="a"><code>pipeline("fill-mask", model="bert-base-uncased")</code></label>
+    <label><input type="radio" name="q8" value="b"><code>pipeline("text-generation", model="bert-base-uncased")</code></label>
+    <label><input type="radio" name="q8" value="c"><code>pipeline("translation", model="bert-base-uncased")</code></label>
+    <label><input type="radio" name="q8" value="d"><code>pipeline("summarization", model="bert-base-uncased")</code></label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="9">
+  <div class="qtype">Theoretical · Cross-attention</div>
+  <h3>Question 9</h3>
+  <div class="stem">What is the role of cross-attention in an encoder–decoder transformer?</div>
+  <div class="options">
+    <label><input type="radio" name="q9" value="a"> It tokenizes the input.</label>
+    <label><input type="radio" name="q9" value="b"> It lets each decoder position attend to the encoder's output sequence so each generated token is grounded in the source.</label>
+    <label><input type="radio" name="q9" value="c"> It replaces the residual connection.</label>
+    <label><input type="radio" name="q9" value="d"> It is identical to self-attention inside the encoder.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="exercise" data-q="10">
+  <div class="qtype">Application · Latency logging</div>
+  <h3>Question 10</h3>
+  <div class="stem">Why does the Topic 5 product log per-model latency server-side (in FastAPI) and persist it to Supabase instead of measuring it in Streamlit?</div>
+  <div class="options">
+    <label><input type="radio" name="q10" value="a"> Streamlit cannot measure time at all.</label>
+    <label><input type="radio" name="q10" value="b"> Server-side latency excludes round-trip and renderer noise and reflects the model's actual serving cost; persisting it to Supabase lets a materialized view back a reproducible leaderboard.</label>
+    <label><input type="radio" name="q10" value="c"> Render forbids client-side timing.</label>
+    <label><input type="radio" name="q10" value="d"> Supabase requires every endpoint to log latency.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="nav">
+  <a href="Tutorial_Topic_5_Transformer_Architecture.html">← Back to tutorial</a>
+  <span>Topic 5 of 7</span>
+</div>
+
+</div>
+<script>
+const KEY = {
+  1:{type:'numeric', accept:8, tol:0.001, ok:'Correct. d_k = 64 / 8 = 8.', no:'Not quite. d_k = d_model / H.'},
+  2:{type:'mc', accept:'b', ok:'Correct. Heads can specialize, and the concatenation yields a richer per-position representation than one large head.', no:'Not quite. The point of multi-head is specialization across subspaces — not just more parameters.'},
+  3:{type:'mc', accept:'b', ok:'Correct. RoPE rotates Q and K so the attention score depends on relative position; this both gives a clean inner-product interpretation and extrapolates better to longer context.', no:'Not quite. RoPE\'s win is the relative-position property, not a tooling requirement.'},
+  4:{type:'mc', accept:'c', ok:'Correct. Adding −∞ to "future" scores makes softmax assign exactly zero weight to those positions.', no:'Not quite. The standard trick is to add −∞ to scores at masked positions before softmax.'},
+  5:{type:'mc', accept:'c', ok:'Correct. Encoder–decoder (T5/BART) is the canonical fit for sequence-to-sequence tasks like summarization — the decoder grounds each generated token in the encoder\'s read of the source.', no:'Not quite. Summarization is a sequence-to-sequence task; encoder–decoder is the natural fit.'},
+  6:{type:'mc', accept:'b', ok:'Correct. Pre-norm is empirically more stable for deep stacks and tolerates higher learning rates without the warmup acrobatics post-norm requires.', no:'Not quite. The reliably reported benefit is stability and tolerance of higher learning rates.'},
+  7:{type:'mc', accept:'b', ok:'Correct. GPT-2 is decoder-only; use AutoModelForCausalLM and model.generate(...) with sampling/decoding flags.', no:'Not quite. GPT-2 is decoder-only; the matching class is AutoModelForCausalLM.'},
+  8:{type:'mc', accept:'a', ok:'Correct. The "fill-mask" pipeline with bert-base-uncased is the canonical shortcut.', no:'Not quite. Fill-mask is the BERT-specific pipeline; text-generation and summarization are different tasks.'},
+  9:{type:'mc', accept:'b', ok:'Correct. Cross-attention lets the decoder attend to the encoder\'s outputs — this is what conditions generation on the source.', no:'Not quite. Cross-attention is the explicit mechanism that grounds decoder outputs in the encoder\'s read of the input.'},
+  10:{type:'mc', accept:'b', ok:'Correct. Server-side latency excludes network and client noise; persisting to Supabase enables a fair, reproducible leaderboard.', no:'Not quite. The reason is reproducibility and accuracy of the cost story, not a platform restriction.'},
+};
+const solved = new Set();
+document.querySelectorAll('.exercise').forEach(ex => {
+  const qid = +ex.dataset.q; const btn = ex.querySelector('[data-check]'); const fb = ex.querySelector('[data-feedback]');
+  btn.addEventListener('click', () => {
+    const k = KEY[qid]; let user;
+    if (k.type==='numeric') {
+      user = parseFloat(ex.querySelector('[data-input]').value);
+      if (Number.isNaN(user)) { fb.className='feedback incorrect show'; fb.innerHTML='<strong>Please enter a number.</strong>'; return; }
+    } else {
+      const picked = ex.querySelector('input[type=radio]:checked');
+      if (!picked) { fb.className='feedback incorrect show'; fb.innerHTML='<strong>Please select an option.</strong>'; return; }
+      user = picked.value;
+    }
+    const ok = (k.type==='numeric') ? Math.abs(user - k.accept) <= k.tol : user === k.accept;
+    if (ok) { fb.className='feedback correct show'; fb.innerHTML='<strong>Correct.</strong> '+k.ok;
+      if (!solved.has(qid)) { solved.add(qid); updateScore(); } btn.disabled=true;
+    } else { fb.className='feedback incorrect show'; fb.innerHTML='<strong>Not quite.</strong> '+k.no; }
+  });
+});
+function updateScore() {
+  const total = Object.keys(KEY).length;
+  document.getElementById('scoreText').textContent = `Score: ${solved.size} / ${total}`;
+  document.getElementById('scoreBar').style.width = `${(solved.size/total*100).toFixed(0)}%`;
+}
+</script>
+</body>
+</html>

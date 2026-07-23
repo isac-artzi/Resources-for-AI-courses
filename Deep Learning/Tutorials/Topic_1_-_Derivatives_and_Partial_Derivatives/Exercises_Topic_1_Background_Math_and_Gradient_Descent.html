@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 1 Exercises — Background Math &amp; Gradient Descent</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6;
+}
+.container { max-width: 940px; margin: 24px auto 48px; background: white;
+  padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+.score { position: sticky; top: 0; background: white; padding: 10px 14px;
+         border: 1px solid #E0E5EB; border-radius: 8px; margin-bottom: 12px;
+         color: #1F4E79; font-weight: 600; z-index: 10;
+         display: flex; justify-content: space-between; align-items: center; }
+.score .bar { background: #E0E5EB; border-radius: 999px; height: 8px;
+              width: 240px; overflow: hidden; }
+.score .bar > div { background: #1F4E79; height: 100%; transition: width 0.3s; }
+.exercise { border: 1px solid #E0E5EB; border-radius: 8px; padding: 22px 26px;
+            margin: 22px 0; background: #FCFDFE; }
+.exercise h3 { margin: 0 0 4px; color: #1F4E79; font-size: 1.1em; }
+.exercise .qtype { color: #888; font-size: 0.8em; text-transform: uppercase;
+                   letter-spacing: 0.05em; margin-bottom: 14px; }
+.stem { margin-bottom: 14px; }
+.stem code { font-family: "SF Mono", Consolas, Monaco, monospace;
+             background: #F2F4F7; padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+      overflow-x: auto; border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.92em; }
+.options { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 14px; }
+.options label { cursor: pointer; padding: 10px 14px; background: white;
+                 border: 1px solid #D0D8E0; border-radius: 6px; transition: border-color 0.15s; }
+.options label:hover { border-color: #1F4E79; background: #F7FAFC; }
+.options input[type="radio"] { margin-right: 10px; }
+.numeric-row { display: flex; gap: 12px; align-items: center; margin: 10px 0 14px; }
+.numeric-row input { padding: 8px 12px; border: 1px solid #D0D8E0; border-radius: 6px;
+                     font-family: inherit; font-size: 1em; width: 160px; }
+button { background: #1F4E79; color: white; border: 0; padding: 9px 18px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.95em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+button:disabled { background: #B8C2CB; cursor: not-allowed; }
+.feedback { padding: 12px 16px; border-radius: 6px; margin-top: 10px;
+            font-size: 0.95em; display: none; }
+.feedback.show { display: block; }
+.feedback.correct { background: #E8F5E9; border-left: 4px solid #2E7D32; color: #1B5E20; }
+.feedback.incorrect { background: #FDECEA; border-left: 4px solid #C00000; color: #6E1414; }
+.feedback strong { display: block; margin-bottom: 4px; }
+.help { color: #777; font-size: 0.85em; margin-top: 6px; }
+.nav { display: flex; justify-content: space-between; margin-top: 36px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; }
+.nav a { color: #1F4E79; text-decoration: none; }
+.nav a:hover { text-decoration: underline; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">Practice exercises</div>
+<h1>Topic 1 — Background Math &amp; Gradient Descent</h1>
+<p class="subtitle">Ten self-graded problems. Submit each one to see immediate feedback; the score bar at the top tracks your progress.</p>
+
+<div class="score">
+  <span id="scoreText">Score: 0 / 10</span>
+  <div class="bar"><div id="scoreBar" style="width:0%"></div></div>
+</div>
+
+<!-- Q1 -->
+<div class="exercise" data-q="1">
+  <div class="qtype">Theoretical · Chain rule</div>
+  <h3>Question 1</h3>
+  <div class="stem">For <span class="eq">f(x) = sin(x²)</span>, what is <span class="eq">f′(1)</span>? Round to two decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.01" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · By the chain rule, <span class="eq">f′(x) = 2x · cos(x²)</span>.</div>
+</div>
+
+<!-- Q2 -->
+<div class="exercise" data-q="2">
+  <div class="qtype">Theoretical · Gradient direction</div>
+  <h3>Question 2</h3>
+  <div class="stem">Consider the loss <span class="eq">L(w) = (w − 3)²</span>. What is <span class="eq">∂L/∂w</span> at <code>w = 1</code>?</div>
+  <div class="numeric-row">
+    <input type="number" step="0.01" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · Differentiate, then plug in.</div>
+</div>
+
+<!-- Q3 -->
+<div class="exercise" data-q="3">
+  <div class="qtype">Theoretical · Learning-rate behavior</div>
+  <h3>Question 3</h3>
+  <div class="stem">For the loss <span class="eq">L(w) = (w − 3)²</span>, three students run gradient descent from <code>w₀ = −1</code>. Which learning rate is most likely to <em>diverge</em>?</div>
+  <div class="options">
+    <label><input type="radio" name="q3" value="a"> η = 0.05 — small enough to converge slowly.</label>
+    <label><input type="radio" name="q3" value="b"> η = 0.30 — fast convergence regime.</label>
+    <label><input type="radio" name="q3" value="c"> η = 1.10 — step size exceeds the stable range for this quadratic and the iterates blow up.</label>
+    <label><input type="radio" name="q3" value="d"> The learning rate has no effect on convergence.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q4 -->
+<div class="exercise" data-q="4">
+  <div class="qtype">Theoretical · MSE on a small batch</div>
+  <h3>Question 4</h3>
+  <div class="stem">Given predictions <code>ŷ = [2, 3, 5]</code> and targets <code>y = [1, 3, 4]</code>, what is the mean-squared error (MSE) of the model? Round to two decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.01" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · Average the squared residuals.</div>
+</div>
+
+<!-- Q5 -->
+<div class="exercise" data-q="5">
+  <div class="qtype">Theoretical · R² interpretation</div>
+  <h3>Question 5</h3>
+  <div class="stem">A regression model reports test-set <code>R² = 0.05</code>. Which statement most accurately interprets that number?</div>
+  <div class="options">
+    <label><input type="radio" name="q5" value="a"> The model is highly accurate; 0.05 means 5% error.</label>
+    <label><input type="radio" name="q5" value="b"> The model is barely better than predicting the mean of the target; on this held-out set it is explaining only ≈5% of the variance.</label>
+    <label><input type="radio" name="q5" value="c"> R² = 0.05 means the model has converged.</label>
+    <label><input type="radio" name="q5" value="d"> R² = 0.05 is impossible — R² is always between 0.5 and 1.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q6 -->
+<div class="exercise" data-q="6">
+  <div class="qtype">Computational · PyTorch autograd</div>
+  <h3>Question 6</h3>
+  <div class="stem">What does this PyTorch snippet print?</div>
+<pre>x = torch.tensor(3.0, requires_grad=True)
+y = x ** 2 + 4 * x
+y.backward()
+print(x.grad.item())</pre>
+  <div class="options">
+    <label><input type="radio" name="q6" value="a"> 3.0 — only the linear term contributes.</label>
+    <label><input type="radio" name="q6" value="b"> 6.0 — only the value of 2x at x=3, ignoring the constant.</label>
+    <label><input type="radio" name="q6" value="c"> 10.0 — the gradient dy/dx = 2x + 4, evaluated at x = 3 equals 10.</label>
+    <label><input type="radio" name="q6" value="d"> 21.0 — the value of y itself, not its gradient.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q7 -->
+<div class="exercise" data-q="7">
+  <div class="qtype">Application · Three-cloud architecture</div>
+  <h3>Question 7</h3>
+  <div class="stem">Which Supabase credential does the FastAPI service on Render.com use, and where is it stored?</div>
+  <div class="options">
+    <label><input type="radio" name="q7" value="a"> The anon key, hard-coded in api/main.py.</label>
+    <label><input type="radio" name="q7" value="b"> The service-role key, read from a Render environment variable; never committed to GitHub.</label>
+    <label><input type="radio" name="q7" value="c"> The anon key, baked into the Dockerfile.</label>
+    <label><input type="radio" name="q7" value="d"> A JWT issued by Streamlit Cloud on every request.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q8 -->
+<div class="exercise" data-q="8">
+  <div class="qtype">Computational · FastAPI endpoint signature</div>
+  <h3>Question 8</h3>
+  <div class="stem">Which decorator and signature most closely matches the Topic 1 product's <code>POST /predict</code>?</div>
+  <div class="options">
+    <label><input type="radio" name="q8" value="a"><code>@app.get("/predict") def predict(): return {"yhat": 0.0}</code></label>
+    <label><input type="radio" name="q8" value="b"><code>@app.post("/predict", response_model=PredictResponse) def predict(req: PredictRequest) -> PredictResponse: ...</code></label>
+    <label><input type="radio" name="q8" value="c"><code>@app.delete("/predict") def predict(req): return {"ok": True}</code></label>
+    <label><input type="radio" name="q8" value="d"><code>@app.middleware("http") async def predict(request, call_next): ...</code></label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q9 -->
+<div class="exercise" data-q="9">
+  <div class="qtype">Theoretical · Linear model prediction</div>
+  <h3>Question 9</h3>
+  <div class="stem">A linear regression model has slope <code>w = 2</code> and intercept <code>b = −1</code>. What is the prediction <code>ŷ</code> for input <code>x = 3.5</code>?</div>
+  <div class="numeric-row">
+    <input type="number" step="0.01" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · <span class="eq">ŷ = w · x + b</span>.</div>
+</div>
+
+<!-- Q10 -->
+<div class="exercise" data-q="10">
+  <div class="qtype">Computational · One gradient descent step</div>
+  <h3>Question 10</h3>
+  <div class="stem">Suppose the current weight is <code>w = 5</code>, the learning rate is <code>η = 0.1</code>, and the gradient <code>∂L/∂w = 4</code>. What is the weight after one gradient-descent update? Round to two decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.01" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · <span class="eq">w ← w − η · ∂L/∂w</span>.</div>
+</div>
+
+<div class="nav">
+  <a href="Tutorial_Topic_1_Background_Math_and_Gradient_Descent.html">← Back to tutorial</a>
+  <span>Topic 1 of 7</span>
+</div>
+
+</div>
+
+<script>
+/* ---- Answer key + feedback content ---- */
+const KEY = {
+  1: { type: 'numeric', accept: 1.08, tol: 0.05,
+       ok: 'Correct. f′(1) = 2·1·cos(1) = 2·cos(1) ≈ 2·0.5403 = 1.0806.',
+       no: 'Not quite. f′(x) = 2x·cos(x²); evaluate at x = 1.' },
+  2: { type: 'numeric', accept: -4, tol: 0.001,
+       ok: 'Correct. dL/dw = 2(w − 3); at w = 1 that is 2(−2) = −4. The negative sign means the loss decreases as w increases — exactly why gradient descent moves toward 3.',
+       no: 'Not quite. Differentiate (w − 3)² as 2(w − 3), then plug in w = 1.' },
+  3: { type: 'mc', accept: 'c',
+       ok: 'Correct. For L(w) = (w − 3)², gradient descent is stable only when η < 1; at η = 1.1 each step overshoots the minimum and the iterate moves farther away.',
+       no: 'Not quite. The stability threshold for this quadratic is η < 1; values above that diverge.' },
+  4: { type: 'numeric', accept: 1.0/3 + 4.0/3, tol: 0.01,
+       ok: 'Correct. Residuals are 1, 0, 1; squared residuals 1, 0, 1; mean is 2/3 ≈ 0.67.',
+       no: 'Not quite. Compute (ŷ − y)² element-wise, then take the mean.' },
+  5: { type: 'mc', accept: 'b',
+       ok: 'Correct. R² ≈ 0 means the model explains essentially none of the target variance — it is barely better than always predicting the mean.',
+       no: 'Not quite. R² is "fraction of variance explained"; 0.05 is poor, not "5% error."' },
+  6: { type: 'mc', accept: 'c',
+       ok: 'Correct. dy/dx = 2x + 4; at x = 3 the gradient is 10. PyTorch fills x.grad after .backward() is called on the scalar y.',
+       no: 'Not quite. Differentiate y = x² + 4x with respect to x, then evaluate at x = 3.' },
+  7: { type: 'mc', accept: 'b',
+       ok: 'Correct. Render environment variables hold the service-role key; the value is never committed and never exposed to Streamlit.',
+       no: 'Not quite. Secrets are read from environment variables; the anon key is for Streamlit reads only.' },
+  8: { type: 'mc', accept: 'b',
+       ok: 'Correct. POST /predict with a typed Pydantic request and a response_model is the canonical pattern in this course.',
+       no: 'Not quite. /predict is a POST; the body is a Pydantic model; FastAPI uses response_model for serialization.' },
+  9: { type: 'numeric', accept: 6, tol: 0.01,
+       ok: 'Correct. ŷ = 2·3.5 + (−1) = 7 − 1 = 6.',
+       no: 'Not quite. Plug x into ŷ = w·x + b.' },
+  10: { type: 'numeric', accept: 4.6, tol: 0.01,
+       ok: 'Correct. w ← 5 − 0.1·4 = 4.6.',
+       no: 'Not quite. Subtract (learning rate × gradient) from the current weight.' },
+};
+
+const state = {}; let solved = new Set();
+
+document.querySelectorAll('.exercise').forEach(ex => {
+  const qid = +ex.dataset.q;
+  const btn = ex.querySelector('[data-check]');
+  const fb = ex.querySelector('[data-feedback]');
+  btn.addEventListener('click', () => {
+    const k = KEY[qid]; let user;
+    if (k.type === 'numeric') {
+      const inp = ex.querySelector('[data-input]');
+      user = parseFloat(inp.value);
+      if (Number.isNaN(user)) {
+        fb.className = 'feedback incorrect show';
+        fb.innerHTML = '<strong>Please enter a number.</strong>';
+        return;
+      }
+    } else { // mc
+      const picked = ex.querySelector('input[type=radio]:checked');
+      if (!picked) {
+        fb.className = 'feedback incorrect show';
+        fb.innerHTML = '<strong>Please select an option.</strong>';
+        return;
+      }
+      user = picked.value;
+    }
+    const ok = (k.type === 'numeric')
+      ? Math.abs(user - k.accept) <= k.tol
+      : user === k.accept;
+    if (ok) {
+      fb.className = 'feedback correct show';
+      fb.innerHTML = '<strong>Correct.</strong>' + k.ok;
+      if (!solved.has(qid)) { solved.add(qid); updateScore(); }
+      btn.disabled = true;
+    } else {
+      fb.className = 'feedback incorrect show';
+      fb.innerHTML = '<strong>Not quite.</strong>' + k.no;
+    }
+  });
+});
+
+function updateScore() {
+  const total = Object.keys(KEY).length;
+  document.getElementById('scoreText').textContent = `Score: ${solved.size} / ${total}`;
+  document.getElementById('scoreBar').style.width = `${(solved.size / total * 100).toFixed(0)}%`;
+}
+</script>
+</body>
+</html>

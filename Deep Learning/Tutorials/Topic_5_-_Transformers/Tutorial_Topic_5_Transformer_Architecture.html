@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 5 Tutorial — Transformer Architecture</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+       margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6; }
+.container { max-width: 980px; margin: 24px auto 48px; background: white;
+             padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.35em; margin-top: 40px;
+     border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+h4 { color: #555; font-size: 1.0em; margin-top: 18px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 6px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7;
+       padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px; overflow-x: auto;
+      border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79;
+           padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px;
+        margin: 14px 0; border-radius: 4px; font-size: 0.93em; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+        padding: 22px; margin: 22px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.controls { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 180px; }
+.control input[type="number"] { width: 80px; padding: 4px 8px;
+            border: 1px solid #CFD7DF; border-radius: 4px; font-family: inherit; }
+.control select { padding: 5px 8px; border: 1px solid #CFD7DF; border-radius: 4px;
+                  font-family: inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px;
+           border-radius: 6px; font-family: "SF Mono", Consolas, monospace;
+           font-size: 0.88em; min-width: 220px; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 16px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.93em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+      background: #F2F4F7; padding: 4px 8px; border-radius: 4px; }
+.eq-block { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+            background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+            text-align: center; margin: 14px 0; display: block; }
+.nav { display: flex; justify-content: space-between; margin-top: 40px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+       padding: 16px 22px; margin-bottom: 28px; font-size: 0.92em; }
+.toc h3 { margin: 0 0 8px; color: #1F4E79; font-size: 1.0em; }
+.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 24px; }
+.toc a { color: #1F4E79; text-decoration: none; } .toc a:hover { text-decoration: underline; }
+.tag { display: inline-block; padding: 2px 8px; background: #E0E5EB;
+       border-radius: 12px; font-size: 0.75em; color: #555;
+       text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px; }
+.tag.interactive { background: #E1F0EA; color: #1B5E20; }
+.tag.code { background: #F2F4F7; color: #555; }
+.tag.math { background: #FCE8EE; color: #6E1414; }
+table.cmp { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 0.92em; }
+table.cmp th, table.cmp td { border: 1px solid #E0E5EB; padding: 8px 12px; text-align: left; }
+table.cmp th { background: #F2F4F7; color: #1F4E79; }
+.archetype { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
+.arc-card { border: 1px solid #D0D8E0; border-radius: 8px; padding: 14px;
+            background: white; font-size: 0.9em; }
+.arc-card .name { color: #1F4E79; font-weight: 600; }
+.arc-card .role { color: #555; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="brand">Tutorial · ~ 70 min read</div>
+<h1>Topic 5 — Transformer Architecture: Encoder, Decoder, Encoder–Decoder</h1>
+<p class="subtitle">A bottom-up tour of the transformer block, from layer normalization through multi-head attention to the three archetypes and the decoding strategies that actually generate text.</p>
+
+<div class="callout">
+  <strong>What you should walk away with.</strong> (1) Fluent with the encoder block: LayerNorm → MultiHeadAttention → residual → LayerNorm → MLP → residual. (2) Able to compute multi-head shapes by hand. (3) Comfortable with sinusoidal, learned, and rotary positional encodings. (4) Able to pick the right archetype (encoder, decoder, encoder–decoder) for a task on sight. (5) Familiar with greedy, top-k, and top-p generation; know what temperature does. (6) Aware of the KV cache and why it makes generation tractable.
+</div>
+
+<div class="toc">
+  <h3>What's in this tutorial</h3>
+  <ol>
+    <li><a href="#s1">Layer normalization</a></li>
+    <li><a href="#s2">The encoder block, end to end</a></li>
+    <li><a href="#s3">Multi-head attention, with shapes</a></li>
+    <li><a href="#s4">Different heads, different patterns</a></li>
+    <li><a href="#s5">Sinusoidal positional encoding</a></li>
+    <li><a href="#s6">Learned vs sinusoidal vs rotary</a></li>
+    <li><a href="#s7">Pre-norm vs post-norm</a></li>
+    <li><a href="#s8">Causal mask, again</a></li>
+    <li><a href="#s9">Cross-attention</a></li>
+    <li><a href="#s10">Three archetypes side by side</a></li>
+    <li><a href="#s11">Parameter count of a transformer</a></li>
+    <li><a href="#s12">KV cache for fast decoding</a></li>
+    <li><a href="#s13">Generation strategies</a></li>
+    <li><a href="#s14">Temperature, top-k, top-p</a></li>
+    <li><a href="#s15">Hugging Face task picker</a></li>
+  </ol>
+</div>
+
+<!-- §1 LayerNorm -->
+<h2 id="s1">1 · Layer normalization <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>LayerNorm normalizes activations across the <em>feature</em> dimension within each example independently:</p>
+<p class="eq-block">
+  μ = mean over d_model of x,   σ² = variance over d_model of x<br>
+  out = γ · (x − μ) / √(σ² + ε) + β
+</p>
+<p>Three things that distinguish LayerNorm from BatchNorm:</p>
+<ul>
+  <li><strong>Per example.</strong> The mean and variance are computed within each example's feature vector — no dependence on the batch.</li>
+  <li><strong>Works with batch = 1.</strong> No batch-dependent statistics; behaves the same at training and inference.</li>
+  <li><strong>Suitable for variable-length sequences.</strong> Each position is normalized on its own.</li>
+</ul>
+
+<div class="demo">
+  <h3>Demo · LayerNorm in action</h3>
+  <p>The bar chart shows input feature values; the orange overlay is the LayerNorm output. Try changing γ and β and watch the curve scale and shift.</p>
+  <div class="controls">
+    <div class="control"><label for="ln-gamma">γ (scale)</label>
+      <input type="range" id="ln-gamma" min="0.1" max="3" step="0.05" value="1.0"></div>
+    <div class="control"><label for="ln-beta">β (shift)</label>
+      <input type="range" id="ln-beta" min="-2" max="2" step="0.05" value="0.0"></div>
+    <button id="ln-resample">Resample input</button>
+    <div class="readout" id="ln-readout"></div>
+  </div>
+  <canvas id="ln-canvas" width="880" height="220"></canvas>
+</div>
+
+<!-- §2 Encoder block -->
+<h2 id="s2">2 · The encoder block, end to end <span class="tag interactive">interactive</span></h2>
+<p>A single transformer encoder block has six layers in a strict order. With pre-norm (the modern default):</p>
+<pre>x_in → LayerNorm → MultiHeadAttention → + (residual from x_in) → x_mid
+x_mid → LayerNorm → MLP → + (residual from x_mid) → x_out</pre>
+<p>The MLP is per-position and is usually a two-layer feed-forward with an expansion factor of 4:</p>
+<pre>MLP(x) = Linear(d_model → 4·d_model) → GELU → Linear(4·d_model → d_model)</pre>
+
+<div class="demo">
+  <h3>Diagram · The encoder block</h3>
+  <canvas id="enc-canvas" width="880" height="400"></canvas>
+  <p style="font-size:0.9em; color:#555; margin-top:8px;">All connections preserve the shape <code>(B, T, d_model)</code>. Residuals carry the original input forward; LayerNorm stabilizes the inputs of each sublayer.</p>
+</div>
+
+<!-- §3 Multi-head attention -->
+<h2 id="s3">3 · Multi-head attention, with shapes <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>Multi-head attention projects Q, K, V each from <code>(B, T, d_model)</code> into <code>H</code> heads of dimension <code>d_k = d_model / H</code>:</p>
+<pre>x:          (B, T, d_model)
+Q = x @ W_Q (B, T, d_model)        →  reshape (B, T, H, d_k)  →  transpose (B, H, T, d_k)
+K = x @ W_K (B, T, d_model)        →  reshape (B, T, H, d_k)  →  transpose (B, H, T, d_k)
+V = x @ W_V (B, T, d_model)        →  reshape (B, T, H, d_k)  →  transpose (B, H, T, d_k)
+
+attn = softmax(Q @ Kᵀ / √d_k)      (B, H, T, T)
+out  = attn @ V                    (B, H, T, d_k)
+out  = transpose + reshape         (B, T, d_model)
+out  = out @ W_O                   (B, T, d_model)</pre>
+
+<div class="demo">
+  <h3>Demo · Multi-head shape calculator</h3>
+  <div class="controls">
+    <div class="control"><label>Batch B</label><input type="number" id="mh-B" value="2" min="1"></div>
+    <div class="control"><label>Seq T</label><input type="number" id="mh-T" value="8" min="1"></div>
+    <div class="control"><label>d_model</label><input type="number" id="mh-D" value="64" min="1"></div>
+    <div class="control"><label>Heads H</label><input type="number" id="mh-H" value="8" min="1"></div>
+  </div>
+  <pre id="mh-out"></pre>
+</div>
+
+<!-- §4 Different heads -->
+<h2 id="s4">4 · Different heads, different patterns <span class="tag interactive">interactive</span></h2>
+<p>One of the empirical findings of "Attention Is All You Need" and follow-up interpretability work: different heads specialize. Some heads attend to the previous token (a local pattern); others attend to syntactic dependencies (e.g., the verb's subject); others attend uniformly. Multi-head wins not because of "more parameters" but because of <em>parallel specialization</em>.</p>
+
+<div class="demo">
+  <h3>Demo · Pick an attention pattern and see the resulting heatmap</h3>
+  <div class="controls">
+    <div class="control">
+      <label for="hd-pattern">pattern</label>
+      <select id="hd-pattern">
+        <option value="prev">Previous-token (local)</option>
+        <option value="diag">Diagonal (self-only)</option>
+        <option value="syntax">Syntactic (long-range)</option>
+        <option value="uniform">Uniform</option>
+        <option value="bos">BOS-anchored</option>
+      </select>
+    </div>
+  </div>
+  <canvas id="hd-canvas" width="600" height="320"></canvas>
+</div>
+
+<!-- §5 Sinusoidal PE -->
+<h2 id="s5">5 · Sinusoidal positional encoding <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>Self-attention is permutation-equivariant: it treats the input as a set. To restore order, positional encoding adds a position-dependent vector to each token's embedding:</p>
+<p class="eq-block">
+  PE(pos, 2i) = sin(pos / 10000<sup>2i/d</sup>)<br>
+  PE(pos, 2i+1) = cos(pos / 10000<sup>2i/d</sup>)
+</p>
+<p>The frequencies decay geometrically with the dimension index, so low dimensions encode fine-grained position information and high dimensions are nearly constant across the sequence. Two practical properties:</p>
+<ul>
+  <li>Different positions get different vectors, so the network can recover order.</li>
+  <li>Because <code>sin(a + b) = sin a cos b + cos a sin b</code>, the encoding of relative offsets can be expressed as a linear function of the absolute encodings — useful for the model to learn shift-invariant patterns.</li>
+</ul>
+
+<div class="demo">
+  <h3>Demo · Sinusoidal PE pattern</h3>
+  <canvas id="pe-canvas" width="880" height="320"></canvas>
+</div>
+
+<!-- §6 PE comparison -->
+<h2 id="s6">6 · Learned vs sinusoidal vs rotary <span class="tag math">math</span></h2>
+<table class="cmp">
+  <tr><th>Scheme</th><th>How position enters the model</th><th>Pros</th><th>Cons</th></tr>
+  <tr><td>Sinusoidal (fixed)</td><td>Add a fixed sin/cos vector to the token embedding</td><td>No parameters; some extrapolation to longer sequences</td><td>Limited expressiveness; bounded effective context</td></tr>
+  <tr><td>Learned</td><td>Add a trainable <code>(max_len, d_model)</code> table indexed by position</td><td>Most expressive; matches the data</td><td>Cannot extrapolate past <code>max_len</code></td></tr>
+  <tr><td>Rotary (RoPE)</td><td>Rotate Q and K in 2-D pairs by angles that depend on position; the dot product then depends only on relative position</td><td>Clean relative-position semantics; extrapolates further than learned</td><td>More complex implementation; needs to be applied inside attention rather than added to embeddings</td></tr>
+</table>
+
+<!-- §7 Pre-norm vs post-norm -->
+<h2 id="s7">7 · Pre-norm vs post-norm <span class="tag math">math</span></h2>
+<p>The original "Attention Is All You Need" uses post-norm: <code>x_out = LayerNorm(x_in + Sublayer(x_in))</code>. Modern transformers (GPT-2 onward) almost all use pre-norm: <code>x_out = x_in + Sublayer(LayerNorm(x_in))</code>.</p>
+<p>The difference matters more in deeper networks:</p>
+<ul>
+  <li><strong>Post-norm</strong>: residual is normalized — gradients can compress or amplify across layers; deep stacks usually require careful learning-rate warmup to train.</li>
+  <li><strong>Pre-norm</strong>: the residual path remains an "identity highway" that is not normalized — gradients flow cleanly back. Higher learning rates work without warmup; very deep stacks (24, 48, 96 layers) trainable.</li>
+</ul>
+
+<!-- §8 Causal mask -->
+<h2 id="s8">8 · Causal mask, again <span class="tag interactive">interactive</span></h2>
+<p>Decoder-only transformers (GPT-family) use causal self-attention so position <code>t</code> can attend only to positions 0 … t. Mechanically: add <code>−∞</code> to scores at positions where key &gt; query, then softmax. The mask is independent of the actual values:</p>
+
+<div class="demo">
+  <h3>Demo · Causal mask matrix</h3>
+  <div class="controls">
+    <div class="control"><label for="cm-T">sequence length T</label>
+      <input type="range" id="cm-T" min="3" max="12" step="1" value="8"></div>
+    <div class="readout" id="cm-readout"></div>
+  </div>
+  <canvas id="cm-canvas" width="500" height="420"></canvas>
+</div>
+
+<!-- §9 Cross-attention -->
+<h2 id="s9">9 · Cross-attention <span class="tag math">math</span></h2>
+<p>Inside an encoder–decoder transformer's decoder, two attention sublayers sit side by side:</p>
+<ol>
+  <li><strong>Self-attention</strong> with a causal mask over the decoder's own positions.</li>
+  <li><strong>Cross-attention</strong> where <code>Q</code> comes from the decoder hidden state but <code>K</code> and <code>V</code> come from the encoder's output. No causal mask is applied here — the decoder is allowed to look at every input position.</li>
+</ol>
+<p>This is the architectural primitive behind translation, summarization, and any seq2seq task: each generated token can directly attend to every source-side token.</p>
+
+<!-- §10 Archetypes -->
+<h2 id="s10">10 · Three archetypes side by side <span class="tag math">math</span></h2>
+<div class="archetype">
+  <div class="arc-card">
+    <div class="name">Encoder-only · BERT</div>
+    <div class="role">Bidirectional self-attention. Pre-trained with masked-language-modeling. Strong for classification and embedding tasks.</div>
+  </div>
+  <div class="arc-card">
+    <div class="name">Decoder-only · GPT</div>
+    <div class="role">Causal self-attention. Pre-trained with next-token prediction. Strong for open-ended generation and in-context prompting.</div>
+  </div>
+  <div class="arc-card">
+    <div class="name">Encoder–Decoder · T5 / BART</div>
+    <div class="role">Encoder reads the source bidirectionally; decoder generates causally; cross-attention grounds output in source. Strong for conditional sequence generation.</div>
+  </div>
+</div>
+<table class="cmp">
+  <tr><th></th><th>Encoder-only</th><th>Decoder-only</th><th>Encoder–Decoder</th></tr>
+  <tr><td>Self-attention</td><td>bidirectional</td><td>causal</td><td>bidirectional (encoder) + causal (decoder)</td></tr>
+  <tr><td>Pre-training</td><td>MLM, NSP</td><td>next-token</td><td>span corruption</td></tr>
+  <tr><td>Native task</td><td>classification, embeddings</td><td>generation</td><td>conditional generation</td></tr>
+  <tr><td>Output head</td><td>classification / MLM head</td><td>LM head (vocab logits)</td><td>LM head on decoder</td></tr>
+</table>
+
+<!-- §11 Param count -->
+<h2 id="s11">11 · Parameter count of a transformer <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>For a transformer with <code>L</code> layers, <code>d_model</code>, MLP expansion factor 4, vocab size <code>V</code>:</p>
+<p class="eq-block">
+  per-layer ≈ 4 · d_model² (attention proj) + 8 · d_model² (MLP) = 12 · d_model²<br>
+  total ≈ L · 12 · d_model² + V · d_model
+</p>
+<p>For GPT-2 small: <code>L = 12</code>, <code>d_model = 768</code>, <code>V ≈ 50,000</code>. Plug in: 12 · 12 · 768² + 50000 · 768 ≈ 85 M + 38 M ≈ <strong>125 M</strong>.</p>
+
+<div class="demo">
+  <h3>Demo · Param count for any transformer size</h3>
+  <div class="controls">
+    <div class="control"><label>L (layers)</label><input type="number" id="pc-L" value="12" min="1"></div>
+    <div class="control"><label>d_model</label><input type="number" id="pc-D" value="768" min="1"></div>
+    <div class="control"><label>vocab V</label><input type="number" id="pc-V" value="50000" min="1"></div>
+  </div>
+  <pre id="pc-out"></pre>
+</div>
+
+<!-- §12 KV cache -->
+<h2 id="s12">12 · KV cache for fast decoding <span class="tag math">math</span></h2>
+<p>At inference time, decoder-only transformers generate one token per step. Naive implementation: at each step, recompute K and V for every previous token. That is <code>O(t²)</code> per step and <code>O(T³)</code> for the whole sequence.</p>
+<p>The KV cache stores K and V from previous steps so each new step only needs to compute K and V for the <em>one</em> new token, then attend to the cached past:</p>
+<pre>at step t (new token):
+  q = X[t] · W_Q                                # shape (1, d_k)
+  k_new = X[t] · W_K  → append to kv_cache[K]   # cache grows by one
+  v_new = X[t] · W_V  → append to kv_cache[V]   # cache grows by one
+  out = softmax(q @ kv_cache[K]ᵀ / √d_k) · kv_cache[V]    # attend over cached past</pre>
+<p>Cost per token drops from <code>O(t²)</code> to <code>O(t)</code>; total sequence cost from <code>O(T³)</code> to <code>O(T²)</code>. Without the KV cache, modern long-context LLMs would be unusably slow.</p>
+
+<!-- §13 Generation strategies -->
+<h2 id="s13">13 · Generation strategies <span class="tag math">math</span></h2>
+<p>Generation turns a probability distribution over the vocabulary at each step into actual tokens. Four standard strategies:</p>
+<table class="cmp">
+  <tr><th>Strategy</th><th>How</th><th>Trade-off</th></tr>
+  <tr><td>Greedy</td><td>Pick the argmax at every step</td><td>Fastest; deterministic; tends to be repetitive</td></tr>
+  <tr><td>Beam search</td><td>Keep top-K parallel hypotheses</td><td>Better likelihood; still safe / generic outputs</td></tr>
+  <tr><td>Top-k sampling</td><td>Sample from the top K logits, renormalized</td><td>Diverse; quality depends on K</td></tr>
+  <tr><td>Top-p (nucleus)</td><td>Sample from the smallest set of tokens whose cumulative probability ≥ p</td><td>Adaptive: small set when distribution is sharp, large when uncertain</td></tr>
+</table>
+
+<!-- §14 Sampling -->
+<h2 id="s14">14 · Temperature, top-k, top-p <span class="tag interactive">interactive</span></h2>
+<p>Temperature divides logits before softmax: <code>p_i = softmax(z_i / T)</code>. Low T sharpens; high T flattens.</p>
+<div class="demo">
+  <h3>Demo · Move temperature, top-k, top-p; see the resulting distribution</h3>
+  <div class="controls">
+    <div class="control"><label for="g-T">temperature T</label>
+      <input type="range" id="g-T" min="0.1" max="2.5" step="0.05" value="1.0"></div>
+    <div class="control"><label for="g-k">top-k</label>
+      <input type="range" id="g-k" min="1" max="20" step="1" value="20"></div>
+    <div class="control"><label for="g-p">top-p</label>
+      <input type="range" id="g-p" min="0.05" max="1.0" step="0.05" value="1.0"></div>
+    <div class="readout" id="g-readout"></div>
+  </div>
+  <canvas id="g-canvas" width="880" height="240"></canvas>
+</div>
+
+<!-- §15 HF picker -->
+<h2 id="s15">15 · Hugging Face task picker <span class="tag interactive">interactive</span><span class="tag code">code</span></h2>
+<div class="demo">
+  <h3>Demo · Match a task to the right Hugging Face class</h3>
+  <div class="controls">
+    <div class="control">
+      <label>Task</label>
+      <select id="hf-task">
+        <option value="fill-mask">fill in a masked token</option>
+        <option value="text-generation">continue text (open-ended)</option>
+        <option value="summarization">summarize a paragraph</option>
+        <option value="text-classification">classify a sentence (sentiment)</option>
+        <option value="token-classification">tag tokens (e.g., NER)</option>
+        <option value="translation">translate English → German</option>
+      </select>
+    </div>
+  </div>
+  <pre id="hf-out"></pre>
+</div>
+
+<div class="callout">
+  <strong>Architecture reminder.</strong> The Topic 5 "TrioFormer" product hosts three Hugging Face pipelines (BERT fill-mask, GPT-2 generate, T5 summarize) plus a hand-written encoder block behind one FastAPI service. Server-side latency for each model is persisted to Supabase with the service-role key; the Streamlit "Latency History" tab queries a benchmarks materialized view via the anon key.
+</div>
+
+<div class="nav">
+  <a href="../Topic_4_-_Sequence_Models/Tutorial_Topic_4_Sequence_Models_and_Attention.html">← Topic 4</a>
+  <a href="Exercises_Topic_5_Transformer_Architecture.html">Practice exercises →</a>
+</div>
+
+</div>
+
+<script>
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function softmax(arr){const m=Math.max(...arr); const e=arr.map(v=>Math.exp(v-m)); const s=e.reduce((a,b)=>a+b,0); return e.map(v=>v/s);}
+
+/* §1 LayerNorm */
+(function(){
+  const c=document.getElementById('ln-canvas'), ctx=c.getContext('2d');
+  const gIn=document.getElementById('ln-gamma'), bIn=document.getElementById('ln-beta');
+  const rBtn=document.getElementById('ln-resample'); const out=document.getElementById('ln-readout');
+  let x=null;
+  function resample(){const N=12; x=[]; for(let i=0;i<N;i++) x.push(2*Math.random()-1 + (i%3===0?2:0));}
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    if(!x) resample();
+    const g=+gIn.value, b=+bIn.value;
+    const mu = x.reduce((s,v)=>s+v,0)/x.length;
+    const va = x.reduce((s,v)=>s+(v-mu)**2,0)/x.length;
+    const eps=1e-5;
+    const norm = x.map(v => g * (v - mu) / Math.sqrt(va + eps) + b);
+    const bw=(W-80)/x.length;
+    const maxAbs = Math.max(...x.map(Math.abs), ...norm.map(Math.abs), 1.5);
+    const py = v => H/2 - v/maxAbs*(H/2-30);
+    ctx.strokeStyle='#CFD7DF'; ctx.beginPath(); ctx.moveTo(40, H/2); ctx.lineTo(W-20, H/2); ctx.stroke();
+    x.forEach((v,i)=>{
+      const cx=40+i*bw + bw/2;
+      const h=v/maxAbs*(H/2-30);
+      ctx.fillStyle='#1F4E79'; ctx.globalAlpha=0.4;
+      ctx.fillRect(cx-bw/3, py(0)-(h>0?h:0), bw/1.5, Math.abs(h));
+      ctx.globalAlpha=1.0;
+      ctx.fillStyle='#1F4E79'; ctx.font='9px monospace';
+      ctx.fillText(v.toFixed(2), cx-12, py(v)-2);
+    });
+    norm.forEach((v,i)=>{
+      const cx=40+i*bw + bw/2;
+      ctx.fillStyle='#C00000';
+      ctx.beginPath(); ctx.arc(cx, py(v), 4, 0, Math.PI*2); ctx.fill();
+    });
+    ctx.strokeStyle='#C00000'; ctx.lineWidth=2; ctx.beginPath();
+    norm.forEach((v,i)=>{const cx=40+i*bw + bw/2; (i?ctx.lineTo:ctx.moveTo).call(ctx, cx, py(v));}); ctx.stroke();
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 12px sans-serif';
+    ctx.fillText('input x (blue bars)', 50, 20);
+    ctx.fillStyle='#C00000';
+    ctx.fillText('LayerNorm(x) with γ, β (red dots)', 50, 38);
+    out.textContent = `μ = ${mu.toFixed(3)}, σ = ${Math.sqrt(va).toFixed(3)} · output mean = ${(norm.reduce((s,v)=>s+v,0)/norm.length).toFixed(3)}, std = ${Math.sqrt(norm.reduce((s,v)=>s+(v-b)**2,0)/norm.length).toFixed(3)}`;
+  }
+  rBtn.onclick=()=>{resample(); draw();};
+  gIn.oninput=draw; bIn.oninput=draw; draw();
+})();
+
+/* §2 Encoder block diagram */
+(function(){
+  const c=document.getElementById('enc-canvas'), ctx=c.getContext('2d');
+  function box(x,y,w,h,fill,stroke,title,sub){
+    ctx.fillStyle=fill; ctx.strokeStyle=stroke; ctx.lineWidth=2;
+    if(ctx.roundRect){ctx.beginPath(); ctx.roundRect(x,y,w,h,8); ctx.fill(); ctx.stroke();}
+    else{ctx.fillRect(x,y,w,h); ctx.strokeRect(x,y,w,h);}
+    ctx.fillStyle=stroke; ctx.font='bold 12px sans-serif';
+    ctx.fillText(title, x+12, y+20);
+    ctx.fillStyle='#333'; ctx.font='10px monospace';
+    if(sub) sub.forEach((s,i)=>ctx.fillText(s, x+12, y+38+i*12));
+  }
+  function arrow(x1,y1,x2,y2,color){
+    ctx.strokeStyle=color||'#555'; ctx.lineWidth=1.6;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    const ang=Math.atan2(y2-y1,x2-x1);
+    ctx.beginPath(); ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-9*Math.cos(ang-0.35), y2-9*Math.sin(ang-0.35));
+    ctx.lineTo(x2-9*Math.cos(ang+0.35), y2-9*Math.sin(ang+0.35));
+    ctx.closePath(); ctx.fillStyle=color||'#555'; ctx.fill();
+  }
+  const xc=440;
+  box(xc-110, 20, 220, 36, '#EAF1F8', '#1F4E79', 'x_in', ['(B, T, d_model)']);
+  arrow(xc, 56, xc, 90);
+  box(xc-110, 90, 220, 36, '#FFF', '#1F4E79', 'LayerNorm');
+  arrow(xc, 126, xc, 150);
+  box(xc-130, 150, 260, 50, '#FFF', '#1F4E79', 'MultiHeadAttention',
+       ['Q, K, V from same input', 'self-attention']);
+  arrow(xc, 200, xc, 220);
+  // residual sum 1
+  box(xc-50, 220, 100, 28, '#FCE4EC', '#C00000', '+   (add residual)');
+  // skip arrow over to right
+  ctx.strokeStyle='#C00000'; ctx.lineWidth=2; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(xc+110, 38); ctx.bezierCurveTo(xc+220, 38, xc+220, 235, xc+50, 235); ctx.stroke();
+  ctx.setLineDash([]);
+  arrow(xc, 248, xc, 268);
+  box(xc-110, 268, 220, 36, '#FFF', '#1F4E79', 'LayerNorm');
+  arrow(xc, 304, xc, 324);
+  box(xc-130, 324, 260, 50, '#FFF', '#1F4E79', 'MLP', ['Linear → GELU → Linear', '(d → 4d → d)']);
+  // second residual
+  ctx.strokeStyle='#C00000'; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(xc-110, 235); ctx.bezierCurveTo(xc-220, 235, xc-220, 400, xc-50, 400); ctx.stroke();
+  ctx.setLineDash([]);
+  box(xc-50, 380, 100, 28, '#FCE4EC', '#C00000', '+   (add residual)');
+  // labels
+  ctx.fillStyle='#C00000'; ctx.font='bold 11px sans-serif';
+  ctx.fillText('residual', xc+200, 130);
+  ctx.fillText('residual', xc-220, 320);
+})();
+
+/* §3 Multi-head shape calc */
+(function(){
+  const ids=['mh-B','mh-T','mh-D','mh-H']; const out=document.getElementById('mh-out');
+  function up(){
+    const B=+document.getElementById('mh-B').value;
+    const T=+document.getElementById('mh-T').value;
+    const D=+document.getElementById('mh-D').value;
+    const H=+document.getElementById('mh-H').value;
+    let warn='';
+    if(D%H!==0) warn='\n# ⚠ d_model must be divisible by H. Try H ∈ {' +
+      [1,2,4,8,16,32,64].filter(h=>D%h===0).join(', ') + '}.';
+    const dk=D/H;
+    const attnParams = 4 * D * D;     // W_Q, W_K, W_V, W_O
+    out.textContent =
+`# Input x:                 (${B}, ${T}, ${D})
+# Project to Q, K, V:       each → (${B}, ${T}, ${D})
+# Reshape for H heads:      each → (${B}, ${T}, ${H}, ${dk})
+# Transpose for attention:  each → (${B}, ${H}, ${T}, ${dk})
+# Attention scores:         Q @ Kᵀ → (${B}, ${H}, ${T}, ${T})
+# Softmax + × V:            → (${B}, ${H}, ${T}, ${dk})
+# Concat heads:             → (${B}, ${T}, ${D})
+# Output projection W_O:    → (${B}, ${T}, ${D})
+
+# Attention parameters in this layer (W_Q, W_K, W_V, W_O):
+#   4 · d_model² = 4 · ${D}² = ${attnParams.toLocaleString()}${warn}`;
+  }
+  ids.forEach(i=>document.getElementById(i).oninput=up); up();
+})();
+
+/* §4 Heads */
+(function(){
+  const c=document.getElementById('hd-canvas'), ctx=c.getContext('2d');
+  const sel=document.getElementById('hd-pattern');
+  const tokens=['<bos>','the','cat','that','sat','on','the','mat','meowed'];
+  function pattern(p, T){
+    const m=[]; for(let i=0;i<T;i++){const row=[]; for(let j=0;j<T;j++){
+      let v=0;
+      if(p==='prev') v = (j===i-1) ? 1.0 : (j===i ? 0.1 : 0.02);
+      else if(p==='diag') v = (j===i) ? 1.0 : 0.05;
+      else if(p==='syntax') v = (i===8 && j===2) ? 1.0 : (i===8 && j===4) ? 0.5 : (j===i ? 0.1 : 0.03);
+      else if(p==='uniform') v = 1.0/T;
+      else if(p==='bos') v = (j===0) ? 0.6 : (j===i ? 0.3 : 0.05);
+      row.push(v);
+    } // normalize row
+      const s=row.reduce((a,b)=>a+b,0);
+      m.push(row.map(v=>v/Math.max(1e-6, s)));
+    }
+    return m;
+  }
+  function draw(){
+    const T=tokens.length;
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const padX=120, padY=40;
+    const cs=Math.min((W-padX-30)/T, (H-padY-30)/T);
+    const m=pattern(sel.value, T);
+    for(let i=0;i<T;i++) for(let j=0;j<T;j++){
+      const w=m[i][j];
+      const t=Math.min(1, w*1.5);
+      const r=Math.round(255-t*180), g=Math.round(255-t*100), b=Math.round(255-t*60);
+      ctx.fillStyle=`rgb(${r},${g},${b})`;
+      ctx.fillRect(padX+j*cs, padY+i*cs, cs, cs);
+      ctx.strokeStyle='#FFF'; ctx.strokeRect(padX+j*cs, padY+i*cs, cs, cs);
+    }
+    // labels
+    ctx.fillStyle='#555'; ctx.font='10px monospace';
+    tokens.forEach((t,i)=>{
+      ctx.fillText(t, 10, padY+i*cs+cs/2+3);
+      ctx.save(); ctx.translate(padX+i*cs+cs/2-10, padY-6); ctx.rotate(-Math.PI/3);
+      ctx.fillText(t, 0, 0); ctx.restore();
+    });
+  }
+  sel.onchange=draw; draw();
+})();
+
+/* §5 Sinusoidal PE */
+(function(){
+  const c=document.getElementById('pe-canvas'), ctx=c.getContext('2d');
+  const T=50, D=64;
+  function pe(pos, i){const ratio=pos/Math.pow(10000, 2*Math.floor(i/2)/D); return (i%2===0)?Math.sin(ratio):Math.cos(ratio);}
+  const W=c.width, H=c.height;
+  const ox=50, oy=30, cw=(W-ox-30)/D, ch=(H-oy-30)/T;
+  for(let p=0;p<T;p++) for(let i=0;i<D;i++){
+    const v=pe(p,i); const t=(v+1)/2;
+    const r=Math.round(255-t*200), g=Math.round(255-t*100), b=Math.round(255-t*40);
+    ctx.fillStyle=`rgb(${r},${g},${b})`;
+    ctx.fillRect(ox+i*cw, oy+p*ch, cw+0.5, ch+0.5);
+  }
+  ctx.fillStyle='#1A1A1A'; ctx.font='12px sans-serif';
+  ctx.fillText('dim →', ox+(D*cw)/2-16, oy-8);
+  ctx.save(); ctx.translate(20, oy+(T*ch)/2+12); ctx.rotate(-Math.PI/2);
+  ctx.fillText('pos →', 0, 0); ctx.restore();
+})();
+
+/* §8 Causal mask */
+(function(){
+  const c=document.getElementById('cm-canvas'), ctx=c.getContext('2d');
+  const tIn=document.getElementById('cm-T'), out=document.getElementById('cm-readout');
+  function draw(){
+    const T=+tIn.value, W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const pad=50, cs=(Math.min(W,H)-pad*2)/T;
+    for(let i=0;i<T;i++) for(let j=0;j<T;j++){
+      const masked=j>i;
+      ctx.fillStyle=masked?'#FBD9D6':'#FFF'; ctx.strokeStyle=masked?'#C00000':'#CFD7DF';
+      ctx.fillRect(pad+j*cs, pad+i*cs, cs, cs); ctx.strokeRect(pad+j*cs, pad+i*cs, cs, cs);
+      ctx.fillStyle=masked?'#6E1414':'#1F4E79';
+      ctx.font=(cs>24?'12px':'9px')+' sans-serif';
+      ctx.fillText(masked?'−∞':'·', pad+j*cs+cs/2-8, pad+i*cs+cs/2+4);
+    }
+    ctx.fillStyle='#555'; ctx.font='12px sans-serif';
+    ctx.fillText('query →', pad+T*cs+8, pad+cs);
+    out.textContent=`T = ${T} — lower-triangular (incl. diagonal) is allowed; upper is masked.`;
+  }
+  tIn.oninput=draw; draw();
+})();
+
+/* §11 Param count */
+(function(){
+  const ids=['pc-L','pc-D','pc-V'], out=document.getElementById('pc-out');
+  function up(){
+    const L=+document.getElementById('pc-L').value;
+    const D=+document.getElementById('pc-D').value;
+    const V=+document.getElementById('pc-V').value;
+    const perLayer = 12*D*D;
+    const layers = L*perLayer;
+    const embed = V*D;
+    const total = layers + embed;
+    out.textContent =
+`# Per-layer parameters (rough)
+attention proj  : 4 · d_model² = ${(4*D*D).toLocaleString()}
+MLP             : 2 · 4 · d_model² = ${(8*D*D).toLocaleString()}
+                  -------------------
+                  12 · d_model² = ${perLayer.toLocaleString()}
+
+# Total
+all layers      : L · 12 · d_model² = ${L} · ${perLayer.toLocaleString()} = ${layers.toLocaleString()}
+embedding (in/out) : V · d_model       = ${V.toLocaleString()} · ${D} = ${embed.toLocaleString()}
+                                          -------------------
+total                ≈ ${total.toLocaleString()} parameters
+                       (≈ ${(total/1e6).toFixed(1)}M)`;
+  }
+  ids.forEach(i=>document.getElementById(i).oninput=up); up();
+})();
+
+/* §14 Generation strategies */
+(function(){
+  const c=document.getElementById('g-canvas'), ctx=c.getContext('2d');
+  const TIn=document.getElementById('g-T'), KIn=document.getElementById('g-k'), PIn=document.getElementById('g-p');
+  const out=document.getElementById('g-readout');
+  // Fixed set of 20 vocab items with sample logits
+  const logits = [];
+  const labels = [];
+  for(let i=0;i<20;i++){ logits.push(2.5*Math.exp(-i*0.4) + (Math.random()-0.5)*0.3); labels.push('w'+i); }
+  function strategy(){
+    const T=+TIn.value;
+    const ps=softmax(logits.map(z=>z/T));
+    const sorted = ps.map((p,i)=>({p,i})).sort((a,b)=>b.p-a.p);
+    // top-k
+    const k = +KIn.value;
+    const kSet = new Set(sorted.slice(0,k).map(x=>x.i));
+    // top-p (nucleus)
+    const pTh = +PIn.value;
+    let cum=0; const pSet=new Set();
+    for(const it of sorted){ if(cum >= pTh) break; pSet.add(it.i); cum += it.p; }
+    return {ps, kSet, pSet};
+  }
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const {ps, kSet, pSet}=strategy();
+    const mx=Math.max(...ps);
+    const bw=(W-60)/ps.length;
+    ps.forEach((p,i)=>{
+      const x=40+i*bw, h=p/mx*(H-50);
+      const inK = kSet.has(i), inP = pSet.has(i);
+      ctx.fillStyle = (inK && inP) ? '#1F4E79' : (inK || inP) ? '#F9A825' : '#E0E5EB';
+      ctx.fillRect(x+2, H-30-h, bw-4, h);
+      ctx.fillStyle='#555'; ctx.font='10px monospace';
+      ctx.fillText(labels[i], x, H-12);
+      ctx.fillText(p.toFixed(2), x, H-30-h-2);
+    });
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 12px sans-serif';
+    ctx.fillText('● inside BOTH top-k AND top-p', 50, 24);
+    ctx.fillStyle='#F9A825'; ctx.fillText('● inside ONE of them only', 250, 24);
+    ctx.fillStyle='#888'; ctx.fillText('● filtered out', 420, 24);
+    out.textContent = `T = ${(+TIn.value).toFixed(2)}, k = ${+KIn.value}, p = ${(+PIn.value).toFixed(2)}  ·  ` +
+      `top-k keeps ${kSet.size}, top-p keeps ${pSet.size}`;
+  }
+  TIn.oninput=draw; KIn.oninput=draw; PIn.oninput=draw; draw();
+})();
+
+/* §15 HF picker */
+(function(){
+  const sel=document.getElementById('hf-task'); const out=document.getElementById('hf-out');
+  const map={
+    'fill-mask': {arch:'encoder-only (BERT family)', cls:'AutoModelForMaskedLM', ckpt:'bert-base-uncased',
+                  pipe:'pipeline("fill-mask", model="bert-base-uncased")'},
+    'text-generation': {arch:'decoder-only (GPT family)', cls:'AutoModelForCausalLM', ckpt:'gpt2',
+                       pipe:'pipeline("text-generation", model="gpt2")'},
+    'summarization': {arch:'encoder–decoder (T5 / BART)', cls:'AutoModelForSeq2SeqLM', ckpt:'t5-small',
+                     pipe:'pipeline("summarization", model="t5-small")'},
+    'text-classification': {arch:'encoder-only with a classification head', cls:'AutoModelForSequenceClassification',
+                           ckpt:'distilbert-base-uncased-finetuned-sst-2-english',
+                           pipe:'pipeline("sentiment-analysis")'},
+    'token-classification': {arch:'encoder-only with a per-token head', cls:'AutoModelForTokenClassification',
+                            ckpt:'dslim/bert-base-NER', pipe:'pipeline("ner")'},
+    'translation': {arch:'encoder–decoder', cls:'AutoModelForSeq2SeqLM', ckpt:'t5-small',
+                   pipe:'pipeline("translation", model="t5-small")'},
+  };
+  function up(){
+    const v=map[sel.value];
+    out.textContent = `# Task:        ${sel.value}\n# Archetype:   ${v.arch}\n# HF class:    ${v.cls}\n# Checkpoint:  ${v.ckpt}\n\nfrom transformers import pipeline\np = ${v.pipe}`;
+  }
+  sel.onchange=up; up();
+})();
+</script>
+</body>
+</html>

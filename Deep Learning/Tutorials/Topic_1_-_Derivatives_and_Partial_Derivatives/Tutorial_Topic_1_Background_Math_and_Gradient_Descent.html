@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 1 Tutorial — Background Math &amp; Gradient Descent</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+       margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6; }
+.container { max-width: 980px; margin: 24px auto 48px; background: white;
+             padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.35em; margin-top: 40px;
+     border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+h4 { color: #555; font-size: 1.0em; margin-top: 18px; }
+p { margin: 12px 0; }
+ul, ol { margin: 12px 0; padding-left: 26px; }
+li { margin: 6px 0; }
+code, .code { font-family: "SF Mono", "Consolas", "Monaco", monospace;
+       background: #F2F4F7; padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+      overflow-x: auto; border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", "Consolas", "Monaco", monospace; font-size: 0.9em; }
+pre code { background: transparent; padding: 0; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79;
+           padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px;
+        margin: 14px 0; border-radius: 4px; font-size: 0.93em; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+        padding: 22px; margin: 22px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.controls { display: flex; gap: 14px; align-items: flex-end;
+            flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 180px; }
+.control input[type="number"] { width: 80px; padding: 4px 8px;
+            border: 1px solid #CFD7DF; border-radius: 4px; font-family: inherit; }
+.control select { padding: 5px 8px; border: 1px solid #CFD7DF; border-radius: 4px;
+                  font-family: inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px;
+           border-radius: 6px; font-family: "SF Mono", Consolas, monospace;
+           font-size: 0.88em; min-width: 220px; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 16px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.93em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; }
+.row { display: flex; gap: 16px; flex-wrap: wrap; }
+.col { flex: 1; min-width: 280px; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+      background: #F2F4F7; padding: 4px 8px; border-radius: 4px; }
+.eq-block { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+            background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+            text-align: center; margin: 14px 0; display: block; }
+.nav { display: flex; justify-content: space-between; margin-top: 40px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; }
+.nav a:hover { text-decoration: underline; }
+.kv { display: grid; grid-template-columns: max-content auto;
+      column-gap: 14px; row-gap: 4px; margin: 8px 0; }
+.kv div:nth-child(odd) { color: #555; }
+.kv div:nth-child(even) { font-family: "SF Mono", Consolas, monospace; }
+.toc { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+       padding: 16px 22px; margin-bottom: 28px; font-size: 0.92em; }
+.toc h3 { margin: 0 0 8px; color: #1F4E79; font-size: 1.0em; }
+.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 24px; }
+.toc a { color: #1F4E79; text-decoration: none; }
+.toc a:hover { text-decoration: underline; }
+.tag { display: inline-block; padding: 2px 8px; background: #E0E5EB;
+       border-radius: 12px; font-size: 0.75em; color: #555;
+       text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px; }
+.tag.interactive { background: #E1F0EA; color: #1B5E20; }
+.tag.code { background: #F2F4F7; color: #555; }
+.tag.math { background: #FCE8EE; color: #6E1414; }
+table.cmp { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 0.92em; }
+table.cmp th, table.cmp td { border: 1px solid #E0E5EB; padding: 8px 12px; text-align: left; }
+table.cmp th { background: #F2F4F7; color: #1F4E79; }
+.metric-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; font-size: 0.9em; }
+.metric-bar .bar { flex: 1; height: 14px; background: #E0E5EB; border-radius: 4px; overflow: hidden; }
+.metric-bar .bar > div { height: 100%; background: #1F4E79; }
+.metric-bar .label { width: 90px; color: #555; font-family: "SF Mono", Consolas, monospace; font-size: 0.85em; }
+.metric-bar .value { width: 60px; text-align: right; font-family: "SF Mono", Consolas, monospace; font-size: 0.85em; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="brand">Tutorial · ~ 75 min read</div>
+<h1>Topic 1 — Background Math, Gradient Descent &amp; Your First AI Product</h1>
+<p class="subtitle">A working-engineer's tour of the calculus, the optimizer, the metrics, and the three-cloud product surface that everything in this course will sit on top of.</p>
+
+<div class="callout">
+  <strong>What you should walk away with.</strong> (1) Fluent with derivatives, partial derivatives, and the chain rule as a <em>composition rule</em>. (2) Able to predict gradient-descent behavior under different learning rates and batch sizes. (3) Comfortable with how MSE, MAE, and R² differ — not just in formula but in the kind of <em>gradient signal</em> they produce. (4) Able to read a PyTorch autograd snippet and predict what <code>.backward()</code> stores in <code>.grad</code>. (5) Able to sketch the full request/response cycle for a Streamlit + FastAPI + Supabase product.
+</div>
+
+<div class="toc">
+  <h3>What's in this tutorial</h3>
+  <ol>
+    <li><a href="#s1">Calculus quick-start: derivatives and partial derivatives</a></li>
+    <li><a href="#s2">The chain rule, visualized</a></li>
+    <li><a href="#s3">Backpropagation: the chain rule on a tiny network</a></li>
+    <li><a href="#s4">Gradient descent on a 1-D loss</a></li>
+    <li><a href="#s5">Learning-rate regimes: convergence, oscillation, divergence</a></li>
+    <li><a href="#s6">2-D loss landscapes and gradient direction</a></li>
+    <li><a href="#s7">Batch, mini-batch, and stochastic gradient descent</a></li>
+    <li><a href="#s8">Optimizers: SGD, momentum, and Adam</a></li>
+    <li><a href="#s9">PyTorch autograd, end to end</a></li>
+    <li><a href="#s10">Loss functions: MSE vs MAE vs Huber, by gradient profile</a></li>
+    <li><a href="#s11">Linear regression: fit, evaluate, interpret</a></li>
+    <li><a href="#s12">Train / validation / test splits</a></li>
+    <li><a href="#s13">Reproducibility and random seeds</a></li>
+    <li><a href="#s14">Convergence diagnostics: when has training "converged"?</a></li>
+    <li><a href="#s15">The three-cloud architecture</a></li>
+    <li><a href="#s16">A complete request lifecycle</a></li>
+    <li><a href="#s17">Pydantic schemas and input validation</a></li>
+  </ol>
+</div>
+
+<!-- ========== 1. Calculus quick-start ========== -->
+<h2 id="s1">1 · Calculus quick-start <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+
+<p>A neural network is just a long composition of differentiable functions. So a deep-learning engineer's relationship with calculus is mostly mechanical: you need to know how to differentiate the standard library of functions, and you need fluency with the <em>chain rule</em> for compositions and the <em>sum/product rules</em> for combinations.</p>
+
+<h3>1.1 · The single-variable derivative</h3>
+<p>For a function <span class="eq">f: ℝ → ℝ</span>, the derivative at <code>x</code> is the slope of the tangent line:</p>
+<p class="eq-block">f′(x) = lim<sub>h→0</sub>  ( f(x + h) − f(x) ) / h</p>
+<p>You will rarely compute a derivative from this definition. Instead you'll lean on a handful of rules:</p>
+<table class="cmp">
+  <tr><th>Rule</th><th>Statement</th><th>Example</th></tr>
+  <tr><td>Power</td><td><span class="eq">d/dx (x<sup>n</sup>) = n · x<sup>n−1</sup></span></td><td>d/dx (x³) = 3x²</td></tr>
+  <tr><td>Exponential</td><td><span class="eq">d/dx (e<sup>x</sup>) = e<sup>x</sup></span></td><td>d/dx (e<sup>2x</sup>) = 2 · e<sup>2x</sup> (with chain)</td></tr>
+  <tr><td>Log</td><td><span class="eq">d/dx (ln x) = 1/x</span></td><td>d/dx (ln(x² + 1)) = 2x / (x² + 1)</td></tr>
+  <tr><td>Sum</td><td><span class="eq">d/dx (f + g) = f′ + g′</span></td><td>d/dx (x³ + 2x) = 3x² + 2</td></tr>
+  <tr><td>Product</td><td><span class="eq">d/dx (f · g) = f′·g + f·g′</span></td><td>d/dx (x · sin x) = sin x + x · cos x</td></tr>
+  <tr><td>Chain</td><td><span class="eq">d/dx f(g(x)) = f′(g(x)) · g′(x)</span></td><td>d/dx sin(x²) = 2x · cos(x²)</td></tr>
+</table>
+
+<div class="demo">
+  <h3>Demo · Numerical vs analytic derivative</h3>
+  <p>For a function <code>f(x)</code> picked from the dropdown, this demo plots <code>f</code> in blue, its analytic derivative <code>f′</code> in red, and a finite-difference approximation as small black dots — they should fall on the red curve as long as <code>h</code> is small enough.</p>
+  <div class="controls">
+    <div class="control">
+      <label for="d1-f">Function</label>
+      <select id="d1-f">
+        <option value="cubic">f(x) = x³ − 3x</option>
+        <option value="sinx2">f(x) = sin(x²)</option>
+        <option value="exp">f(x) = e<sup>−x²</sup></option>
+        <option value="tanh">f(x) = tanh(x)</option>
+      </select>
+    </div>
+    <div class="control">
+      <label for="d1-h">finite-difference h</label>
+      <input type="range" id="d1-h" min="0.001" max="1" step="0.001" value="0.1">
+    </div>
+    <div class="readout" id="d1-readout"></div>
+  </div>
+  <canvas id="d1-canvas" width="880" height="280"></canvas>
+</div>
+
+<h3>1.2 · Partial derivatives</h3>
+<p>For a function of multiple variables, say <span class="eq">f(x, y)</span>, the <em>partial</em> with respect to <code>x</code> is the derivative you get by treating <code>y</code> as a constant. Notation:</p>
+<p class="eq-block">∂f/∂x  =  lim<sub>h→0</sub>  ( f(x + h, y) − f(x, y) ) / h</p>
+<p>The <em>gradient</em> is the vector of partials. For <span class="eq">f(w, b) = (w · x + b − y)²</span> (one training example):</p>
+<p class="eq-block">∇f = ( ∂f/∂w , ∂f/∂b ) = ( 2(w·x + b − y) · x ,  2(w·x + b − y) )</p>
+<p>That gradient is exactly what gradient descent will use to update <code>w</code> and <code>b</code> at each step.</p>
+
+<div class="demo">
+  <h3>Demo · A 2-D function and its gradient field</h3>
+  <p>The contour plot below is <span class="eq">f(w, b) = (w − 2)² + (b + 1)²</span> — a paraboloid centered at <code>(2, −1)</code>. The arrows are the gradient direction at each grid point; gradient descent moves <em>opposite</em> to those arrows, straight toward the minimum.</p>
+  <div class="controls">
+    <div class="control"><label>Click anywhere on the plot to drop a starting point.</label></div>
+    <button id="d2-clear" class="secondary">Clear paths</button>
+    <div class="readout" id="d2-readout">Click the plot to start a gradient-descent path.</div>
+  </div>
+  <canvas id="d2-canvas" width="880" height="380"></canvas>
+</div>
+
+<!-- ========== 2. Chain rule, visualized ========== -->
+<h2 id="s2">2 · The chain rule, visualized <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+
+<p>The chain rule says: to differentiate a composition <span class="eq">f(g(x))</span>, differentiate the outer at the value of the inner, then multiply by the derivative of the inner. It is the single most-used rule in deep learning because every layer of a neural network is exactly such a composition.</p>
+
+<p class="eq-block">d/dx [ f(g(x)) ]  =  f′(g(x)) · g′(x)</p>
+
+<p>Why this is the engine of backpropagation: the loss is <span class="eq">L( f<sub>N</sub>( f<sub>N−1</sub>( … f<sub>1</sub>(x) ) ) )</span>. Repeatedly applying the chain rule from the outside in gives a product of local Jacobians — one per layer — that you can compute in a single backward pass.</p>
+
+<div class="demo">
+  <h3>Demo · Three-step chain rule walkthrough</h3>
+  <p>Take <span class="eq">f(x) = sin(x²)</span>. Set <code>g(x) = x²</code> and <code>h(u) = sin(u)</code>; then <code>f(x) = h(g(x))</code>. The chain rule says <code>f′(x) = h′(g(x)) · g′(x) = cos(x²) · 2x</code>. The plot below shows all three pieces in sync as you slide <code>x</code>.</p>
+  <div class="controls">
+    <div class="control">
+      <label for="d3-x">x</label>
+      <input type="range" id="d3-x" min="-3" max="3" step="0.01" value="1">
+    </div>
+    <div class="readout" id="d3-readout"></div>
+  </div>
+  <canvas id="d3-canvas" width="880" height="320"></canvas>
+</div>
+
+<!-- ========== 3. Backprop on a tiny network ========== -->
+<h2 id="s3">3 · Backpropagation: the chain rule on a tiny network <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+
+<p>Consider the smallest possible network: one input, one weight, one bias, one activation, one squared-error loss.</p>
+<p class="eq-block">
+  z = w · x + b,   a = σ(z),   L = ½ ( a − y )²
+</p>
+<p>To train, we need <span class="eq">∂L/∂w</span> and <span class="eq">∂L/∂b</span>. By the chain rule:</p>
+<p class="eq-block">
+  ∂L/∂w  =  (a − y) · σ′(z) · x,
+  &nbsp;&nbsp;&nbsp;
+  ∂L/∂b  =  (a − y) · σ′(z)
+</p>
+<p>Read this as: the loss propagates the residual <code>(a − y)</code> through the activation gradient <code>σ′(z)</code>, and the input <code>x</code> picks up the multiplier for the weight gradient. The same pattern, layer by layer, is exactly what PyTorch's autograd computes for you.</p>
+
+<div class="demo">
+  <h3>Demo · Backprop on a one-neuron network, step by step</h3>
+  <p>Pick an input <code>x</code>, target <code>y</code>, current weight <code>w</code>, bias <code>b</code>, and activation. The panel computes the forward pass, the loss, and the gradients with respect to <code>w</code> and <code>b</code>, all laid out so you can read the chain-rule terms.</p>
+  <div class="controls">
+    <div class="control"><label>x</label><input type="number" id="bp-x" value="1.5" step="0.1"></div>
+    <div class="control"><label>y (target)</label><input type="number" id="bp-y" value="1.0" step="0.1"></div>
+    <div class="control"><label>w</label><input type="number" id="bp-w" value="0.5" step="0.1"></div>
+    <div class="control"><label>b</label><input type="number" id="bp-b" value="0.0" step="0.1"></div>
+    <div class="control">
+      <label>activation σ</label>
+      <select id="bp-act">
+        <option value="sigmoid">sigmoid</option>
+        <option value="tanh">tanh</option>
+        <option value="relu">ReLU</option>
+        <option value="identity">identity</option>
+      </select>
+    </div>
+  </div>
+  <pre id="bp-out"></pre>
+</div>
+
+<!-- ========== 4. Gradient descent ========== -->
+<h2 id="s4">4 · Gradient descent on a 1-D loss <span class="tag interactive">interactive</span></h2>
+
+<p>Gradient descent updates a parameter by stepping <em>against</em> the gradient:</p>
+<p class="eq-block">w ← w − η · ∂L/∂w</p>
+<p>Two facts you should never get wrong:</p>
+<ul>
+  <li>Gradient descent moves <em>against</em> the gradient. The gradient itself points uphill.</li>
+  <li>The learning rate <code>η</code> controls how big each step is. Too small ⇒ painfully slow. Too large ⇒ oscillation or divergence.</li>
+</ul>
+
+<div class="demo">
+  <h3>Demo · Step through gradient descent</h3>
+  <p>Loss landscape: <span class="eq">L(w) = (w − 3)²</span>. Minimum at <code>w = 3</code>. Press <strong>Step</strong> to apply one update; press <strong>Auto</strong> to run 30 steps.</p>
+  <div class="controls">
+    <div class="control">
+      <label for="gd-lr">Learning rate η</label>
+      <input type="range" id="gd-lr" min="0.01" max="1.10" step="0.01" value="0.30">
+    </div>
+    <div class="control">
+      <label for="gd-w0">Starting w</label>
+      <input type="range" id="gd-w0" min="-2" max="8" step="0.1" value="-1">
+    </div>
+    <div class="readout" id="gd-readout">step 0: w = −1.00, L(w) = 16.00</div>
+    <button id="gd-step">Step</button>
+    <button id="gd-auto" class="secondary">Auto (30 steps)</button>
+    <button id="gd-reset" class="secondary">Reset</button>
+  </div>
+  <canvas id="gd-canvas" width="880" height="280"></canvas>
+</div>
+
+<!-- ========== 5. Learning-rate regimes ========== -->
+<h2 id="s5">5 · Learning-rate regimes <span class="tag interactive">interactive</span></h2>
+
+<p>For a quadratic loss <span class="eq">L(w) = (w − c)²</span>, gradient descent updates obey <code>w<sub>t+1</sub> = w<sub>t</sub> − 2η(w<sub>t</sub> − c)</code>. The error <code>e<sub>t</sub> = w<sub>t</sub> − c</code> evolves as <code>e<sub>t+1</sub> = (1 − 2η) · e<sub>t</sub></code>. Three regimes:</p>
+<ul>
+  <li><strong>|1 − 2η| &lt; 1</strong> ⇒ converges monotonically (small η) or with damped oscillation (η between 0.5 and 1).</li>
+  <li><strong>|1 − 2η| = 1</strong> ⇒ flat oscillation forever; happens exactly at η = 1.</li>
+  <li><strong>|1 − 2η| &gt; 1</strong> ⇒ diverges; happens for η &gt; 1.</li>
+</ul>
+<p>This is why you see "divide your learning rate by 10" as a debugging move; it is also why warmup schedules exist for transformers, where the loss surface is much more complicated.</p>
+
+<div class="demo">
+  <h3>Demo · Three learning rates, one loss</h3>
+  <p>The dashed black curve is the loss <span class="eq">L(w) = (w − 3)²</span>. The three colored paths start at <code>w = −1</code> and follow gradient descent for 30 steps under the three labeled learning rates.</p>
+  <canvas id="lr-canvas" width="880" height="300"></canvas>
+  <div class="kv" style="margin-top: 10px;">
+    <div><span style="color:#1B7340;">●</span> η = 0.05</div><div>slow but stable convergence</div>
+    <div><span style="color:#1F4E79;">●</span> η = 0.30</div><div>fast convergence, no oscillation</div>
+    <div><span style="color:#C00000;">●</span> η = 1.10</div><div>step too large, oscillates and diverges</div>
+  </div>
+</div>
+
+<!-- ========== 6. 2-D loss landscape ========== -->
+<h2 id="s6">6 · 2-D loss landscapes and gradient direction <span class="tag interactive">interactive</span></h2>
+
+<p>In a real neural network, you are descending in a parameter space with millions of dimensions. The 2-D picture is the right cartoon: each step moves the parameter vector against the gradient of the loss surface at the current point.</p>
+
+<div class="demo">
+  <h3>Demo · Descend on an elliptical bowl</h3>
+  <p>Loss: <span class="eq">L(w₁, w₂) = (w₁ − 1)² + 4 · (w₂ + 1)²</span>. Because the bowl is stretched (the w₂ axis is "stiffer"), gradient descent zig-zags toward the minimum unless you also use momentum. Click anywhere to drop a starting point.</p>
+  <div class="controls">
+    <div class="control">
+      <label for="d6-lr">Learning rate η</label>
+      <input type="range" id="d6-lr" min="0.02" max="0.30" step="0.005" value="0.10">
+    </div>
+    <button id="d6-clear" class="secondary">Clear</button>
+    <div class="readout" id="d6-readout">Click anywhere on the plot to start a path.</div>
+  </div>
+  <canvas id="d6-canvas" width="880" height="340"></canvas>
+</div>
+
+<!-- ========== 7. Stochastic vs mini-batch ========== -->
+<h2 id="s7">7 · Batch, mini-batch, and stochastic gradient descent <span class="tag interactive">interactive</span></h2>
+
+<p>So far the "gradient" was the gradient of the loss on a single example. In practice you minimize an <em>average</em> loss over many examples:</p>
+<p class="eq-block">L(θ) = (1/N) Σ<sub>i=1..N</sub> L<sub>i</sub>(θ)</p>
+<p>You can compute this gradient in three ways:</p>
+<ul>
+  <li><strong>Batch gradient descent.</strong> Use all <code>N</code> examples per step. Lowest-variance gradient; expensive per step; smooth loss curve.</li>
+  <li><strong>Stochastic gradient descent (SGD).</strong> Use a single random example per step. Cheap; very noisy gradient; loss curve looks like static.</li>
+  <li><strong>Mini-batch SGD.</strong> Use a small batch (e.g., 32, 128). The standard. Compute-efficient on GPUs; gradient noise is a feature — it helps escape narrow minima.</li>
+</ul>
+
+<div class="demo">
+  <h3>Demo · Noisy loss curves under different batch sizes</h3>
+  <p>The model is a linear regression on 1024 synthetic points. Each curve is the per-step loss for a different batch size. Notice how smaller batches produce noisier curves but reach a similar final loss.</p>
+  <div class="controls">
+    <button id="sgd-run">Run all three</button>
+    <button id="sgd-reset" class="secondary">Reset</button>
+    <div class="readout" id="sgd-readout">Press Run to compare batch sizes.</div>
+  </div>
+  <canvas id="sgd-canvas" width="880" height="280"></canvas>
+</div>
+
+<!-- ========== 8. Optimizers ========== -->
+<h2 id="s8">8 · Optimizers: SGD, momentum, and Adam <span class="tag interactive">interactive</span></h2>
+
+<p>Plain SGD takes a step in the direction of the current gradient. Two famous improvements:</p>
+<ul>
+  <li><strong>Momentum.</strong> Keep an exponentially-decaying average of past gradients and step in that direction. Smooths zig-zags through long, narrow valleys.</li>
+  <li><strong>Adam.</strong> Use both a moving average of the gradient (momentum) <em>and</em> a moving average of the squared gradient (adapts the learning rate per parameter). The default optimizer for most deep networks.</li>
+</ul>
+<p>The update rules:</p>
+<pre>SGD            : w ← w − η · g
+SGD + momentum : v ← μ · v − η · g ;  w ← w + v
+Adam           : m ← β₁ · m + (1 − β₁) · g           # 1st-moment estimate
+                 v ← β₂ · v + (1 − β₂) · g²          # 2nd-moment estimate (elementwise)
+                 m̂ ← m / (1 − β₁ᵗ) ;  v̂ ← v / (1 − β₂ᵗ)   # bias correction
+                 w ← w − η · m̂ / (√v̂ + ε)</pre>
+
+<div class="demo">
+  <h3>Demo · Three optimizers race down a narrow valley</h3>
+  <p>The loss is the elliptical bowl from before. Plain SGD zig-zags; momentum cuts a straighter path; Adam adapts the per-parameter step size.</p>
+  <div class="controls">
+    <button id="opt-run">Race</button>
+    <button id="opt-reset" class="secondary">Reset</button>
+    <div class="readout" id="opt-readout">Press Race to compare optimizers.</div>
+  </div>
+  <canvas id="opt-canvas" width="880" height="340"></canvas>
+</div>
+
+<!-- ========== 9. PyTorch autograd ========== -->
+<h2 id="s9">9 · PyTorch autograd, end to end <span class="tag code">code</span></h2>
+
+<p>PyTorch tracks every operation on tensors that have <code>requires_grad=True</code>, building a dynamic computation graph at forward time. When you call <code>.backward()</code> on a scalar, it walks the graph backward and fills <code>.grad</code> on every leaf tensor with the partial derivative of that scalar with respect to the tensor.</p>
+
+<pre>import torch
+
+x = torch.tensor(2.0, requires_grad=True)
+y = torch.tensor(3.0, requires_grad=True)
+
+f = x ** 2 + 3 * x * y + y ** 2     # forward
+f.backward()                         # backward
+
+print(x.grad.item())                 # ∂f/∂x = 2x + 3y = 4 + 9 = 13
+print(y.grad.item())                 # ∂f/∂y = 3x + 2y = 6 + 6 = 12</pre>
+
+<p>Three things to remember:</p>
+<ul>
+  <li><strong>One backward per scalar.</strong> <code>f</code> must be a scalar (a 0-D tensor) to call <code>.backward()</code> without arguments. Loss functions like <code>nn.MSELoss</code> always return a scalar.</li>
+  <li><strong>Gradients accumulate.</strong> If you call <code>.backward()</code> twice without clearing, the second call <em>adds</em> to <code>.grad</code>. That is why every training loop calls <code>optimizer.zero_grad()</code> before <code>.backward()</code>.</li>
+  <li><strong>Detach to break the graph.</strong> If you do <code>w = w - lr * g</code> while <code>w.requires_grad=True</code> outside a <code>with torch.no_grad():</code> block, you'll either get an autograd error or create a useless graph. Use the optimizer.</li>
+</ul>
+
+<div class="demo">
+  <h3>Demo · Autograd calculator</h3>
+  <p>Edit the function in the dropdown and the variables in the inputs. The demo computes the analytic partial derivatives and prints what PyTorch's autograd <em>would</em> store in <code>.grad</code>.</p>
+  <div class="controls">
+    <div class="control">
+      <label>function f(x, y)</label>
+      <select id="ag-f">
+        <option value="0">x² + 3xy + y²</option>
+        <option value="1">sin(x · y)</option>
+        <option value="2">e^(−(x² + y²))</option>
+        <option value="3">x · exp(−y)</option>
+      </select>
+    </div>
+    <div class="control"><label>x</label><input type="number" id="ag-x" value="2" step="0.1"></div>
+    <div class="control"><label>y</label><input type="number" id="ag-y" value="3" step="0.1"></div>
+  </div>
+  <pre id="ag-out"></pre>
+</div>
+
+<!-- ========== 10. Loss functions: gradient profiles ========== -->
+<h2 id="s10">10 · Loss functions: MSE vs MAE vs Huber, by gradient profile <span class="tag interactive">interactive</span></h2>
+
+<p>For regression, the choice of loss controls more than just the final number you report; it controls the <em>gradient</em> the optimizer sees and therefore how the model treats outliers.</p>
+<table class="cmp">
+  <tr><th>Loss</th><th>Formula</th><th>Gradient w.r.t. residual r</th><th>Behavior</th></tr>
+  <tr><td>MSE</td><td>r²</td><td>2r</td><td>Penalizes large errors quadratically; outliers dominate training.</td></tr>
+  <tr><td>MAE</td><td>|r|</td><td>sign(r) (constant magnitude)</td><td>Robust to outliers; gradient discontinuous at r = 0.</td></tr>
+  <tr><td>Huber</td><td>r² for small |r|, linear for large |r|</td><td>Smooth blend of the two</td><td>MSE near the optimum, MAE in the tails.</td></tr>
+</table>
+
+<div class="demo">
+  <h3>Demo · Loss and gradient profiles for the same residuals</h3>
+  <p>Drag the slider to add an outlier into the residual distribution. Watch how MSE's gradient on that one outlier dwarfs the rest, while MAE and Huber stay better-behaved.</p>
+  <div class="controls">
+    <div class="control">
+      <label for="lp-out">Outlier residual</label>
+      <input type="range" id="lp-out" min="0" max="6" step="0.05" value="3">
+    </div>
+    <div class="readout" id="lp-readout"></div>
+  </div>
+  <canvas id="lp-canvas" width="880" height="320"></canvas>
+</div>
+
+<!-- ========== 11. Linear regression ========== -->
+<h2 id="s11">11 · Linear regression: fit, evaluate, interpret <span class="tag interactive">interactive</span></h2>
+
+<p>A linear regression model predicts <span class="eq">ŷ = w·x + b</span>. With multiple features you have a vector of weights and the same single-line story: <span class="eq">ŷ = w⊤x + b</span>. Three evaluation metrics you should know cold:</p>
+<div class="kv">
+  <div>MSE</div><div>mean((ŷ − y)²) — penalizes large errors quadratically</div>
+  <div>MAE</div><div>mean(|ŷ − y|) — robust to outliers, linear gradient magnitude</div>
+  <div>R²</div><div>1 − SS_res / SS_tot — scale-free; 1 is perfect fit, 0 is no better than predicting the mean</div>
+</div>
+
+<div class="demo">
+  <h3>Demo · Drag the line, see MSE, MAE, R²</h3>
+  <p>Synthetic data from <span class="eq">y = 2x − 1 + noise</span>. Move the slope and intercept sliders to fit the line yourself; the metrics update live. Press <strong>Auto-fit</strong> to run gradient descent. Press <strong>Add outlier</strong> to see how each metric reacts.</p>
+  <div class="controls">
+    <div class="control"><label for="lr-w">Slope (w)</label>
+      <input type="range" id="lr-w" min="-1" max="5" step="0.01" value="1.0"></div>
+    <div class="control"><label for="lr-b">Intercept (b)</label>
+      <input type="range" id="lr-b" min="-5" max="5" step="0.05" value="0.5"></div>
+    <button id="lr-fit">Auto-fit</button>
+    <button id="lr-outlier" class="secondary">Add outlier</button>
+    <button id="lr-newdata" class="secondary">New data</button>
+    <div class="readout" id="lr-readout">MSE = —</div>
+  </div>
+  <canvas id="lr-canvas" width="880" height="320"></canvas>
+</div>
+
+<!-- ========== 12. Train/val/test ========== -->
+<h2 id="s12">12 · Train / validation / test splits <span class="tag interactive">interactive</span></h2>
+
+<p>You can't honestly measure generalization on the same data you trained on. The standard recipe:</p>
+<ul>
+  <li><strong>Training set</strong> — used to fit the parameters.</li>
+  <li><strong>Validation set</strong> — used to pick hyperparameters (learning rate, model size, dropout).</li>
+  <li><strong>Test set</strong> — used <em>once</em>, at the very end, to report an honest generalization number.</li>
+</ul>
+<p>The cardinal sin is "validation leakage": tuning on the test set, looking at the test set during development, or accidentally training on validation. Once you've looked, you've burned the set.</p>
+
+<div class="demo">
+  <h3>Demo · Visualize a split</h3>
+  <p>Slide the three percentages to see how points are partitioned. The total always sums to 100 %; the demo redistributes the remaining slack between val and test.</p>
+  <div class="controls">
+    <div class="control">
+      <label for="sp-train">train %</label>
+      <input type="range" id="sp-train" min="50" max="95" step="1" value="70">
+    </div>
+    <div class="control">
+      <label for="sp-val">val % (of remainder)</label>
+      <input type="range" id="sp-val" min="0" max="100" step="1" value="50">
+    </div>
+    <div class="readout" id="sp-readout"></div>
+  </div>
+  <canvas id="sp-canvas" width="880" height="180"></canvas>
+</div>
+
+<!-- ========== 13. Reproducibility ========== -->
+<h2 id="s13">13 · Reproducibility and random seeds <span class="tag code">code</span></h2>
+
+<p>If two runs of your code produce different metrics, you do not have a reproducible experiment, and you cannot run an honest ablation. Three sources of nondeterminism to control:</p>
+<ul>
+  <li><strong>Python / NumPy.</strong> <code>random.seed(s)</code> and <code>numpy.random.seed(s)</code>.</li>
+  <li><strong>PyTorch.</strong> <code>torch.manual_seed(s)</code> for CPU; <code>torch.cuda.manual_seed_all(s)</code> for all GPUs.</li>
+  <li><strong>CUDA non-determinism.</strong> Set <code>torch.backends.cudnn.deterministic = True</code> and accept a small slowdown.</li>
+</ul>
+
+<pre>import os, random, numpy as np, torch
+
+def set_seed(s: int = 42):
+    random.seed(s)
+    np.random.seed(s)
+    torch.manual_seed(s)
+    torch.cuda.manual_seed_all(s)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    os.environ["PYTHONHASHSEED"] = str(s)</pre>
+
+<div class="warn">
+  <strong>Reproducibility ≠ stability.</strong> A reproducible run can still be a fragile run — same seed, same numbers, but tiny code changes (a fused op, a new GPU kernel) might shift them. The right move is to also run a small grid of seeds and report a mean + standard deviation.
+</div>
+
+<!-- ========== 14. Convergence diagnostics ========== -->
+<h2 id="s14">14 · Convergence diagnostics <span class="tag interactive">interactive</span></h2>
+
+<p>When has training "converged"? Three signals you want to see together:</p>
+<ul>
+  <li><strong>Training loss has flattened.</strong> Per-epoch slope is near zero for several epochs.</li>
+  <li><strong>Validation loss has flattened or started rising.</strong> A widening train/val gap is the classic overfitting signature.</li>
+  <li><strong>Gradient norm has stopped shrinking dramatically.</strong> If the gradient norm is still huge, you have not converged regardless of how flat the loss curve looks.</li>
+</ul>
+
+<div class="demo">
+  <h3>Demo · Three classic training-curve patterns</h3>
+  <p>Click the buttons to draw three patterns engineers see all the time. Each one tells a different story about what to change next.</p>
+  <div class="controls">
+    <button data-pat="healthy">Healthy convergence</button>
+    <button data-pat="overfit" class="secondary">Overfitting</button>
+    <button data-pat="underfit" class="secondary">Underfitting</button>
+    <button data-pat="lr-too-high" class="secondary">LR too high</button>
+    <div class="readout" id="cv-readout"></div>
+  </div>
+  <canvas id="cv-canvas" width="880" height="300"></canvas>
+</div>
+
+<!-- ========== 15. Three-cloud architecture ========== -->
+<h2 id="s15">15 · The three-cloud architecture <span class="tag interactive">interactive</span></h2>
+<p>Every product in is split across three clouds with clear ownership. Topic 1's "Regress-It" product is the smallest possible example — but the topology is identical for every later topic, all the way through to the generative-sampler in Topic 7.</p>
+
+<div class="demo">
+  <h3>Diagram · The three-cloud architecture</h3>
+  <canvas id="arch-canvas" width="880" height="280"></canvas>
+  <ul style="margin-top:14px;">
+    <li><strong style="color:#1F4E79;">Streamlit Cloud</strong> hosts the UI. Reads from Supabase with the <em>anon</em> key for views like "Run History"; calls FastAPI over HTTPS for any mutation.</li>
+    <li><strong style="color:#1F4E79;">Render.com</strong> hosts the FastAPI service. Uses the Supabase <em>service-role</em> key for writes; exposes <code>POST /train</code>, <code>POST /predict</code>, <code>GET /runs</code>, <code>GET /healthz</code>, <code>GET /version</code>.</li>
+    <li><strong style="color:#1F4E79;">Supabase Postgres</strong> stores datasets, run records, and predictions; SQL migrations live in <code>db/migrations/</code> and are idempotent.</li>
+  </ul>
+</div>
+
+<!-- ========== 16. Request lifecycle ========== -->
+<h2 id="s16">16 · A complete request lifecycle <span class="tag interactive">interactive</span></h2>
+
+<p>Suppose a user opens your Streamlit app and clicks "Train" with <code>lr = 0.01</code>, <code>epochs = 100</code>. Here is the round trip, from click to chart:</p>
+
+<div class="demo">
+  <h3>Demo · Step through the round trip</h3>
+  <p>Click <strong>Next step</strong> to advance the sequence diagram below; arrows light up as each message is sent. This is the picture you should be able to draw on a whiteboard from memory.</p>
+  <div class="controls">
+    <button id="seq-next">Next step</button>
+    <button id="seq-reset" class="secondary">Reset</button>
+    <div class="readout" id="seq-readout">Step 0 / 8 — click Next.</div>
+  </div>
+  <canvas id="seq-canvas" width="880" height="380"></canvas>
+</div>
+
+<!-- ========== 17. Pydantic ========== -->
+<h2 id="s17">17 · Pydantic schemas and input validation <span class="tag code">code</span><span class="tag interactive">interactive</span></h2>
+
+<p>FastAPI uses <a href="#" onclick="return false;">Pydantic</a> models to validate request and response bodies. The contract is declared once and enforced automatically: bad inputs return a structured <code>422 Unprocessable Entity</code> with a JSON pointer telling the client exactly which field failed and why.</p>
+
+<pre>from pydantic import BaseModel, Field
+
+class TrainRequest(BaseModel):
+    dataset_id: int
+    lr:         float = Field(gt=0, le=1.0, default=0.01)
+    epochs:     int   = Field(ge=1,  le=1000, default=100)
+    batch_size: int   = Field(ge=1,  le=4096, default=32)
+
+class TrainResponse(BaseModel):
+    run_id: int
+    mse:    float
+    r2:     float</pre>
+
+<div class="demo">
+  <h3>Demo · Validate a JSON request body</h3>
+  <p>Edit the JSON in the box and press <strong>Validate</strong>. The demo runs the same checks Pydantic would: required fields, types, and the <code>Field</code> bounds. Bad inputs produce a 422-style error report.</p>
+  <textarea id="pd-input" style="width:100%; height:140px; font-family:'SF Mono',Consolas,monospace; padding:10px; border:1px solid #CFD7DF; border-radius:6px;">{
+  "dataset_id": 1,
+  "lr": 0.01,
+  "epochs": 100,
+  "batch_size": 32
+}</textarea>
+  <div class="controls" style="margin-top:12px;">
+    <button id="pd-validate">Validate</button>
+    <button id="pd-bad" class="secondary">Insert a bad value</button>
+  </div>
+  <pre id="pd-out" style="margin-top:12px;"></pre>
+</div>
+
+<h2>Wrap-up</h2>
+<p>You now have every thread that the rest of will pull on: the calculus and the optimizer behind training, the metrics behind evaluation, the autograd library that does the bookkeeping, and the three-cloud surface that turns a trained model into a thing real people can use.</p>
+<div class="callout">
+  <strong>Next step.</strong> Open the Topic 1 practice exercises and try the self-graded problems before moving on to Topic 2.
+</div>
+
+<div class="nav">
+  <span>Topic 1 of 7</span>
+  <a href="Exercises_Topic_1_Background_Math_and_Gradient_Descent.html">Practice exercises →</a>
+</div>
+
+</div>
+
+<script>
+/* ============================================================================
+   Helpers
+   ============================================================================ */
+function map(v, a, b, c, d) { return c + (v - a) / (b - a) * (d - c); }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+/* ============================================================================
+   §1.1 Numerical vs analytic derivative
+   ============================================================================ */
+(function () {
+  const c = document.getElementById('d1-canvas');
+  const ctx = c.getContext('2d');
+  const fSel = document.getElementById('d1-f');
+  const hIn = document.getElementById('d1-h');
+  const out = document.getElementById('d1-readout');
+  const funcs = {
+    cubic: { f: x => x**3 - 3*x, fp: x => 3*x*x - 3, name: 'x³ − 3x', fpName: '3x² − 3' },
+    sinx2: { f: x => Math.sin(x*x), fp: x => 2*x*Math.cos(x*x), name: 'sin(x²)', fpName: '2x·cos(x²)' },
+    exp:   { f: x => Math.exp(-x*x), fp: x => -2*x*Math.exp(-x*x), name: 'e^(−x²)', fpName: '−2x·e^(−x²)' },
+    tanh:  { f: x => Math.tanh(x), fp: x => 1 - Math.tanh(x)**2, name: 'tanh(x)', fpName: '1 − tanh²(x)' },
+  };
+  function draw() {
+    const W = c.width, H = c.height;
+    ctx.clearRect(0,0,W,H);
+    const f = funcs[fSel.value], h = +hIn.value;
+    const xmin = -3, xmax = 3, ymin = -3, ymax = 3;
+    const px = x => 40 + (x-xmin)/(xmax-xmin) * (W-60);
+    const py = y => H - 30 - (y-ymin)/(ymax-ymin) * (H-50);
+    // axes
+    ctx.strokeStyle = '#CFD7DF';
+    ctx.beginPath(); ctx.moveTo(40, py(0)); ctx.lineTo(W-20, py(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px(0), 20); ctx.lineTo(px(0), H-30); ctx.stroke();
+    // f
+    ctx.strokeStyle = '#1F4E79'; ctx.lineWidth = 2.2; ctx.beginPath();
+    for (let i=0; i<=400; i++) {
+      const x = xmin + (xmax-xmin) * i/400;
+      const y = f.f(x);
+      (i?ctx.lineTo:ctx.moveTo).call(ctx, px(x), py(y));
+    }
+    ctx.stroke();
+    // analytic derivative
+    ctx.strokeStyle = '#C00000'; ctx.lineWidth = 2.2; ctx.beginPath();
+    for (let i=0; i<=400; i++) {
+      const x = xmin + (xmax-xmin) * i/400;
+      const y = f.fp(x);
+      (i?ctx.lineTo:ctx.moveTo).call(ctx, px(x), py(y));
+    }
+    ctx.stroke();
+    // numerical derivative as dots
+    ctx.fillStyle = '#1A1A1A';
+    for (let i=0; i<60; i++) {
+      const x = xmin + (xmax-xmin) * i/60;
+      const num = (f.f(x+h) - f.f(x-h)) / (2*h);
+      ctx.beginPath(); ctx.arc(px(x), py(num), 2.2, 0, Math.PI*2); ctx.fill();
+    }
+    // legend
+    ctx.fillStyle = '#1F4E79'; ctx.font='bold 12px sans-serif';
+    ctx.fillText('f(x) = ' + f.name, 60, 28);
+    ctx.fillStyle = '#C00000';
+    ctx.fillText("f′(x) = " + f.fpName + '  (analytic)', 60, 46);
+    ctx.fillStyle = '#1A1A1A';
+    ctx.fillText('finite-difference (dots)', 60, 64);
+    out.textContent = `h = ${h.toFixed(3)} — smaller h gives a closer approximation; too small is dominated by floating-point noise`;
+  }
+  fSel.onchange = draw; hIn.oninput = draw; draw();
+})();
+
+/* ============================================================================
+   §1.2 2-D gradient field + click-to-descend
+   ============================================================================ */
+(function () {
+  const c = document.getElementById('d2-canvas');
+  const ctx = c.getContext('2d');
+  const clearBtn = document.getElementById('d2-clear');
+  const out = document.getElementById('d2-readout');
+  const xmin = -2, xmax = 6, ymin = -4, ymax = 2;
+  const W = c.width, H = c.height;
+  const px = x => 40 + (x-xmin)/(xmax-xmin) * (W-60);
+  const py = y => H - 30 - (y-ymin)/(ymax-ymin) * (H-50);
+  function L(w, b) { return (w-2)**2 + (b+1)**2; }
+  function grad(w, b) { return [2*(w-2), 2*(b+1)]; }
+  const paths = [];
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    // contour fill
+    for (let i=0;i<60;i++) for (let j=0;j<40;j++) {
+      const w = xmin + (xmax-xmin) * (i+0.5)/60;
+      const b = ymin + (ymax-ymin) * (j+0.5)/40;
+      const v = L(w, b);
+      const t = clamp(v/40, 0, 1);
+      const r = Math.round(255 - t*100);
+      const g = Math.round(255 - t*60);
+      const bl = Math.round(255 - t*30);
+      ctx.fillStyle = `rgb(${r},${g},${bl})`;
+      ctx.fillRect(px(w) - (W-60)/60/2, py(b) - (H-50)/40/2, (W-60)/60+1, (H-50)/40+1);
+    }
+    // contour rings
+    ctx.strokeStyle = '#1F4E79';
+    [1, 4, 9, 16, 25].forEach(level => {
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      for (let a=0; a<=Math.PI*2 + 0.05; a += Math.PI/40) {
+        const w = 2 + Math.sqrt(level)*Math.cos(a);
+        const b = -1 + Math.sqrt(level)*Math.sin(a);
+        if (a===0) ctx.moveTo(px(w), py(b)); else ctx.lineTo(px(w), py(b));
+      }
+      ctx.stroke();
+    });
+    // gradient arrows
+    for (let i=1; i<8; i++) for (let j=1; j<6; j++) {
+      const w = xmin + (xmax-xmin) * i/8;
+      const b = ymin + (ymax-ymin) * j/6;
+      const g = grad(w, b);
+      const len = Math.sqrt(g[0]**2 + g[1]**2);
+      if (len < 0.1) continue;
+      const dx = -g[0] / len * 18;
+      const dy =  g[1] / len * 18;  // canvas y flipped
+      ctx.strokeStyle = '#555'; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(px(w), py(b)); ctx.lineTo(px(w)+dx, py(b)+dy); ctx.stroke();
+      // arrowhead
+      const a = Math.atan2(dy, dx);
+      ctx.beginPath();
+      ctx.moveTo(px(w)+dx, py(b)+dy);
+      ctx.lineTo(px(w)+dx - 6*Math.cos(a-0.35), py(b)+dy - 6*Math.sin(a-0.35));
+      ctx.lineTo(px(w)+dx - 6*Math.cos(a+0.35), py(b)+dy - 6*Math.sin(a+0.35));
+      ctx.closePath(); ctx.fillStyle = '#555'; ctx.fill();
+    }
+    // minimum
+    ctx.fillStyle = '#1B7340';
+    ctx.beginPath(); ctx.arc(px(2), py(-1), 7, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#1A1A1A'; ctx.font='12px sans-serif';
+    ctx.fillText('minimum (2, −1)', px(2)+10, py(-1)-6);
+    // paths
+    paths.forEach(p => {
+      ctx.strokeStyle = p.color; ctx.lineWidth = 2;
+      ctx.beginPath();
+      p.points.forEach((pt, i) => { (i?ctx.lineTo:ctx.moveTo).call(ctx, px(pt[0]), py(pt[1])); });
+      ctx.stroke();
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(px(p.points[0][0]), py(p.points[0][1]), 5, 0, Math.PI*2); ctx.fill();
+    });
+  }
+  function descend(w0, b0) {
+    const points = [[w0, b0]];
+    let w = w0, b = b0;
+    for (let i=0; i<60; i++) {
+      const g = grad(w, b);
+      w -= 0.1 * g[0]; b -= 0.1 * g[1];
+      points.push([w, b]);
+      if (Math.abs(g[0]) + Math.abs(g[1]) < 0.01) break;
+    }
+    return points;
+  }
+  c.addEventListener('click', (e) => {
+    const rect = c.getBoundingClientRect();
+    const cx = e.clientX - rect.left;
+    const cy = e.clientY - rect.top;
+    const w0 = xmin + (cx - 40) / (W-60) * (xmax - xmin);
+    const b0 = ymin + (H - 30 - cy) / (H-50) * (ymax - ymin);
+    const colors = ['#C00000', '#8E44AD', '#1F4E79', '#1B7340', '#F9A825'];
+    paths.push({ points: descend(w0, b0), color: colors[paths.length % colors.length] });
+    out.textContent = `Path ${paths.length}: start (${w0.toFixed(2)}, ${b0.toFixed(2)}) → ${descend(w0, b0).length} steps`;
+    draw();
+  });
+  clearBtn.onclick = () => { paths.length = 0; draw(); out.textContent = 'Click anywhere on the plot to start a path.'; };
+  draw();
+})();
+
+/* ============================================================================
+   §2 Chain rule walkthrough
+   ============================================================================ */
+(function () {
+  const c = document.getElementById('d3-canvas');
+  const ctx = c.getContext('2d');
+  const xIn = document.getElementById('d3-x');
+  const out = document.getElementById('d3-readout');
+  const W = c.width, H = c.height;
+  function f(x) { return Math.sin(x*x); }
+  function g(x) { return x*x; }
+  function h(u) { return Math.sin(u); }
+  function gp(x) { return 2*x; }
+  function hp(u) { return Math.cos(u); }
+  function fp(x) { return hp(g(x)) * gp(x); }
+  function panel(ox, oy, w, ht, label, drawFn) {
+    ctx.fillStyle = 'white';
+    ctx.strokeStyle = '#CFD7DF';
+    ctx.fillRect(ox, oy, w, ht);
+    ctx.strokeRect(ox, oy, w, ht);
+    ctx.fillStyle = '#1F4E79'; ctx.font = 'bold 12px sans-serif';
+    ctx.fillText(label, ox + 8, oy + 16);
+    drawFn(ox, oy, w, ht);
+  }
+  function plot(xmin, xmax, ymin, ymax, ox, oy, w, ht, color, fn, marker, markVal) {
+    const px = x => ox + (x-xmin)/(xmax-xmin) * w;
+    const py = y => oy + ht - (y-ymin)/(ymax-ymin) * ht;
+    // axes
+    ctx.strokeStyle = '#EFF2F5'; ctx.beginPath();
+    ctx.moveTo(ox, py(0)); ctx.lineTo(ox+w, py(0)); ctx.stroke();
+    if (xmin < 0) { ctx.beginPath(); ctx.moveTo(px(0), oy+20); ctx.lineTo(px(0), oy+ht); ctx.stroke(); }
+    // curve
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
+    for (let i=0; i<=200; i++) {
+      const x = xmin + (xmax-xmin) * i/200;
+      const y = fn(x);
+      (i?ctx.lineTo:ctx.moveTo).call(ctx, px(x), py(y));
+    }
+    ctx.stroke();
+    if (marker) {
+      const y = fn(markVal);
+      ctx.fillStyle = '#C00000';
+      ctx.beginPath(); ctx.arc(px(markVal), py(y), 5, 0, Math.PI*2); ctx.fill();
+    }
+  }
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    const x = +xIn.value;
+    const u = g(x);
+    const fx = f(x);
+    const gpx = gp(x), hpu = hp(u), fpx = fp(x);
+    // panel sizes
+    const pw = 270, ph = 200;
+    panel(20, 60, pw, ph, 'g(x) = x²', (ox, oy, w, ht) => {
+      plot(-3, 3, 0, 9, ox+10, oy+30, w-20, ht-50, '#1F4E79', g, true, x);
+    });
+    panel(310, 60, pw, ph, 'h(u) = sin(u)', (ox, oy, w, ht) => {
+      plot(0, 9, -1.2, 1.2, ox+10, oy+30, w-20, ht-50, '#1F4E79', h, true, u);
+    });
+    panel(600, 60, pw, ph, 'f(x) = h(g(x))', (ox, oy, w, ht) => {
+      plot(-3, 3, -1.2, 1.2, ox+10, oy+30, w-20, ht-50, '#1F4E79', f, true, x);
+    });
+    out.innerHTML =
+`x = ${x.toFixed(2)}    u = g(x) = ${u.toFixed(3)}    f(x) = ${fx.toFixed(3)}
+  g'(x) = 2x      = ${gpx.toFixed(3)}
+  h'(u) = cos(u)  = ${hpu.toFixed(3)}
+  f'(x) = h'(g(x)) · g'(x) = ${hpu.toFixed(3)} × ${gpx.toFixed(3)} = ${fpx.toFixed(3)}`;
+  }
+  xIn.oninput = draw; draw();
+})();
+
+/* ============================================================================
+   §3 Backprop on a tiny network
+   ============================================================================ */
+(function () {
+  const out = document.getElementById('bp-out');
+  const inputs = ['bp-x','bp-y','bp-w','bp-b','bp-act'].map(id => document.getElementById(id));
+  function sigmoid(z) { return 1/(1+Math.exp(-z)); }
+  function update() {
+    const [xEl, yEl, wEl, bEl, actEl] = inputs;
+    const x = +xEl.value, y = +yEl.value, w = +wEl.value, b = +bEl.value;
+    const act = actEl.value;
+    const z = w*x + b;
+    let a, dadz;
+    if (act === 'sigmoid') { a = sigmoid(z); dadz = a*(1-a); }
+    else if (act === 'tanh') { a = Math.tanh(z); dadz = 1 - a*a; }
+    else if (act === 'relu') { a = Math.max(0, z); dadz = z > 0 ? 1 : 0; }
+    else { a = z; dadz = 1; }
+    const L = 0.5 * (a - y)**2;
+    const dL_da = a - y;
+    const dL_dw = dL_da * dadz * x;
+    const dL_db = dL_da * dadz;
+    out.textContent =
+`Forward pass:
+  z = w·x + b      = ${w.toFixed(3)} · ${x.toFixed(3)} + ${b.toFixed(3)} = ${z.toFixed(3)}
+  a = σ(z)         = ${act}(${z.toFixed(3)}) = ${a.toFixed(3)}
+  L = ½(a − y)²    = ½·(${a.toFixed(3)} − ${y.toFixed(3)})² = ${L.toFixed(4)}
+
+Backward pass (chain rule, outside in):
+  ∂L/∂a   = (a − y)        = ${dL_da.toFixed(3)}
+  ∂a/∂z   = σ'(z)          = ${dadz.toFixed(3)}
+  ∂z/∂w   = x              = ${x.toFixed(3)}
+  ∂z/∂b   = 1
+
+  ∂L/∂w = ∂L/∂a · ∂a/∂z · ∂z/∂w  = ${dL_da.toFixed(3)} × ${dadz.toFixed(3)} × ${x.toFixed(3)} = ${dL_dw.toFixed(4)}
+  ∂L/∂b = ∂L/∂a · ∂a/∂z · ∂z/∂b  = ${dL_da.toFixed(3)} × ${dadz.toFixed(3)} × 1            = ${dL_db.toFixed(4)}
+
+# In PyTorch:
+w_torch.grad  =>  ${dL_dw.toFixed(4)}
+b_torch.grad  =>  ${dL_db.toFixed(4)}`;
+  }
+  inputs.forEach(el => { el.oninput = update; el.onchange = update; });
+  update();
+})();
+
+/* ============================================================================
+   §4 Gradient descent stepper
+   ============================================================================ */
+(function () {
+  const c = document.getElementById('gd-canvas'); const ctx = c.getContext('2d');
+  const lr = document.getElementById('gd-lr'), w0 = document.getElementById('gd-w0');
+  const stepBtn = document.getElementById('gd-step');
+  const autoBtn = document.getElementById('gd-auto');
+  const resetBtn = document.getElementById('gd-reset');
+  const out = document.getElementById('gd-readout');
+  let w = +w0.value, step = 0, trail = [];
+  function L(w) { return (w-3)**2; }
+  function dL(w) { return 2*(w-3); }
+  function reset() { w = +w0.value; step = 0; trail = [[w, L(w)]]; draw(); }
+  function update() { w = w - (+lr.value) * dL(w); step++; trail.push([w, L(w)]); draw(); }
+  function draw() {
+    const W = c.width, H = c.height; ctx.clearRect(0,0,W,H);
+    const wmin = -2, wmax = 8, lmin = 0, lmax = 30;
+    const px = w => (w-wmin)/(wmax-wmin) * (W-60) + 40;
+    const py = l => H - 30 - Math.min(1, l/lmax) * (H - 50);
+    ctx.strokeStyle = '#CFD7DF';
+    ctx.beginPath(); ctx.moveTo(40, py(0)); ctx.lineTo(W-20, py(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px(0), 20); ctx.lineTo(px(0), H-30); ctx.stroke();
+    // loss curve
+    ctx.strokeStyle = '#1F4E79'; ctx.lineWidth = 2; ctx.beginPath();
+    for (let i=0;i<=100;i++) {
+      const wv = wmin + (wmax-wmin)*i/100;
+      (i?ctx.lineTo:ctx.moveTo).call(ctx, px(wv), py(L(wv)));
+    }
+    ctx.stroke();
+    // trail
+    if (trail.length > 1) {
+      ctx.strokeStyle = '#C00000'; ctx.lineWidth = 1.5; ctx.setLineDash([3,3]); ctx.beginPath();
+      trail.forEach((p, i) => { const x = px(clamp(p[0], wmin, wmax)), y = py(Math.min(p[1], lmax));
+        (i?ctx.lineTo:ctx.moveTo).call(ctx, x, y); });
+      ctx.stroke(); ctx.setLineDash([]);
+    }
+    // minimum
+    ctx.fillStyle = '#1B7340';
+    ctx.beginPath(); ctx.arc(px(3), py(0), 5, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#555'; ctx.font='12px sans-serif';
+    ctx.fillText('minimum at w = 3', px(3)+8, py(0)+4);
+    // current
+    ctx.fillStyle = '#C00000';
+    ctx.beginPath(); ctx.arc(px(clamp(w, wmin, wmax)), py(Math.min(L(w), lmax)), 6, 0, Math.PI*2); ctx.fill();
+    out.textContent = `step ${step}: w = ${w.toFixed(3)}, L(w) = ${L(w).toFixed(3)}, ∂L/∂w = ${dL(w).toFixed(3)}, η = ${(+lr.value).toFixed(2)}`;
+  }
+  stepBtn.onclick = update;
+  autoBtn.onclick = () => { for (let i=0;i<30;i++) update(); };
+  resetBtn.onclick = reset; lr.oninput = draw; w0.oninput = reset; reset();
+})();
+
+/* ============================================================================
+   §5 Learning rate sweep
+   ============================================================================ */
+(function () {
+  const c = document.getElementById('lr-canvas'); const ctx = c.getContext('2d');
+  function L(w) { return (w-3)**2; }
+  function traj(lr, w0, n) { const o = [w0]; let w=w0; for (let i=0;i<n;i++) { w -= lr*2*(w-3); o.push(w); } return o; }
+  function draw() {
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const wmin=-3, wmax=9, lmax=40;
+    const px = w => 40 + (w-wmin)/(wmax-wmin)*(W-60);
+    const py = l => H - 30 - Math.min(1, l/lmax)*(H-50);
+    ctx.setLineDash([5,4]); ctx.strokeStyle = '#888'; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (let i=0;i<=200;i++) { const w = wmin+(wmax-wmin)*i/200;
+      (i?ctx.lineTo:ctx.moveTo).call(ctx, px(w), py(L(w))); }
+    ctx.stroke(); ctx.setLineDash([]);
+    const runs = [
+      { lr:0.05, color:'#1B7340' },
+      { lr:0.30, color:'#1F4E79' },
+      { lr:1.10, color:'#C00000' },
+    ];
+    runs.forEach(r => {
+      const tr = traj(r.lr, -1, 30);
+      ctx.strokeStyle = r.color; ctx.lineWidth = 2; ctx.beginPath();
+      tr.forEach((w,i) => { const x = px(clamp(w,wmin,wmax)), y = py(Math.min(L(w), lmax));
+        (i?ctx.lineTo:ctx.moveTo).call(ctx, x, y); });
+      ctx.stroke();
+      tr.forEach(w => { ctx.fillStyle = r.color;
+        ctx.beginPath(); ctx.arc(px(clamp(w,wmin,wmax)), py(Math.min(L(w),lmax)), 3, 0, Math.PI*2); ctx.fill(); });
+    });
+  }
+  draw();
+})();
+
+/* ============================================================================
+   §6 2-D click-to-descend on stretched bowl
+   ============================================================================ */
+(function () {
+  const c = document.getElementById('d6-canvas'); const ctx = c.getContext('2d');
+  const lrIn = document.getElementById('d6-lr');
+  const clearBtn = document.getElementById('d6-clear');
+  const out = document.getElementById('d6-readout');
+  const xmin=-3, xmax=4, ymin=-3, ymax=2;
+  const W=c.width, H=c.height;
+  const px = w => 40 + (w-xmin)/(xmax-xmin) * (W-60);
+  const py = b => H - 30 - (b-ymin)/(ymax-ymin) * (H-50);
+  function L(w, b) { return (w-1)**2 + 4*(b+1)**2; }
+  function grad(w, b) { return [2*(w-1), 8*(b+1)]; }
+  const paths = [];
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    // shaded bowl
+    for (let i=0;i<80;i++) for (let j=0;j<60;j++) {
+      const w = xmin+(xmax-xmin)*(i+0.5)/80, b = ymin+(ymax-ymin)*(j+0.5)/60;
+      const v = L(w,b); const t = clamp(v/30, 0, 1);
+      ctx.fillStyle = `rgb(${Math.round(255-t*100)},${Math.round(255-t*60)},${Math.round(255-t*30)})`;
+      ctx.fillRect(px(w)-(W-60)/80/2, py(b)-(H-50)/60/2, (W-60)/80+1, (H-50)/60+1);
+    }
+    // elliptical contours
+    ctx.strokeStyle = '#1F4E79'; ctx.lineWidth = 0.8;
+    [1,4,9,16].forEach(level => {
+      ctx.beginPath();
+      for (let a=0; a<=Math.PI*2+0.05; a+=Math.PI/40) {
+        const w = 1 + Math.sqrt(level)*Math.cos(a);
+        const b = -1 + Math.sqrt(level/4)*Math.sin(a);
+        if (a===0) ctx.moveTo(px(w), py(b)); else ctx.lineTo(px(w), py(b));
+      }
+      ctx.stroke();
+    });
+    ctx.fillStyle = '#1B7340';
+    ctx.beginPath(); ctx.arc(px(1), py(-1), 6, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#1A1A1A'; ctx.font='12px sans-serif';
+    ctx.fillText('(1, −1)', px(1)+10, py(-1)-4);
+    // paths
+    paths.forEach(p => {
+      ctx.strokeStyle = p.color; ctx.lineWidth = 2;
+      ctx.beginPath();
+      p.points.forEach((pt,i) => { (i?ctx.lineTo:ctx.moveTo).call(ctx, px(pt[0]), py(pt[1])); });
+      ctx.stroke();
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(px(p.points[0][0]), py(p.points[0][1]), 5, 0, Math.PI*2); ctx.fill();
+    });
+  }
+  function descend(w0, b0, lr) {
+    const pts = [[w0,b0]]; let w=w0, b=b0;
+    for (let i=0;i<80;i++) {
+      const g = grad(w,b);
+      w -= lr*g[0]; b -= lr*g[1];
+      pts.push([w,b]);
+      if (Math.abs(g[0])+Math.abs(g[1]) < 0.005) break;
+    }
+    return pts;
+  }
+  c.addEventListener('click', (e) => {
+    const r = c.getBoundingClientRect();
+    const w0 = xmin + (e.clientX - r.left - 40) / (W-60) * (xmax-xmin);
+    const b0 = ymin + (H - 30 - (e.clientY - r.top)) / (H-50) * (ymax-ymin);
+    const colors = ['#C00000','#8E44AD','#F9A825','#1B7340'];
+    const pts = descend(w0, b0, +lrIn.value);
+    paths.push({ points: pts, color: colors[paths.length % colors.length] });
+    out.textContent = `Path ${paths.length}: η = ${(+lrIn.value).toFixed(3)}, ${pts.length} steps to converge`;
+    draw();
+  });
+  clearBtn.onclick = () => { paths.length = 0; out.textContent = 'Click anywhere on the plot to start a path.'; draw(); };
+  draw();
+})();
+
+/* ============================================================================
+   §7 SGD batch-size comparison
+   ============================================================================ */
+(function () {
+  const c = document.getElementById('sgd-canvas'); const ctx = c.getContext('2d');
+  const runBtn = document.getElementById('sgd-run');
+  const resetBtn = document.getElementById('sgd-reset');
+  const out = document.getElementById('sgd-readout');
+  let curves = [];
+  function dataset() {
+    const N = 1024; const out = [];
+    for (let i=0;i<N;i++) {
+      const x = (Math.random()*4-2);
+      const y = 2*x - 1 + (Math.random()*2-1)*0.5;
+      out.push([x,y]);
+    }
+    return out;
+  }
+  function run(bs, data) {
+    const losses = [];
+    let w=0, b=0; const lr=0.05;
+    const steps = 200;
+    for (let s=0;s<steps;s++) {
+      // sample batch
+      let gw=0, gb=0, L=0;
+      for (let k=0;k<bs;k++) {
+        const [x,y] = data[Math.floor(Math.random()*data.length)];
+        const r = w*x + b - y;
+        gw += 2*r*x; gb += 2*r; L += r*r;
+      }
+      gw /= bs; gb /= bs; L /= bs;
+      losses.push(L);
+      w -= lr*gw; b -= lr*gb;
+    }
+    return losses;
+  }
+  function draw() {
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    if (curves.length === 0) {
+      ctx.fillStyle='#888'; ctx.font='13px sans-serif';
+      ctx.fillText('Press Run to compare batch sizes.', W/2-130, H/2);
+      return;
+    }
+    const xmin=0, xmax=200, ymin=0, ymax=5;
+    const px = i => 40 + i/(xmax-xmin)*(W-60);
+    const py = v => H - 30 - clamp(v, ymin, ymax)/(ymax-ymin)*(H-50);
+    ctx.strokeStyle = '#CFD7DF'; ctx.beginPath();
+    ctx.moveTo(40, py(0)); ctx.lineTo(W-20, py(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(40, 20); ctx.lineTo(40, H-30); ctx.stroke();
+    ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+    [0,1,2,3,4,5].forEach(v => ctx.fillText(v.toFixed(0), 18, py(v)+4));
+    [0,50,100,150,200].forEach(i => ctx.fillText('step '+i, px(i)-14, H-12));
+    curves.forEach(c2 => {
+      ctx.strokeStyle = c2.color; ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      c2.losses.forEach((v, i) => (i?ctx.lineTo:ctx.moveTo).call(ctx, px(i), py(v)));
+      ctx.stroke();
+    });
+    ctx.font='bold 12px sans-serif';
+    curves.forEach((c2, i) => { ctx.fillStyle = c2.color; ctx.fillText(c2.label, W-180, 28 + i*16); });
+  }
+  runBtn.onclick = () => {
+    const data = dataset();
+    curves = [
+      { losses: run(1, data),   color: '#C00000', label: 'batch_size = 1 (SGD)' },
+      { losses: run(16, data),  color: '#F9A825', label: 'batch_size = 16' },
+      { losses: run(128, data), color: '#1B7340', label: 'batch_size = 128' },
+    ];
+    out.textContent = `1024-point synthetic linear regression, η = 0.05, 200 steps`;
+    draw();
+  };
+  resetBtn.onclick = () => { curves = []; draw(); out.textContent='Press Run to compare batch sizes.'; };
+  draw();
+})();
+
+/* ============================================================================
+   §8 Optimizer race
+   ============================================================================ */
+(function () {
+  const c = document.getElementById('opt-canvas'); const ctx = c.getContext('2d');
+  const runBtn = document.getElementById('opt-run');
+  const resetBtn = document.getElementById('opt-reset');
+  const out = document.getElementById('opt-readout');
+  let paths = [];
+  const xmin=-3, xmax=4, ymin=-3, ymax=2;
+  const W=c.width, H=c.height;
+  const px = w => 40 + (w-xmin)/(xmax-xmin) * (W-60);
+  const py = b => H - 30 - (b-ymin)/(ymax-ymin) * (H-50);
+  function grad(w,b) { return [2*(w-1), 8*(b+1)]; }
+  function sgd(w,b,lr,n) {
+    const pts=[[w,b]];
+    for (let i=0;i<n;i++) { const g=grad(w,b); w-=lr*g[0]; b-=lr*g[1]; pts.push([w,b]); }
+    return pts;
+  }
+  function mom(w,b,lr,mu,n) {
+    const pts=[[w,b]]; let vw=0, vb=0;
+    for (let i=0;i<n;i++) { const g=grad(w,b);
+      vw = mu*vw - lr*g[0]; vb = mu*vb - lr*g[1];
+      w += vw; b += vb; pts.push([w,b]); }
+    return pts;
+  }
+  function adam(w,b,lr,n) {
+    const pts=[[w,b]]; let mw=0,mb=0,vw=0,vb=0; const b1=0.9,b2=0.999,e=1e-8;
+    for (let i=0;i<n;i++) { const g=grad(w,b);
+      mw=b1*mw+(1-b1)*g[0]; mb=b1*mb+(1-b1)*g[1];
+      vw=b2*vw+(1-b2)*g[0]*g[0]; vb=b2*vb+(1-b2)*g[1]*g[1];
+      const t=i+1; const mhw=mw/(1-Math.pow(b1,t)), mhb=mb/(1-Math.pow(b1,t));
+      const vhw=vw/(1-Math.pow(b2,t)), vhb=vb/(1-Math.pow(b2,t));
+      w -= lr*mhw/(Math.sqrt(vhw)+e); b -= lr*mhb/(Math.sqrt(vhb)+e); pts.push([w,b]); }
+    return pts;
+  }
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    // contours
+    for (let i=0;i<80;i++) for (let j=0;j<60;j++) {
+      const w = xmin+(xmax-xmin)*(i+0.5)/80, b = ymin+(ymax-ymin)*(j+0.5)/60;
+      const v = (w-1)**2 + 4*(b+1)**2; const t = clamp(v/30, 0, 1);
+      ctx.fillStyle = `rgb(${Math.round(255-t*100)},${Math.round(255-t*60)},${Math.round(255-t*30)})`;
+      ctx.fillRect(px(w)-(W-60)/80/2, py(b)-(H-50)/60/2, (W-60)/80+1, (H-50)/60+1);
+    }
+    ctx.strokeStyle = '#1F4E79'; ctx.lineWidth = 0.8;
+    [1,4,9,16].forEach(level => {
+      ctx.beginPath();
+      for (let a=0; a<=Math.PI*2+0.05; a+=Math.PI/40) {
+        const w = 1 + Math.sqrt(level)*Math.cos(a);
+        const b = -1 + Math.sqrt(level/4)*Math.sin(a);
+        if (a===0) ctx.moveTo(px(w), py(b)); else ctx.lineTo(px(w), py(b));
+      }
+      ctx.stroke();
+    });
+    ctx.fillStyle = '#1B7340';
+    ctx.beginPath(); ctx.arc(px(1), py(-1), 6, 0, Math.PI*2); ctx.fill();
+    paths.forEach(p => {
+      ctx.strokeStyle = p.color; ctx.lineWidth = 2; ctx.beginPath();
+      p.points.forEach((pt,i) => { (i?ctx.lineTo:ctx.moveTo).call(ctx, px(pt[0]), py(pt[1])); });
+      ctx.stroke();
+    });
+    if (paths.length) {
+      ctx.font='bold 12px sans-serif';
+      paths.forEach((p,i) => { ctx.fillStyle = p.color; ctx.fillText(p.label, W-180, 28 + i*16); });
+    }
+  }
+  runBtn.onclick = () => {
+    const w0=-2, b0=1;
+    paths = [
+      { points: sgd(w0,b0,0.10,80), color:'#C00000', label:'SGD η=0.10' },
+      { points: mom(w0,b0,0.05,0.9,80), color:'#F9A825', label:'SGD + momentum (μ=0.9)' },
+      { points: adam(w0,b0,0.30,80), color:'#1F4E79', label:'Adam η=0.30' },
+    ];
+    out.textContent = `All start at (−2, 1); ran 80 steps each.`;
+    draw();
+  };
+  resetBtn.onclick = () => { paths = []; draw(); out.textContent='Press Race to compare optimizers.'; };
+  draw();
+})();
+
+/* ============================================================================
+   §9 Autograd calculator
+   ============================================================================ */
+(function () {
+  const out = document.getElementById('ag-out');
+  const fSel = document.getElementById('ag-f');
+  const xIn = document.getElementById('ag-x');
+  const yIn = document.getElementById('ag-y');
+  const funcs = [
+    { f: (x,y) => x*x + 3*x*y + y*y, label: 'x² + 3xy + y²',
+      dx: (x,y) => 2*x + 3*y, dy: (x,y) => 3*x + 2*y,
+      dxs: '2x + 3y', dys: '3x + 2y' },
+    { f: (x,y) => Math.sin(x*y), label: 'sin(x · y)',
+      dx: (x,y) => y*Math.cos(x*y), dy: (x,y) => x*Math.cos(x*y),
+      dxs: 'y · cos(x·y)', dys: 'x · cos(x·y)' },
+    { f: (x,y) => Math.exp(-(x*x+y*y)), label: 'e^(−(x² + y²))',
+      dx: (x,y) => -2*x*Math.exp(-(x*x+y*y)), dy: (x,y) => -2*y*Math.exp(-(x*x+y*y)),
+      dxs: '−2x · e^(−(x²+y²))', dys: '−2y · e^(−(x²+y²))' },
+    { f: (x,y) => x*Math.exp(-y), label: 'x · exp(−y)',
+      dx: (x,y) => Math.exp(-y), dy: (x,y) => -x*Math.exp(-y),
+      dxs: 'exp(−y)', dys: '−x · exp(−y)' },
+  ];
+  function update() {
+    const f = funcs[+fSel.value]; const x = +xIn.value, y = +yIn.value;
+    const v = f.f(x,y); const dx = f.dx(x,y), dy = f.dy(x,y);
+    out.textContent =
+`# Forward
+f(x, y) = ${f.label}
+f(${x}, ${y}) = ${v.toFixed(4)}
+
+# Analytic partials
+∂f/∂x = ${f.dxs}    → at (${x}, ${y}) = ${dx.toFixed(4)}
+∂f/∂y = ${f.dys}    → at (${x}, ${y}) = ${dy.toFixed(4)}
+
+# In PyTorch
+x = torch.tensor(${x}, requires_grad=True)
+y = torch.tensor(${y}, requires_grad=True)
+f = ${f.label.replace(/·/g,'*').replace(/²/g,'**2')}
+f.backward()
+x.grad.item()  ≈  ${dx.toFixed(4)}
+y.grad.item()  ≈  ${dy.toFixed(4)}`;
+  }
+  fSel.onchange = update; xIn.oninput = update; yIn.oninput = update; update();
+})();
+
+/* ============================================================================
+   §10 Loss/gradient profiles
+   ============================================================================ */
+(function () {
+  const c = document.getElementById('lp-canvas'); const ctx = c.getContext('2d');
+  const sl = document.getElementById('lp-out');
+  const out = document.getElementById('lp-readout');
+  function mse(r){ return r*r; } function dmse(r){ return 2*r; }
+  function mae(r){ return Math.abs(r); } function dmae(r){ return r>0?1:(r<0?-1:0); }
+  function huber(r, d){ return Math.abs(r) <= d ? 0.5*r*r : d*(Math.abs(r)-0.5*d); }
+  function dhuber(r, d){ return Math.abs(r) <= d ? r : d*Math.sign(r); }
+  function draw() {
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const outlier = +sl.value;
+    // panel layout: loss left, gradient right
+    function panel(ox, oy, w, ht, title, fn, ymax) {
+      ctx.fillStyle = '#FFF'; ctx.strokeStyle = '#CFD7DF';
+      ctx.fillRect(ox, oy, w, ht); ctx.strokeRect(ox, oy, w, ht);
+      ctx.fillStyle = '#1F4E79'; ctx.font='bold 12px sans-serif';
+      ctx.fillText(title, ox+10, oy+18);
+      const xmin=-4, xmax=4;
+      const px = x => ox + 30 + (x-xmin)/(xmax-xmin) * (w-50);
+      const py = y => oy + ht - 20 - clamp(y, -ymax, ymax)/(2*ymax)*(ht-40) - (ht-40)/2;
+      // axes
+      ctx.strokeStyle = '#EFF2F5';
+      ctx.beginPath(); ctx.moveTo(ox+30, py(0)); ctx.lineTo(ox+w-20, py(0)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(px(0), oy+25); ctx.lineTo(px(0), oy+ht-20); ctx.stroke();
+      // three curves
+      const colors = ['#1F4E79','#C00000','#1B7340'];
+      const fns = [
+        (r) => fn === 'L' ? mse(r) : dmse(r),
+        (r) => fn === 'L' ? mae(r) : dmae(r),
+        (r) => fn === 'L' ? huber(r, 1.0) : dhuber(r, 1.0),
+      ];
+      fns.forEach((F, idx) => {
+        ctx.strokeStyle = colors[idx]; ctx.lineWidth = 2; ctx.beginPath();
+        for (let i=0;i<=200;i++) {
+          const r = xmin + (xmax-xmin)*i/200;
+          (i?ctx.lineTo:ctx.moveTo).call(ctx, px(r), py(F(r)));
+        }
+        ctx.stroke();
+      });
+      // outlier marker
+      ctx.fillStyle = '#C00000';
+      ctx.beginPath(); ctx.arc(px(outlier), py(fns[0](outlier)), 4, 0, Math.PI*2); ctx.fill();
+    }
+    panel(20, 20, 420, 280, 'Loss as a function of residual r', 'L', 8);
+    panel(460, 20, 400, 280, 'Gradient ∂L/∂r', 'G', 4);
+    // legend
+    ctx.font='bold 12px sans-serif';
+    ctx.fillStyle = '#1F4E79'; ctx.fillText('MSE', 50, 300);
+    ctx.fillStyle = '#C00000'; ctx.fillText('MAE', 100, 300);
+    ctx.fillStyle = '#1B7340'; ctx.fillText('Huber (δ=1)', 150, 300);
+    out.textContent =
+      `Outlier residual r = ${outlier.toFixed(2)}: MSE = ${mse(outlier).toFixed(2)} (∂=${dmse(outlier).toFixed(2)}) · `+
+      `MAE = ${mae(outlier).toFixed(2)} (∂=${dmae(outlier).toFixed(2)}) · `+
+      `Huber = ${huber(outlier, 1.0).toFixed(2)} (∂=${dhuber(outlier, 1.0).toFixed(2)})`;
+  }
+  sl.oninput = draw; draw();
+})();
+
+/* ============================================================================
+   §11 Linear regression demo
+   ============================================================================ */
+(function () {
+  const c = document.getElementById('lr-canvas'); const ctx = c.getContext('2d');
+  const wIn = document.getElementById('lr-w'), bIn = document.getElementById('lr-b');
+  const fitBtn = document.getElementById('lr-fit');
+  const newBtn = document.getElementById('lr-newdata');
+  const outlierBtn = document.getElementById('lr-outlier');
+  const out = document.getElementById('lr-readout');
+  let data = makeData();
+  function makeData() {
+    const d = [];
+    for (let i=0;i<30;i++) {
+      const x = -2 + i*4/29;
+      const y = 2*x - 1 + (Math.random()*2-1)*0.9;
+      d.push([x,y]);
+    }
+    return d;
+  }
+  function metrics(w, b) {
+    let sse=0, sae=0, mu=0;
+    for (const [x,y] of data) mu += y;
+    mu /= data.length;
+    let sst=0;
+    for (const [x,y] of data) {
+      const r = w*x + b - y;
+      sse += r*r; sae += Math.abs(r); sst += (y - mu)**2;
+    }
+    return { mse: sse/data.length, mae: sae/data.length, r2: 1 - sse/sst };
+  }
+  function draw() {
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const xmin=-2.5, xmax=2.5, ymin=-8, ymax=8;
+    const px = x => 40 + (x-xmin)/(xmax-xmin) * (W-60);
+    const py = y => H - 30 - (y-ymin)/(ymax-ymin) * (H-50);
+    ctx.strokeStyle = '#CFD7DF';
+    ctx.beginPath(); ctx.moveTo(40, py(0)); ctx.lineTo(W-20, py(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px(0), 20); ctx.lineTo(px(0), H-30); ctx.stroke();
+    ctx.fillStyle = '#1F4E79';
+    for (const [x,y] of data) { ctx.beginPath(); ctx.arc(px(x), py(y), 4, 0, Math.PI*2); ctx.fill(); }
+    const w = +wIn.value, b = +bIn.value;
+    ctx.strokeStyle = '#C00000'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(px(xmin), py(w*xmin+b)); ctx.lineTo(px(xmax), py(w*xmax+b)); ctx.stroke();
+    ctx.strokeStyle = '#C00000'; ctx.lineWidth = 1; ctx.setLineDash([3,3]);
+    for (const [x,y] of data) { ctx.beginPath(); ctx.moveTo(px(x), py(y));
+      ctx.lineTo(px(x), py(w*x+b)); ctx.stroke(); }
+    ctx.setLineDash([]);
+    const m = metrics(w, b);
+    out.textContent = `w=${w.toFixed(2)}, b=${b.toFixed(2)} · MSE=${m.mse.toFixed(3)} · MAE=${m.mae.toFixed(3)} · R²=${m.r2.toFixed(3)}`;
+  }
+  fitBtn.onclick = () => {
+    let w = +wIn.value, b = +bIn.value;
+    const lr = 0.05;
+    for (let it=0; it<400; it++) {
+      let gw=0, gb=0;
+      for (const [x,y] of data) { const r = w*x + b - y; gw += 2*r*x; gb += 2*r; }
+      gw /= data.length; gb /= data.length;
+      w -= lr*gw; b -= lr*gb;
+    }
+    wIn.value = w.toFixed(2); bIn.value = b.toFixed(2); draw();
+  };
+  newBtn.onclick = () => { data = makeData(); draw(); };
+  outlierBtn.onclick = () => { data.push([-2, 7]); draw(); };
+  wIn.oninput = draw; bIn.oninput = draw; draw();
+})();
+
+/* ============================================================================
+   §12 Train/val/test split visualization
+   ============================================================================ */
+(function () {
+  const c = document.getElementById('sp-canvas'); const ctx = c.getContext('2d');
+  const trainIn = document.getElementById('sp-train');
+  const valIn = document.getElementById('sp-val');
+  const out = document.getElementById('sp-readout');
+  function draw() {
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const train = +trainIn.value;
+    const remaining = 100 - train;
+    const val = remaining * (+valIn.value) / 100;
+    const test = remaining - val;
+    // strip
+    const stripY = 60, stripH = 50;
+    const trainW = (train/100)*W;
+    const valW = (val/100)*W;
+    const testW = (test/100)*W;
+    ctx.fillStyle = '#1F4E79'; ctx.fillRect(0, stripY, trainW, stripH);
+    ctx.fillStyle = '#F9A825'; ctx.fillRect(trainW, stripY, valW, stripH);
+    ctx.fillStyle = '#1B7340'; ctx.fillRect(trainW+valW, stripY, testW, stripH);
+    ctx.fillStyle = 'white'; ctx.font='bold 13px sans-serif';
+    if (trainW > 60) ctx.fillText(`train (${train}%)`, trainW/2 - 30, stripY + 30);
+    if (valW > 40) ctx.fillText(`val (${val.toFixed(0)}%)`, trainW + valW/2 - 24, stripY + 30);
+    if (testW > 40) ctx.fillText(`test (${test.toFixed(0)}%)`, trainW + valW + testW/2 - 24, stripY + 30);
+    // notes
+    ctx.fillStyle = '#555'; ctx.font='12px sans-serif';
+    ctx.fillText('fit parameters here →', 8, stripY - 6);
+    ctx.fillText('← pick hyperparameters here →', trainW - 60, stripY + stripH + 18);
+    ctx.fillText('← honest generalization estimate (used once)', trainW + valW - 20, stripY + stripH + 18);
+    out.textContent = `train ${train}% / val ${val.toFixed(1)}% / test ${test.toFixed(1)}%  —  total = 100%`;
+  }
+  trainIn.oninput = draw; valIn.oninput = draw; draw();
+})();
+
+/* ============================================================================
+   §14 Convergence diagnostics
+   ============================================================================ */
+(function () {
+  const c = document.getElementById('cv-canvas'); const ctx = c.getContext('2d');
+  const out = document.getElementById('cv-readout');
+  let pattern = null;
+  function curve(epochs, fn) { const a = []; for (let e=0;e<=epochs;e++) a.push(fn(e)); return a; }
+  function draw() {
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    if (!pattern) { ctx.fillStyle='#888'; ctx.font='13px sans-serif';
+      ctx.fillText('Pick a pattern to draw the curves.', W/2-130, H/2); return; }
+    const train = pattern.train, val = pattern.val;
+    const E = train.length - 1;
+    const px = e => 40 + e/E*(W-60);
+    const py = v => H - 30 - clamp(v, 0, 1.4)/1.4*(H-50);
+    ctx.strokeStyle = '#CFD7DF';
+    ctx.beginPath(); ctx.moveTo(40, py(0)); ctx.lineTo(W-20, py(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(40, 20); ctx.lineTo(40, H-30); ctx.stroke();
+    ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+    [0,0.2,0.5,1.0].forEach(v => ctx.fillText(v.toFixed(1), 18, py(v)+3));
+    ctx.fillText('epoch', W-50, H-12);
+    ctx.fillText('loss', 8, 20);
+    // train
+    ctx.strokeStyle = '#1F4E79'; ctx.lineWidth = 2; ctx.beginPath();
+    train.forEach((v,i) => (i?ctx.lineTo:ctx.moveTo).call(ctx, px(i), py(v)));
+    ctx.stroke();
+    // val
+    ctx.strokeStyle = '#C00000'; ctx.lineWidth = 2; ctx.beginPath();
+    val.forEach((v,i) => (i?ctx.lineTo:ctx.moveTo).call(ctx, px(i), py(v)));
+    ctx.stroke();
+    ctx.fillStyle = '#1F4E79'; ctx.font='bold 12px sans-serif';
+    ctx.fillText('training loss', 60, 28);
+    ctx.fillStyle = '#C00000';
+    ctx.fillText('validation loss', 60, 46);
+    out.textContent = pattern.label;
+  }
+  const patterns = {
+    healthy: {
+      train: curve(60, e => 1.0*Math.exp(-e/12) + 0.10),
+      val:   curve(60, e => 1.0*Math.exp(-e/12) + 0.13),
+      label: 'Healthy: train and val both flatten near the same value; small gap; ready to ship.',
+    },
+    overfit: {
+      train: curve(60, e => 1.0*Math.exp(-e/8) + 0.02),
+      val:   curve(60, e => 1.0*Math.exp(-e/12) + 0.20 + Math.max(0, (e-20)*0.012)),
+      label: 'Overfitting: train keeps dropping; val flattens then rises after ~epoch 20. Add regularization or stop earlier.',
+    },
+    underfit: {
+      train: curve(60, e => 0.85 - 0.02*e/60 + 0.02*Math.sin(e/4)),
+      val:   curve(60, e => 0.85 - 0.02*e/60 + 0.02*Math.sin(e/4 + 0.5)),
+      label: 'Underfitting: both losses stay high. The model lacks capacity (or features). Make it bigger or feature-engineer.',
+    },
+    'lr-too-high': {
+      train: curve(60, e => 0.5 + 0.4*Math.sin(e*0.7) + Math.random()*0.05),
+      val:   curve(60, e => 0.6 + 0.4*Math.cos(e*0.7) + Math.random()*0.05),
+      label: 'LR too high: both losses oscillate wildly without trending. Divide the learning rate by 3-10 and rerun.',
+    },
+  };
+  document.querySelectorAll('[data-pat]').forEach(b => {
+    b.onclick = () => { pattern = patterns[b.dataset.pat]; draw(); };
+  });
+  draw();
+})();
+
+/* ============================================================================
+   §15 Architecture diagram
+   ============================================================================ */
+(function () {
+  const c = document.getElementById('arch-canvas'); const ctx = c.getContext('2d');
+  function box(x, y, w, h, fill, stroke, title, sub) {
+    ctx.fillStyle = fill; ctx.strokeStyle = stroke; ctx.lineWidth = 2;
+    if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x, y, w, h, 10); ctx.fill(); ctx.stroke(); }
+    else { ctx.fillRect(x,y,w,h); ctx.strokeRect(x,y,w,h); }
+    ctx.fillStyle = stroke; ctx.font = 'bold 14px sans-serif';
+    ctx.fillText(title, x + 14, y + 26);
+    ctx.fillStyle = '#333'; ctx.font = '12px sans-serif';
+    sub.forEach((s, i) => ctx.fillText(s, x + 14, y + 48 + i * 16));
+  }
+  function arrow(x1, y1, x2, y2, label) {
+    ctx.strokeStyle = '#555'; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    const ang = Math.atan2(y2 - y1, x2 - x1);
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - 9*Math.cos(ang-0.35), y2 - 9*Math.sin(ang-0.35));
+    ctx.lineTo(x2 - 9*Math.cos(ang+0.35), y2 - 9*Math.sin(ang+0.35));
+    ctx.closePath(); ctx.fillStyle = '#555'; ctx.fill();
+    if (label) { ctx.fillStyle = '#555'; ctx.font='11px sans-serif';
+      ctx.fillText(label, (x1+x2)/2 - 30, (y1+y2)/2 - 8); }
+  }
+  ctx.clearRect(0,0,880,280);
+  box(40, 80, 220, 110, '#EAF1F8', '#1F4E79', 'Streamlit Cloud',
+      ['UI tier', 'anon-key reads', 'POST /predict → FastAPI']);
+  box(330, 80, 220, 110, '#EAF1F8', '#1F4E79', 'Render.com',
+      ['FastAPI service', 'service-role writes', '/train · /predict · /runs']);
+  box(620, 80, 220, 110, '#EAF1F8', '#1F4E79', 'Supabase Postgres',
+      ['data tier', 'datasets · runs · predictions', 'SQL migrations']);
+  arrow(260, 135, 330, 135, 'HTTPS');
+  arrow(550, 135, 620, 135, 'service-role');
+  ctx.strokeStyle = '#888'; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(150, 190); ctx.lineTo(150, 230); ctx.lineTo(730, 230); ctx.lineTo(730, 190);
+  ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle = '#555'; ctx.font='11px sans-serif';
+  ctx.fillText('Streamlit anon-key reads (read-only)', 340, 246);
+})();
+
+/* ============================================================================
+   §16 Sequence diagram
+   ============================================================================ */
+(function () {
+  const c = document.getElementById('seq-canvas'); const ctx = c.getContext('2d');
+  const nextBtn = document.getElementById('seq-next');
+  const resetBtn = document.getElementById('seq-reset');
+  const out = document.getElementById('seq-readout');
+  const lanes = ['User', 'Streamlit Cloud', 'Render (FastAPI)', 'Supabase'];
+  const messages = [
+    { from: 0, to: 1, label: 'click "Train"',         note: 'User submits form' },
+    { from: 1, to: 2, label: 'POST /train (Pydantic)', note: 'JSON body sent to FastAPI' },
+    { from: 2, to: 3, label: 'SELECT dataset',         note: 'FastAPI reads training data' },
+    { from: 3, to: 2, label: 'dataset rows',           note: 'Postgres returns rows' },
+    { from: 2, to: 2, label: 'fit model (loop)',       note: 'PyTorch training loop' },
+    { from: 2, to: 3, label: 'INSERT INTO runs',       note: 'Persist final metrics + weights ref' },
+    { from: 2, to: 1, label: '200 OK + run_id',        note: 'Trained, returns ID' },
+    { from: 1, to: 0, label: 'render chart',           note: 'Streamlit displays loss curve' },
+  ];
+  let stepIdx = 0;
+  function draw() {
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const laneW = W / lanes.length;
+    // lane headers
+    ctx.fillStyle = '#1F4E79'; ctx.font='bold 13px sans-serif';
+    lanes.forEach((l, i) => {
+      const cx = i*laneW + laneW/2;
+      ctx.fillRect(cx-60, 20, 120, 28);
+      ctx.fillStyle = 'white'; ctx.fillText(l, cx-40, 38);
+      ctx.fillStyle = '#1F4E79';
+    });
+    // lifelines
+    ctx.strokeStyle = '#CFD7DF';
+    lanes.forEach((l, i) => {
+      const cx = i*laneW + laneW/2;
+      ctx.beginPath(); ctx.moveTo(cx, 48); ctx.lineTo(cx, H-20); ctx.stroke();
+    });
+    // messages
+    messages.forEach((m, i) => {
+      const y = 80 + i*36;
+      const active = i < stepIdx;
+      const cur = i === stepIdx - 1;
+      ctx.strokeStyle = cur ? '#C00000' : (active ? '#1F4E79' : '#D0D8E0');
+      ctx.lineWidth = cur ? 2.5 : (active ? 1.6 : 1);
+      const fx = m.from*laneW + laneW/2;
+      const tx = m.to*laneW + laneW/2;
+      if (m.from === m.to) {
+        // self-loop
+        ctx.beginPath();
+        ctx.moveTo(fx, y); ctx.lineTo(fx + 30, y);
+        ctx.lineTo(fx + 30, y + 14); ctx.lineTo(fx, y + 14);
+        ctx.stroke();
+        // arrowhead
+        ctx.beginPath();
+        ctx.moveTo(fx, y+14);
+        ctx.lineTo(fx + 9, y + 14 - 4);
+        ctx.lineTo(fx + 9, y + 14 + 4);
+        ctx.closePath(); ctx.fillStyle = ctx.strokeStyle; ctx.fill();
+      } else {
+        ctx.beginPath(); ctx.moveTo(fx, y); ctx.lineTo(tx, y); ctx.stroke();
+        const ang = tx > fx ? 0 : Math.PI;
+        ctx.beginPath();
+        ctx.moveTo(tx, y);
+        ctx.lineTo(tx - 9*Math.cos(ang-0.35), y - 9*Math.sin(ang-0.35));
+        ctx.lineTo(tx - 9*Math.cos(ang+0.35), y - 9*Math.sin(ang+0.35));
+        ctx.closePath(); ctx.fillStyle = ctx.strokeStyle; ctx.fill();
+      }
+      ctx.fillStyle = active ? '#1A1A1A' : '#999';
+      ctx.font = (cur ? 'bold ' : '') + '11px sans-serif';
+      const lx = Math.min(fx, tx) + Math.abs(tx-fx)/2 - 50;
+      ctx.fillText(m.label, lx, y - 4);
+    });
+    out.textContent = `Step ${stepIdx} / ${messages.length}` +
+      (stepIdx > 0 ? ` — ${messages[stepIdx-1].note}` : ' — click Next to begin.');
+  }
+  nextBtn.onclick = () => { if (stepIdx < messages.length) stepIdx++; draw(); };
+  resetBtn.onclick = () => { stepIdx = 0; draw(); };
+  draw();
+})();
+
+/* ============================================================================
+   §17 Pydantic validator (simplified)
+   ============================================================================ */
+(function () {
+  const input = document.getElementById('pd-input');
+  const out = document.getElementById('pd-out');
+  const btn = document.getElementById('pd-validate');
+  const badBtn = document.getElementById('pd-bad');
+  const schema = {
+    dataset_id: { type: 'int', required: true },
+    lr:         { type: 'float', min: 0, minExclusive: true, max: 1.0, default: 0.01 },
+    epochs:     { type: 'int',   min: 1, max: 1000, default: 100 },
+    batch_size: { type: 'int',   min: 1, max: 4096, default: 32 },
+  };
+  function validate() {
+    let body;
+    try { body = JSON.parse(input.value); }
+    catch (e) {
+      out.textContent = `422 Unprocessable Entity\n  - JSON parse error: ${e.message}`;
+      return;
+    }
+    const errors = [];
+    Object.entries(schema).forEach(([k, s]) => {
+      if (!(k in body)) {
+        if (s.required) errors.push({ loc:[k], type:'missing', msg:'field required' });
+        return;
+      }
+      const v = body[k];
+      if (s.type === 'int' && !Number.isInteger(v))
+        errors.push({ loc:[k], type:'int_parsing', msg:`expected integer, got ${typeof v}` });
+      if (s.type === 'float' && typeof v !== 'number')
+        errors.push({ loc:[k], type:'float_parsing', msg:`expected float, got ${typeof v}` });
+      if (typeof v === 'number') {
+        if (s.minExclusive && v <= s.min)
+          errors.push({ loc:[k], type:'greater_than', msg:`value must be > ${s.min}` });
+        else if (!s.minExclusive && s.min !== undefined && v < s.min)
+          errors.push({ loc:[k], type:'greater_than_equal', msg:`value must be ≥ ${s.min}` });
+        if (s.max !== undefined && v > s.max)
+          errors.push({ loc:[k], type:'less_than_equal', msg:`value must be ≤ ${s.max}` });
+      }
+    });
+    if (errors.length === 0) {
+      out.textContent =
+`200 OK · Validated TrainRequest:
+  dataset_id  = ${body.dataset_id}
+  lr          = ${body.lr ?? schema.lr.default}
+  epochs      = ${body.epochs ?? schema.epochs.default}
+  batch_size  = ${body.batch_size ?? schema.batch_size.default}`;
+    } else {
+      let s = `422 Unprocessable Entity · ${errors.length} validation error(s):\n`;
+      errors.forEach(e => { s += `  - loc: body.${e.loc[0]}\n    type: ${e.type}\n    msg:  ${e.msg}\n`; });
+      out.textContent = s;
+    }
+  }
+  btn.onclick = validate;
+  badBtn.onclick = () => {
+    input.value = JSON.stringify({ dataset_id: "one", lr: 2.0, epochs: 0, batch_size: 32 }, null, 2);
+  };
+  validate();
+})();
+</script>
+</body>
+</html>

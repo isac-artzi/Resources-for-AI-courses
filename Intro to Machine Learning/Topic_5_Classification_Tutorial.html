@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Topic 5 · Classification — Tutorial</title>
+<style>
+:root {
+  --c-bg:        #f7f9fc;
+  --c-card:      #ffffff;
+  --c-text:      #1f2937;
+  --c-text-soft: #4b5563;
+  --c-muted:     #6b7280;
+  --c-line:      #e5e7eb;
+  --c-primary:   #1f3864;
+  --c-accent:    #2e5597;
+  --c-soft-blue: #d9e2f3;
+  --c-code-bg:   #f1f4f9;
+  --c-code-text: #0f172a;
+  --c-success:   #16a34a;
+  --c-success-bg:#dcfce7;
+  --c-warn:      #b45309;
+  --c-warn-bg:   #fef3c7;
+  --c-error:     #b91c1c;
+  --c-error-bg:  #fee2e2;
+  --radius:      10px;
+  --shadow:      0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+}
+.page { max-width: 920px; margin: 0 auto; padding: 32px 24px 80px; }
+header.brand {
+  display: flex; align-items: baseline; gap: 12px;
+  border-bottom: 1px solid var(--c-line); padding-bottom: 16px; margin-bottom: 28px;
+}
+header.brand .crumb { color: var(--c-muted); font-size: 13px; }
+h1, h2, h3, h4 { color: var(--c-primary); margin: 1.4em 0 .5em; line-height: 1.25; }
+h1 { font-size: 28px; margin-top: 0; }
+h2 { font-size: 22px; border-bottom: 1px solid var(--c-line); padding-bottom: 6px; }
+h3 { font-size: 18px; }
+h4 { font-size: 16px; color: var(--c-accent); }
+p, li { color: var(--c-text); }
+.lead { color: var(--c-text-soft); font-size: 17px; }
+.card {
+  background: var(--c-card); border: 1px solid var(--c-line);
+  border-radius: var(--radius); padding: 20px 22px; margin: 16px 0;
+  box-shadow: var(--shadow);
+}
+.callout {
+  background: var(--c-soft-blue);
+  border-left: 4px solid var(--c-accent);
+  padding: 12px 16px; border-radius: 6px; margin: 14px 0;
+  font-size: 15px;
+}
+.callout.warn { background: var(--c-warn-bg); border-color: var(--c-warn); }
+.callout strong.label { color: var(--c-primary); }
+code, pre, kbd, samp {
+  font-family: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+code { background: var(--c-code-bg); padding: 1px 6px; border-radius: 4px; font-size: 14px; }
+pre {
+  background: var(--c-code-bg); color: var(--c-code-text);
+  padding: 14px 16px; border-radius: 8px; overflow-x: auto;
+  font-size: 14px; line-height: 1.55;
+  border: 1px solid var(--c-line);
+}
+pre code { background: transparent; padding: 0; }
+.btn {
+  display: inline-block; padding: 8px 14px; font-size: 14px;
+  background: var(--c-primary); color: #fff; border: none;
+  border-radius: 6px; cursor: pointer; font-weight: 600;
+}
+.btn:hover { background: var(--c-accent); }
+.btn.ghost {
+  background: #fff; color: var(--c-primary);
+  border: 1px solid var(--c-primary);
+}
+.btn.ghost:hover { background: var(--c-soft-blue); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+input[type=text], input[type=number], select, textarea {
+  font: inherit; padding: 6px 10px; border: 1px solid var(--c-line);
+  border-radius: 6px; background: #fff; color: var(--c-text);
+}
+input[type=range] { width: 100%; }
+label.field { display: block; font-size: 14px; color: var(--c-text-soft); margin: 8px 0 4px; }
+table.data { border-collapse: collapse; margin: 10px 0; font-size: 14px; }
+table.data th, table.data td {
+  border: 1px solid var(--c-line); padding: 6px 10px; text-align: left;
+}
+table.data th { background: var(--c-soft-blue); color: var(--c-primary); }
+.row { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
+.col { flex: 1 1 280px; }
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 14px; }
+.feedback {
+  padding: 10px 14px; border-radius: 6px; margin-top: 10px; font-size: 14px;
+  border: 1px solid transparent;
+}
+.feedback.ok    { background: var(--c-success-bg); border-color: var(--c-success); color: #14532d; }
+.feedback.bad   { background: var(--c-error-bg);   border-color: var(--c-error);   color: #7f1d1d; }
+.feedback.info  { background: var(--c-soft-blue);  border-color: var(--c-accent);  color: var(--c-primary); }
+ul.choices { list-style: none; padding: 0; margin: 8px 0; }
+ul.choices li {
+  background: #fff; border: 1px solid var(--c-line); padding: 10px 14px;
+  border-radius: 6px; margin: 6px 0; cursor: pointer; font-size: 15px;
+}
+ul.choices li:hover { background: var(--c-soft-blue); }
+ul.choices li.selected { background: var(--c-soft-blue); border-color: var(--c-primary); }
+ul.choices li.correct  { background: var(--c-success-bg); border-color: var(--c-success); }
+ul.choices li.incorrect{ background: var(--c-error-bg);   border-color: var(--c-error); }
+.progress {
+  background: var(--c-line); border-radius: 4px; height: 6px;
+  overflow: hidden; margin: 8px 0;
+}
+.progress > div {
+  background: var(--c-accent); height: 100%;
+  transition: width .35s ease;
+}
+svg.chart { display: block; max-width: 100%; height: auto; }
+.legend { display: flex; gap: 12px; font-size: 13px; color: var(--c-text-soft); margin: 6px 0; }
+.legend span.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+footer.brand {
+  margin-top: 60px; padding-top: 16px; border-top: 1px solid var(--c-line);
+  color: var(--c-muted); font-size: 13px; text-align: center;
+}
+.tag {
+  display: inline-block; padding: 2px 8px; font-size: 12px; font-weight: 600;
+  border-radius: 999px; background: var(--c-soft-blue); color: var(--c-primary);
+  margin-right: 6px;
+}
+.scope {
+  font-size: 13px; color: var(--c-muted); font-style: italic;
+}
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="brand">
+    <span class="tag">Machine Learning</span>
+    <span class="crumb">Tutorials · Topic 5</span>
+  </header>
+  
+<h1>Topic 5 · Classification (kNN, SVM, Decision Trees)</h1>
+<p class="lead">
+  In Topic 5 you build a small comparison product with three classifiers
+  at their default scikit-learn settings. This page lets you build
+  intuition by clicking on a 2-D plane to add points to two classes,
+  switching between classifiers, and watching the decision boundary
+  redraw.
+</p>
+
+<div class="card">
+  <h2>1. The 2-D decision-boundary playground</h2>
+  <p>
+    Left-click in the box below to add a <strong>blue</strong> point; hold
+    <code>Shift</code> and click to add a <strong>red</strong> point. Then
+    pick a classifier from the dropdown and watch the boundary update.
+    The shaded regions show which class each pixel would be predicted as.
+  </p>
+  <div class="row">
+    <div class="col">
+      <svg id="db-chart" class="chart" viewBox="0 0 360 360" style="background:#fff;border:1px solid var(--c-line); border-radius:6px; cursor:crosshair;"></svg>
+      <div class="legend">
+        <span><span class="dot" style="background:#1f3864"></span>class 0 (blue)</span>
+        <span><span class="dot" style="background:#dc2626"></span>class 1 (red, hold Shift)</span>
+      </div>
+    </div>
+    <div class="col">
+      <label class="field">Classifier</label>
+      <select id="clf-select">
+        <option value="knn">k-Nearest Neighbors (k = 5)</option>
+        <option value="tree">Decision Tree (axis-aligned splits)</option>
+        <option value="linear">Linear (straight-line boundary)</option>
+      </select>
+      <p class="callout" id="clf-explain"></p>
+      <div class="btn-row">
+        <button class="btn ghost" id="seed-data">Reset to a sample dataset</button>
+        <button class="btn ghost" id="clear-data">Clear all points</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>2. Why scaling matters for kNN and SVM (but not trees)</h2>
+  <p>
+    k-Nearest Neighbors decides each point's class by looking at its
+    closest neighbors. "Closest" is a distance, so if one feature is
+    measured in dollars (range 0 — 100,000) and another in years (range
+    0 — 60), the dollar feature will dominate every distance
+    calculation. A <strong>StandardScaler</strong> brings both features
+    to the same numeric scale so each gets a fair say.
+  </p>
+  <p>
+    Decision trees, in contrast, split on one feature at a time —
+    "is age &lt; 35?" — so the numeric scale of the OTHER features is
+    irrelevant. Trees are <em>scale-invariant</em>.
+  </p>
+</div>
+
+<div class="card">
+  <h2>3. Reading a confusion matrix</h2>
+  <p>
+    For a binary classifier, the matrix has four cells:
+  </p>
+  <table class="data">
+    <tr><th></th><th>predicted 0 (negative)</th><th>predicted 1 (positive)</th></tr>
+    <tr><th>actual 0</th><td>TN — correct rejection</td><td>FP — false alarm</td></tr>
+    <tr><th>actual 1</th><td>FN — missed positive</td><td>TP — caught positive</td></tr>
+  </table>
+  <p>
+    From these four numbers you can compute every standard metric:
+  </p>
+  <ul>
+    <li><strong>Accuracy</strong> = (TP + TN) / N</li>
+    <li><strong>Precision</strong> = TP / (TP + FP)</li>
+    <li><strong>Recall</strong> = TP / (TP + FN)</li>
+    <li><strong>F1</strong> = harmonic mean of precision and recall</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>4. The ROC curve — pick a threshold, see the trade-off</h2>
+  <p>
+    Most classifiers don't just output a class — they output a
+    <em>probability</em>. We turn that into a class by comparing to a
+    <strong>threshold</strong>. Lower the threshold (be more eager to
+    flag positives) and recall goes up but precision goes down. The
+    ROC curve plots true-positive rate vs false-positive rate across
+    all thresholds.
+  </p>
+  <p>
+    Drag the slider to set a decision threshold and watch the
+    confusion matrix update.
+  </p>
+  <div class="row">
+    <div class="col">
+      <svg id="roc-chart" class="chart" viewBox="0 0 360 320" style="background:#fff;border:1px solid var(--c-line); border-radius:6px;"></svg>
+    </div>
+    <div class="col">
+      <label class="field">Threshold: <span id="thr-val">0.50</span></label>
+      <input type="range" id="thr" min="0" max="1" step="0.02" value="0.50">
+      <table class="data">
+        <tr><th></th><th>pred 0</th><th>pred 1</th></tr>
+        <tr><th>actual 0</th><td id="cm-tn">—</td><td id="cm-fp">—</td></tr>
+        <tr><th>actual 1</th><td id="cm-fn">—</td><td id="cm-tp">—</td></tr>
+      </table>
+      <ul>
+        <li>Accuracy: <span class="mono" id="acc">—</span></li>
+        <li>Precision: <span class="mono" id="prec">—</span></li>
+        <li>Recall: <span class="mono" id="rec">—</span></li>
+        <li>AUC (whole curve): <span class="mono" id="auc">—</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>5. The effect of k on a kNN boundary</h2>
+  <p>
+    k-Nearest Neighbors votes among the k closest training points. A
+    small k makes the boundary jagged (high variance); a large k makes
+    it smooth (high bias). Drag the slider to see for yourself.
+  </p>
+  <svg id="knn-chart" class="chart" viewBox="0 0 360 280" style="background:#fff;border:1px solid var(--c-line); border-radius:6px;"></svg>
+  <label class="field">k (neighbors): <span id="knn-k-val">5</span></label>
+  <input type="range" id="knn-k" min="1" max="21" step="2" value="5">
+  <p class="callout">
+    <strong class="label">What to notice:</strong>
+    at k=1 the boundary memorizes every training point — including
+    noise. At k=21 it almost ignores the data and picks a smooth
+    average. Real life is somewhere in between; cross-validation lets
+    the data tell you what k to use, but the default of 5 is a
+    reasonable starting point.
+  </p>
+</div>
+
+<div class="card">
+  <h2>6. Decision tree: depth controls overfitting</h2>
+  <p>
+    A decision tree splits the feature space along one axis at a time.
+    <code>max_depth</code> caps how deeply it can split — deeper trees
+    fit more (and overfit more). Drag the slider to see how a tree's
+    boundary changes with depth on the same dataset.
+  </p>
+  <svg id="tree-chart" class="chart" viewBox="0 0 360 280" style="background:#fff;border:1px solid var(--c-line); border-radius:6px;"></svg>
+  <label class="field">max_depth: <span id="tree-depth-val">5</span></label>
+  <input type="range" id="tree-depth" min="1" max="10" step="1" value="5">
+</div>
+
+<div class="card">
+  <h2>7. Feature scaling — kNN with and without</h2>
+  <p>
+    When features have wildly different units (dollars vs years),
+    kNN's distance computation is dominated by the large-magnitude
+    feature. <code>StandardScaler</code> brings both features onto
+    comparable scales so each contributes fairly. Toggle the switch
+    below to see the same kNN run with and without scaling — notice
+    how the nearest neighbors change.
+  </p>
+  <div id="scaling-host"></div>
+</div>
+
+<div class="card">
+  <h2>8. The cost asymmetry: precision-recall trade-offs in practice</h2>
+  <p>
+    Different products have different costs of being wrong. The slider
+    below lets you set the relative cost of a false positive vs a
+    false negative; the panel recomputes the threshold that minimizes
+    total expected cost and reports the resulting precision/recall.
+  </p>
+  <div id="cost-host"></div>
+</div>
+
+<div class="card">
+  <h2>9. Side-by-side classifier comparison</h2>
+  <p>
+    At the introductory level you compare classifiers by putting their
+    test-set metrics in a single table. Below is a worked example —
+    notice that <em>different products would ship different
+    classifiers</em> from these same numbers, depending on which
+    metric matters most.
+  </p>
+  <table class="data">
+    <thead><tr><th>Classifier</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th>AUC</th></tr></thead>
+    <tbody>
+      <tr><td>kNN (k=5)</td><td>0.882</td><td>0.81</td><td>0.74</td><td>0.77</td><td>0.91</td></tr>
+      <tr style="background: var(--c-success-bg);"><td>SVM (default RBF)</td><td>0.895</td><td>0.83</td><td>0.78</td><td>0.80</td><td>0.93</td></tr>
+      <tr><td>Decision Tree (depth 5)</td><td>0.871</td><td>0.79</td><td>0.81</td><td>0.80</td><td>0.88</td></tr>
+    </tbody>
+  </table>
+  <p class="callout">
+    <strong class="label">Reading this table:</strong>
+    if you care most about overall AUC, ship the SVM. If you care
+    most about catching positives at the cost of some false positives,
+    the tree's slightly higher recall might win. At the introductory level
+    you should make this decision <em>and defend it in writing</em> —
+    not just present the numbers.
+  </p>
+</div>
+
+<div class="callout">
+  <strong class="label">Next step:</strong>
+  open <code>Topic-5-Classification-Exercises.html</code> to practice
+  matching classifiers to scenarios and reading confusion matrices.
+</div>
+
+  <footer class="brand">© 2026 · Intro to Machine Learning</footer>
+</div>
+<script>
+// ---- exercise framework ----
+function el(tag, attrs, ...kids){
+  const e = document.createElement(tag);
+  for (const k in (attrs||{})) {
+    if (k === 'class') e.className = attrs[k];
+    else if (k === 'html') e.innerHTML = attrs[k];
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else if (attrs[k] !== false && attrs[k] != null) e.setAttribute(k, attrs[k]);
+  }
+  for (const kid of kids.flat()) {
+    if (kid == null) continue;
+    e.appendChild(kid.nodeType ? kid : document.createTextNode(kid));
+  }
+  return e;
+}
+function feedback(host, kind, msg){
+  let f = host.querySelector('.feedback');
+  if (!f) { f = el('div', {class:'feedback'}); host.appendChild(f); }
+  f.className = 'feedback ' + kind;
+  f.innerHTML = msg;
+}
+function renderMCQ(host, q){
+  host.appendChild(el('p', {class:'lead'}, q.stem));
+  const ul = el('ul', {class:'choices'});
+  let answered = false;
+  q.choices.forEach((c, i) => {
+    const li = el('li', {tabindex:'0'}, c);
+    li.addEventListener('click', () => {
+      if (answered) return;
+      answered = true;
+      Array.from(ul.children).forEach(x => x.classList.remove('selected'));
+      li.classList.add('selected');
+      if (i === q.answer) {
+        li.classList.add('correct');
+        feedback(host, 'ok', '<strong>Correct.</strong> ' + (q.rationale||''));
+      } else {
+        li.classList.add('incorrect');
+        ul.children[q.answer].classList.add('correct');
+        feedback(host, 'bad', '<strong>Not quite.</strong> The correct answer is highlighted in green. ' + (q.rationale||''));
+      }
+    });
+    ul.appendChild(li);
+  });
+  host.appendChild(ul);
+}
+function renderTextEx(host, q){
+  host.appendChild(el('p', {class:'lead'}, q.stem));
+  const input = el('input', {type:'text', placeholder: q.placeholder || 'Your answer…', style:'width:60%;'});
+  const btn = el('button', {class:'btn'}, 'Check');
+  const row = el('div', {class:'btn-row'}, input, btn);
+  host.appendChild(row);
+  btn.addEventListener('click', () => {
+    const v = (input.value || '').trim();
+    if (q.check(v)) feedback(host, 'ok', '<strong>Correct.</strong> ' + (q.rationale||''));
+    else feedback(host, 'bad', '<strong>Not quite.</strong> ' + (q.hint||q.rationale||''));
+  });
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') btn.click(); });
+}
+function buildExerciseSet(rootSel, items){
+  const root = document.querySelector(rootSel);
+  let correct = 0, attempted = 0;
+  items.forEach((q, idx) => {
+    const card = el('div', {class:'card'});
+    card.appendChild(el('h3', {}, 'Exercise ' + (idx+1) + ' — ' + q.type));
+    if (q.kind === 'mcq') renderMCQ(card, q);
+    else if (q.kind === 'text') renderTextEx(card, q);
+    else if (q.kind === 'custom') q.render(card);
+    root.appendChild(card);
+  });
+}
+</script>
+<script>
+// ---------- decision-boundary playground ----------
+(function(){
+  const svg = document.getElementById('db-chart');
+  const W = 360, H = 360;
+  let pts = [];
+  function defaultData(){
+    pts = [];
+    for (let i = 0; i < 18; i++) {
+      pts.push({ x: 60 + Math.random() * 110, y: 60 + Math.random() * 110, c: 0 });
+      pts.push({ x: 180 + Math.random() * 110, y: 180 + Math.random() * 110, c: 1 });
+    }
+  }
+  defaultData();
+
+  function predict(px, py, kind){
+    if (pts.length === 0) return null;
+    if (kind === 'knn') {
+      const k = Math.min(5, pts.length);
+      const ranked = pts
+        .map(p => ({ c: p.c, d: (p.x - px) ** 2 + (p.y - py) ** 2 }))
+        .sort((a, b) => a.d - b.d).slice(0, k);
+      const votes = [0, 0];
+      ranked.forEach(r => votes[r.c]++);
+      return votes[1] > votes[0] ? 1 : 0;
+    }
+    if (kind === 'tree') {
+      // Axis-aligned split: choose the best vertical OR horizontal cut once.
+      let best = null;
+      ['x','y'].forEach(axis => {
+        for (let v = 30; v < 330; v += 12) {
+          const left  = pts.filter(p => p[axis] < v);
+          const right = pts.filter(p => p[axis] >= v);
+          if (!left.length || !right.length) continue;
+          const score = -(impurity(left) * left.length + impurity(right) * right.length);
+          if (!best || score > best.score) best = { axis, v, score, left, right };
+        }
+      });
+      if (!best) return null;
+      const side = (px) > 0 ? null : null;
+      const onSide = ((axis, v) => (axis === 'x' ? px : py) < v)(best.axis, best.v);
+      const subset = onSide ? best.left : best.right;
+      const counts = [0,0];
+      subset.forEach(p => counts[p.c]++);
+      return counts[1] > counts[0] ? 1 : 0;
+    }
+    if (kind === 'linear') {
+      // Linear separator: take the perceptron-style sign of (point - midpoint) · (mean1 - mean0)
+      const m0 = mean(pts.filter(p => p.c === 0));
+      const m1 = mean(pts.filter(p => p.c === 1));
+      if (!m0 || !m1) return null;
+      const mid = { x: (m0.x + m1.x) / 2, y: (m0.y + m1.y) / 2 };
+      const dot = (px - mid.x) * (m1.x - m0.x) + (py - mid.y) * (m1.y - m0.y);
+      return dot > 0 ? 1 : 0;
+    }
+  }
+  function impurity(rows){
+    if (!rows.length) return 0;
+    const p1 = rows.filter(r => r.c === 1).length / rows.length;
+    return 1 - (p1*p1 + (1-p1)*(1-p1));
+  }
+  function mean(arr){
+    if (!arr.length) return null;
+    return { x: arr.reduce((s,p)=>s+p.x,0)/arr.length, y: arr.reduce((s,p)=>s+p.y,0)/arr.length };
+  }
+
+  function draw(){
+    const kind = document.getElementById('clf-select').value;
+    const STEP = 10;
+    const cells = [];
+    for (let x = 0; x < W; x += STEP) {
+      for (let y = 0; y < H; y += STEP) {
+        const p = predict(x + STEP / 2, y + STEP / 2, kind);
+        const fill = p === 1 ? '#fee2e2' : (p === 0 ? '#dbe7f5' : '#f3f4f6');
+        cells.push(`<rect x="${x}" y="${y}" width="${STEP}" height="${STEP}" fill="${fill}"/>`);
+      }
+    }
+    const dots = pts.map(p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5" fill="${p.c === 1 ? '#dc2626' : '#1f3864'}" stroke="#fff" stroke-width="1.5"/>`);
+    svg.innerHTML = cells.join('') + dots.join('');
+    const explain = {
+      knn: 'kNN looks at the 5 nearest training points and votes. Decision regions are local and can be very irregular.',
+      tree: 'A shallow decision tree splits the plane on a single axis at a time, producing rectangular regions.',
+      linear: 'A linear classifier draws a single straight boundary halfway between the class means.',
+    };
+    document.getElementById('clf-explain').innerHTML = '<strong class="label">' + document.getElementById('clf-select').selectedOptions[0].textContent + ':</strong> ' + explain[kind];
+  }
+  svg.addEventListener('click', e => {
+    const rect = svg.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (W / rect.width);
+    const y = (e.clientY - rect.top)  * (H / rect.height);
+    pts.push({ x, y, c: e.shiftKey ? 1 : 0 });
+    draw();
+  });
+  document.getElementById('seed-data').addEventListener('click', () => { defaultData(); draw(); });
+  document.getElementById('clear-data').addEventListener('click', () => { pts = []; draw(); });
+  document.getElementById('clf-select').addEventListener('change', draw);
+  draw();
+})();
+
+// ---------- ROC threshold demo ----------
+(function(){
+  // Fixed synthetic scores for 50 examples, 25 positives + 25 negatives,
+  // engineered so AUC ≈ 0.85.
+  const data = [];
+  const rng = (function(){ let s = 42; return () => (s = (s * 9301 + 49297) % 233280) / 233280; })();
+  for (let i = 0; i < 25; i++) data.push({ y: 0, p: Math.min(0.95, Math.max(0.05, rng() * 0.5 + 0.05)) });
+  for (let i = 0; i < 25; i++) data.push({ y: 1, p: Math.min(0.95, Math.max(0.05, rng() * 0.5 + 0.45)) });
+
+  function rocPoints() {
+    const pts = [];
+    for (let t = 0; t <= 1.001; t += 0.02) {
+      let tp=0, fp=0, fn=0, tn=0;
+      data.forEach(d => {
+        const pred = d.p >= t ? 1 : 0;
+        if (d.y === 1 && pred === 1) tp++;
+        else if (d.y === 0 && pred === 1) fp++;
+        else if (d.y === 1 && pred === 0) fn++;
+        else tn++;
+      });
+      pts.push({ t, tpr: tp / (tp + fn || 1), fpr: fp / (fp + tn || 1), tp, fp, fn, tn });
+    }
+    return pts;
+  }
+  function auc(pts) {
+    // trapezoidal over fpr ascending
+    const sorted = pts.slice().sort((a,b) => a.fpr - b.fpr);
+    let area = 0;
+    for (let i = 1; i < sorted.length; i++) {
+      area += (sorted[i].fpr - sorted[i-1].fpr) * (sorted[i].tpr + sorted[i-1].tpr) / 2;
+    }
+    return area;
+  }
+  const W = 360, H = 320, padL = 50, padB = 40, padT = 20, padR = 20;
+  const sx = v => padL + v * (W - padL - padR);
+  const sy = v => H - padB - v * (H - padT - padB);
+  const svg = document.getElementById('roc-chart');
+  const allPts = rocPoints();
+  const A = auc(allPts);
+  document.getElementById('auc').textContent = A.toFixed(3);
+
+  function draw() {
+    const t = parseFloat(document.getElementById('thr').value);
+    document.getElementById('thr-val').textContent = t.toFixed(2);
+    const cur = allPts.reduce((a,b) => Math.abs(b.t - t) < Math.abs(a.t - t) ? b : a);
+    const path = allPts.slice().sort((a,b) => a.fpr - b.fpr).map((p, i) => (i === 0 ? 'M' : 'L') + sx(p.fpr) + ',' + sy(p.tpr)).join(' ');
+    const elements = [
+      `<rect x="${padL}" y="${padT}" width="${W-padL-padR}" height="${H-padT-padB}" fill="#fff" stroke="#e5e7eb"/>`,
+      `<line x1="${sx(0)}" y1="${sy(0)}" x2="${sx(1)}" y2="${sy(1)}" stroke="#9ca3af" stroke-dasharray="4 4"/>`,
+      `<path d="${path}" fill="none" stroke="#1f3864" stroke-width="2"/>`,
+      `<circle cx="${sx(cur.fpr)}" cy="${sy(cur.tpr)}" r="6" fill="#f59e0b" stroke="#fff" stroke-width="2"/>`,
+      `<text x="${W/2}" y="${H - 6}" text-anchor="middle" fill="#374151" font-size="11">False positive rate</text>`,
+      `<text x="14" y="${H/2}" text-anchor="middle" fill="#374151" font-size="11" transform="rotate(-90 14 ${H/2})">True positive rate</text>`,
+    ];
+    for (let v = 0; v <= 1; v += 0.25) {
+      elements.push(`<text x="${sx(v)}" y="${sy(0)+14}" text-anchor="middle" fill="#6b7280" font-size="10">${v}</text>`);
+      elements.push(`<text x="${padL-6}" y="${sy(v)+3}" text-anchor="end" fill="#6b7280" font-size="10">${v}</text>`);
+    }
+    svg.innerHTML = elements.join('');
+    document.getElementById('cm-tn').textContent = cur.tn;
+    document.getElementById('cm-fp').textContent = cur.fp;
+    document.getElementById('cm-fn').textContent = cur.fn;
+    document.getElementById('cm-tp').textContent = cur.tp;
+    document.getElementById('acc').textContent  = ((cur.tn + cur.tp) / data.length).toFixed(3);
+    document.getElementById('prec').textContent = ((cur.tp / Math.max(1, cur.tp + cur.fp))).toFixed(3);
+    document.getElementById('rec').textContent  = ((cur.tp / Math.max(1, cur.tp + cur.fn))).toFixed(3);
+  }
+  document.getElementById('thr').addEventListener('input', draw);
+  draw();
+})();
+
+// ---------- kNN k-slider ----------
+(function(){
+  const svg = document.getElementById('knn-chart');
+  if (!svg) return;
+  const W = 360, H = 280;
+  function rng(seed){ let s = seed; return () => (s = (s*9301+49297)%233280)/233280; }
+  const r = rng(13);
+  const pts = [];
+  for (let i = 0; i < 12; i++) pts.push({ x: 60 + r() * 100, y: 60 + r() * 90, c: 0 });
+  for (let i = 0; i < 12; i++) pts.push({ x: 200 + r() * 100, y: 130 + r() * 100, c: 1 });
+  // Add some noise points
+  pts.push({ x: 230, y: 80, c: 0 });
+  pts.push({ x: 110, y: 200, c: 1 });
+  function predict(px, py, k){
+    const ranked = pts.map(p => ({ c: p.c, d: (p.x - px) ** 2 + (p.y - py) ** 2 })).sort((a, b) => a.d - b.d).slice(0, k);
+    const votes = [0, 0];
+    ranked.forEach(r => votes[r.c]++);
+    return votes[1] > votes[0] ? 1 : 0;
+  }
+  function draw(){
+    const k = parseInt(document.getElementById('knn-k').value);
+    document.getElementById('knn-k-val').textContent = k;
+    const STEP = 12;
+    const cells = [];
+    for (let x = 0; x < W; x += STEP) {
+      for (let y = 0; y < H; y += STEP) {
+        const p = predict(x + STEP / 2, y + STEP / 2, k);
+        const fill = p === 1 ? '#fee2e2' : '#dbe7f5';
+        cells.push(`<rect x="${x}" y="${y}" width="${STEP}" height="${STEP}" fill="${fill}"/>`);
+      }
+    }
+    const dots = pts.map(p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5" fill="${p.c === 1 ? '#dc2626' : '#1f3864'}" stroke="#fff" stroke-width="1.5"/>`);
+    svg.innerHTML = cells.join('') + dots.join('');
+  }
+  document.getElementById('knn-k').addEventListener('input', draw);
+  draw();
+})();
+
+// ---------- Tree depth-slider ----------
+(function(){
+  const svg = document.getElementById('tree-chart');
+  if (!svg) return;
+  const W = 360, H = 280;
+  function rng(seed){ let s = seed; return () => (s = (s*9301+49297)%233280)/233280; }
+  const r = rng(19);
+  const pts = [];
+  for (let i = 0; i < 14; i++) pts.push({ x: 60 + r() * 100, y: 60 + r() * 100, c: 0 });
+  for (let i = 0; i < 14; i++) pts.push({ x: 200 + r() * 100, y: 140 + r() * 110, c: 1 });
+  pts.push({ x: 240, y: 90, c: 0 });
+  pts.push({ x: 120, y: 220, c: 1 });
+  function gini(rows){
+    if (!rows.length) return 0;
+    const p1 = rows.filter(r => r.c === 1).length / rows.length;
+    return 1 - (p1*p1 + (1-p1)*(1-p1));
+  }
+  function buildTree(rows, depth, maxDepth){
+    if (depth >= maxDepth || rows.length < 4) {
+      const counts = [0,0];
+      rows.forEach(r => counts[r.c]++);
+      return { leaf: true, c: counts[1] > counts[0] ? 1 : 0 };
+    }
+    let best = null;
+    for (const axis of ['x','y']) {
+      for (let v = 30; v < 320; v += 16) {
+        const L = rows.filter(p => p[axis] < v);
+        const R = rows.filter(p => p[axis] >= v);
+        if (!L.length || !R.length) continue;
+        const score = -(gini(L) * L.length + gini(R) * R.length);
+        if (!best || score > best.score) best = { axis, v, score, L, R };
+      }
+    }
+    if (!best) {
+      const counts = [0,0];
+      rows.forEach(r => counts[r.c]++);
+      return { leaf: true, c: counts[1] > counts[0] ? 1 : 0 };
+    }
+    return { leaf: false, axis: best.axis, v: best.v, L: buildTree(best.L, depth + 1, maxDepth), R: buildTree(best.R, depth + 1, maxDepth) };
+  }
+  function predict(tree, x, y){
+    if (tree.leaf) return tree.c;
+    const v = tree.axis === 'x' ? x : y;
+    return v < tree.v ? predict(tree.L, x, y) : predict(tree.R, x, y);
+  }
+  function draw(){
+    const d = parseInt(document.getElementById('tree-depth').value);
+    document.getElementById('tree-depth-val').textContent = d;
+    const tree = buildTree(pts, 0, d);
+    const STEP = 12;
+    const cells = [];
+    for (let x = 0; x < W; x += STEP) {
+      for (let y = 0; y < H; y += STEP) {
+        const p = predict(tree, x + STEP / 2, y + STEP / 2);
+        const fill = p === 1 ? '#fee2e2' : '#dbe7f5';
+        cells.push(`<rect x="${x}" y="${y}" width="${STEP}" height="${STEP}" fill="${fill}"/>`);
+      }
+    }
+    const dots = pts.map(p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5" fill="${p.c === 1 ? '#dc2626' : '#1f3864'}" stroke="#fff" stroke-width="1.5"/>`);
+    svg.innerHTML = cells.join('') + dots.join('');
+  }
+  document.getElementById('tree-depth').addEventListener('input', draw);
+  draw();
+})();
+
+// ---------- Scaling demo ----------
+(function(){
+  const host = document.getElementById('scaling-host');
+  if (!host) return;
+  // Two features: "age" (0-80) and "income" (0-100000)
+  const data = [
+    { age: 25, income: 30000, c: 0 },
+    { age: 28, income: 35000, c: 0 },
+    { age: 22, income: 25000, c: 0 },
+    { age: 60, income: 90000, c: 1 },
+    { age: 55, income: 85000, c: 1 },
+    { age: 50, income: 95000, c: 1 },
+  ];
+  const test = { age: 35, income: 28000 };
+  host.innerHTML = '';
+  const lblToggle = el('label', {style:'display:block; margin:8px 0;'});
+  const cb = el('input', {type:'checkbox'});
+  cb.checked = true;
+  lblToggle.appendChild(cb);
+  lblToggle.appendChild(document.createTextNode(' Apply StandardScaler before computing distance'));
+  host.appendChild(lblToggle);
+  const out = el('div', {});
+  host.appendChild(out);
+  function dist(a, b, scale){
+    if (!scale) return Math.sqrt((a.age - b.age)**2 + (a.income - b.income)**2);
+    // Standardize using observed stds (approximated)
+    const sa = 16, si = 33000;
+    return Math.sqrt(((a.age - b.age) / sa)**2 + ((a.income - b.income) / si)**2);
+  }
+  function refresh(){
+    const scale = cb.checked;
+    const ranked = data.map(d => ({ ...d, dist: dist(d, test, scale) })).sort((a, b) => a.dist - b.dist);
+    out.innerHTML = '';
+    out.appendChild(el('p', {html:'<strong>Test point:</strong> age=35, income=28,000. <strong>Scaled?</strong> ' + (scale ? 'yes' : 'no')}));
+    const tbl = el('table', {class:'data'});
+    tbl.appendChild(el('thead', {}, el('tr', {}, el('th',{},'age'), el('th',{},'income'), el('th',{},'class'), el('th',{},'distance'))));
+    const tb = el('tbody');
+    ranked.forEach((r, i) => {
+      const bg = i < 3 ? 'background:var(--c-soft-blue);' : '';
+      tb.appendChild(el('tr', {style: bg}, el('td',{},String(r.age)), el('td',{},String(r.income)), el('td',{}, r.c === 0 ? 'young' : 'older'), el('td',{}, r.dist.toFixed(3))));
+    });
+    tbl.appendChild(tb);
+    out.appendChild(tbl);
+    const top3 = ranked.slice(0, 3);
+    const vote = [0, 0];
+    top3.forEach(p => vote[p.c]++);
+    const pred = vote[1] > vote[0] ? 'older' : 'young';
+    out.appendChild(el('div', {class:'feedback ' + (scale ? 'ok' : 'bad')},
+      el('span', {html: 'Predicted class (3-NN, ' + (scale ? 'scaled' : 'unscaled') + '): <strong>' + pred + '</strong>. ' + (scale ? 'With scaling, age and income contribute fairly. The test point looks like a "young" row.' : 'Without scaling, income dominates the distance entirely — age is essentially ignored, and the prediction may flip.')})
+    ));
+  }
+  cb.addEventListener('change', refresh);
+  refresh();
+})();
+
+// ---------- cost-asymmetry demo ----------
+(function(){
+  const host = document.getElementById('cost-host');
+  if (!host) return;
+  // toy ROC: 100 examples, 30 positives
+  const data = [];
+  function rng(seed){ let s = seed; return () => (s = (s*9301+49297)%233280)/233280; }
+  const r = rng(31);
+  for (let i = 0; i < 70; i++) data.push({ y: 0, p: Math.min(0.92, Math.max(0.05, r() * 0.55)) });
+  for (let i = 0; i < 30; i++) data.push({ y: 1, p: Math.min(0.95, Math.max(0.1,  r() * 0.55 + 0.40)) });
+  host.innerHTML = '';
+  host.appendChild(el('label', {class:'field'}, 'Cost of a false NEGATIVE relative to a false positive: '));
+  const out = el('span', {class:'mono'}, '3x');
+  host.appendChild(out);
+  const range = el('input', {type:'range', min:'1', max:'10', step:'1', value:'3'});
+  host.appendChild(range);
+  const result = el('div', {style:'margin-top:10px;'});
+  host.appendChild(result);
+  function refresh(){
+    const ratio = parseInt(range.value);
+    out.textContent = ratio + 'x';
+    let bestT = 0.5, bestCost = Infinity;
+    for (let t = 0.05; t <= 0.95; t += 0.02) {
+      let fp = 0, fn = 0;
+      data.forEach(d => {
+        const pred = d.p >= t ? 1 : 0;
+        if (d.y === 0 && pred === 1) fp++;
+        else if (d.y === 1 && pred === 0) fn++;
+      });
+      const cost = fp + ratio * fn;
+      if (cost < bestCost) { bestCost = cost; bestT = t; }
+    }
+    let tp = 0, fp = 0, fn = 0, tn = 0;
+    data.forEach(d => {
+      const pred = d.p >= bestT ? 1 : 0;
+      if (d.y === 1 && pred === 1) tp++;
+      else if (d.y === 0 && pred === 1) fp++;
+      else if (d.y === 1 && pred === 0) fn++;
+      else tn++;
+    });
+    const precision = tp / Math.max(1, tp + fp);
+    const recall    = tp / Math.max(1, tp + fn);
+    result.innerHTML = '';
+    result.appendChild(el('p', {html: '<strong>Best threshold for cost ratio ' + ratio + 'x:</strong> <span class="mono">' + bestT.toFixed(2) + '</span>'}));
+    result.appendChild(el('p', {html: 'At this threshold &mdash; precision = ' + precision.toFixed(3) + ', recall = ' + recall.toFixed(3) + ', cost-weighted errors = ' + bestCost}));
+    result.appendChild(el('p', {class:'scope', style:'margin-top:8px;'}, ratio === 1 ? 'When FP and FN cost the same, the optimal threshold sits near 0.5.' : 'As FN cost grows, the optimal threshold drops — the model is willing to accept more false positives to avoid missing positives.'));
+  }
+  range.addEventListener('input', refresh);
+  refresh();
+})();
+</script>
+</body>
+</html>

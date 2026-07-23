@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 4 Tutorial — Sequence Models &amp; Attention</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+       margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6; }
+.container { max-width: 980px; margin: 24px auto 48px; background: white;
+             padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.35em; margin-top: 40px;
+     border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+h4 { color: #555; font-size: 1.0em; margin-top: 18px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 6px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7;
+       padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px; overflow-x: auto;
+      border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79;
+           padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px;
+        margin: 14px 0; border-radius: 4px; font-size: 0.93em; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+        padding: 22px; margin: 22px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.controls { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 180px; }
+.control input[type="number"] { width: 80px; padding: 4px 8px;
+            border: 1px solid #CFD7DF; border-radius: 4px; font-family: inherit; }
+.control select { padding: 5px 8px; border: 1px solid #CFD7DF; border-radius: 4px;
+                  font-family: inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px;
+           border-radius: 6px; font-family: "SF Mono", Consolas, monospace;
+           font-size: 0.88em; min-width: 220px; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 16px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.93em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+      background: #F2F4F7; padding: 4px 8px; border-radius: 4px; }
+.eq-block { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+            background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+            text-align: center; margin: 14px 0; display: block; }
+.nav { display: flex; justify-content: space-between; margin-top: 40px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.kv { display: grid; grid-template-columns: max-content auto; column-gap: 14px; row-gap: 4px; margin: 8px 0; }
+.kv div:nth-child(odd) { color: #555; } .kv div:nth-child(even) { font-family: "SF Mono", Consolas, monospace; }
+.toc { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+       padding: 16px 22px; margin-bottom: 28px; font-size: 0.92em; }
+.toc h3 { margin: 0 0 8px; color: #1F4E79; font-size: 1.0em; }
+.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 24px; }
+.toc a { color: #1F4E79; text-decoration: none; } .toc a:hover { text-decoration: underline; }
+.tag { display: inline-block; padding: 2px 8px; background: #E0E5EB;
+       border-radius: 12px; font-size: 0.75em; color: #555;
+       text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px; }
+.tag.interactive { background: #E1F0EA; color: #1B5E20; }
+.tag.code { background: #F2F4F7; color: #555; }
+.tag.math { background: #FCE8EE; color: #6E1414; }
+table.cmp { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 0.92em; }
+table.cmp th, table.cmp td { border: 1px solid #E0E5EB; padding: 8px 12px; text-align: left; }
+table.cmp th { background: #F2F4F7; color: #1F4E79; }
+.tokens { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+.tok { padding: 6px 10px; background: white; border: 1px solid #D0D8E0;
+       border-radius: 6px; font-family: "SF Mono", Consolas, monospace; font-size: 0.85em; }
+.heatcell { width: 42px; height: 42px; display: flex; align-items: center;
+            justify-content: center; font-family: "SF Mono", Consolas, monospace; font-size: 0.78em;
+            border: 1px solid #FFF; color: #1A1A1A; }
+.heatrow { display: flex; }
+.heatlabel { width: 80px; padding: 0 6px; display: flex; align-items: center;
+             justify-content: flex-end; font-size: 0.8em; color: #555;
+             font-family: "SF Mono", Consolas, monospace; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="brand">Tutorial · ~ 75 min read</div>
+<h1>Topic 4 — Sequence Models &amp; the Attention Mechanism</h1>
+<p class="subtitle">From a vanilla RNN unrolled in time, through LSTM gates and GRUs, to scaled-dot-product attention and its built-in interpretability surface. By the end you should be able to compute attention by hand and reason about LSTM-vs-attention trade-offs without consulting a table.</p>
+
+<div class="callout">
+  <strong>What you should walk away with.</strong> (1) How a vanilla RNN passes information through time and why its gradients vanish or explode. (2) The role of each LSTM gate and the difference between an LSTM and a GRU. (3) Tokenization → embedding → sequence-model input, end to end. (4) Scaled-dot-product attention computed from Q, K, V, including <em>why</em> the √dₖ scaling is essential. (5) Padding masks vs causal masks and how they combine. (6) A defensible comparison of recurrent vs attention models on memory, parallelism, and long-range dependencies.
+</div>
+
+<div class="toc">
+  <h3>What's in this tutorial</h3>
+  <ol>
+    <li><a href="#s1">A vanilla RNN, unrolled</a></li>
+    <li><a href="#s2">Vanishing and exploding gradients in RNNs</a></li>
+    <li><a href="#s3">The LSTM cell: three gates</a></li>
+    <li><a href="#s4">Cell state flowing through time</a></li>
+    <li><a href="#s5">GRU as a simpler LSTM</a></li>
+    <li><a href="#s6">Bidirectional LSTMs</a></li>
+    <li><a href="#s7">Tokenization basics</a></li>
+    <li><a href="#s8">Embedding lookup</a></li>
+    <li><a href="#s9">Building Q, K, V</a></li>
+    <li><a href="#s10">Scaled-dot-product attention, step by step</a></li>
+    <li><a href="#s11">Why divide by √dₖ?</a></li>
+    <li><a href="#s12">Self-attention vs cross-attention</a></li>
+    <li><a href="#s13">Padding masks and causal masks</a></li>
+    <li><a href="#s14">Multi-head attention preview</a></li>
+    <li><a href="#s15">LSTM vs attention — the trade-off</a></li>
+    <li><a href="#s16">Attention weights as interpretability</a></li>
+  </ol>
+</div>
+
+<!-- §1 RNN unrolled -->
+<h2 id="s1">1 · A vanilla RNN, unrolled <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>A vanilla RNN reads one token at a time. At each step it combines the new input with the running hidden state:</p>
+<p class="eq-block">h<sub>t</sub> = tanh( W<sub>xh</sub> · x<sub>t</sub> + W<sub>hh</sub> · h<sub>t−1</sub> + b )</p>
+<p>The same weights <code>W<sub>xh</sub></code> and <code>W<sub>hh</sub></code> are reused at every time step — weight sharing across time, the temporal analogue of weight sharing across space in a CNN.</p>
+
+<div class="demo">
+  <h3>Demo · Unroll an RNN across T time steps</h3>
+  <p>Slide <code>T</code> to add more time steps. Each cell shows the recurrence applied with the same weights.</p>
+  <div class="controls">
+    <div class="control"><label for="rnn-T">sequence length T</label>
+      <input type="range" id="rnn-T" min="3" max="10" step="1" value="5"></div>
+    <div class="readout" id="rnn-readout"></div>
+  </div>
+  <canvas id="rnn-canvas" width="880" height="220"></canvas>
+</div>
+
+<!-- §2 Vanishing gradients in RNNs -->
+<h2 id="s2">2 · Vanishing and exploding gradients in RNNs <span class="tag math">math</span></h2>
+<p>To compute <code>∂L/∂h₀</code>, gradient back-propagates through every time step. By the chain rule, the contribution from step <code>t</code> picks up a product of <code>t</code> factors of <code>W<sub>hh</sub><sup>⊤</sup> · diag(tanh′(z<sub>t</sub>))</code>. If the largest singular value of that product is &lt; 1 in expectation, the gradient <em>vanishes</em>. If it's &gt; 1, it <em>explodes</em>. Either way, learning long-range dependencies becomes hopeless past about 10-20 steps.</p>
+<p>The two standard fixes:</p>
+<ul>
+  <li><strong>Gradient clipping.</strong> Cap the L2 norm of the gradient at some threshold; standard for any RNN training loop.</li>
+  <li><strong>Gated architectures (LSTM, GRU).</strong> Add a separate <em>cell state</em> that's updated additively under gate control, bypassing the multiplicative chain.</li>
+</ul>
+
+<!-- §3 LSTM gates -->
+<h2 id="s3">3 · The LSTM cell: three gates <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>The LSTM maintains a hidden state <code>h</code> and a separate <em>cell state</em> <code>c</code>. Three gates — each a small sigmoid network — decide what to do at each step:</p>
+<p class="eq-block">
+  f<sub>t</sub> = σ(W<sub>f</sub> · [h<sub>t−1</sub>, x<sub>t</sub>] + b<sub>f</sub>)   &nbsp;&nbsp;&nbsp; (forget)<br>
+  i<sub>t</sub> = σ(W<sub>i</sub> · [h<sub>t−1</sub>, x<sub>t</sub>] + b<sub>i</sub>)   &nbsp;&nbsp;&nbsp; (input)<br>
+  ĉ<sub>t</sub> = tanh(W<sub>c</sub> · [h<sub>t−1</sub>, x<sub>t</sub>] + b<sub>c</sub>)   &nbsp;&nbsp;&nbsp; (candidate)<br>
+  c<sub>t</sub> = f<sub>t</sub> ⊙ c<sub>t−1</sub> + i<sub>t</sub> ⊙ ĉ<sub>t</sub>   &nbsp;&nbsp;&nbsp; (new cell state)<br>
+  o<sub>t</sub> = σ(W<sub>o</sub> · [h<sub>t−1</sub>, x<sub>t</sub>] + b<sub>o</sub>)   &nbsp;&nbsp;&nbsp; (output)<br>
+  h<sub>t</sub> = o<sub>t</sub> ⊙ tanh(c<sub>t</sub>)
+</p>
+<p>Read the cell state update <code>c<sub>t</sub> = f ⊙ c<sub>t−1</sub> + i ⊙ ĉ</code> as: forget some of what you knew, write some new information. Because the update is mostly additive (you can pass through <code>f ≈ 1, i ≈ 0</code>), gradients can travel a long way back in time.</p>
+
+<div class="demo">
+  <h3>Demo · Move the three gates and watch the cell state evolve</h3>
+  <p>Each row in the table is a time step; columns are forget gate, input gate, candidate, output gate, and the resulting cell state.</p>
+  <div class="controls">
+    <div class="control"><label for="lstm-f">forget gate</label>
+      <input type="range" id="lstm-f" min="0" max="1" step="0.01" value="0.85"></div>
+    <div class="control"><label for="lstm-i">input gate</label>
+      <input type="range" id="lstm-i" min="0" max="1" step="0.01" value="0.4"></div>
+    <div class="readout" id="lstm-readout"></div>
+  </div>
+  <canvas id="lstm-canvas" width="880" height="220"></canvas>
+</div>
+
+<!-- §4 Cell state through time -->
+<h2 id="s4">4 · Cell state flowing through time <span class="tag interactive">interactive</span></h2>
+<p>One more demo to drive home the point: if the forget gate is wide open (close to 1) and the input gate is mostly closed at "boring" time steps, information from a key time step in the past survives for many steps. That is exactly what allows LSTMs to learn dependencies across hundreds of tokens.</p>
+<div class="demo">
+  <h3>Demo · A key input at t = 3 survives across time</h3>
+  <div class="controls">
+    <div class="control"><label for="cs-f">forget gate value</label>
+      <input type="range" id="cs-f" min="0.5" max="1.0" step="0.005" value="0.95"></div>
+    <div class="readout" id="cs-readout"></div>
+  </div>
+  <canvas id="cs-canvas" width="880" height="200"></canvas>
+</div>
+
+<!-- §5 GRU -->
+<h2 id="s5">5 · GRU as a simpler LSTM <span class="tag math">math</span></h2>
+<p>The Gated Recurrent Unit merges the cell and hidden states, and uses just two gates (reset and update):</p>
+<p class="eq-block">
+  r<sub>t</sub> = σ(W<sub>r</sub>[h<sub>t−1</sub>, x<sub>t</sub>])   &nbsp;&nbsp; (reset)<br>
+  z<sub>t</sub> = σ(W<sub>z</sub>[h<sub>t−1</sub>, x<sub>t</sub>])   &nbsp;&nbsp; (update)<br>
+  ĥ<sub>t</sub> = tanh(W<sub>h</sub>[r<sub>t</sub> ⊙ h<sub>t−1</sub>, x<sub>t</sub>])<br>
+  h<sub>t</sub> = (1 − z<sub>t</sub>) ⊙ h<sub>t−1</sub> + z<sub>t</sub> ⊙ ĥ<sub>t</sub>
+</p>
+<p>Three things to remember:</p>
+<ul>
+  <li>GRUs have ≈ 25 % fewer parameters than equivalent LSTMs.</li>
+  <li>On most NLP-ish tasks, GRU and LSTM perform very similarly. Pick by parameter budget and convention.</li>
+  <li>The same gradient-flow story applies: gates control how much past info passes through unchanged.</li>
+</ul>
+
+<!-- §6 BiLSTM -->
+<h2 id="s6">6 · Bidirectional LSTMs <span class="tag math">math</span></h2>
+<p>A bidirectional LSTM runs <em>two</em> LSTMs over the same sequence — one left to right, one right to left — and concatenates their hidden states at each position:</p>
+<p class="eq-block">h<sub>t</sub><sup>BiLSTM</sup> = concat( h<sub>t</sub><sup>→</sup> , h<sub>t</sub><sup>←</sup> )</p>
+<p>This doubles the hidden dimension at each step but lets each position see <em>both</em> directions of context. The cost: it can no longer be used for purely autoregressive prediction, because the right-to-left pass cheats by looking at the future.</p>
+
+<pre>bilstm = nn.LSTM(input_size=D, hidden_size=H, batch_first=True,
+                 bidirectional=True)
+# out shape: (B, T, 2*H) — concatenation across directions
+out, (h_n, c_n) = bilstm(x)</pre>
+
+<!-- §7 Tokenization -->
+<h2 id="s7">7 · Tokenization basics <span class="tag interactive">interactive</span></h2>
+<p>Before a model sees text, the text must become integer IDs. The three popular schemes:</p>
+<ul>
+  <li><strong>Word-level.</strong> One ID per whitespace token. Big vocab; OOV problem.</li>
+  <li><strong>Character-level.</strong> One ID per character. Tiny vocab; long sequences.</li>
+  <li><strong>Subword (BPE, WordPiece, SentencePiece).</strong> Common patterns merged greedily. Modern default.</li>
+</ul>
+<p>For BERT, "tokenization" actually means WordPiece: words become one or more subword pieces, with the special prefix <code>##</code> marking "continuation":</p>
+<pre>"unbelievable" → ["un", "##believ", "##able"]    # WordPiece
+"hello!"       → ["hello", "!"]
+"COVID-19"     → ["co", "##vid", "-", "19"]</pre>
+
+<div class="demo">
+  <h3>Demo · Compare tokenizations of a sentence</h3>
+  <div class="controls">
+    <div class="control" style="flex:1;">
+      <label>sentence</label>
+      <input type="text" id="tk-input" value="The unbelievable transformer fine-tuned itself."
+             style="width:100%; padding:6px 10px; border:1px solid #CFD7DF; border-radius:4px; font-family: 'SF Mono', monospace; font-size:0.92em;">
+    </div>
+  </div>
+  <div style="display:flex; gap:14px; flex-wrap:wrap;">
+    <div style="flex:1; min-width:240px;"><strong>Whitespace (word-level)</strong><div class="tokens" id="tk-word"></div></div>
+    <div style="flex:1; min-width:240px;"><strong>Character-level</strong><div class="tokens" id="tk-char"></div></div>
+    <div style="flex:1; min-width:240px;"><strong>Simulated subword (BPE-ish)</strong><div class="tokens" id="tk-sub"></div></div>
+  </div>
+  <div class="readout" id="tk-readout" style="margin-top: 12px;"></div>
+</div>
+
+<!-- §8 Embedding lookup -->
+<h2 id="s8">8 · Embedding lookup <span class="tag math">math</span></h2>
+<p>Once you have token IDs, you turn each into a vector with an embedding lookup. An embedding layer is just a learned matrix of shape <code>(vocab_size, embedding_dim)</code>:</p>
+<pre>emb = nn.Embedding(num_embeddings=30000, embedding_dim=128)
+ids = torch.tensor([[5, 22, 17, 0]])    # shape (B, T) = (1, 4)
+x = emb(ids)                              # shape (1, 4, 128)
+# parameters: 30000 * 128 = 3,840,000</pre>
+<p>That is a literal index-into-table lookup: the result for token <code>5</code> is row 5 of the matrix. Embeddings are trained jointly with the rest of the model — the geometry of the embedding space (which words are close to which) is what the network learns.</p>
+
+<!-- §9 Q, K, V -->
+<h2 id="s9">9 · Building Q, K, V <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>Attention computes a <em>weighted average</em> of value vectors, where the weights come from comparing queries to keys. Mechanically:</p>
+<p class="eq-block">
+  Q = X · W<sub>Q</sub>,   K = X · W<sub>K</sub>,   V = X · W<sub>V</sub>
+</p>
+<p>Here <code>X</code> is the input sequence of shape <code>(T, d_model)</code>. Each of <code>W<sub>Q</sub>, W<sub>K</sub>, W<sub>V</sub></code> is a learned weight matrix of shape <code>(d_model, d_k)</code>. After projection, <code>Q, K, V</code> all have shape <code>(T, d_k)</code>.</p>
+<p>The <em>same</em> input sequence <code>X</code> produces all three. This is "self-attention": queries, keys, and values all come from the same source. Cross-attention (Topic 5) uses different sources for the query vs. the key/value.</p>
+
+<!-- §10 Scaled-dot-product attention -->
+<h2 id="s10">10 · Scaled-dot-product attention, step by step <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>The complete formula:</p>
+<p class="eq-block">Attn(Q, K, V) = softmax( Q · K<sup>⊤</sup> / √dₖ ) · V</p>
+<p>Read it as a recipe with four steps:</p>
+<ol>
+  <li><strong>Score.</strong> <code>S = Q · Kᵀ</code> — for every query/key pair, dot product. Shape: <code>(T_q, T_k)</code>.</li>
+  <li><strong>Scale.</strong> Divide by <code>√dₖ</code> to keep variance under control.</li>
+  <li><strong>Normalize.</strong> Row-wise softmax. Each row now sums to 1 — these are the attention weights.</li>
+  <li><strong>Mix.</strong> Multiply by <code>V</code>. Each row of the output is a weighted average of value rows.</li>
+</ol>
+
+<div class="demo">
+  <h3>Demo · Attention on a 4-token toy sequence</h3>
+  <p>Tokens: <code>the</code>, <code>cat</code>, <code>sat</code>, <code>on</code>. Slide <code>dₖ</code> to scale the softmax temperature. Toggle the scaling on/off to see what happens at large <code>dₖ</code>.</p>
+  <div class="controls">
+    <div class="control"><label for="att-dk">d<sub>k</sub> (key dim)</label>
+      <input type="range" id="att-dk" min="1" max="128" step="1" value="3"></div>
+    <div class="control"><label><input type="checkbox" id="att-scale" checked> scale by √dₖ</label></div>
+    <div class="readout" id="att-readout"></div>
+  </div>
+  <div id="att-grid"></div>
+</div>
+
+<!-- §11 √dk -->
+<h2 id="s11">11 · Why divide by √dₖ? <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>If <code>q</code> and <code>k</code> are random vectors of dimension <code>dₖ</code> with iid mean-zero variance-one components, then the variance of <code>q · k</code> is <code>dₖ</code>. So as <code>dₖ</code> grows, the magnitude of the dot product grows like <code>√dₖ</code>. Plug big numbers into softmax and one weight goes to ≈ 1 while the rest go to ≈ 0 — and the gradient of softmax in that regime is essentially zero.</p>
+<p class="eq-block">Var( q · k ) = dₖ   ⇒   dividing by √dₖ keeps Var = 1</p>
+
+<div class="demo">
+  <h3>Demo · Softmax with and without the √dₖ scaling, across dₖ</h3>
+  <canvas id="scale-canvas" width="880" height="220"></canvas>
+  <p style="font-size:0.9em; color:#555; margin-top:8px;">Top row: <strong>unscaled</strong> softmax of three random scores at various dₖ — saturates as dₖ grows. Bottom row: <strong>scaled</strong> by √dₖ — stays well-spread.</p>
+</div>
+
+<!-- §12 Self vs cross attention -->
+<h2 id="s12">12 · Self-attention vs cross-attention <span class="tag math">math</span></h2>
+<table class="cmp">
+  <tr><th></th><th>Q from</th><th>K, V from</th><th>Where</th></tr>
+  <tr><td>Self-attention</td><td>X</td><td>X (same source)</td><td>BERT encoder layers, GPT decoder layers (with causal mask)</td></tr>
+  <tr><td>Cross-attention</td><td>decoder hidden state</td><td>encoder output</td><td>T5/BART decoder layers — grounds generation in the source</td></tr>
+</table>
+<p>Mechanically the formula is the same; the difference is where Q vs. K, V come from. Cross-attention is what makes encoder–decoder transformers natural for translation, summarization, and structured generation: every decoder position can directly attend to every input position.</p>
+
+<!-- §13 Padding + causal -->
+<h2 id="s13">13 · Padding masks and causal masks <span class="tag interactive">interactive</span></h2>
+<p>Two masks you will use constantly:</p>
+<ul>
+  <li><strong>Padding mask.</strong> Variable-length sequences are padded to the max length in the batch. The mask sets the <em>scores</em> at padded key positions to −∞ so softmax assigns zero weight.</li>
+  <li><strong>Causal mask.</strong> Used in decoder-only transformers. Sets the score to −∞ at every (query, key) pair where <code>key &gt; query</code> — no position can attend to the future.</li>
+</ul>
+<p>You can combine them by element-wise OR-ing the two boolean masks before applying the −∞.</p>
+
+<div class="demo">
+  <h3>Demo · Combine padding and causal masks</h3>
+  <p>Set the per-sequence length (positions beyond it are padded). Toggle causal masking on/off to see how the two masks compose.</p>
+  <div class="controls">
+    <div class="control"><label for="mask-T">sequence length T</label>
+      <input type="range" id="mask-T" min="4" max="10" step="1" value="8"></div>
+    <div class="control"><label for="mask-valid">valid length</label>
+      <input type="range" id="mask-valid" min="1" max="10" step="1" value="6"></div>
+    <div class="control"><label><input type="checkbox" id="mask-causal" checked> causal mask</label></div>
+    <div class="readout" id="mask-readout"></div>
+  </div>
+  <canvas id="mask-canvas" width="600" height="420"></canvas>
+</div>
+
+<!-- §14 Multi-head preview -->
+<h2 id="s14">14 · Multi-head attention preview <span class="tag math">math</span></h2>
+<p>Single-head attention computes one <code>(T, d_k)</code> output per layer. Multi-head splits <code>d_model</code> into <code>H</code> heads of dimension <code>d_k = d_model / H</code>, runs scaled-dot-product attention independently in each head, then concatenates the H outputs and projects back to <code>d_model</code>:</p>
+<p class="eq-block">MultiHead(Q, K, V) = Concat(head<sub>1</sub>, …, head<sub>H</sub>) · W<sub>O</sub></p>
+<p>Each head can specialize in a different sub-pattern (positional, syntactic, lexical). We'll dig into multi-head, encoder block, and positional encodings in Topic 5.</p>
+
+<!-- §15 LSTM vs attention compute -->
+<h2 id="s15">15 · LSTM vs attention — the trade-off <span class="tag interactive">interactive</span></h2>
+<p>Two things matter for the compute story:</p>
+<ul>
+  <li><strong>Parallelism.</strong> An LSTM has a serial dependency in time. Self-attention processes all positions in parallel.</li>
+  <li><strong>Memory in sequence length.</strong> Self-attention's score matrix is O(n²·d); a vanilla LSTM is O(n·d²). Past some threshold, the quadratic dominates.</li>
+</ul>
+
+<div class="demo">
+  <h3>Demo · Memory scaling with sequence length</h3>
+  <div class="controls">
+    <div class="control"><label for="cmp-d">hidden dim d</label>
+      <input type="range" id="cmp-d" min="32" max="1024" step="32" value="128"></div>
+    <div class="readout" id="cmp-readout"></div>
+  </div>
+  <canvas id="cmp-canvas" width="880" height="260"></canvas>
+</div>
+
+<!-- §16 Attention as interpretability -->
+<h2 id="s16">16 · Attention weights as interpretability <span class="tag interactive">interactive</span></h2>
+<p>One free benefit of attention: the weights are <em>directly</em> interpretable. The weight at row <code>i</code>, column <code>j</code> tells you how much position <code>i</code> attended to position <code>j</code> in the input. Visualize as a heatmap and you have a per-prediction explanation.</p>
+<div class="warn">
+  <strong>Caveat.</strong> Attention weights are not a perfect explanation. The same model can give similar predictions with quite different weight patterns; you should treat heatmaps as an aid, not as a proof. But they are inexpensive, surface-level, and often diagnostic — especially when a model is wrong for an interesting reason.
+</div>
+
+<div class="callout">
+  <strong>Architecture reminder.</strong> The Topic 4 product picks one of two variants — Jena Climate forecasting or IMDB sentiment — and ships a Streamlit UI that calls <code>POST /predict</code>; the response JSON includes the prediction <em>and</em> the per-token attention vector. Supabase stores a SHA-256 hash of the input, the prediction, the attention vector (JSONB), and the run id; the "Recent Predictions" tab queries that table with the anon key.
+</div>
+
+<div class="nav">
+  <a href="../Topic_3_-_CNN/Tutorial_Topic_3_Convolutional_Neural_Networks.html">← Topic 3</a>
+  <a href="Exercises_Topic_4_Sequence_Models_and_Attention.html">Practice exercises →</a>
+</div>
+
+</div>
+
+<script>
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+/* §1 RNN unrolled */
+(function(){
+  const c=document.getElementById('rnn-canvas'), ctx=c.getContext('2d');
+  const TIn=document.getElementById('rnn-T'); const out=document.getElementById('rnn-readout');
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const T=+TIn.value;
+    const ox=60, oy=100, sx=(W-2*ox)/Math.max(1,T-1);
+    // boxes for cells
+    for(let t=0;t<T;t++){
+      const x=ox+t*sx;
+      // input arrow
+      ctx.strokeStyle='#555'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(x, oy+90); ctx.lineTo(x, oy+50); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x, oy+50); ctx.lineTo(x-5, oy+58); ctx.lineTo(x+5, oy+58); ctx.closePath();
+      ctx.fillStyle='#555'; ctx.fill();
+      ctx.fillStyle='#555'; ctx.font='11px monospace'; ctx.fillText('x'+t, x-8, oy+106);
+      // cell
+      ctx.fillStyle='#EAF1F8'; ctx.strokeStyle='#1F4E79'; ctx.lineWidth=2;
+      const cx=x-22, cy=oy+10, cw=44, ch=44;
+      if(ctx.roundRect){ctx.beginPath(); ctx.roundRect(cx,cy,cw,ch,6); ctx.fill(); ctx.stroke();}
+      else{ctx.fillRect(cx,cy,cw,ch); ctx.strokeRect(cx,cy,cw,ch);}
+      ctx.fillStyle='#1F4E79'; ctx.font='bold 12px sans-serif'; ctx.fillText('RNN', cx+8, cy+18);
+      ctx.fillStyle='#1A1A1A'; ctx.font='10px monospace'; ctx.fillText('h'+t, cx+14, cy+34);
+      // output arrow up
+      ctx.strokeStyle='#555';
+      ctx.beginPath(); ctx.moveTo(x, oy+10); ctx.lineTo(x, oy-10); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x, oy-10); ctx.lineTo(x-5, oy-2); ctx.lineTo(x+5, oy-2); ctx.closePath();
+      ctx.fillStyle='#555'; ctx.fill();
+      ctx.fillStyle='#555'; ctx.font='11px monospace'; ctx.fillText('y'+t, x-8, oy-14);
+      // horizontal arrow between cells
+      if(t<T-1){
+        ctx.strokeStyle='#C00000'; ctx.lineWidth=2;
+        const x2=ox+(t+1)*sx-22;
+        ctx.beginPath(); ctx.moveTo(x+22, oy+32); ctx.lineTo(x2, oy+32); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x2, oy+32); ctx.lineTo(x2-7, oy+27); ctx.lineTo(x2-7, oy+37); ctx.closePath();
+        ctx.fillStyle='#C00000'; ctx.fill();
+      }
+    }
+    // shared weights label
+    ctx.fillStyle='#C00000'; ctx.font='bold 12px sans-serif';
+    ctx.fillText('same weights W_hh, W_xh reused at every step →', ox, oy+170);
+    ctx.fillStyle='#555'; ctx.font='12px sans-serif';
+    ctx.fillText('h_t = tanh(W_hh · h_{t−1} + W_xh · x_t + b)', ox, oy+190);
+    out.textContent = `T = ${T} time steps; one cell per step, same weights at each.`;
+  }
+  TIn.oninput=draw; draw();
+})();
+
+/* §3 LSTM gates */
+(function(){
+  const c=document.getElementById('lstm-canvas'), ctx=c.getContext('2d');
+  const fIn=document.getElementById('lstm-f'), iIn=document.getElementById('lstm-i');
+  const out=document.getElementById('lstm-readout');
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const f=+fIn.value, ig=+iIn.value;
+    const T=10;
+    const cellSt=[1.0];
+    // input is "important" at t=3, otherwise small
+    const inputs = [0,0,0,1.2,0,0,0,0,0.4,0];
+    for(let t=1;t<T;t++){
+      const candidate = Math.tanh(inputs[t]);
+      cellSt.push(f * cellSt[t-1] + ig * candidate);
+    }
+    const ox=40, oy=20, cw=(W-80)/T, ch=H-50;
+    for(let t=0;t<T;t++){
+      const x=ox+t*cw;
+      // bar
+      const v=Math.max(0, Math.min(2, cellSt[t]));
+      const h=v/2*(ch-20);
+      ctx.fillStyle = inputs[t] > 0 ? '#C00000' : '#1F4E79';
+      ctx.fillRect(x+4, oy+ch-h-20, cw-12, h);
+      // labels
+      ctx.fillStyle='#555'; ctx.font='10px sans-serif';
+      ctx.fillText('t='+t, x+4, H-12);
+      ctx.fillStyle='#1A1A1A'; ctx.font='10px monospace';
+      ctx.fillText(cellSt[t].toFixed(2), x+4, oy+ch-h-26);
+      if(inputs[t]>0){ctx.fillStyle='#C00000'; ctx.font='bold 9px sans-serif'; ctx.fillText('"in!"', x+4, oy+12);}
+    }
+    out.textContent = `forget f = ${f.toFixed(2)}, input gate i = ${ig.toFixed(2)} · "important" inputs at t = 3 and 8 (red bars).`;
+  }
+  fIn.oninput=draw; iIn.oninput=draw; draw();
+})();
+
+/* §4 Cell state through time */
+(function(){
+  const c=document.getElementById('cs-canvas'), ctx=c.getContext('2d');
+  const fIn=document.getElementById('cs-f'); const out=document.getElementById('cs-readout');
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const f=+fIn.value;
+    const T=15;
+    const cellSt=[0.0];
+    for(let t=1;t<T;t++){
+      const input = (t===3) ? 1.0 : 0.0;
+      cellSt.push(f*cellSt[t-1] + 0.2*input);
+    }
+    const cw=(W-80)/T;
+    for(let t=0;t<T;t++){
+      const x=40+t*cw;
+      const v=cellSt[t]; const h=Math.max(2, v*200);
+      ctx.fillStyle = '#1F4E79';
+      ctx.fillRect(x, H-30-h, cw-6, h);
+      ctx.fillStyle='#555'; ctx.font='10px sans-serif';
+      ctx.fillText('t='+t, x, H-12);
+      ctx.fillStyle='#1A1A1A'; ctx.font='10px monospace';
+      ctx.fillText(v.toFixed(3), x, H-32-h);
+    }
+    ctx.fillStyle='#C00000'; ctx.font='12px sans-serif';
+    ctx.fillText('"important input" at t = 3', 40+3*cw-10, 24);
+    ctx.strokeStyle='#C00000'; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(40+3*cw+cw/2-3, 28); ctx.lineTo(40+3*cw+cw/2-3, H-30); ctx.stroke();
+    ctx.setLineDash([]);
+    out.textContent = `forget gate = ${f.toFixed(3)} — surviving cell state at t = ${T-1}: ${cellSt[T-1].toFixed(4)}`;
+  }
+  fIn.oninput=draw; draw();
+})();
+
+/* §7 Tokenization */
+(function(){
+  const inp=document.getElementById('tk-input');
+  const wordDiv=document.getElementById('tk-word');
+  const charDiv=document.getElementById('tk-char');
+  const subDiv=document.getElementById('tk-sub');
+  const out=document.getElementById('tk-readout');
+  function render(){
+    const s=inp.value;
+    const words=s.split(/\s+/);
+    const chars=Array.from(s);
+    // simulated BPE/WordPiece: split common suffixes/prefixes
+    const subwordVocab=[
+      'the','an','a','un','believ','able','transform','transformer',
+      'fine','tune','tuned','itself','able',
+      '##able','##ing','##ed','##s','##er','##ly',
+    ];
+    function subwordSplit(word){
+      const lower=word.toLowerCase();
+      // greedy longest prefix match
+      let parts=[]; let i=0; let isPiece=false;
+      while(i<lower.length){
+        let found=null;
+        for(let L=lower.length-i; L>=1; L--){
+          const candidate = (isPiece? '##':'') + lower.substr(i, L);
+          if(subwordVocab.includes(candidate) || L === 1){
+            found = (isPiece? '##':'') + lower.substr(i, L);
+            i += L; isPiece=true; break;
+          }
+        }
+        if(!found) break;
+        parts.push(found);
+      }
+      return parts;
+    }
+    wordDiv.innerHTML = ''; words.forEach(w=>{const d=document.createElement('div'); d.className='tok'; d.textContent=w; wordDiv.appendChild(d);});
+    charDiv.innerHTML = ''; chars.forEach(ch=>{const d=document.createElement('div'); d.className='tok';
+      d.textContent=(ch===' ' ? '·' : ch); charDiv.appendChild(d);});
+    subDiv.innerHTML = '';
+    words.forEach(w=>{
+      const parts=subwordSplit(w);
+      parts.forEach(p=>{const d=document.createElement('div'); d.className='tok';
+        d.style.background=p.startsWith('##') ? '#FCE4EC' : 'white'; d.textContent=p; subDiv.appendChild(d);});
+    });
+    out.textContent = `word: ${words.length} tokens  ·  char: ${chars.length} tokens  ·  subword (simulated): ${subDiv.children.length} tokens`;
+  }
+  inp.oninput=render; render();
+})();
+
+/* §10 Attention on toy tokens */
+(function(){
+  const dkIn=document.getElementById('att-dk');
+  const scaleIn=document.getElementById('att-scale');
+  const readout=document.getElementById('att-readout');
+  const grid=document.getElementById('att-grid');
+  const tokens=['the','cat','sat','on'];
+  const Q=[[0.6,0.1,0.3],[0.2,0.7,0.1],[0.1,0.8,0.1],[0.3,0.4,0.3]];
+  const K=[[0.5,0.2,0.3],[0.1,0.7,0.2],[0.2,0.6,0.2],[0.4,0.3,0.3]];
+  function dot(a,b){let s=0; for(let i=0;i<a.length;i++) s+=a[i]*b[i]; return s;}
+  function softmax(arr){const m=Math.max(...arr); const e=arr.map(v=>Math.exp(v-m)); const s=e.reduce((a,b)=>a+b,0); return e.map(v=>v/s);}
+  function color(w){const t=Math.max(0, Math.min(1, w));
+    return `rgb(${Math.round(255-t*128)},${Math.round(255-t*64)},${Math.round(255-t*40)})`;}
+  function draw(){
+    const dk=+dkIn.value; const useScale=scaleIn.checked;
+    const rawScale=Math.sqrt(dk/3);
+    const scores=Q.map(q=>K.map(k=>dot(q,k)*rawScale));
+    const div=useScale?Math.sqrt(dk):1.0;
+    const weights=scores.map(row=>softmax(row.map(s=>s/div)));
+    let html='<div class="heatrow"><div class="heatlabel"></div>';
+    tokens.forEach(t=>html+=`<div class="heatcell" style="background:transparent; color:#555;">${t}</div>`); html+='</div>';
+    for(let i=0;i<tokens.length;i++){
+      html+=`<div class="heatrow"><div class="heatlabel">${tokens[i]} →</div>`;
+      for(let j=0;j<tokens.length;j++){const w=weights[i][j];
+        html+=`<div class="heatcell" style="background:${color(w)};">${w.toFixed(2)}</div>`;}
+      html+='</div>';
+    }
+    grid.innerHTML=html;
+    readout.textContent = useScale ? `dₖ = ${dk}, divisor = √${dk} = ${Math.sqrt(dk).toFixed(2)}`
+                                   : `dₖ = ${dk}, NO scaling — watch what happens to large dₖ`;
+  }
+  dkIn.oninput=draw; scaleIn.onchange=draw; draw();
+})();
+
+/* §11 Scaling visualization */
+(function(){
+  const c=document.getElementById('scale-canvas'), ctx=c.getContext('2d');
+  function softmax(arr){const m=Math.max(...arr); const e=arr.map(v=>Math.exp(v-m)); const s=e.reduce((a,b)=>a+b,0); return e.map(v=>v/s);}
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const dks=[4, 16, 64, 256];
+    const base=[2.0, 1.4, 0.8];
+    dks.forEach((dk, di)=>{
+      const variance=Math.sqrt(dk/4);
+      const su=base.map(s=>s*variance);
+      const ss=su.map(s=>s/Math.sqrt(dk));
+      const wU=softmax(su); const wS=softmax(ss);
+      const colW=(W-80)/dks.length;
+      const ox=40+di*colW;
+      ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+      ctx.fillText(`dₖ = ${dk}`, ox+colW/2-18, 20);
+      for(let i=0;i<3;i++){
+        const x=ox+i*(colW/3.4)+8;
+        const h=wU[i]*70;
+        ctx.fillStyle='#C00000'; ctx.globalAlpha=0.85;
+        ctx.fillRect(x, 100-h, colW/3.4-12, h);
+      }
+      for(let i=0;i<3;i++){
+        const x=ox+i*(colW/3.4)+8;
+        const h=wS[i]*70;
+        ctx.fillStyle='#1F4E79';
+        ctx.fillRect(x, 210-h, colW/3.4-12, h);
+      }
+      ctx.globalAlpha=1;
+    });
+    ctx.fillStyle='#C00000'; ctx.font='bold 12px sans-serif';
+    ctx.fillText('unscaled (saturates as dₖ grows)', 40, 110);
+    ctx.fillStyle='#1F4E79';
+    ctx.fillText('scaled by √dₖ', 40, 220);
+  }
+  draw();
+})();
+
+/* §13 Combined masks */
+(function(){
+  const c=document.getElementById('mask-canvas'), ctx=c.getContext('2d');
+  const TIn=document.getElementById('mask-T'), VIn=document.getElementById('mask-valid'), CIn=document.getElementById('mask-causal');
+  const out=document.getElementById('mask-readout');
+  function draw(){
+    const T=+TIn.value, V=Math.min(+VIn.value, T), causal=CIn.checked;
+    VIn.max = T;
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const pad=50, cs=(Math.min(W,H)-pad*2)/T;
+    for(let i=0;i<T;i++) for(let j=0;j<T;j++){
+      const padding = j >= V;
+      const future = causal && j > i;
+      const masked = padding || future;
+      let bg='#FFF', stroke='#CFD7DF', sym='·';
+      if(padding && future){ bg='#F8D7DA'; stroke='#C00000'; sym='−∞'; }
+      else if(padding){ bg='#FCE4EC'; stroke='#C00000'; sym='pad'; }
+      else if(future){ bg='#FFF8E1'; stroke='#F9A825'; sym='fut'; }
+      ctx.fillStyle=bg; ctx.strokeStyle=stroke;
+      ctx.fillRect(pad+j*cs, pad+i*cs, cs, cs); ctx.strokeRect(pad+j*cs, pad+i*cs, cs, cs);
+      ctx.fillStyle = masked ? '#6E1414' : '#1F4E79';
+      ctx.font = (cs > 28 ? '10px' : '8px') + ' monospace';
+      ctx.fillText(sym, pad+j*cs+cs/2-8, pad+i*cs+cs/2+3);
+    }
+    ctx.fillStyle='#555'; ctx.font='12px sans-serif';
+    ctx.fillText('query (i) →', 8, pad+cs);
+    ctx.fillText('key (j) ↓', pad+10, pad-12);
+    out.textContent = `T = ${T}, valid length = ${V}, causal = ${causal}. Masked cells get −∞ before softmax.`;
+  }
+  TIn.oninput=draw; VIn.oninput=draw; CIn.onchange=draw; draw();
+})();
+
+/* §15 LSTM vs attention compute */
+(function(){
+  const c=document.getElementById('cmp-canvas'), ctx=c.getContext('2d');
+  const dIn=document.getElementById('cmp-d'); const out=document.getElementById('cmp-readout');
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const d=+dIn.value;
+    const ns=[]; for(let n=8; n<=2048; n*=Math.SQRT2) ns.push(Math.round(n));
+    const lstmCost=ns.map(n=>n*d*d);
+    const attnCost=ns.map(n=>n*n*d);
+    const max=Math.max(...lstmCost,...attnCost);
+    const px=i=>40+i*(W-80)/(ns.length-1);
+    const py=v=>H-40-Math.log10(1+v)/Math.log10(1+max)*(H-60);
+    ctx.strokeStyle='#CFD7DF';
+    ctx.beginPath(); ctx.moveTo(40, py(0)); ctx.lineTo(W-20, py(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(40, 20); ctx.lineTo(40, H-30); ctx.stroke();
+    ctx.strokeStyle='#1B7340'; ctx.lineWidth=2.5; ctx.beginPath();
+    lstmCost.forEach((v,i)=>(i?ctx.lineTo:ctx.moveTo).call(ctx, px(i), py(v))); ctx.stroke();
+    ctx.strokeStyle='#C00000'; ctx.lineWidth=2.5; ctx.beginPath();
+    attnCost.forEach((v,i)=>(i?ctx.lineTo:ctx.moveTo).call(ctx, px(i), py(v))); ctx.stroke();
+    ctx.fillStyle='#555'; ctx.font='12px sans-serif';
+    ns.forEach((n,i)=>{if(i%2===0) ctx.fillText('n='+n, px(i)-14, H-12);});
+    ctx.fillStyle='#1B7340'; ctx.font='bold 12px sans-serif';
+    ctx.fillText('LSTM ~ O(n · d²)', W-180, 36);
+    ctx.fillStyle='#C00000'; ctx.fillText('Attention ~ O(n² · d)', W-180, 54);
+    let cross=null; for(let i=0;i<ns.length;i++){if(attnCost[i]>lstmCost[i] && !cross) cross=ns[i];}
+    out.textContent = cross ? `d = ${d}: attention exceeds LSTM cost at n ≈ ${cross}` : `d = ${d}: LSTM stays cheaper across the range shown`;
+  }
+  dIn.oninput=draw; draw();
+})();
+</script>
+</body>
+</html>

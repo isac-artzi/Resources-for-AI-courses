@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 7 Tutorial — Generative Models</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+       margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6; }
+.container { max-width: 980px; margin: 24px auto 48px; background: white;
+             padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.35em; margin-top: 40px;
+     border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+h4 { color: #555; font-size: 1.0em; margin-top: 18px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 6px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7;
+       padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px; overflow-x: auto;
+      border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79;
+           padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px;
+        margin: 14px 0; border-radius: 4px; font-size: 0.93em; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+        padding: 22px; margin: 22px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.controls { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 180px; }
+.control input[type="number"] { width: 80px; padding: 4px 8px;
+            border: 1px solid #CFD7DF; border-radius: 4px; font-family: inherit; }
+.control select { padding: 5px 8px; border: 1px solid #CFD7DF; border-radius: 4px;
+                  font-family: inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px;
+           border-radius: 6px; font-family: "SF Mono", Consolas, monospace;
+           font-size: 0.88em; min-width: 220px; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 16px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.93em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+      background: #F2F4F7; padding: 4px 8px; border-radius: 4px; }
+.eq-block { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+            background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+            text-align: center; margin: 14px 0; display: block; }
+.nav { display: flex; justify-content: space-between; margin-top: 40px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+       padding: 16px 22px; margin-bottom: 28px; font-size: 0.92em; }
+.toc h3 { margin: 0 0 8px; color: #1F4E79; font-size: 1.0em; }
+.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 24px; }
+.toc a { color: #1F4E79; text-decoration: none; } .toc a:hover { text-decoration: underline; }
+.tag { display: inline-block; padding: 2px 8px; background: #E0E5EB;
+       border-radius: 12px; font-size: 0.75em; color: #555;
+       text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px; }
+.tag.interactive { background: #E1F0EA; color: #1B5E20; }
+.tag.code { background: #F2F4F7; color: #555; }
+.tag.math { background: #FCE8EE; color: #6E1414; }
+table.cmp { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 0.92em; }
+table.cmp th, table.cmp td { border: 1px solid #E0E5EB; padding: 8px 12px; text-align: left; }
+table.cmp th { background: #F2F4F7; color: #1F4E79; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="brand">Tutorial · ~ 80 min read</div>
+<h1>Topic 7 — Generative Models: VAEs, Diffusion &amp; Evaluation</h1>
+<p class="subtitle">Three families of generative models, the math that makes each work, the metrics that compare them, and the provenance story that turns "I trained a generator" into a defensible product.</p>
+
+<div class="callout">
+  <strong>What you should walk away with.</strong> (1) The full taxonomy of generative models and where each family wins. (2) The ELBO and KL term for a VAE, including the reparameterization trick. (3) The DDPM forward and reverse processes and the simple ε-prediction loss. (4) GAN architecture, mode collapse, and the standard stabilizers. (5) FID and Inception Score as complementary metrics, with their failure modes. (6) What a signed provenance manifest does and does not prove.
+</div>
+
+<div class="toc">
+  <h3>What's in this tutorial</h3>
+  <ol>
+    <li><a href="#s1">Generative models, taxonomy</a></li>
+    <li><a href="#s2">VAE architecture, end to end</a></li>
+    <li><a href="#s3">The VAE latent space</a></li>
+    <li><a href="#s4">The reparameterization trick</a></li>
+    <li><a href="#s5">Deriving the ELBO</a></li>
+    <li><a href="#s6">VAE failure modes</a></li>
+    <li><a href="#s7">DDPM forward process</a></li>
+    <li><a href="#s8">DDPM reverse process</a></li>
+    <li><a href="#s9">The simple noise-prediction loss</a></li>
+    <li><a href="#s10">Sampling speed: DDPM vs DDIM</a></li>
+    <li><a href="#s11">Conditional generation</a></li>
+    <li><a href="#s12">GAN architecture</a></li>
+    <li><a href="#s13">Mode collapse</a></li>
+    <li><a href="#s14">GAN stabilization: WGAN-GP, spectral norm</a></li>
+    <li><a href="#s15">FID at intuition level</a></li>
+    <li><a href="#s16">Inception Score</a></li>
+    <li><a href="#s17">VAE / DDPM / GAN — the trade-off matrix</a></li>
+    <li><a href="#s18">Provenance manifests and watermarking</a></li>
+  </ol>
+</div>
+
+<!-- §1 Taxonomy -->
+<h2 id="s1">1 · Generative models, taxonomy <span class="tag math">math</span></h2>
+<p>All generative models try to learn or sample from a data distribution <code>p(x)</code>. They differ in <em>how</em> they parametrize and learn it.</p>
+<table class="cmp">
+  <tr><th>Family</th><th>Approach</th><th>Sampling</th><th>Likelihood</th></tr>
+  <tr><td>VAE</td><td>Variational inference of latent <code>z</code></td><td>One pass through decoder, fast</td><td>Bound (ELBO), not exact</td></tr>
+  <tr><td>GAN</td><td>Adversarial game generator vs discriminator</td><td>One pass, fast</td><td>Not directly available</td></tr>
+  <tr><td>Diffusion (DDPM)</td><td>Learn to denoise from random Gaussian</td><td>Many denoising steps, slow</td><td>Bound (similar to ELBO)</td></tr>
+  <tr><td>Normalizing flows</td><td>Invertible network; exact likelihood</td><td>One pass</td><td>Exact</td></tr>
+  <tr><td>Autoregressive</td><td>Factor p(x) = ∏ p(xᵢ | x&lt;ᵢ)</td><td>Sequential, depends on x dim</td><td>Exact</td></tr>
+</table>
+
+<!-- §2 VAE architecture -->
+<h2 id="s2">2 · VAE architecture, end to end <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>A VAE has three pieces:</p>
+<ul>
+  <li><strong>Encoder</strong> <code>q<sub>φ</sub>(z|x)</code> — takes <code>x</code>, outputs the mean and log-variance of a Gaussian distribution over the latent <code>z</code>.</li>
+  <li><strong>Latent</strong> <code>z</code> — sampled from that Gaussian via the reparameterization trick.</li>
+  <li><strong>Decoder</strong> <code>p<sub>θ</sub>(x|z)</code> — takes <code>z</code>, outputs the parameters of a distribution over <code>x</code> (usually a Gaussian or Bernoulli).</li>
+</ul>
+
+<div class="demo">
+  <h3>Diagram · The VAE pipeline</h3>
+  <canvas id="vae-arch" width="880" height="280"></canvas>
+</div>
+
+<!-- §3 Latent space -->
+<h2 id="s3">3 · The VAE latent space <span class="tag interactive">interactive</span></h2>
+<p>What makes a VAE useful as a generative model is the shape of its latent space. Because the KL term in the loss pushes the posterior toward a standard normal prior, the latent space ends up roughly Gaussian — you can sample any <code>z ~ N(0, I)</code> and decode to a plausible <code>x</code>.</p>
+
+<div class="demo">
+  <h3>Demo · Drag the latent vector and watch the reconstruction change</h3>
+  <p>This is a toy: the "decoder" paints a soft blob whose position and color depend on a 2-D latent <code>z = (z₁, z₂)</code>. Real VAEs decode images, but the latent-space intuition is the same.</p>
+  <div class="controls">
+    <div class="control"><label for="vae-z1">z₁</label>
+      <input type="range" id="vae-z1" min="-3" max="3" step="0.01" value="0"></div>
+    <div class="control"><label for="vae-z2">z₂</label>
+      <input type="range" id="vae-z2" min="-3" max="3" step="0.01" value="0"></div>
+    <div class="readout" id="vae-readout"></div>
+    <button id="vae-interp">Interpolate two endpoints</button>
+  </div>
+  <canvas id="vae-canvas" width="880" height="220"></canvas>
+</div>
+
+<!-- §4 Reparameterization -->
+<h2 id="s4">4 · The reparameterization trick <span class="tag math">math</span></h2>
+<p>The naive way to sample <code>z</code> from <code>q(z|x) = N(μ, σ²)</code> would be to call <code>random.normal()</code>. But random sampling is not differentiable — you can't backprop through it. The reparameterization trick fixes this by separating the randomness from the parameters:</p>
+<p class="eq-block">z = μ + σ ⊙ ε,   ε ∼ N(0, I)</p>
+<p><code>ε</code> is the only stochastic part; it's drawn once and fixed for that example. Gradients flow cleanly back through <code>μ</code> and <code>σ</code> to update the encoder. In PyTorch:</p>
+<pre>std    = torch.exp(0.5 * logvar)
+eps    = torch.randn_like(std)         # the random part
+z      = mu + std * eps                 # μ + σ · ε   (differentiable in μ, σ)</pre>
+
+<!-- §5 ELBO -->
+<h2 id="s5">5 · Deriving the ELBO <span class="tag math">math</span></h2>
+<p>We want to maximize <code>log p(x)</code> but cannot compute it directly. Use Jensen's inequality on an expectation under our chosen <code>q(z|x)</code>:</p>
+<pre>log p(x) = log ∫ p(x, z) dz
+        = log ∫ q(z|x) · p(x, z) / q(z|x) dz
+       ≥ E_q [ log ( p(x, z) / q(z|x) ) ]     (Jensen)
+        = E_q [ log p(x|z) + log p(z) − log q(z|x) ]
+        = E_q [ log p(x|z) ] − KL( q(z|x) ‖ p(z) )      ←  the ELBO</pre>
+<p>So <code>log p(x) ≥ ELBO</code>. Training maximizes the ELBO, which simultaneously (a) makes the reconstruction <code>log p(x|z)</code> high and (b) keeps the posterior <code>q(z|x)</code> close to the prior <code>p(z) = N(0, I)</code>.</p>
+
+<p>The negative ELBO (the actual <em>loss</em>) for a Gaussian decoder is:</p>
+<pre>L = reconstruction term + KL term
+  = mean ((x − x̂)²)              # MSE reconstruction
+  + (−1/2) · Σ (1 + log σ² − μ² − σ²)   # KL between q(z|x) and N(0, I)</pre>
+
+<!-- §6 Failure modes -->
+<h2 id="s6">6 · VAE failure modes <span class="tag math">math</span></h2>
+<ul>
+  <li><strong>Posterior collapse.</strong> The decoder gets so good at ignoring <code>z</code> that the encoder collapses <code>q(z|x)</code> to the prior and stops carrying any input information. Mitigation: KL annealing (start with a small KL coefficient and ramp up), more expressive decoders disabled, or a beta-VAE with explicit weighting.</li>
+  <li><strong>Blurry samples.</strong> Maximizing the average reconstruction loss tends to produce "mean" outputs — sharp details get averaged away. Mitigation: use a better likelihood (mixture of logistics, normalizing flow on top), or move to a diffusion model.</li>
+  <li><strong>Information bottleneck too small.</strong> A 2-dimensional latent on 64×64 images is too tight; samples become indistinguishable. Mitigation: more latent dimensions and/or hierarchical priors.</li>
+</ul>
+
+<!-- §7 DDPM forward -->
+<h2 id="s7">7 · DDPM forward process <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>The forward (noising) process is fixed — no parameters. At each step <code>t</code>, add a tiny bit of Gaussian noise according to a variance schedule <code>β<sub>t</sub></code>:</p>
+<p class="eq-block">q(x<sub>t</sub> | x<sub>t−1</sub>) = N(√(1−β<sub>t</sub>) · x<sub>t−1</sub>, β<sub>t</sub> · I)</p>
+<p>After <code>T</code> steps, <code>x_T</code> is essentially pure noise. A useful closed-form jumps from <code>x_0</code> directly to any <code>x_t</code>:</p>
+<p class="eq-block">x<sub>t</sub> = √(ᾱ<sub>t</sub>) · x<sub>0</sub> + √(1 − ᾱ<sub>t</sub>) · ε,   ᾱ<sub>t</sub> = ∏<sub>s≤t</sub> (1 − β<sub>s</sub>)</p>
+
+<div class="demo">
+  <h3>Demo · The DDPM variance schedule</h3>
+  <p>Three schedules in common use. The plot shows <code>ᾱ_t</code> — the "fraction of signal still present" at each step. When <code>ᾱ_t</code> is close to 1, <code>x_t</code> looks like <code>x_0</code>; when it's close to 0, <code>x_t</code> is pure noise.</p>
+  <div class="controls">
+    <div class="control">
+      <label for="ddpm-sched">schedule</label>
+      <select id="ddpm-sched">
+        <option value="linear">linear (original DDPM)</option>
+        <option value="cosine">cosine (improved)</option>
+        <option value="quad">quadratic</option>
+      </select>
+    </div>
+    <div class="control"><label>T</label><input type="number" id="ddpm-T" value="1000" min="10"></div>
+    <div class="readout" id="ddpm-readout"></div>
+  </div>
+  <canvas id="ddpm-sched-canvas" width="880" height="240"></canvas>
+</div>
+
+<!-- §8 DDPM reverse -->
+<h2 id="s8">8 · DDPM reverse process <span class="tag interactive">interactive</span></h2>
+<p>The reverse (denoising) process is learned. Starting from <code>x_T ~ N(0, I)</code>, the model iteratively predicts and removes noise:</p>
+<p class="eq-block">p<sub>θ</sub>(x<sub>t−1</sub> | x<sub>t</sub>) = N( μ<sub>θ</sub>(x<sub>t</sub>, t),  Σ )</p>
+<p>where <code>μ<sub>θ</sub></code> is parametrized via a noise-prediction network <code>ε<sub>θ</sub>(x<sub>t</sub>, t)</code>. Each step subtracts a little of the predicted noise; after <code>T</code> steps you have a clean sample.</p>
+
+<div class="demo">
+  <h3>Demo · Watch a clean image become noise, and back</h3>
+  <p>Slide <code>t</code> to traverse the forward (noising) process. Press <strong>Animate reverse</strong> to watch a simulated reverse trajectory recover a clean image.</p>
+  <div class="controls">
+    <div class="control">
+      <label for="ddpm-t">timestep t (/1000)</label>
+      <input type="range" id="ddpm-t" min="0" max="1000" step="10" value="200">
+    </div>
+    <button id="ddpm-anim">Animate reverse</button>
+    <div class="readout" id="ddpm-vis-readout"></div>
+  </div>
+  <canvas id="ddpm-canvas" width="880" height="200"></canvas>
+</div>
+
+<!-- §9 Simple loss -->
+<h2 id="s9">9 · The simple noise-prediction loss <span class="tag math">math</span></h2>
+<p>In principle the DDPM loss is a variational bound similar to the VAE's ELBO. In practice you almost always train with the simple noise-prediction objective from the original DDPM paper:</p>
+<p class="eq-block">L = E<sub>t, x<sub>0</sub>, ε</sub> [ ‖ ε − ε<sub>θ</sub>(√(ᾱ<sub>t</sub>) · x<sub>0</sub> + √(1 − ᾱ<sub>t</sub>) · ε,  t) ‖² ]</p>
+<p>In English: pick a random timestep <code>t</code>, pick a random training example <code>x_0</code>, generate random noise <code>ε</code>, mix them to form <code>x_t</code>, and ask the model to predict the noise. The MSE between predicted and actual noise is the loss. Simple, stable, and remarkably effective.</p>
+
+<pre>def training_step(x0, t):
+    noise = torch.randn_like(x0)
+    alpha_bar = ALPHA_BAR[t]
+    x_t = torch.sqrt(alpha_bar) * x0 + torch.sqrt(1 - alpha_bar) * noise
+    eps_pred = model(x_t, t)
+    return F.mse_loss(eps_pred, noise)</pre>
+
+<!-- §10 Sampling speed -->
+<h2 id="s10">10 · Sampling speed: DDPM vs DDIM <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>The original DDPM sampler needs all <code>T</code> denoising steps (usually 1000). That's slow at inference: 1000 forward passes per sample. DDIM (Denoising Diffusion Implicit Models) reparametrizes the reverse process so you can skip steps without retraining — typically reaching comparable quality in 25-50 steps.</p>
+
+<div class="demo">
+  <h3>Demo · Quality vs sampling steps</h3>
+  <p>For a fixed model, more steps usually means better samples (lower FID). DDIM lets you trade quality for speed by lowering the number of steps used at inference.</p>
+  <div class="controls">
+    <div class="control">
+      <label for="dd-steps">sampling steps</label>
+      <input type="range" id="dd-steps" min="5" max="1000" step="5" value="200">
+    </div>
+    <div class="control">
+      <label for="dd-method">sampler</label>
+      <select id="dd-method">
+        <option value="ddim">DDIM (skip steps)</option>
+        <option value="ddpm">DDPM (use all steps)</option>
+      </select>
+    </div>
+    <div class="readout" id="dd-readout"></div>
+  </div>
+  <canvas id="dd-canvas" width="880" height="240"></canvas>
+</div>
+
+<!-- §11 Conditional -->
+<h2 id="s11">11 · Conditional generation <span class="tag math">math</span></h2>
+<p>To generate a particular class (e.g., "cat") instead of unconditional samples, condition the noise-prediction network on a class label <code>c</code>:</p>
+<p class="eq-block">ε<sub>θ</sub>(x<sub>t</sub>, t, c)</p>
+<p>The clever bit (classifier-free guidance) is that at training time you randomly drop the conditioning <code>c</code> with some probability (e.g., 10%), so the model learns both conditional and unconditional behavior. At sampling time, mix them:</p>
+<p class="eq-block">ε̂ = (1 + w) · ε<sub>θ</sub>(x, t, c) − w · ε<sub>θ</sub>(x, t, ∅)</p>
+<p>Higher <code>w</code> ⇒ more class-faithful generations at the cost of diversity. This is the trick behind every modern image diffusion model.</p>
+
+<!-- §12 GAN architecture -->
+<h2 id="s12">12 · GAN architecture <span class="tag math">math</span></h2>
+<p>A GAN has two networks playing an adversarial min-max game:</p>
+<ul>
+  <li><strong>Generator <code>G(z)</code></strong> maps random noise <code>z ~ N(0, I)</code> to a generated sample.</li>
+  <li><strong>Discriminator <code>D(x)</code></strong> reads a sample (real or fake) and outputs the probability it's real.</li>
+</ul>
+<p>Their losses pull in opposite directions:</p>
+<p class="eq-block">
+  L<sub>D</sub> = − E<sub>real</sub> log D(x) − E<sub>fake</sub> log(1 − D(G(z)))<br>
+  L<sub>G</sub> = − E<sub>fake</sub> log D(G(z))    (non-saturating version)
+</p>
+
+<!-- §13 Mode collapse -->
+<h2 id="s13">13 · Mode collapse <span class="tag interactive">interactive</span></h2>
+<p>The most famous GAN failure mode. The generator finds a single sample (or a small cluster) that fools the discriminator and produces it for every input <code>z</code>. Symptom: thousands of nearly-identical generations.</p>
+
+<div class="demo">
+  <h3>Demo · Real distribution vs collapsed vs healthy</h3>
+  <canvas id="mc-canvas" width="880" height="240"></canvas>
+  <p style="font-size:0.9em; color:#555; margin-top:6px;">Black: real samples (a mixture of three Gaussians). Blue: a "healthy" generator that covers all modes. Red: a "collapsed" generator concentrating on one mode.</p>
+</div>
+
+<!-- §14 GAN stabilization -->
+<h2 id="s14">14 · GAN stabilization: WGAN-GP, spectral norm <span class="tag math">math</span></h2>
+<table class="cmp">
+  <tr><th>Stabilizer</th><th>What it does</th><th>Cost</th></tr>
+  <tr><td>WGAN-GP</td><td>Replace JS-divergence loss with Wasserstein distance; add a gradient penalty that softly enforces 1-Lipschitz on the critic.</td><td>An extra penalty term in the loss; modest compute overhead.</td></tr>
+  <tr><td>Spectral normalization</td><td>Bound the spectral norm of each layer's weight matrix to 1; enforces Lipschitz constraint as a weight constraint.</td><td>One power-iteration per forward pass; very cheap.</td></tr>
+  <tr><td>R1 regularization</td><td>Penalize the gradient norm of the discriminator on real samples only.</td><td>One extra backward over the discriminator; cheap.</td></tr>
+  <tr><td>StyleGAN-style architecture</td><td>Architectural tricks: mapping network, AdaIN, progressive growth, equalized learning rate.</td><td>Significant code complexity; SOTA image quality.</td></tr>
+</table>
+
+<!-- §15 FID -->
+<h2 id="s15">15 · FID at intuition level <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>FID compares the distributions of <em>features</em> from a pre-trained Inception-V3 network. Fit a Gaussian to the real feature distribution and another to the generated feature distribution; compute the Fréchet (Wasserstein-2) distance between the two Gaussians:</p>
+<p class="eq-block">FID = ‖μ_r − μ_f‖² + Tr( Σ_r + Σ_f − 2 · (Σ_r · Σ_f)<sup>1/2</sup> )</p>
+
+<div class="demo">
+  <h3>Demo · Two Gaussians and their Fréchet distance</h3>
+  <p>The blue cloud is "real" — fixed at <code>N(0, I)</code>. Move the generated cloud and see FID move with it.</p>
+  <div class="controls">
+    <div class="control"><label>generated μ_x</label><input type="range" id="fid-mx" min="-3" max="3" step="0.05" value="0.2"></div>
+    <div class="control"><label>generated μ_y</label><input type="range" id="fid-my" min="-3" max="3" step="0.05" value="0.0"></div>
+    <div class="control"><label>generated σ</label><input type="range" id="fid-s" min="0.4" max="2.5" step="0.05" value="1.0"></div>
+    <div class="readout" id="fid-readout"></div>
+  </div>
+  <canvas id="fid-canvas" width="880" height="280"></canvas>
+</div>
+
+<!-- §16 IS -->
+<h2 id="s16">16 · Inception Score <span class="tag math">math</span></h2>
+<p>Inception Score combines two properties of the generated batch under a pre-trained Inception classifier:</p>
+<p class="eq-block">IS = exp ( E<sub>x</sub> [ KL( p(y|x) ‖ p(y) ) ] )</p>
+<ul>
+  <li><code>p(y|x)</code> should be <em>sharp</em>: each generated image is confidently one class.</li>
+  <li><code>p(y)</code> (the marginal) should be <em>diverse</em>: across the batch, all classes are represented.</li>
+</ul>
+<p>Higher IS = more diverse-and-confident. Important caveats: IS only makes sense when there's a reasonable classifier for your domain (it's traditional on ImageNet-like data), and it doesn't compare your samples to the real distribution at all.</p>
+
+<!-- §17 Trade-off -->
+<h2 id="s17">17 · VAE / DDPM / GAN — the trade-off matrix <span class="tag math">math</span></h2>
+<table class="cmp">
+  <tr><th></th><th>VAE</th><th>DDPM</th><th>GAN</th></tr>
+  <tr><td>Sample quality</td><td>Often blurry</td><td>Excellent (SOTA on many benchmarks)</td><td>Excellent at small/medium scale; tricky to scale further</td></tr>
+  <tr><td>Sample diversity</td><td>Generally good</td><td>Excellent</td><td>Mode collapse risk</td></tr>
+  <tr><td>Sampling speed</td><td>Fast (1 pass)</td><td>Slow (many denoising steps)</td><td>Fast (1 pass)</td></tr>
+  <tr><td>Training stability</td><td>Stable</td><td>Stable</td><td>Notoriously unstable; needs tricks</td></tr>
+  <tr><td>Latent space</td><td>Smooth, interpolatable</td><td>Implicit (no direct latent)</td><td>Smooth but harder to invert</td></tr>
+  <tr><td>Likelihood</td><td>Bound (ELBO)</td><td>Bound</td><td>Not directly available</td></tr>
+  <tr><td>Typical use</td><td>Anomaly detection, representation learning</td><td>High-quality image and audio gen</td><td>Image-to-image translation, style transfer</td></tr>
+</table>
+
+<!-- §18 Provenance -->
+<h2 id="s18">18 · Provenance manifests and watermarking <span class="tag interactive">interactive</span></h2>
+<p>Shipping a generative model without a provenance story is irresponsible. Two technical pieces, both partial mitigations:</p>
+<h4>Provenance manifest (C2PA-style)</h4>
+<p>A signed metadata blob attached to a generated sample. Verifying the signature lets a downstream consumer establish that a <em>known signer</em> asserted, at a particular time, the generation parameters of that sample. It does <em>not</em> prove that the image is harmless, that downstream copies retain integrity if cropped, or that the absence of a manifest implies the absence of synthesis.</p>
+
+<pre>{
+  "sample_id": "a3f1...",
+  "generated_at": "2026-04-29T18:24:00Z",
+  "model":     { "family": "ddpm", "checkpoint_sha": "f2c4..." },
+  "params":    { "seed": 1234, "denoising_steps": 200 },
+  "signer":    { "alg": "ed25519", "key_id": "T7-prod" },
+  "signature": "BASE64-ENCODED-ED25519-OVER-THE-CANONICAL-FIELDS"
+}</pre>
+
+<h4>Watermarking</h4>
+<p>Embed an imperceptible signal in the generated image that a downstream verifier can detect. Useful as a complement to provenance but vulnerable to common transformations (cropping, compression, re-rendering). Should be reported alongside the failure-rate of detection under realistic adversarial conditions, not just under benign conditions.</p>
+
+<div class="warn">
+  <strong>Be honest about limits.</strong> A model card for a generator should explicitly enumerate (a) what a verified manifest proves, (b) what it does NOT prove, and (c) the expected robustness of any watermark under typical post-processing. Vague claims hurt downstream consumers.
+</div>
+
+<div class="callout">
+  <strong>Architecture reminder.</strong> The Topic 7 "GenStudio" product persists <code>runs</code>, <code>samples</code>, and <code>provenance_manifests</code> in Supabase. Each sample row stores a SHA-256 hash and a small base64 thumbnail (≤ 4 KB) — never raw bytes. <code>/sample_ddpm</code> under a fixed seed is deterministic so audits are reproducible. The Streamlit "Sample Audit" tab joins recent samples with their signed manifests via the anon key.
+</div>
+
+<div class="nav">
+  <a href="../Topic_6_-_LLM/Tutorial_Topic_6_Pre_Training_and_Fine_Tuning_LLMs.html">← Topic 6</a>
+  <a href="Exercises_Topic_7_Generative_Models.html">Practice exercises →</a>
+</div>
+
+</div>
+
+<script>
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+/* §2 VAE architecture diagram */
+(function(){
+  const c=document.getElementById('vae-arch'), ctx=c.getContext('2d');
+  function box(x,y,w,h,fill,stroke,lines){
+    ctx.fillStyle=fill; ctx.strokeStyle=stroke; ctx.lineWidth=2;
+    if(ctx.roundRect){ctx.beginPath(); ctx.roundRect(x,y,w,h,8); ctx.fill(); ctx.stroke();}
+    else{ctx.fillRect(x,y,w,h); ctx.strokeRect(x,y,w,h);}
+    lines.forEach((l,i)=>{
+      ctx.fillStyle = i===0 ? stroke : '#333';
+      ctx.font = i===0 ? 'bold 12px sans-serif' : '11px monospace';
+      ctx.fillText(l, x+10, y+20+i*16);
+    });
+  }
+  function arrow(x1,y1,x2,y2,color){
+    ctx.strokeStyle=color||'#555'; ctx.lineWidth=1.6;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    const ang=Math.atan2(y2-y1,x2-x1);
+    ctx.beginPath(); ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-9*Math.cos(ang-0.35), y2-9*Math.sin(ang-0.35));
+    ctx.lineTo(x2-9*Math.cos(ang+0.35), y2-9*Math.sin(ang+0.35));
+    ctx.closePath(); ctx.fillStyle=color||'#555'; ctx.fill();
+  }
+  box(30, 100, 160, 80, '#EAF1F8', '#1F4E79', ['Input x', '(image, sound, …)']);
+  arrow(190, 140, 240, 140);
+  box(240, 80, 160, 120, '#FFF', '#1F4E79', ['Encoder', 'q_φ(z | x)', '→ outputs', '  μ(x), log σ²(x)']);
+  arrow(400, 140, 450, 140);
+  box(450, 100, 150, 80, '#FFF8E1', '#F9A825', ['z = μ + σ · ε', 'reparam. trick', 'ε ~ N(0, I)']);
+  arrow(600, 140, 650, 140);
+  box(650, 80, 160, 120, '#FFF', '#1F4E79', ['Decoder', 'p_θ(x | z)', '→ outputs', '  reconstruction x̂']);
+  ctx.fillStyle='#555'; ctx.font='12px sans-serif';
+  ctx.fillText('reconstruction loss: ‖x − x̂‖²', 600, 230);
+  ctx.fillText('KL term:           KL(q_φ(z|x) ‖ N(0, I))', 240, 250);
+})();
+
+/* §3 VAE latent (kept and slightly cleaned) */
+(function(){
+  const c=document.getElementById('vae-canvas'), ctx=c.getContext('2d');
+  const z1=document.getElementById('vae-z1'), z2=document.getElementById('vae-z2');
+  const out=document.getElementById('vae-readout');
+  const interp=document.getElementById('vae-interp');
+  function renderSample(x, y, w, h, zv1, zv2){
+    const cx=w/2 + zv1*w/8, cy=h/2 - zv2*h/8;
+    const colR=clamp(180 + zv1*40, 0, 255);
+    const colG=clamp(180 + zv2*30, 0, 255);
+    const colB=clamp(180 - zv1*40, 0, 255);
+    ctx.fillStyle='white'; ctx.fillRect(x, 0, w, h);
+    const grad=ctx.createRadialGradient(x+cx, cy, 0, x+cx, cy, w/3);
+    grad.addColorStop(0, `rgba(${colR},${colG},${colB},0.95)`);
+    grad.addColorStop(1, `rgba(${colR},${colG},${colB},0)`);
+    ctx.fillStyle=grad; ctx.fillRect(x, 0, w, h);
+    ctx.strokeStyle='#CFD7DF'; ctx.strokeRect(x, 0, w, h);
+  }
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const padX=30, lw=200;
+    ctx.strokeStyle='#CFD7DF'; ctx.strokeRect(padX, 0, lw, H);
+    ctx.fillStyle='#555'; ctx.font='12px sans-serif';
+    ctx.fillText('Latent space (z₁, z₂)', padX+4, 18);
+    ctx.strokeStyle='#EFF2F5';
+    for(let i=1;i<=5;i++){
+      const v=i/6;
+      ctx.beginPath(); ctx.moveTo(padX+v*lw, 0); ctx.lineTo(padX+v*lw, H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padX, v*H); ctx.lineTo(padX+lw, v*H); ctx.stroke();
+    }
+    ctx.strokeStyle='#888'; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.arc(padX+lw/2, H/2, lw/6, 0, Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#888'; ctx.font='11px sans-serif';
+    ctx.fillText('p(z) = N(0, I)', padX+lw/2-30, H/2-lw/6-4);
+    const zv1=+z1.value, zv2=+z2.value;
+    const dx=padX+lw/2+zv1*lw/8, dy=H/2-zv2*H/4;
+    ctx.fillStyle='#C00000'; ctx.beginPath(); ctx.arc(dx, dy, 7, 0, Math.PI*2); ctx.fill();
+    renderSample(padX+lw+40, 0, 250, H, zv1, zv2);
+    ctx.fillStyle='#555'; ctx.font='12px sans-serif';
+    ctx.fillText('Decoder(z)', padX+lw+44, 18);
+    ctx.strokeStyle='#1F4E79'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(padX+lw+4, H/2); ctx.lineTo(padX+lw+36, H/2); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(padX+lw+36, H/2); ctx.lineTo(padX+lw+28, H/2-6); ctx.lineTo(padX+lw+28, H/2+6); ctx.closePath();
+    ctx.fillStyle='#1F4E79'; ctx.fill();
+    const stripX=padX+lw+300; const cellW=(W-stripX-20)/6;
+    for(let i=0;i<6;i++){
+      const t=i/5;
+      const sz1=(1-t)*(-2)+t*(2), sz2=(1-t)*(2)+t*(-2);
+      renderSample(stripX+i*cellW, 30, cellW-2, H-50, sz1, sz2);
+    }
+    ctx.fillStyle='#555'; ctx.font='12px sans-serif';
+    ctx.fillText('Linear interpolation z=(−2, 2) → z=(2, −2)', stripX, 20);
+    out.textContent = `z = (${zv1.toFixed(2)}, ${zv2.toFixed(2)})`;
+  }
+  z1.oninput=draw; z2.oninput=draw;
+  interp.onclick=()=>{let s=0; const t=setInterval(()=>{const v=Math.cos(s), w=Math.sin(s);
+    z1.value=(v*2).toFixed(2); z2.value=(w*2).toFixed(2); draw();
+    s+=0.06; if(s>Math.PI*2) clearInterval(t);}, 30);};
+  draw();
+})();
+
+/* §7 DDPM variance schedule */
+(function(){
+  const c=document.getElementById('ddpm-sched-canvas'), ctx=c.getContext('2d');
+  const sIn=document.getElementById('ddpm-sched'), TIn=document.getElementById('ddpm-T');
+  const out=document.getElementById('ddpm-readout');
+  function schedule(name, T){
+    const betas=[]; const start=1e-4, end=0.02;
+    if(name==='linear'){
+      for(let t=0;t<T;t++) betas.push(start + (end-start)*t/(T-1));
+    } else if(name==='cosine'){
+      const f = t => Math.cos((t/T + 0.008)/(1+0.008) * Math.PI/2)**2;
+      for(let t=1;t<=T;t++){
+        const b = 1 - f(t)/f(t-1); betas.push(Math.min(0.999, Math.max(start, b)));
+      }
+    } else if(name==='quad'){
+      for(let t=0;t<T;t++){const r=t/(T-1); betas.push(start + (end-start)*r*r);}
+    }
+    const alphas = betas.map(b=>1-b);
+    let cum=1; const alphaBars=alphas.map(a=>{cum*=a; return cum;});
+    return {betas, alphas, alphaBars};
+  }
+  function draw(){
+    const T=+TIn.value;
+    const {alphaBars} = schedule(sIn.value, T);
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const px=t=>40+t/T*(W-60), py=v=>H-30-v*(H-50);
+    ctx.strokeStyle='#CFD7DF';
+    ctx.beginPath(); ctx.moveTo(40, py(0)); ctx.lineTo(W-20, py(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(40, 20); ctx.lineTo(40, H-30); ctx.stroke();
+    ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+    [0,0.25,0.5,0.75,1.0].forEach(v=>ctx.fillText(v.toFixed(2), 12, py(v)+3));
+    [0, Math.floor(T/4), Math.floor(T/2), Math.floor(3*T/4), T-1].forEach(t=>ctx.fillText('t='+t, px(t)-12, H-12));
+    ctx.strokeStyle='#1F4E79'; ctx.lineWidth=2.5; ctx.beginPath();
+    for(let t=0;t<T;t++)(t===0?ctx.moveTo:ctx.lineTo).call(ctx, px(t), py(alphaBars[t]));
+    ctx.stroke();
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 12px sans-serif';
+    ctx.fillText('ᾱ_t (cumulative signal preserved)', 60, 30);
+    out.textContent = `schedule = ${sIn.value}, T = ${T} · ᾱ_0 = ${alphaBars[0].toFixed(4)}, ᾱ_${T-1} = ${alphaBars[T-1].toFixed(6)}`;
+  }
+  sIn.onchange=draw; TIn.oninput=draw; draw();
+})();
+
+/* §8 DDPM noise/denoise (kept and cleaned) */
+(function(){
+  const c=document.getElementById('ddpm-canvas'), ctx=c.getContext('2d');
+  const tIn=document.getElementById('ddpm-t');
+  const animBtn=document.getElementById('ddpm-anim');
+  const out=document.getElementById('ddpm-vis-readout');
+  const T=1000, N=28;
+  const clean=[];
+  for(let r=0;r<N;r++){const row=[]; for(let col=0;col<N;col++){
+    const dx=col-N/2, dy=r-N/2; const dist=Math.sqrt(dx*dx+dy*dy);
+    let v = dist<N*0.45 ? 0.55 : 0.0;
+    if((r>=10 && r<=12 && col>=8 && col<=10) || (r>=10 && r<=12 && col>=18 && col<=20)) v=0.05;
+    if(r===18 && col>=9 && col<=20) v=0.05;
+    if(r===19 && (col===8 || col===21)) v=0.05;
+    row.push(v);} clean.push(row);}
+  const betas=[]; for(let t=0;t<T;t++) betas.push(1e-4 + (0.02-1e-4)*t/(T-1));
+  const alphas=betas.map(b=>1-b);
+  const alphasBar=[]; {let p=1; for(const a of alphas){p*=a; alphasBar.push(p);}}
+  function drawAt(t, ox){
+    const aBar=alphasBar[Math.min(T-1, Math.max(0, Math.floor(t)))];
+    const k=Math.sqrt(aBar), kN=Math.sqrt(1-aBar);
+    const cs=6;
+    for(let r=0;r<N;r++) for(let col=0;col<N;col++){
+      const noise=(Math.random()*2-1)*0.5;
+      const v=k*clean[r][col]+kN*noise;
+      const g=Math.max(0, Math.min(255, Math.floor((v+0.5)*255)));
+      ctx.fillStyle=`rgb(${g},${g},${g})`;
+      ctx.fillRect(ox+col*cs, 30+r*cs, cs, cs);
+    }
+    ctx.strokeStyle='#CFD7DF'; ctx.strokeRect(ox, 30, N*cs, N*cs);
+  }
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const positions=[0, 100, 300, 600, 900];
+    const ox0=40;
+    positions.forEach((t,i)=>{drawAt(t, ox0+i*(N*6+30));
+      ctx.fillStyle='#555'; ctx.font='12px sans-serif';
+      ctx.fillText('t = '+t, ox0+i*(N*6+30)+30, 198);});
+    drawAt(+tIn.value, 700);
+    ctx.fillStyle='#C00000'; ctx.font='bold 12px sans-serif';
+    ctx.fillText('current t', 716, 22);
+    out.textContent=`t = ${tIn.value} / ${T}`;
+  }
+  tIn.oninput=draw;
+  let animating=false;
+  animBtn.onclick=()=>{if(animating) return; animating=true; let t=+tIn.value;
+    const it=setInterval(()=>{t-=40; if(t<0){t=0; clearInterval(it); animating=false;}
+      tIn.value=t; draw();}, 60);};
+  draw();
+})();
+
+/* §10 Sampling speed quality */
+(function(){
+  const c=document.getElementById('dd-canvas'), ctx=c.getContext('2d');
+  const sIn=document.getElementById('dd-steps');
+  const mIn=document.getElementById('dd-method');
+  const out=document.getElementById('dd-readout');
+  function fid(steps, method){
+    // DDIM saturates faster; DDPM needs more steps
+    const k = method==='ddim' ? 50 : 250;
+    return 12 + 50*Math.exp(-steps/k);
+  }
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const stepsArr=[]; for(let s=5;s<=1000;s+=5) stepsArr.push(s);
+    const px=s=>40+s/1000*(W-60), py=f=>H-30-(f-10)/50*(H-50);
+    ctx.strokeStyle='#CFD7DF';
+    ctx.beginPath(); ctx.moveTo(40, py(10)); ctx.lineTo(W-20, py(10)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(40, 20); ctx.lineTo(40, H-30); ctx.stroke();
+    ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+    [10,20,30,40,50,60].forEach(f=>ctx.fillText('FID '+f, 8, py(f)+3));
+    [0, 250, 500, 750, 1000].forEach(s=>ctx.fillText('steps '+s, px(s)-20, H-12));
+    ['ddim','ddpm'].forEach((m, i)=>{
+      const c=m==='ddim'?'#1F4E79':'#C00000';
+      ctx.strokeStyle=c; ctx.lineWidth=2; ctx.beginPath();
+      stepsArr.forEach((s, j)=>(j===0?ctx.moveTo:ctx.lineTo).call(ctx, px(s), py(fid(s, m))));
+      ctx.stroke();
+      ctx.fillStyle=c; ctx.font='bold 12px sans-serif';
+      ctx.fillText(m.toUpperCase(), W-100, 28+i*16);
+    });
+    const cur=+sIn.value; const method=mIn.value;
+    ctx.fillStyle = method==='ddim'?'#1F4E79':'#C00000';
+    ctx.beginPath(); ctx.arc(px(cur), py(fid(cur, method)), 6, 0, Math.PI*2); ctx.fill();
+    out.textContent = `${method.toUpperCase()} with ${cur} steps: estimated FID ≈ ${fid(cur, method).toFixed(1)}`;
+  }
+  sIn.oninput=draw; mIn.onchange=draw; draw();
+})();
+
+/* §13 Mode collapse */
+(function(){
+  const c=document.getElementById('mc-canvas'), ctx=c.getContext('2d');
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    // three Gaussian modes
+    const modes=[[-2,0],[2,-1],[0,2]];
+    function sample(mean, std){const u1=Math.random(), u2=Math.random();
+      const z=Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
+      const z2=Math.sqrt(-2*Math.log(u1))*Math.sin(2*Math.PI*u2);
+      return [mean[0]+std*z, mean[1]+std*z2];}
+    const xmin=-5, xmax=5, ymin=-4, ymax=4;
+    const px=x=>(x-xmin)/(xmax-xmin)*W, py=y=>H-(y-ymin)/(ymax-ymin)*H;
+    // axes
+    ctx.strokeStyle='#CFD7DF';
+    ctx.beginPath(); ctx.moveTo(0, py(0)); ctx.lineTo(W, py(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px(0), 0); ctx.lineTo(px(0), H); ctx.stroke();
+    // real (black)
+    ctx.fillStyle='rgba(0,0,0,0.6)';
+    for(let i=0;i<400;i++){const m=modes[i%3]; const p=sample(m, 0.45);
+      ctx.beginPath(); ctx.arc(px(p[0]), py(p[1]), 2.5, 0, Math.PI*2); ctx.fill();}
+    // healthy (blue)
+    ctx.fillStyle='rgba(31,78,121,0.55)';
+    for(let i=0;i<200;i++){const m=modes[Math.floor(Math.random()*3)]; const p=sample(m, 0.55);
+      ctx.beginPath(); ctx.arc(px(p[0]), py(p[1]), 2.5, 0, Math.PI*2); ctx.fill();}
+    // collapsed (red) - all near the first mode
+    ctx.fillStyle='rgba(192,0,0,0.55)';
+    for(let i=0;i<200;i++){const p=sample(modes[0], 0.4);
+      ctx.beginPath(); ctx.arc(px(p[0]), py(p[1]), 2.5, 0, Math.PI*2); ctx.fill();}
+    ctx.fillStyle='#000'; ctx.font='bold 12px sans-serif'; ctx.fillText('● real (3 modes)', 14, 20);
+    ctx.fillStyle='#1F4E79'; ctx.fillText('● healthy generator', 14, 38);
+    ctx.fillStyle='#C00000'; ctx.fillText('● collapsed generator', 14, 56);
+  }
+  draw();
+})();
+
+/* §15 FID intuition */
+(function(){
+  const c=document.getElementById('fid-canvas'), ctx=c.getContext('2d');
+  const mxIn=document.getElementById('fid-mx'), myIn=document.getElementById('fid-my'), sIn=document.getElementById('fid-s');
+  const out=document.getElementById('fid-readout');
+  function sampleGauss(mx, my, s){
+    let u1=Math.random(), u2=Math.random();
+    const z0=Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
+    const z1=Math.sqrt(-2*Math.log(u1))*Math.sin(2*Math.PI*u2);
+    return [mx+s*z0, my+s*z1];
+  }
+  function draw(){
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const xmin=-5, xmax=5, ymin=-3, ymax=3;
+    const px=x=>(x-xmin)/(xmax-xmin)*W, py=y=>H-(y-ymin)/(ymax-ymin)*H;
+    ctx.strokeStyle='#CFD7DF';
+    ctx.beginPath(); ctx.moveTo(0, py(0)); ctx.lineTo(W, py(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px(0), 0); ctx.lineTo(px(0), H); ctx.stroke();
+    ctx.fillStyle='rgba(31,78,121,0.7)';
+    for(let i=0;i<300;i++){const [x,y]=sampleGauss(0,0,1);
+      ctx.beginPath(); ctx.arc(px(x), py(y), 2.5, 0, Math.PI*2); ctx.fill();}
+    const mx=+mxIn.value, my=+myIn.value, s=+sIn.value;
+    ctx.fillStyle='rgba(192,0,0,0.7)';
+    for(let i=0;i<300;i++){const [x,y]=sampleGauss(mx,my,s);
+      ctx.beginPath(); ctx.arc(px(x), py(y), 2.5, 0, Math.PI*2); ctx.fill();}
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 12px sans-serif';
+    ctx.fillText('● real ~ N(0, 1)', 14, 20);
+    ctx.fillStyle='#C00000';
+    ctx.fillText(`● generated ~ N((${mx.toFixed(1)}, ${my.toFixed(1)}), ${s.toFixed(1)})`, 14, 38);
+    const fid = mx*mx + my*my + 2 + 2*s*s - 4*s;
+    out.textContent = `Fréchet (2-D) distance = (${mx.toFixed(2)})² + (${my.toFixed(2)})² + 2 + 2·${(s*s).toFixed(2)} − 4·${s.toFixed(2)} = ${fid.toFixed(3)}`;
+  }
+  mxIn.oninput=draw; myIn.oninput=draw; sIn.oninput=draw; draw();
+})();
+</script>
+</body>
+</html>

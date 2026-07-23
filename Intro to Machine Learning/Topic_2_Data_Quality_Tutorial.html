@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Topic 2 · Data Pipelines &amp; Quality — Tutorial</title>
+<style>
+:root {
+  --c-bg:        #f7f9fc;
+  --c-card:      #ffffff;
+  --c-text:      #1f2937;
+  --c-text-soft: #4b5563;
+  --c-muted:     #6b7280;
+  --c-line:      #e5e7eb;
+  --c-primary:   #1f3864;
+  --c-accent:    #2e5597;
+  --c-soft-blue: #d9e2f3;
+  --c-code-bg:   #f1f4f9;
+  --c-code-text: #0f172a;
+  --c-success:   #16a34a;
+  --c-success-bg:#dcfce7;
+  --c-warn:      #b45309;
+  --c-warn-bg:   #fef3c7;
+  --c-error:     #b91c1c;
+  --c-error-bg:  #fee2e2;
+  --radius:      10px;
+  --shadow:      0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+}
+.page { max-width: 920px; margin: 0 auto; padding: 32px 24px 80px; }
+header.brand {
+  display: flex; align-items: baseline; gap: 12px;
+  border-bottom: 1px solid var(--c-line); padding-bottom: 16px; margin-bottom: 28px;
+}
+header.brand .crumb { color: var(--c-muted); font-size: 13px; }
+h1, h2, h3, h4 { color: var(--c-primary); margin: 1.4em 0 .5em; line-height: 1.25; }
+h1 { font-size: 28px; margin-top: 0; }
+h2 { font-size: 22px; border-bottom: 1px solid var(--c-line); padding-bottom: 6px; }
+h3 { font-size: 18px; }
+h4 { font-size: 16px; color: var(--c-accent); }
+p, li { color: var(--c-text); }
+.lead { color: var(--c-text-soft); font-size: 17px; }
+.card {
+  background: var(--c-card); border: 1px solid var(--c-line);
+  border-radius: var(--radius); padding: 20px 22px; margin: 16px 0;
+  box-shadow: var(--shadow);
+}
+.callout {
+  background: var(--c-soft-blue);
+  border-left: 4px solid var(--c-accent);
+  padding: 12px 16px; border-radius: 6px; margin: 14px 0;
+  font-size: 15px;
+}
+.callout.warn { background: var(--c-warn-bg); border-color: var(--c-warn); }
+.callout strong.label { color: var(--c-primary); }
+code, pre, kbd, samp {
+  font-family: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+code { background: var(--c-code-bg); padding: 1px 6px; border-radius: 4px; font-size: 14px; }
+pre {
+  background: var(--c-code-bg); color: var(--c-code-text);
+  padding: 14px 16px; border-radius: 8px; overflow-x: auto;
+  font-size: 14px; line-height: 1.55;
+  border: 1px solid var(--c-line);
+}
+pre code { background: transparent; padding: 0; }
+.btn {
+  display: inline-block; padding: 8px 14px; font-size: 14px;
+  background: var(--c-primary); color: #fff; border: none;
+  border-radius: 6px; cursor: pointer; font-weight: 600;
+}
+.btn:hover { background: var(--c-accent); }
+.btn.ghost {
+  background: #fff; color: var(--c-primary);
+  border: 1px solid var(--c-primary);
+}
+.btn.ghost:hover { background: var(--c-soft-blue); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+input[type=text], input[type=number], select, textarea {
+  font: inherit; padding: 6px 10px; border: 1px solid var(--c-line);
+  border-radius: 6px; background: #fff; color: var(--c-text);
+}
+input[type=range] { width: 100%; }
+label.field { display: block; font-size: 14px; color: var(--c-text-soft); margin: 8px 0 4px; }
+table.data { border-collapse: collapse; margin: 10px 0; font-size: 14px; }
+table.data th, table.data td {
+  border: 1px solid var(--c-line); padding: 6px 10px; text-align: left;
+}
+table.data th { background: var(--c-soft-blue); color: var(--c-primary); }
+.row { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
+.col { flex: 1 1 280px; }
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 14px; }
+.feedback {
+  padding: 10px 14px; border-radius: 6px; margin-top: 10px; font-size: 14px;
+  border: 1px solid transparent;
+}
+.feedback.ok    { background: var(--c-success-bg); border-color: var(--c-success); color: #14532d; }
+.feedback.bad   { background: var(--c-error-bg);   border-color: var(--c-error);   color: #7f1d1d; }
+.feedback.info  { background: var(--c-soft-blue);  border-color: var(--c-accent);  color: var(--c-primary); }
+ul.choices { list-style: none; padding: 0; margin: 8px 0; }
+ul.choices li {
+  background: #fff; border: 1px solid var(--c-line); padding: 10px 14px;
+  border-radius: 6px; margin: 6px 0; cursor: pointer; font-size: 15px;
+}
+ul.choices li:hover { background: var(--c-soft-blue); }
+ul.choices li.selected { background: var(--c-soft-blue); border-color: var(--c-primary); }
+ul.choices li.correct  { background: var(--c-success-bg); border-color: var(--c-success); }
+ul.choices li.incorrect{ background: var(--c-error-bg);   border-color: var(--c-error); }
+.progress {
+  background: var(--c-line); border-radius: 4px; height: 6px;
+  overflow: hidden; margin: 8px 0;
+}
+.progress > div {
+  background: var(--c-accent); height: 100%;
+  transition: width .35s ease;
+}
+svg.chart { display: block; max-width: 100%; height: auto; }
+.legend { display: flex; gap: 12px; font-size: 13px; color: var(--c-text-soft); margin: 6px 0; }
+.legend span.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+footer.brand {
+  margin-top: 60px; padding-top: 16px; border-top: 1px solid var(--c-line);
+  color: var(--c-muted); font-size: 13px; text-align: center;
+}
+.tag {
+  display: inline-block; padding: 2px 8px; font-size: 12px; font-weight: 600;
+  border-radius: 999px; background: var(--c-soft-blue); color: var(--c-primary);
+  margin-right: 6px;
+}
+.scope {
+  font-size: 13px; color: var(--c-muted); font-style: italic;
+}
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="brand">
+    <span class="tag">Machine Learning</span>
+    <span class="crumb">Tutorials · Topic 2</span>
+  </header>
+  
+<h1>Topic 2 · Data Pipelines &amp; Data Quality</h1>
+<p class="lead">
+  Topic 2 is the bridge between "I have a CSV" and "I have a model." You
+  will profile a messy raw dataset, write a small <code>pandera</code>
+  schema, decide what to do about each kind of problem you find, apply
+  pandas cleaning functions in small named steps, and persist the
+  cleaned result as a versioned CSV ready for downstream use.
+</p>
+<p class="scope">
+  Scope at the introductory level: profiling (row count, null %, distinct count,
+  range), a small pandera schema (dtype + nullability + a simple range
+  check), three or four named cleaning functions, and the
+  versioned-CSV persist habit. Out of scope: cross-column validation,
+  regex patterns inside schemas, and outlier-detection statistics.
+</p>
+
+<div class="card">
+  <h2>1. ETL vs ELT in one minute</h2>
+  <p>
+    Two patterns describe how raw data ends up in an analytics layer.
+    Both are introduced in this course because you will hear them in
+    interviews; in your projects you only build the simpler
+    "ETL-with-pandas" version.
+  </p>
+  <table class="data">
+    <thead><tr><th>Pattern</th><th>Order</th><th>Where the work happens</th><th>When it fits</th></tr></thead>
+    <tbody>
+      <tr><td><strong>ETL</strong></td><td>Extract → <em>Transform</em> → Load</td><td>Transformation in Python / pandas before the warehouse stores it</td><td>Small files, well-known schema, you control the destination.</td></tr>
+      <tr><td><strong>ELT</strong></td><td>Extract → Load → <em>Transform</em></td><td>Raw lands in the warehouse; transforms run as SQL inside the warehouse later</td><td>Cloud warehouses with elastic compute. Dominant in modern stacks.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h2>2. Why profile first?</h2>
+  <p>
+    Every cleaning decision starts with looking. If you do not know how
+    many rows the file has, how many nulls each column has, or what its
+    distinct values look like, you cannot write a sensible cleaning
+    function. The introductory profile has just five quantities per column:
+  </p>
+  <table class="data">
+    <thead><tr><th>What</th><th>Why you compute it</th><th>pandas one-liner</th></tr></thead>
+    <tbody>
+      <tr><td>row count</td><td>Sanity check: does this look like the file we expected?</td><td><code>len(df)</code></td></tr>
+      <tr><td>null fraction per column</td><td>Find missingness early; decide impute vs drop vs flag.</td><td><code>df.isna().mean()</code></td></tr>
+      <tr><td>distinct count per column</td><td>Tells you which columns are categorical vs free-text.</td><td><code>df.nunique()</code></td></tr>
+      <tr><td>min / max / mean (numeric)</td><td>Catches impossible values: negative ages, scores above 1.</td><td><code>df.describe()</code></td></tr>
+      <tr><td>dtypes</td><td>Confirms pandas inferred the right type for each column.</td><td><code>df.dtypes</code></td></tr>
+    </tbody>
+  </table>
+  <p class="callout">
+    <strong class="label">Try it:</strong> click <em>Profile</em> below to see
+    each of these computed on a small messy dataset.
+  </p>
+  <div id="raw-host"></div>
+  <div class="btn-row">
+    <button class="btn" id="profile-btn">Profile</button>
+    <button class="btn ghost" id="profile-reset">Reset</button>
+  </div>
+  <div id="profile-out"></div>
+</div>
+
+<div class="card">
+  <h2>3. The null-handling decision</h2>
+  <p>
+    Nulls are a fact of life. The right response depends on
+    <em>why</em> the null is there. Use the buttons to explore each
+    scenario and the recommended pandas response.
+  </p>
+  <div id="null-host"></div>
+</div>
+
+<div class="card">
+  <h2>4. Outlier detection at the introductory level</h2>
+  <p>
+    An outlier is a value far enough from the rest that it skews
+    summary statistics or breaks downstream model assumptions. The
+    introductory rule is: <em>look at the data, decide a defensible
+    threshold, and document it.</em> The slider below shows how
+    different cut-off rules change which values get flagged.
+  </p>
+  <div id="outlier-host"></div>
+</div>
+
+<div class="card">
+  <h2>5. pandera — your data contract</h2>
+  <p>
+    A <code>pandera</code> schema is a small Python object that says
+    "every row should look like this." When the cleaned data is passed
+    through the schema, any violation raises an error — so silent
+    corruption becomes loud and visible at the moment it appears.
+  </p>
+<pre><code>import pandera as pa
+from pandera import Column, DataFrameSchema, Check
+
+schema = DataFrameSchema({
+    "age":     Column(int,   Check(lambda s: s.between(0, 120))),
+    "country": Column(str,   nullable=False),
+    "score":   Column(float, nullable=False,
+                      checks=[Check.ge(0), Check.le(1)]),
+})
+
+schema.validate(df)   # raises if any row breaks the contract</code></pre>
+  <p>
+    The interactive validator below uses that schema. Rows highlighted
+    in red would raise on <code>schema.validate</code>. Click on a row
+    to see <em>which</em> rule it broke and how you would clean it.
+  </p>
+  <div id="schema-host"></div>
+</div>
+
+<div class="card">
+  <h2>6. Build your own schema</h2>
+  <p>
+    Toggle the rules below to add or remove them from a live pandera
+    schema. The data is the same in every case; only your contract
+    changes. Pay attention to how the failure count moves as you
+    tighten or loosen the rules.
+  </p>
+  <div id="builder-host"></div>
+</div>
+
+<div class="card">
+  <h2>7. The cleaning pipeline as a small Python module</h2>
+  <p>
+    Every cleaning step in this course is a named, single-responsibility
+    function with a docstring and at least a smoke test. Tiny functions
+    make the pipeline easy to read, easy to test, and easy to swap when
+    the rules change.
+  </p>
+<pre><code>def clean_amount(s: pd.Series) -&gt; pd.Series:
+    """Replace negative amounts with pd.NA; preserve existing NAs."""
+    return s.where(s &gt;= 0, other=pd.NA)
+
+def clip_age(s: pd.Series) -&gt; pd.Series:
+    """Clip ages to [0, 120]; values outside are clipped, not dropped."""
+    return s.clip(lower=0, upper=120)
+
+def drop_obvious_duplicates(df: pd.DataFrame) -&gt; pd.DataFrame:
+    """Drop duplicate rows that share the same (user_id, ts)."""
+    return df.drop_duplicates(subset=["user_id", "ts"], keep="last")
+
+def coerce_date(s: pd.Series) -&gt; pd.Series:
+    """Parse strings to datetime; unparseable values become NaT."""
+    return pd.to_datetime(s, errors="coerce")</code></pre>
+  <p>
+    Compose them in a single <code>clean()</code> function and call
+    that once from your build script. Each step is independently
+    testable; the assembly is just a sequence of calls.
+  </p>
+</div>
+
+<div class="card">
+  <h2>8. Provenance — keep receipts</h2>
+  <p>
+    Provenance is the record of where the data came from and what was
+    done to it. At the introductory level, you keep three pieces of information
+    next to every cleaned dataset:
+  </p>
+  <ol>
+    <li>The <strong>source URL</strong> (or filesystem path) of the raw file.</li>
+    <li>The <strong>retrieval date</strong>.</li>
+    <li>The <strong>list of cleaning steps</strong> that produced the cleaned file.</li>
+  </ol>
+  <p>
+    Pin them in a small <code>data/README.md</code>. Future you, your
+    teammates, and your stakeholders will thank you when something
+    surprising happens downstream and they need to track the value back
+    to its origin.
+  </p>
+</div>
+
+<div class="card">
+  <h2>9. Persisting the cleaned DataFrame</h2>
+  <p>
+    Once the cleaning functions have run, write the cleaned DataFrame to
+    a versioned CSV under <code>data/derived/</code>. The filename
+    convention makes the artifact reproducible and the date visible
+    on the file system without opening the file.
+  </p>
+<pre><code>from datetime import date
+fname = f"data/derived/cleaned_orders_{date.today():%Y%m%d}.csv"
+cleaned.to_csv(fname, index=False)</code></pre>
+  <p class="callout warn">
+    <strong class="label">Why <code>index=False</code>?</strong>
+    Without it, pandas writes its row index as the first column of the
+    CSV. That column then re-appears (named <code>Unnamed: 0</code>)
+    every time you read the file back. Just say no.
+  </p>
+</div>
+
+<div class="card">
+  <h2>10. Ethics: silent failures vs loud failures</h2>
+  <p>
+    The strongest argument for programmatic data validation is not
+    speed — it is <em>auditability</em>. A pandera schema makes the
+    team's assumptions about the data explicit, in code, and re-checked
+    on every commit. When a future version of the upstream system
+    changes the semantics of a column (cents become dollars; "M/F"
+    become "1/2"), the schema catches the change <em>before</em> a
+    model trained on the new semantics is shown to a real person.
+  </p>
+  <p>
+    Silent failures are the dangerous ones. Catching them takes one
+    afternoon of writing a schema and pays you back forever.
+  </p>
+</div>
+
+<div class="callout">
+  <strong class="label">Next step:</strong>
+  open <code>Topic-2-Data-Quality-Exercises.html</code> and practice
+  reading a profile, writing a schema rule, and choosing the right
+  cleaning step.
+</div>
+
+  <footer class="brand">© 2026 · Intro to Machine Learning</footer>
+</div>
+<script>
+// ---- exercise framework ----
+function el(tag, attrs, ...kids){
+  const e = document.createElement(tag);
+  for (const k in (attrs||{})) {
+    if (k === 'class') e.className = attrs[k];
+    else if (k === 'html') e.innerHTML = attrs[k];
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else if (attrs[k] !== false && attrs[k] != null) e.setAttribute(k, attrs[k]);
+  }
+  for (const kid of kids.flat()) {
+    if (kid == null) continue;
+    e.appendChild(kid.nodeType ? kid : document.createTextNode(kid));
+  }
+  return e;
+}
+function feedback(host, kind, msg){
+  let f = host.querySelector('.feedback');
+  if (!f) { f = el('div', {class:'feedback'}); host.appendChild(f); }
+  f.className = 'feedback ' + kind;
+  f.innerHTML = msg;
+}
+function renderMCQ(host, q){
+  host.appendChild(el('p', {class:'lead'}, q.stem));
+  const ul = el('ul', {class:'choices'});
+  let answered = false;
+  q.choices.forEach((c, i) => {
+    const li = el('li', {tabindex:'0'}, c);
+    li.addEventListener('click', () => {
+      if (answered) return;
+      answered = true;
+      Array.from(ul.children).forEach(x => x.classList.remove('selected'));
+      li.classList.add('selected');
+      if (i === q.answer) {
+        li.classList.add('correct');
+        feedback(host, 'ok', '<strong>Correct.</strong> ' + (q.rationale||''));
+      } else {
+        li.classList.add('incorrect');
+        ul.children[q.answer].classList.add('correct');
+        feedback(host, 'bad', '<strong>Not quite.</strong> The correct answer is highlighted in green. ' + (q.rationale||''));
+      }
+    });
+    ul.appendChild(li);
+  });
+  host.appendChild(ul);
+}
+function renderTextEx(host, q){
+  host.appendChild(el('p', {class:'lead'}, q.stem));
+  const input = el('input', {type:'text', placeholder: q.placeholder || 'Your answer…', style:'width:60%;'});
+  const btn = el('button', {class:'btn'}, 'Check');
+  const row = el('div', {class:'btn-row'}, input, btn);
+  host.appendChild(row);
+  btn.addEventListener('click', () => {
+    const v = (input.value || '').trim();
+    if (q.check(v)) feedback(host, 'ok', '<strong>Correct.</strong> ' + (q.rationale||''));
+    else feedback(host, 'bad', '<strong>Not quite.</strong> ' + (q.hint||q.rationale||''));
+  });
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') btn.click(); });
+}
+function buildExerciseSet(rootSel, items){
+  const root = document.querySelector(rootSel);
+  let correct = 0, attempted = 0;
+  items.forEach((q, idx) => {
+    const card = el('div', {class:'card'});
+    card.appendChild(el('h3', {}, 'Exercise ' + (idx+1) + ' — ' + q.type));
+    if (q.kind === 'mcq') renderMCQ(card, q);
+    else if (q.kind === 'text') renderTextEx(card, q);
+    else if (q.kind === 'custom') q.render(card);
+    root.appendChild(card);
+  });
+}
+</script>
+<script>
+const rawRows = [
+  { user_id: 1, age: 28, country: 'US', score: 0.91 },
+  { user_id: 2, age: -3, country: 'US', score: 0.40 },     // bad age
+  { user_id: 3, age: 35, country: null, score: 0.55 },     // null country
+  { user_id: 4, age: 40, country: 'CA', score: 1.30 },     // score > 1
+  { user_id: 5, age: 22, country: 'BR', score: null },     // null score
+  { user_id: 1, age: 28, country: 'US', score: 0.91 },     // duplicate
+  { user_id: 6, age: 200, country: 'US', score: 0.30 },    // bad age
+  { user_id: 7, age: 30, country: 'US', score: 0.70 },
+];
+const cols = ['user_id','age','country','score'];
+
+function tableOf(host, rows, columns) {
+  host.innerHTML = '';
+  const tbl = el('table', {class:'data'});
+  const thead = el('thead', {}, el('tr', {}, ...columns.map(c => el('th', {}, c))));
+  const tbody = el('tbody');
+  rows.forEach(r => tbody.appendChild(el('tr', {}, ...columns.map(c => el('td', {}, r[c]===null||r[c]===undefined ? '—' : String(r[c]))))));
+  tbl.appendChild(thead); tbl.appendChild(tbody);
+  host.appendChild(tbl);
+}
+tableOf(document.getElementById('raw-host'), rawRows, cols);
+
+function profile(rows) {
+  const out = {};
+  cols.forEach(c => {
+    const vals = rows.map(r => r[c]);
+    const nulls = vals.filter(v => v === null || v === undefined).length;
+    const distinct = new Set(vals.filter(v => v !== null && v !== undefined).map(String)).size;
+    const numericVals = vals.filter(v => typeof v === 'number' && !isNaN(v));
+    let minMax = '';
+    if (numericVals.length) {
+      const lo = Math.min(...numericVals), hi = Math.max(...numericVals);
+      minMax = lo + ' … ' + hi;
+    } else {
+      minMax = '(non-numeric)';
+    }
+    out[c] = { nulls, distinct, range: minMax, nullPct: ((nulls/rows.length)*100).toFixed(0) + '%' };
+  });
+  return out;
+}
+document.getElementById('profile-btn').addEventListener('click', () => {
+  const p = profile(rawRows);
+  const host = document.getElementById('profile-out');
+  host.innerHTML = '';
+  host.appendChild(el('h4', {}, 'Profile summary'));
+  const tbl = el('table', {class:'data'});
+  const thead = el('thead', {}, el('tr', {}, el('th',{},'column'), el('th',{},'null %'), el('th',{},'distinct'), el('th',{},'numeric range')));
+  const tbody = el('tbody');
+  cols.forEach(c => tbody.appendChild(el('tr', {}, el('td',{},c), el('td',{},p[c].nullPct), el('td',{},String(p[c].distinct)), el('td',{},p[c].range))));
+  tbl.appendChild(thead); tbl.appendChild(tbody);
+  host.appendChild(tbl);
+  host.appendChild(el('div', {class:'callout'},
+    el('span', {html:'<strong class="label">What to notice:</strong> the <code>age</code> column spans −3 to 200 (impossible values), <code>country</code> has nulls, and <code>score</code> contains a 1.30 (out of expected 0..1 range). Each is exactly the kind of issue a pandera schema would catch.'}
+  )));
+});
+document.getElementById('profile-reset').addEventListener('click', () => {
+  document.getElementById('profile-out').innerHTML = '';
+});
+
+// ---------- null-handling decision tree ----------
+(function(){
+  const host = document.getElementById('null-host');
+  if (!host) return;
+  const scenarios = [
+    { key:'mcar', label:"Missing at random (≤ 2%)",
+      explain:'A few nulls scattered throughout the file with no pattern.',
+      code: 'df = df.dropna(subset=["score"])',
+      reason:'Dropping a tiny fraction at random barely changes the distribution; the simplest defensible choice.' },
+    { key:'impute', label:"Missing in a numeric column, plausible to estimate",
+      explain:'10% of the income column is missing; the rest is roughly symmetric.',
+      code: 'df["income"] = df["income"].fillna(df["income"].median())',
+      reason:'Median is robust to outliers and works for a roughly symmetric numeric column. Document the choice.' },
+    { key:'flag', label:"Informative missingness",
+      explain:'The fact that the value is missing carries information (e.g., "form skipped").',
+      code: 'df["score_missing"] = df["score"].isna()\ndf["score"] = df["score"].fillna(-1)',
+      reason:'Add an indicator column so the model can use the fact-of-missingness as a signal, then fill the value itself with a sentinel.' },
+    { key:'drop',  label:"Required key missing",
+      explain:'customer_id is null on a few rows.',
+      code: 'df = df.dropna(subset=["customer_id"])',
+      reason:'A row without an identifier cannot be joined. Drop it and log how many were dropped.' },
+  ];
+  host.innerHTML = '';
+  const btnRow = el('div', {class:'btn-row'});
+  scenarios.forEach(s => {
+    const b = el('button', {class:'btn ghost'}, s.label);
+    b.addEventListener('click', () => show(s));
+    btnRow.appendChild(b);
+  });
+  host.appendChild(btnRow);
+  const out = el('div', {style:'margin-top:10px;'});
+  host.appendChild(out);
+  function show(s){
+    out.innerHTML = '';
+    out.appendChild(el('p', {class:'lead'}, s.explain));
+    out.appendChild(el('pre', {html:'<code>' + s.code + '</code>'}));
+    out.appendChild(el('div', {class:'feedback info'}, el('span', {html:'<strong>Why:</strong> ' + s.reason})));
+  }
+  show(scenarios[0]);
+})();
+
+// ---------- outlier slider demo ----------
+(function(){
+  const host = document.getElementById('outlier-host');
+  if (!host) return;
+  const values = [10, 12, 14, 13, 15, 11, 16, 12, 14, 15, 13, 14, 200, 14, 12, 11, 13];
+  host.innerHTML = '';
+  host.appendChild(el('p', {}, 'Values: ' + values.join(', ')));
+  host.appendChild(el('label', {class:'field'}, 'Outlier cut-off (multiples of standard deviation above mean): '));
+  const out = el('span', {class:'mono'}, '3.0');
+  host.appendChild(out);
+  const range = el('input', {type:'range', min:'0.5', max:'5', step:'0.1', value:'3.0'});
+  host.appendChild(range);
+  const result = el('div', {style:'margin-top:10px;'});
+  host.appendChild(result);
+  function recompute(){
+    const k = parseFloat(range.value);
+    out.textContent = k.toFixed(1);
+    const mean = values.reduce((s,v) => s+v, 0) / values.length;
+    const variance = values.reduce((s,v) => s + (v-mean)**2, 0) / values.length;
+    const sd = Math.sqrt(variance);
+    const cut = mean + k * sd;
+    const flagged = values.filter(v => v > cut);
+    result.innerHTML = '';
+    result.appendChild(el('p', {html: '<strong>mean = </strong>' + mean.toFixed(2) +
+      '   <strong>sd = </strong>' + sd.toFixed(2) +
+      '   <strong>cut-off (mean + ' + k.toFixed(1) + '·sd) = </strong>' + cut.toFixed(2)}));
+    if (flagged.length === 0) {
+      result.appendChild(el('div', {class:'feedback ok'}, 'No outliers flagged — the cut-off is loose enough that no value crosses it.'));
+    } else {
+      result.appendChild(el('div', {class:'feedback bad'}, el('span', {html:'Flagged: ' + flagged.join(', ') + '. Decision time — drop, clip, or investigate?'})));
+    }
+    result.appendChild(el('p', {class:'scope', style:'margin-top:8px;'}, 'Notice how the single value 200 is flagged at almost any threshold, while moderate values like 16 only get flagged when k is very small. The point of the slider is not to pick the "right" k — it is to see how a cleaning rule\'s strictness changes its behavior.'));
+  }
+  range.addEventListener('input', recompute);
+  recompute();
+})();
+
+// ---------- pandera schema demo (clickable rows) ----------
+(function(){
+  const host = document.getElementById('schema-host');
+  if (!host) return;
+  const checks = [
+    { col:'age',     fn: v => Number.isInteger(v) && v >= 0 && v <= 120, label:'age must be an integer in [0, 120]', fix:'clip with df["age"].clip(0, 120)' },
+    { col:'country', fn: v => v !== null && v !== undefined && v !== '',  label:'country must not be null',          fix:'drop or impute with a default like "unknown"' },
+    { col:'score',   fn: v => typeof v === 'number' && v >= 0 && v <= 1,  label:'score must be a float in [0, 1] and not null', fix:'clip with df["score"].clip(0, 1) or drop' },
+  ];
+  function runValidation(){
+    const failures = [];
+    rawRows.forEach((r, idx) => {
+      checks.forEach(c => {
+        if (!c.fn(r[c.col])) failures.push({ idx, col: c.col, val: r[c.col], label: c.label, fix: c.fix });
+      });
+    });
+    return failures;
+  }
+  const tbl = el('table', {class:'data'});
+  tbl.appendChild(el('thead', {}, el('tr', {}, el('th',{},'#'), ...cols.map(c => el('th',{}, c)), el('th',{}, 'OK?'))));
+  const tbody = el('tbody');
+  const failures = runValidation();
+  rawRows.forEach((r, idx) => {
+    const myFails = failures.filter(f => f.idx === idx);
+    const bad = myFails.length > 0;
+    const tr = el('tr', {style: bad ? 'background: var(--c-error-bg); cursor:pointer;' : ''},
+      el('td',{},String(idx)), ...cols.map(c => el('td',{}, r[c]===null||r[c]===undefined ? '—' : String(r[c]))), el('td',{}, bad ? '✗' : '✓'));
+    if (bad) {
+      tr.addEventListener('click', () => {
+        msg.innerHTML = '<strong class="label">Row #' + idx + ':</strong> ' +
+          myFails.map(f => f.label + ' (current value: ' + f.val + '; fix: ' + f.fix + ')').join(' · ');
+      });
+    }
+    tbody.appendChild(tr);
+  });
+  tbl.appendChild(tbody);
+  host.appendChild(tbl);
+  host.appendChild(el('div', {class:'callout warn'},
+    el('span', {html:'<strong class="label">schema.validate would raise:</strong> ' + failures.length + ' failing check(s) across ' +
+      (new Set(failures.map(f => f.idx))).size + ' row(s). Click any red row above to see exactly which rule failed.'})));
+  const msg = el('div', {class:'feedback info'}, 'Click a red row to see the violation detail.');
+  host.appendChild(msg);
+})();
+
+// ---------- build-your-own schema ----------
+(function(){
+  const host = document.getElementById('builder-host');
+  if (!host) return;
+  const rules = [
+    { id:'age',  desc:'age in [0, 120]',                  check: r => Number.isInteger(r.age)  && r.age  >= 0 && r.age  <= 120 },
+    { id:'ctry', desc:'country not null',                 check: r => r.country !== null },
+    { id:'score',desc:'score in [0, 1] and not null',     check: r => typeof r.score === 'number' && r.score >= 0 && r.score <= 1 },
+    { id:'uid',  desc:'user_id positive integer not null',check: r => Number.isInteger(r.user_id) && r.user_id > 0 },
+  ];
+  host.innerHTML = '';
+  const toggles = el('div', {});
+  const active = new Set(['age','score']);
+  rules.forEach(r => {
+    const cb = el('input', {type:'checkbox'});
+    cb.checked = active.has(r.id);
+    const lbl = el('label', {style:'display:block; font-size:14px; margin:4px 0;'});
+    lbl.appendChild(cb);
+    lbl.appendChild(document.createTextNode(' ' + r.desc));
+    cb.addEventListener('change', () => {
+      if (cb.checked) active.add(r.id); else active.delete(r.id);
+      run();
+    });
+    toggles.appendChild(lbl);
+  });
+  host.appendChild(toggles);
+  const out = el('div', {style:'margin-top:8px;'});
+  host.appendChild(out);
+  function run(){
+    const fails = [];
+    rawRows.forEach((r, idx) => {
+      rules.forEach(rule => {
+        if (active.has(rule.id) && !rule.check(r)) fails.push({ idx, rule: rule.desc });
+      });
+    });
+    const totalRules = active.size;
+    const failedRows = new Set(fails.map(f => f.idx));
+    out.innerHTML = '';
+    out.appendChild(el('p', {html:'<strong>Active rules: </strong>' + totalRules + ' &nbsp; <strong>failing rows: </strong>' + failedRows.size + ' of ' + rawRows.length + ' &nbsp; <strong>failing checks: </strong>' + fails.length}));
+    if (fails.length === 0) {
+      out.appendChild(el('div', {class:'feedback ok'}, 'No failures — but is that because your contract is loose enough to miss problems? Try ticking more rules.'));
+    } else {
+      out.appendChild(el('div', {class:'feedback bad'}, el('span', {html:'Failing checks: ' + fails.slice(0, 5).map(f => '#' + f.idx + ' → ' + f.rule).join('; ') + (fails.length > 5 ? '; …' : '')})));
+    }
+  }
+  run();
+})();
+</script>
+</body>
+</html>

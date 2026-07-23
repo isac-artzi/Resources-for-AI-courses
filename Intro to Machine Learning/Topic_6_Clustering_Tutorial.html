@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Topic 6 · Clustering &amp; PCA — Tutorial</title>
+<style>
+:root {
+  --c-bg:        #f7f9fc;
+  --c-card:      #ffffff;
+  --c-text:      #1f2937;
+  --c-text-soft: #4b5563;
+  --c-muted:     #6b7280;
+  --c-line:      #e5e7eb;
+  --c-primary:   #1f3864;
+  --c-accent:    #2e5597;
+  --c-soft-blue: #d9e2f3;
+  --c-code-bg:   #f1f4f9;
+  --c-code-text: #0f172a;
+  --c-success:   #16a34a;
+  --c-success-bg:#dcfce7;
+  --c-warn:      #b45309;
+  --c-warn-bg:   #fef3c7;
+  --c-error:     #b91c1c;
+  --c-error-bg:  #fee2e2;
+  --radius:      10px;
+  --shadow:      0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+}
+.page { max-width: 920px; margin: 0 auto; padding: 32px 24px 80px; }
+header.brand {
+  display: flex; align-items: baseline; gap: 12px;
+  border-bottom: 1px solid var(--c-line); padding-bottom: 16px; margin-bottom: 28px;
+}
+header.brand .crumb { color: var(--c-muted); font-size: 13px; }
+h1, h2, h3, h4 { color: var(--c-primary); margin: 1.4em 0 .5em; line-height: 1.25; }
+h1 { font-size: 28px; margin-top: 0; }
+h2 { font-size: 22px; border-bottom: 1px solid var(--c-line); padding-bottom: 6px; }
+h3 { font-size: 18px; }
+h4 { font-size: 16px; color: var(--c-accent); }
+p, li { color: var(--c-text); }
+.lead { color: var(--c-text-soft); font-size: 17px; }
+.card {
+  background: var(--c-card); border: 1px solid var(--c-line);
+  border-radius: var(--radius); padding: 20px 22px; margin: 16px 0;
+  box-shadow: var(--shadow);
+}
+.callout {
+  background: var(--c-soft-blue);
+  border-left: 4px solid var(--c-accent);
+  padding: 12px 16px; border-radius: 6px; margin: 14px 0;
+  font-size: 15px;
+}
+.callout.warn { background: var(--c-warn-bg); border-color: var(--c-warn); }
+.callout strong.label { color: var(--c-primary); }
+code, pre, kbd, samp {
+  font-family: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+code { background: var(--c-code-bg); padding: 1px 6px; border-radius: 4px; font-size: 14px; }
+pre {
+  background: var(--c-code-bg); color: var(--c-code-text);
+  padding: 14px 16px; border-radius: 8px; overflow-x: auto;
+  font-size: 14px; line-height: 1.55;
+  border: 1px solid var(--c-line);
+}
+pre code { background: transparent; padding: 0; }
+.btn {
+  display: inline-block; padding: 8px 14px; font-size: 14px;
+  background: var(--c-primary); color: #fff; border: none;
+  border-radius: 6px; cursor: pointer; font-weight: 600;
+}
+.btn:hover { background: var(--c-accent); }
+.btn.ghost {
+  background: #fff; color: var(--c-primary);
+  border: 1px solid var(--c-primary);
+}
+.btn.ghost:hover { background: var(--c-soft-blue); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+input[type=text], input[type=number], select, textarea {
+  font: inherit; padding: 6px 10px; border: 1px solid var(--c-line);
+  border-radius: 6px; background: #fff; color: var(--c-text);
+}
+input[type=range] { width: 100%; }
+label.field { display: block; font-size: 14px; color: var(--c-text-soft); margin: 8px 0 4px; }
+table.data { border-collapse: collapse; margin: 10px 0; font-size: 14px; }
+table.data th, table.data td {
+  border: 1px solid var(--c-line); padding: 6px 10px; text-align: left;
+}
+table.data th { background: var(--c-soft-blue); color: var(--c-primary); }
+.row { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
+.col { flex: 1 1 280px; }
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 14px; }
+.feedback {
+  padding: 10px 14px; border-radius: 6px; margin-top: 10px; font-size: 14px;
+  border: 1px solid transparent;
+}
+.feedback.ok    { background: var(--c-success-bg); border-color: var(--c-success); color: #14532d; }
+.feedback.bad   { background: var(--c-error-bg);   border-color: var(--c-error);   color: #7f1d1d; }
+.feedback.info  { background: var(--c-soft-blue);  border-color: var(--c-accent);  color: var(--c-primary); }
+ul.choices { list-style: none; padding: 0; margin: 8px 0; }
+ul.choices li {
+  background: #fff; border: 1px solid var(--c-line); padding: 10px 14px;
+  border-radius: 6px; margin: 6px 0; cursor: pointer; font-size: 15px;
+}
+ul.choices li:hover { background: var(--c-soft-blue); }
+ul.choices li.selected { background: var(--c-soft-blue); border-color: var(--c-primary); }
+ul.choices li.correct  { background: var(--c-success-bg); border-color: var(--c-success); }
+ul.choices li.incorrect{ background: var(--c-error-bg);   border-color: var(--c-error); }
+.progress {
+  background: var(--c-line); border-radius: 4px; height: 6px;
+  overflow: hidden; margin: 8px 0;
+}
+.progress > div {
+  background: var(--c-accent); height: 100%;
+  transition: width .35s ease;
+}
+svg.chart { display: block; max-width: 100%; height: auto; }
+.legend { display: flex; gap: 12px; font-size: 13px; color: var(--c-text-soft); margin: 6px 0; }
+.legend span.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+footer.brand {
+  margin-top: 60px; padding-top: 16px; border-top: 1px solid var(--c-line);
+  color: var(--c-muted); font-size: 13px; text-align: center;
+}
+.tag {
+  display: inline-block; padding: 2px 8px; font-size: 12px; font-weight: 600;
+  border-radius: 999px; background: var(--c-soft-blue); color: var(--c-primary);
+  margin-right: 6px;
+}
+.scope {
+  font-size: 13px; color: var(--c-muted); font-style: italic;
+}
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="brand">
+    <span class="tag">Machine Learning</span>
+    <span class="crumb">Tutorials · Topic 6</span>
+  </header>
+  
+<h1>Topic 6 · Clustering &amp; Dimensionality Reduction</h1>
+<p class="lead">
+  In Topic 6 you build a small unsupervised-learning explorer with
+  K-Means and PCA at an introductory level. This page lets you step
+  through K-Means iterations and watch PCA compress data, so the
+  algorithms feel less like magic and more like procedures.
+</p>
+
+<div class="card">
+  <h2>1. K-Means in slow motion</h2>
+  <p>
+    K-Means is a recipe with two repeating steps:
+  </p>
+  <ol>
+    <li><strong>Assign</strong> each data point to its nearest cluster centroid.</li>
+    <li><strong>Update</strong> each centroid to the mean of the points assigned to it.</li>
+  </ol>
+  <p>
+    Repeat until nothing changes. Click <strong>Step</strong> to advance
+    one iteration. The centroids are big diamonds; data points are small
+    circles colored by their current assignment.
+  </p>
+  <div class="row">
+    <div class="col">
+      <svg id="km-chart" class="chart" viewBox="0 0 360 320" style="background:#fff;border:1px solid var(--c-line); border-radius:6px;"></svg>
+    </div>
+    <div class="col">
+      <label class="field">Number of clusters (k): <span id="k-val">3</span></label>
+      <input type="range" id="k-slider" min="2" max="5" step="1" value="3">
+      <div class="btn-row">
+        <button class="btn" id="km-step">Step</button>
+        <button class="btn ghost" id="km-restart">Restart</button>
+      </div>
+      <table class="data">
+        <tr><th>Iteration</th><td class="mono" id="km-iter">0</td></tr>
+        <tr><th>Inertia (lower = tighter clusters)</th><td class="mono" id="km-inertia">—</td></tr>
+        <tr><th>Has converged?</th><td id="km-conv">—</td></tr>
+      </table>
+      <p class="callout"><strong class="label">Note:</strong> the final assignment depends on the initial centroids — different starts can land on different local minima. scikit-learn's default n_init='auto' runs the procedure several times and keeps the best.</p>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>2. Choosing k: the elbow + silhouette check</h2>
+  <p>
+    The "elbow" method runs K-Means for several values of k and plots
+    the inertia. As k grows, inertia always decreases — but the drop
+    flattens at the natural k. The silhouette score, computed once at
+    the chosen k, adds a per-point confirmation that points are
+    closer to their own cluster's center than to any other cluster's.
+  </p>
+  <div class="row">
+    <div class="col">
+      <svg id="elbow-chart" class="chart" viewBox="0 0 360 220" style="background:#fff;border:1px solid var(--c-line); border-radius:6px;"></svg>
+      <p class="legend">
+        <span><span class="dot" style="background:#1f3864"></span>inertia vs k (the elbow)</span>
+      </p>
+    </div>
+    <div class="col">
+      <p class="callout">
+        <strong class="label">introductory recipe:</strong> plot inertia
+        for k = 2…10, eyeball where the curve "bends" (the elbow),
+        then compute one silhouette score at that k as a sanity check.
+        Formal assumption tests are out of scope.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>3. PCA: summarizing many features with a few</h2>
+  <p>
+    Principal Component Analysis (PCA) finds a few new combined
+    features ("components") that together capture as much of the
+    variation in your data as possible. The first component captures
+    the most variation, the second captures the next most, and so on.
+    The bar chart below shows the percentage of variance explained
+    by each component for a synthetic 6-feature dataset.
+  </p>
+  <svg id="pca-chart" class="chart" viewBox="0 0 360 220" style="background:#fff;border:1px solid var(--c-line); border-radius:6px;"></svg>
+  <p>
+    The introductory rule is to keep enough components to clear a stated
+    cumulative-variance threshold (often 80% or 95%). In the chart above,
+    keeping the first <strong id="pca-keep-count">3</strong> components
+    captures <strong id="pca-keep-pct">—</strong> of the total variance.
+  </p>
+  <p class="callout">
+    <strong class="label">What is OUT of scope:</strong> Bartlett's test of
+    sphericity, the Kaiser-Meyer-Olkin measure, eigenvector math, and
+    t-SNE. The introductory course relies on the cumulative-variance
+    threshold and the scree-plot shape.
+  </p>
+</div>
+
+<div class="card">
+  <h2>4. Stewardship: cluster labels have no ground truth</h2>
+  <p>
+    When you cluster <em>people</em> — employees, customers, patients —
+    the cluster labels are an interpretive imposition. A label like
+    "at-risk" can become a self-fulfilling prophecy if a team acts on it.
+    At the introductory level we are deliberately small with our claims: report
+    what the clusters appear to capture, document the choices that
+    produced them, and refuse to label individuals with labels that
+    were never validated against an outcome.
+  </p>
+</div>
+
+<div class="card">
+  <h2>5. Initialization sensitivity</h2>
+  <p>
+    K-Means converges to a local minimum, not always the global one. Two
+    different starting points can end at different clusterings — even
+    on the same data. Click "Reroll seed" several times to see the
+    range of outcomes. This is exactly why scikit-learn's default
+    <code>n_init='auto'</code> runs the algorithm several times and
+    keeps the best.
+  </p>
+  <svg id="seed-chart" class="chart" viewBox="0 0 360 280" style="background:#fff;border:1px solid var(--c-line); border-radius:6px;"></svg>
+  <div class="btn-row">
+    <button class="btn" id="reroll">Reroll seed</button>
+    <span class="mono" style="align-self:center;">Final inertia: <span id="seed-inertia">—</span></span>
+  </div>
+</div>
+
+<div class="card">
+  <h2>6. The silhouette score for individual points</h2>
+  <p>
+    The silhouette of a point is between −1 and 1. Roughly +1 means
+    "I'm close to my cluster's center and far from the next cluster".
+    Around 0 means "I'm on the boundary." Negative means "I'm probably
+    in the wrong cluster." The chart below shows per-point silhouette
+    for the K-Means demo above, grouped by cluster. Very negative bars
+    are the points the algorithm is least confident about.
+  </p>
+  <svg id="silh-chart" class="chart" viewBox="0 0 360 260" style="background:#fff;border:1px solid var(--c-line); border-radius:6px;"></svg>
+</div>
+
+<div class="card">
+  <h2>7. PCA in two dimensions — see what it does</h2>
+  <p>
+    PCA looks at the cloud of data points and finds the direction
+    along which they spread most (PC1). The second direction (PC2)
+    is perpendicular to the first and captures the next-most
+    spreading direction. In two dimensions you can draw both arrows
+    directly on the data. The percentages on the arrows are the
+    explained-variance ratios.
+  </p>
+  <svg id="pca2d-chart" class="chart" viewBox="0 0 360 280" style="background:#fff;border:1px solid var(--c-line); border-radius:6px;"></svg>
+  <p class="callout">
+    <strong class="label">Mental model:</strong>
+    if you had to summarize each point with a single number, project
+    it onto PC1. You will keep most of the "spread" of the data while
+    discarding the cross-axis. That is dimensionality reduction.
+  </p>
+</div>
+
+<div class="card">
+  <h2>8. Association rules — when does a rule "matter"?</h2>
+  <p>
+    For market-basket analysis the three numbers you compute for every
+    rule are <strong>support</strong> (how often does this combination
+    occur?), <strong>confidence</strong> (when the left side occurs,
+    how often does the right side follow?), and <strong>lift</strong>
+    (is the right side more likely after the left, compared to
+    baseline?). Drag the sliders below to set thresholds and see
+    which rules survive.
+  </p>
+  <div id="rules-host"></div>
+</div>
+
+<div class="card">
+  <h2>9. Stewardship: cluster labels are not ground truth</h2>
+  <p>
+    K-Means produced a cluster assignment for each row. Your team gave
+    each cluster a label like "at risk" or "loyal" or "ambitious."
+    Those labels feel like fact — but they are <em>interpretive
+    impositions</em>. Nobody validated them against a real outcome.
+  </p>
+  <p>
+    Two habits keep this honest at the introductory level:
+  </p>
+  <ol>
+    <li><strong>Talk about clusters, not individuals.</strong> "Cluster 3 has lower spend on average" is fine. "Maya is in cluster 3, so Maya is at risk" is not.</li>
+    <li><strong>Report instability.</strong> If running K-Means three times with different seeds gives three different clusterings, say so in the README. Clusters that move with the seed are not robust signals.</li>
+  </ol>
+</div>
+
+<div class="callout">
+  <strong class="label">Next step:</strong>
+  open <code>Topic-6-Clustering-Exercises.html</code> to practice
+  reading elbow plots, choosing k, and interpreting PCA outputs.
+</div>
+
+  <footer class="brand">© 2026 · Intro to Machine Learning</footer>
+</div>
+<script>
+// ---- exercise framework ----
+function el(tag, attrs, ...kids){
+  const e = document.createElement(tag);
+  for (const k in (attrs||{})) {
+    if (k === 'class') e.className = attrs[k];
+    else if (k === 'html') e.innerHTML = attrs[k];
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else if (attrs[k] !== false && attrs[k] != null) e.setAttribute(k, attrs[k]);
+  }
+  for (const kid of kids.flat()) {
+    if (kid == null) continue;
+    e.appendChild(kid.nodeType ? kid : document.createTextNode(kid));
+  }
+  return e;
+}
+function feedback(host, kind, msg){
+  let f = host.querySelector('.feedback');
+  if (!f) { f = el('div', {class:'feedback'}); host.appendChild(f); }
+  f.className = 'feedback ' + kind;
+  f.innerHTML = msg;
+}
+function renderMCQ(host, q){
+  host.appendChild(el('p', {class:'lead'}, q.stem));
+  const ul = el('ul', {class:'choices'});
+  let answered = false;
+  q.choices.forEach((c, i) => {
+    const li = el('li', {tabindex:'0'}, c);
+    li.addEventListener('click', () => {
+      if (answered) return;
+      answered = true;
+      Array.from(ul.children).forEach(x => x.classList.remove('selected'));
+      li.classList.add('selected');
+      if (i === q.answer) {
+        li.classList.add('correct');
+        feedback(host, 'ok', '<strong>Correct.</strong> ' + (q.rationale||''));
+      } else {
+        li.classList.add('incorrect');
+        ul.children[q.answer].classList.add('correct');
+        feedback(host, 'bad', '<strong>Not quite.</strong> The correct answer is highlighted in green. ' + (q.rationale||''));
+      }
+    });
+    ul.appendChild(li);
+  });
+  host.appendChild(ul);
+}
+function renderTextEx(host, q){
+  host.appendChild(el('p', {class:'lead'}, q.stem));
+  const input = el('input', {type:'text', placeholder: q.placeholder || 'Your answer…', style:'width:60%;'});
+  const btn = el('button', {class:'btn'}, 'Check');
+  const row = el('div', {class:'btn-row'}, input, btn);
+  host.appendChild(row);
+  btn.addEventListener('click', () => {
+    const v = (input.value || '').trim();
+    if (q.check(v)) feedback(host, 'ok', '<strong>Correct.</strong> ' + (q.rationale||''));
+    else feedback(host, 'bad', '<strong>Not quite.</strong> ' + (q.hint||q.rationale||''));
+  });
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') btn.click(); });
+}
+function buildExerciseSet(rootSel, items){
+  const root = document.querySelector(rootSel);
+  let correct = 0, attempted = 0;
+  items.forEach((q, idx) => {
+    const card = el('div', {class:'card'});
+    card.appendChild(el('h3', {}, 'Exercise ' + (idx+1) + ' — ' + q.type));
+    if (q.kind === 'mcq') renderMCQ(card, q);
+    else if (q.kind === 'text') renderTextEx(card, q);
+    else if (q.kind === 'custom') q.render(card);
+    root.appendChild(card);
+  });
+}
+</script>
+<script>
+// ---------- K-Means demo ----------
+(function(){
+  const W = 360, H = 320;
+  const COLORS = ['#1f3864','#dc2626','#16a34a','#7c3aed','#b45309'];
+  let pts = [];
+  let cents = [];
+  let assigns = [];
+  let iter = 0;
+  let converged = false;
+  let k = 3;
+
+  function seed(){
+    pts = [];
+    // Three Gaussian-ish blobs:
+    const centers = [{x: 90, y: 90}, {x: 250, y: 100}, {x: 180, y: 230}, {x: 80, y: 240}, {x: 280, y: 240}];
+    for (let g = 0; g < k; g++) {
+      const c = centers[g];
+      for (let i = 0; i < 14; i++) {
+        pts.push({ x: c.x + (Math.random() - 0.5) * 60, y: c.y + (Math.random() - 0.5) * 60 });
+      }
+    }
+    // initial centroids: pick k random points
+    const idx = Array.from({length: pts.length}, (_, i) => i).sort(() => Math.random() - 0.5).slice(0, k);
+    cents = idx.map(i => ({ x: pts[i].x, y: pts[i].y }));
+    assigns = pts.map(() => 0);
+    iter = 0;
+    converged = false;
+  }
+  function nearest(p){
+    let best = 0, bd = Infinity;
+    cents.forEach((c, i) => {
+      const d = (c.x - p.x) ** 2 + (c.y - p.y) ** 2;
+      if (d < bd) { bd = d; best = i; }
+    });
+    return best;
+  }
+  function step(){
+    if (converged) return;
+    // Assign
+    const newA = pts.map(nearest);
+    let changed = false;
+    for (let i = 0; i < pts.length; i++) if (newA[i] !== assigns[i]) { changed = true; break; }
+    assigns = newA;
+    // Update
+    const newC = cents.map((c, i) => {
+      const members = pts.filter((_, j) => assigns[j] === i);
+      if (!members.length) return c;
+      return { x: members.reduce((s, p) => s + p.x, 0) / members.length,
+               y: members.reduce((s, p) => s + p.y, 0) / members.length };
+    });
+    let moved = false;
+    for (let i = 0; i < cents.length; i++) {
+      if (Math.abs(cents[i].x - newC[i].x) > 0.5 || Math.abs(cents[i].y - newC[i].y) > 0.5) { moved = true; break; }
+    }
+    cents = newC;
+    iter += 1;
+    if (!changed && !moved) converged = true;
+  }
+  function inertia(){
+    return pts.reduce((s, p, i) => {
+      const c = cents[assigns[i]];
+      return s + (c.x - p.x) ** 2 + (c.y - p.y) ** 2;
+    }, 0);
+  }
+  function draw(){
+    const svg = document.getElementById('km-chart');
+    const dots = pts.map((p, i) =>
+      `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="${COLORS[assigns[i]]}"/>`
+    );
+    const cs = cents.map((c, i) =>
+      `<polygon points="${c.x.toFixed(1)},${(c.y-9).toFixed(1)} ${(c.x+9).toFixed(1)},${c.y.toFixed(1)} ${c.x.toFixed(1)},${(c.y+9).toFixed(1)} ${(c.x-9).toFixed(1)},${c.y.toFixed(1)}" fill="${COLORS[i]}" stroke="#fff" stroke-width="2"/>`
+    );
+    svg.innerHTML = dots.join('') + cs.join('');
+    document.getElementById('km-iter').textContent = iter;
+    document.getElementById('km-inertia').textContent = inertia().toFixed(0);
+    document.getElementById('km-conv').innerHTML = converged ? '<span style="color:var(--c-success)">yes — no more changes</span>' : '<span style="color:var(--c-muted)">not yet, click Step</span>';
+  }
+
+  document.getElementById('km-step').addEventListener('click', () => { step(); draw(); });
+  document.getElementById('km-restart').addEventListener('click', () => { seed(); draw(); });
+  document.getElementById('k-slider').addEventListener('input', e => {
+    k = parseInt(e.target.value);
+    document.getElementById('k-val').textContent = k;
+    seed(); draw();
+  });
+  seed(); draw();
+})();
+
+// ---------- Elbow chart ----------
+(function(){
+  // Synthetic inertia curve that bends around k=3
+  const data = [
+    { k: 2, inertia: 12500 },
+    { k: 3, inertia:  5200 },
+    { k: 4, inertia:  4400 },
+    { k: 5, inertia:  3900 },
+    { k: 6, inertia:  3600 },
+    { k: 7, inertia:  3350 },
+    { k: 8, inertia:  3150 },
+    { k: 9, inertia:  3000 },
+    { k:10, inertia:  2880 },
+  ];
+  const W = 360, H = 220, padL = 50, padB = 36, padT = 14, padR = 14;
+  const sx = k => padL + (k - 2) / 8 * (W - padL - padR);
+  const minI = 2500, maxI = 13000;
+  const sy = v => H - padB - (v - minI) / (maxI - minI) * (H - padT - padB);
+  const svg = document.getElementById('elbow-chart');
+  const elements = [
+    `<rect x="${padL}" y="${padT}" width="${W-padL-padR}" height="${H-padT-padB}" fill="#fff" stroke="#e5e7eb"/>`,
+  ];
+  // axes labels
+  for (let k = 2; k <= 10; k++) elements.push(`<text x="${sx(k)}" y="${H-padB+14}" text-anchor="middle" fill="#6b7280" font-size="10">${k}</text>`);
+  elements.push(`<text x="${W/2}" y="${H-4}" text-anchor="middle" fill="#374151" font-size="11">number of clusters (k)</text>`);
+  elements.push(`<text x="14" y="${H/2}" text-anchor="middle" fill="#374151" font-size="11" transform="rotate(-90 14 ${H/2})">inertia</text>`);
+  // line
+  const path = data.map((p, i) => (i === 0 ? 'M' : 'L') + sx(p.k) + ',' + sy(p.inertia)).join(' ');
+  elements.push(`<path d="${path}" fill="none" stroke="#1f3864" stroke-width="2.5"/>`);
+  data.forEach(p => elements.push(`<circle cx="${sx(p.k)}" cy="${sy(p.inertia)}" r="4" fill="#1f3864"/>`));
+  // highlight elbow at k=3
+  elements.push(`<circle cx="${sx(3)}" cy="${sy(5200)}" r="9" fill="none" stroke="#f59e0b" stroke-width="3"/>`);
+  elements.push(`<text x="${sx(3)+18}" y="${sy(5200)-8}" fill="#b45309" font-size="11" font-weight="bold">elbow at k=3</text>`);
+  svg.innerHTML = elements.join('');
+})();
+
+// ---------- PCA variance bar chart ----------
+(function(){
+  const ratios = [0.46, 0.27, 0.13, 0.08, 0.04, 0.02];
+  const W = 360, H = 220, padL = 50, padB = 36, padT = 14, padR = 14;
+  const barW = (W - padL - padR) / ratios.length * 0.7;
+  const svg = document.getElementById('pca-chart');
+  const elements = [
+    `<rect x="${padL}" y="${padT}" width="${W-padL-padR}" height="${H-padT-padB}" fill="#fff" stroke="#e5e7eb"/>`,
+  ];
+  for (let p = 0; p <= 0.5; p += 0.1) {
+    const y = H - padB - p / 0.5 * (H - padT - padB);
+    elements.push(`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#f1f5f9"/>`);
+    elements.push(`<text x="${padL-6}" y="${y+3}" text-anchor="end" fill="#6b7280" font-size="10">${(p*100).toFixed(0)}%</text>`);
+  }
+  ratios.forEach((r, i) => {
+    const x = padL + (W - padL - padR) / ratios.length * i + (W - padL - padR) / ratios.length / 2 - barW / 2;
+    const y = H - padB - r / 0.5 * (H - padT - padB);
+    const h = (H - padB) - y;
+    elements.push(`<rect x="${x}" y="${y}" width="${barW}" height="${h}" fill="#1f3864"/>`);
+    elements.push(`<text x="${x + barW/2}" y="${H - padB + 14}" text-anchor="middle" fill="#374151" font-size="11">PC${i+1}</text>`);
+    elements.push(`<text x="${x + barW/2}" y="${y - 4}" text-anchor="middle" fill="#374151" font-size="10">${(r*100).toFixed(0)}%</text>`);
+  });
+  elements.push(`<text x="${W/2}" y="${H-4}" text-anchor="middle" fill="#374151" font-size="11">principal components</text>`);
+  elements.push(`<text x="14" y="${H/2}" text-anchor="middle" fill="#374151" font-size="11" transform="rotate(-90 14 ${H/2})">explained variance</text>`);
+  svg.innerHTML = elements.join('');
+  const cum3 = ratios.slice(0, 3).reduce((s, v) => s + v, 0);
+  document.getElementById('pca-keep-pct').textContent = (cum3 * 100).toFixed(0) + '%';
+})();
+
+// ---------- seed sensitivity demo ----------
+(function(){
+  const svg = document.getElementById('seed-chart');
+  if (!svg) return;
+  const W = 360, H = 280;
+  const COLORS = ['#1f3864','#dc2626','#16a34a','#7c3aed'];
+  // Fixed data with two slightly overlapping blobs to make initialization matter
+  const data = [];
+  function rng(seed){ let s = seed; return () => (s = (s*9301+49297)%233280)/233280; }
+  const dataRng = rng(101);
+  for (let i = 0; i < 20; i++) data.push({ x: 100 + dataRng()*120, y: 100 + dataRng()*120 });
+  for (let i = 0; i < 20; i++) data.push({ x: 180 + dataRng()*120, y: 60  + dataRng()*120 });
+  for (let i = 0; i < 16; i++) data.push({ x: 60  + dataRng()*120, y: 200 + dataRng()*80  });
+  let seedNo = 1;
+  function runKMeans(seed, k=3){
+    const r = rng(seed);
+    // pick k random centroids
+    let cents = [];
+    const used = new Set();
+    while (cents.length < k) {
+      const idx = Math.floor(r() * data.length);
+      if (!used.has(idx)) { used.add(idx); cents.push({ x: data[idx].x, y: data[idx].y }); }
+    }
+    let assigns = data.map(() => 0);
+    for (let it = 0; it < 30; it++) {
+      const newA = data.map(p => {
+        let best = 0, bd = Infinity;
+        cents.forEach((c, i) => { const d = (c.x-p.x)**2 + (c.y-p.y)**2; if (d < bd) { bd = d; best = i; } });
+        return best;
+      });
+      let changed = false;
+      for (let i = 0; i < data.length; i++) if (newA[i] !== assigns[i]) { changed = true; break; }
+      assigns = newA;
+      const newC = cents.map((c, i) => {
+        const m = data.filter((_, j) => assigns[j] === i);
+        if (!m.length) return c;
+        return { x: m.reduce((s,p)=>s+p.x,0)/m.length, y: m.reduce((s,p)=>s+p.y,0)/m.length };
+      });
+      cents = newC;
+      if (!changed) break;
+    }
+    const inertia = data.reduce((s, p, i) => {
+      const c = cents[assigns[i]];
+      return s + (c.x-p.x)**2 + (c.y-p.y)**2;
+    }, 0);
+    return { cents, assigns, inertia };
+  }
+  function draw(){
+    const { cents, assigns, inertia } = runKMeans(seedNo);
+    document.getElementById('seed-inertia').textContent = inertia.toFixed(0);
+    const dots = data.map((p, i) => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="${COLORS[assigns[i]]}"/>`);
+    const cs = cents.map((c, i) => `<polygon points="${c.x.toFixed(1)},${(c.y-9).toFixed(1)} ${(c.x+9).toFixed(1)},${c.y.toFixed(1)} ${c.x.toFixed(1)},${(c.y+9).toFixed(1)} ${(c.x-9).toFixed(1)},${c.y.toFixed(1)}" fill="${COLORS[i]}" stroke="#fff" stroke-width="2"/>`);
+    svg.innerHTML = dots.join('') + cs.join('');
+  }
+  document.getElementById('reroll').addEventListener('click', () => { seedNo += 1; draw(); });
+  draw();
+})();
+
+// ---------- silhouette per-point chart ----------
+(function(){
+  const svg = document.getElementById('silh-chart');
+  if (!svg) return;
+  // Simulated per-point silhouette values for 3 clusters
+  function rng(seed){ let s = seed; return () => (s = (s*9301+49297)%233280)/233280; }
+  const r = rng(53);
+  const groups = [];
+  for (let c = 0; c < 3; c++) {
+    const sizes = [12, 14, 10];
+    const arr = Array.from({length: sizes[c]}, () => 0.2 + r() * 0.5);
+    arr.sort((a, b) => b - a);
+    // Sprinkle a couple of negatives
+    if (c === 1) arr[arr.length - 1] = -0.2;
+    if (c === 2) arr[arr.length - 2] = -0.1;
+    groups.push(arr);
+  }
+  const COLORS = ['#1f3864', '#dc2626', '#16a34a'];
+  const W = 360, H = 260, padL = 36, padB = 30, padT = 14, padR = 14;
+  const total = groups.reduce((s, g) => s + g.length, 0);
+  const barW = (W - padL - padR) / total;
+  let x = padL;
+  const elements = [`<line x1="${padL}" y1="${H/2}" x2="${W-padR}" y2="${H/2}" stroke="#cbd5e1" stroke-dasharray="2,2"/>`];
+  groups.forEach((arr, gi) => {
+    arr.forEach(v => {
+      const half = (H - padT - padB) / 2;
+      const top = v >= 0 ? H/2 - v * half : H/2;
+      const h = Math.abs(v) * half;
+      elements.push(`<rect x="${x.toFixed(1)}" y="${top.toFixed(1)}" width="${(barW - 1).toFixed(1)}" height="${h.toFixed(1)}" fill="${COLORS[gi]}"/>`);
+      x += barW;
+    });
+    elements.push(`<text x="${(x - (barW * arr.length / 2)).toFixed(1)}" y="${H - 10}" text-anchor="middle" fill="#374151" font-size="11">cluster ${gi}</text>`);
+  });
+  elements.push(`<text x="${padL - 10}" y="${H/2 - 60}" text-anchor="end" fill="#6b7280" font-size="10">+1</text>`);
+  elements.push(`<text x="${padL - 10}" y="${H/2 + 4}" text-anchor="end" fill="#6b7280" font-size="10">0</text>`);
+  elements.push(`<text x="${padL - 10}" y="${H/2 + 60}" text-anchor="end" fill="#6b7280" font-size="10">−1</text>`);
+  svg.innerHTML = elements.join('');
+})();
+
+// ---------- PCA 2D projection demo ----------
+(function(){
+  const svg = document.getElementById('pca2d-chart');
+  if (!svg) return;
+  const W = 360, H = 280;
+  // Synthetic correlated data
+  function rng(seed){ let s = seed; return () => (s = (s*9301+49297)%233280)/233280; }
+  const r = rng(7);
+  const pts = [];
+  for (let i = 0; i < 50; i++) {
+    const t = r() * 5 - 2;
+    const noise = r() * 1 - 0.5;
+    pts.push({ x: 180 + t * 30, y: 140 + t * 25 + noise * 30 });
+  }
+  // Compute mean and covariance
+  const mx = pts.reduce((s,p)=>s+p.x,0)/pts.length;
+  const my = pts.reduce((s,p)=>s+p.y,0)/pts.length;
+  let sxx=0, syy=0, sxy=0;
+  pts.forEach(p => { sxx += (p.x-mx)**2; syy += (p.y-my)**2; sxy += (p.x-mx)*(p.y-my); });
+  sxx /= pts.length; syy /= pts.length; sxy /= pts.length;
+  // Eigenvalues of [[sxx,sxy],[sxy,syy]]
+  const tr = sxx + syy;
+  const det = sxx * syy - sxy * sxy;
+  const dscr = Math.sqrt(tr*tr - 4*det);
+  const l1 = (tr + dscr) / 2, l2 = (tr - dscr) / 2;
+  // Eigenvector for l1
+  const v1 = { x: sxy, y: l1 - sxx };
+  const v1n = Math.sqrt(v1.x*v1.x + v1.y*v1.y);
+  v1.x /= v1n; v1.y /= v1n;
+  const v2 = { x: -v1.y, y: v1.x };
+  const pc1Ratio = l1 / (l1 + l2);
+  const elements = pts.map(p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="#1f3864" opacity="0.7"/>`);
+  // Draw PC1 and PC2 as arrows from mean
+  const sc1 = Math.sqrt(l1) * 3, sc2 = Math.sqrt(l2) * 3;
+  elements.push(`<line x1="${mx-v1.x*sc1}" y1="${my-v1.y*sc1}" x2="${mx+v1.x*sc1}" y2="${my+v1.y*sc1}" stroke="#dc2626" stroke-width="3" marker-end="url(#arrow6a)"/>`);
+  elements.push(`<line x1="${mx-v2.x*sc2}" y1="${my-v2.y*sc2}" x2="${mx+v2.x*sc2}" y2="${my+v2.y*sc2}" stroke="#f59e0b" stroke-width="2.5" marker-end="url(#arrow6b)"/>`);
+  elements.push(`<text x="${(mx+v1.x*sc1+8).toFixed(1)}" y="${(my+v1.y*sc1+4).toFixed(1)}" fill="#7f1d1d" font-size="12" font-weight="600">PC1 · ${(pc1Ratio*100).toFixed(0)}%</text>`);
+  elements.push(`<text x="${(mx+v2.x*sc2+8).toFixed(1)}" y="${(my+v2.y*sc2+4).toFixed(1)}" fill="#92400e" font-size="12" font-weight="600">PC2 · ${((1-pc1Ratio)*100).toFixed(0)}%</text>`);
+  const defs = '<defs><marker id="arrow6a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/></marker><marker id="arrow6b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#f59e0b"/></marker></defs>';
+  svg.innerHTML = defs + elements.join('');
+})();
+
+// ---------- association rules with thresholds ----------
+(function(){
+  const host = document.getElementById('rules-host');
+  if (!host) return;
+  // Simulated rules
+  const rules = [
+    { rule:'{bread} → {butter}',    support:0.32, confidence:0.71, lift:1.32 },
+    { rule:'{bread} → {milk}',      support:0.40, confidence:0.85, lift:1.02 },
+    { rule:'{diapers} → {beer}',    support:0.06, confidence:0.62, lift:2.10 },
+    { rule:'{coffee} → {sugar}',    support:0.18, confidence:0.55, lift:1.45 },
+    { rule:'{chips} → {soda}',      support:0.22, confidence:0.78, lift:1.95 },
+    { rule:'{tea} → {biscuits}',    support:0.08, confidence:0.30, lift:0.95 },
+    { rule:'{pasta} → {sauce}',     support:0.27, confidence:0.91, lift:1.74 },
+    { rule:'{eggs} → {milk}',       support:0.15, confidence:0.65, lift:0.99 },
+  ];
+  host.innerHTML = '';
+  function slider(labelText, id, min, max, step, val) {
+    host.appendChild(el('label', {class:'field'}, labelText + ': '));
+    const out = el('span', {class:'mono', id: id + '-val'}, val.toFixed(2));
+    host.appendChild(out);
+    host.appendChild(el('input', {type:'range', id, min, max, step, value:val}));
+  }
+  slider('Minimum support',    'sup',  '0.05', '0.5', '0.01', 0.10);
+  slider('Minimum confidence', 'conf', '0.30', '0.95','0.01', 0.50);
+  slider('Minimum lift',       'lift', '0.50', '3.0', '0.05', 1.00);
+  const out = el('div', {style:'margin-top:10px;'});
+  host.appendChild(out);
+  function refresh(){
+    const s = parseFloat(document.getElementById('sup').value);
+    const c = parseFloat(document.getElementById('conf').value);
+    const l = parseFloat(document.getElementById('lift').value);
+    document.getElementById('sup-val').textContent  = s.toFixed(2);
+    document.getElementById('conf-val').textContent = c.toFixed(2);
+    document.getElementById('lift-val').textContent = l.toFixed(2);
+    const surviving = rules.filter(r => r.support >= s && r.confidence >= c && r.lift >= l);
+    out.innerHTML = '';
+    const tbl = el('table', {class:'data'});
+    tbl.appendChild(el('thead', {}, el('tr', {}, el('th',{},'rule'), el('th',{},'support'), el('th',{},'confidence'), el('th',{},'lift'), el('th',{},'survives?'))));
+    const tb = el('tbody');
+    rules.forEach(r => {
+      const ok = surviving.includes(r);
+      tb.appendChild(el('tr', {style: ok ? 'background:var(--c-success-bg);' : 'background:var(--c-error-bg);'}, el('td',{},r.rule), el('td',{},r.support.toFixed(2)), el('td',{},r.confidence.toFixed(2)), el('td',{},r.lift.toFixed(2)), el('td',{}, ok ? '✓' : '✗')));
+    });
+    tbl.appendChild(tb);
+    out.appendChild(tbl);
+    out.appendChild(el('p', {class:'scope', style:'margin-top:6px;'}, surviving.length + ' rule(s) survive your thresholds. Notice how {bread}→{milk} has very high confidence but lift only 1.02 — knowing the basket has bread barely changes the probability of milk over baseline.'));
+  }
+  ['sup','conf','lift'].forEach(id => document.getElementById(id).addEventListener('input', refresh));
+  refresh();
+})();
+</script>
+</body>
+</html>
