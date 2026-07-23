@@ -1,20 +1,37 @@
 # Resources for AI Courses
 
-A collection of teaching resources organized by subject. Each top-level folder
-groups the projects and tutorials for one subject area.
+A collection of teaching resources. The repository holds **two courses**, each
+with its own tutorials and hands-on resources, plus a course-agnostic survey of
+cloud deployment architectures:
+
+| | What it is |
+|---|---|
+| 📘 **[Deep Learning](#deep-learning)** | Course tutorials + full-stack **project templates** (Streamlit + FastAPI + Supabase). |
+| 📗 **[Intro to Machine Learning](#intro-to-machine-learning)** | Course tutorials covering the classical ML toolkit (SQL, data quality, regression, classification, clustering). |
+| ☁️ **[Cloud Deployment](#cloud-deployment-survey)** | A survey of different deployment stacks (Azure, Vercel, Render, Railway, TF.js). Not tied to any one course. |
+
+> Each course folder groups the tutorials and resources for one subject area. The
+> **Cloud Deployment** folder sits alongside the courses because it is a general
+> reference — it was first introduced within Deep Learning, but the deployment
+> patterns it surveys apply broadly.
+
+---
 
 ## Deep Learning
 
-The [`Deep Learning/`](./Deep%20Learning) folder contains **12 complete projects**
-demonstrating full-stack deep learning and various cloud deployment strategies.
-Each project showcases different cloud platforms and deployment patterns, and has
-its own detailed README and tutorial.
+The [`Deep Learning/`](./Deep%20Learning) course pairs two subfolders that go
+hand in hand to support each course topic:
+
+- **[`Project Templates/`](./Deep%20Learning/Project%20Templates)** — **7 complete,
+  forkable full-stack templates**, one per topic, all built on the same
+  **three-cloud architecture** (Streamlit UI + FastAPI model API + Supabase data).
+- **[`Tutorials/`](./Deep%20Learning/Tutorials)** — the matching topic tutorials
+  (HTML + DOCX) that cover the underlying math and deep-learning concepts.
 
 > **New here? Start with the three-cloud architecture below.** It is the
 > canonical reference pattern; the six templates that follow it
 > (*Income-Insight*, *See-Sense*, *Attend-It*, *Former-It*, *Fine-It*, *Gen-It*)
-> reuse the same pattern with only the model box swapped. The five React projects
-> are supplementary examples of other deployment stacks.
+> reuse the same pattern with only the model box swapped.
 
 ---
 
@@ -145,6 +162,39 @@ images and then generates, reconstructs, and interpolates in it.
 
 ---
 
+## Intro to Machine Learning
+
+The [`Intro to Machine Learning/`](./Intro%20to%20Machine%20Learning) course is a
+set of self-contained **HTML tutorials and exercises** (a Tutorial + an Exercises
+file per topic) covering the classical ML toolkit — no deployment templates,
+just the concepts and hands-on practice:
+
+| Topic | Subject |
+|-------|---------|
+| 1 | SQL Basics — [Tutorial](./Intro%20to%20Machine%20Learning/Topic_1_SQL_Basics_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Topic_1_SQL_Basics_Exercises.html) |
+| 2 | Data Quality — [Tutorial](./Intro%20to%20Machine%20Learning/Topic_2_Data_Quality_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Topic_2_Data_Quality_Exercises.html) |
+| 3 | Linear Regression — [Tutorial](./Intro%20to%20Machine%20Learning/Topic_3_Linear_Regression_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Topic_3_Linear_Regression_Exercises.html) |
+| 4 | Naive Bayes — [Tutorial](./Intro%20to%20Machine%20Learning/Topic_4_Naive_Bayes_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Topic_4_Naive_Bayes_Exercises.html) |
+| 5 | Classification — [Tutorial](./Intro%20to%20Machine%20Learning/Topic_5_Classification_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Topic_5_Classification_Exercises.html) |
+| 6 | Clustering — [Tutorial](./Intro%20to%20Machine%20Learning/Topic_6_Clustering_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Topic_6_Clustering_Exercises.html) |
+| 7 | Data Version Control & Features — [Tutorial](./Intro%20to%20Machine%20Learning/Topic_7_DVC_Features_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Topic_7_DVC_Features_Exercises.html) |
+
+> GitHub renders `.html` files as source. Clone or download the folder (or enable
+> GitHub Pages) to view them as formatted pages in a browser.
+
+---
+
+## Cloud Deployment (survey)
+
+The [`Cloud deployment models/`](./Cloud%20deployment%20models) folder is a
+**course-agnostic survey** of different frontend/backend deployment stacks. Unlike
+the Deep Learning templates (which all share the three-cloud pattern), these five
+React projects each demonstrate a *different* platform combination — a menu of
+deployment architectures to compare. They live at the top level because the
+patterns apply across courses.
+
+---
+
 ### 1. react-azure
 **Full-Stack Todo Application on Azure**
 
@@ -156,7 +206,7 @@ A production-ready todo application built with React and FastAPI, deployed on Mi
 - **Highlights**: Containerized deployment, free-tier Azure services
 - **Cost**: ~$5/month (Azure Container Registry only)
 
-[→ View Project README](./Deep%20Learning/Cloud%20deployment%20models/react-azure/README.md) | [→ Tutorial](./Deep%20Learning/Cloud%20deployment%20models/react-azure/TUTORIAL.md)
+[→ View Project README](./Cloud%20deployment%20models/react-azure/README.md) | [→ Tutorial](./Cloud%20deployment%20models/react-azure/TUTORIAL.md)
 
 ---
 
@@ -171,7 +221,7 @@ A full-stack deep learning application for image classification using PyTorch/Te
 - **Highlights**: Complete ML pipeline, educational deep learning tutorial
 - **Cost**: Free tier available
 
-[→ View Project README](./Deep%20Learning/Cloud%20deployment%20models/react-render/README.md)
+[→ View Project README](./Cloud%20deployment%20models/react-render/README.md)
 
 ---
 
@@ -186,7 +236,7 @@ Image classification application demonstrating Vercel and Railway deployment.
 - **Highlights**: Hybrid cloud deployment, optimized for ML workloads
 - **Cost**: Free tier available on both platforms
 
-[→ View Project README](./Deep%20Learning/Cloud%20deployment%20models/react-vercel/README.md)
+[→ View Project README](./Cloud%20deployment%20models/react-vercel/README.md)
 
 ---
 
@@ -201,7 +251,7 @@ Alternative deployment approach using Vercel for frontend and Render for ML back
 - **Highlights**: Cost-effective hybrid deployment, detailed deployment guide
 - **Cost**: Free tier available
 
-[→ View Project README](./Deep%20Learning/Cloud%20deployment%20models/react-vercel-render/README.md)
+[→ View Project README](./Cloud%20deployment%20models/react-vercel-render/README.md)
 
 ---
 
@@ -216,7 +266,7 @@ Handwritten digit recognition running entirely in the browser using TensorFlow.j
 - **Highlights**: No server costs, privacy-friendly, WebGL acceleration
 - **Cost**: Free (static hosting only)
 
-[→ View Project README](./Deep%20Learning/Cloud%20deployment%20models/react-local/README.md)
+[→ View Project README](./Cloud%20deployment%20models/react-local/README.md)
 
 ---
 
@@ -331,57 +381,44 @@ Each project follows a similar workflow:
 ```
 Resources-for-AI-courses/
 ├── README.md                          # This file
-└── Deep Learning/
-    ├── Project Templates/            # ⭐ Streamlit + FastAPI + Supabase templates
-    │   ├── Topic_1_three-cloud/      # ⭐ Reference architecture
-    │   │   ├── ui/                   # Streamlit thin client
-    │   │   ├── api/                  # FastAPI + PyTorch (Render)
-    │   │   ├── db/                   # Supabase migrations + seed
-    │   │   ├── shared/               # Pydantic contract + data gen
-    │   │   ├── tests/                # pytest suite
-    │   │   ├── README.md             # Project documentation
-    │   │   └── TUTORIAL.md           # Step-by-step guide
-    │   ├── Topic_2_income-insight/   # ⭐ Tabular classifier (same 3 clouds)
-    │   │   ├── ui/                   # Streamlit thin client
-    │   │   ├── api/                  # FastAPI + MLP + sklearn (Render)
-    │   │   ├── db/                   # Supabase migrations + seed
-    │   │   ├── shared/               # Contract + synthetic tabular data
-    │   │   ├── tests/                # pytest suite
-    │   │   └── README.md             # Project documentation
-    │   ├── Topic_3_see-sense/        # ⭐ Image classifier (same 3 clouds)
-    │   │   ├── ui/                   # Streamlit thin client
-    │   │   ├── api/                  # FastAPI + CNN + Grad-CAM (Render)
-    │   │   ├── db/                   # Supabase migrations + seed
-    │   │   ├── shared/               # Contract + synthetic image data
-    │   │   ├── tests/                # pytest suite
-    │   │   └── README.md             # Project documentation
-    │   ├── Topic_4_attend-it/        # ⭐ LSTM + attention (same 3 clouds)
-    │   ├── Topic_5_former-it/        # ⭐ Transformer encoder (same 3 clouds)
-    │   ├── Topic_6_fine-it/          # ⭐ Pretrain + fine-tune char Transformer
-    │   └── Topic_7_gen-it/           # ⭐ Variational autoencoder (same 3 clouds)
-    ├── Cloud deployment models/      # Supplementary React deployment stacks
-    │   ├── react-azure/              # Azure deployment
-    │   │   ├── frontend/             # React TypeScript app
-    │   │   ├── backend/              # FastAPI with Docker
-    │   │   ├── README.md             # Project documentation
-    │   │   └── TUTORIAL.md           # Step-by-step guide
-    │   ├── react-render/             # Render deployment
-    │   │   ├── frontend/             # React app
-    │   │   ├── backend/              # FastAPI with ML
-    │   │   └── README.md
-    │   ├── react-vercel/             # Vercel + Railway
-    │   │   ├── frontend/             # React with Vite
-    │   │   ├── backend/              # FastAPI ML backend
-    │   │   └── README.md
-    │   ├── react-vercel-render/      # Vercel + Render
-    │   │   ├── frontend/             # React app
-    │   │   ├── backend/              # FastAPI ML backend
-    │   │   └── README.md
-    │   └── react-local/              # Browser-based ML
-    │       ├── src/                  # React + TensorFlow.js
-    │       ├── public/
-    │       └── README.md
-    └── Tutorials/                    # HTML + DOCX topic tutorials
+│
+├── Deep Learning/                     # 📘 Course: tutorials + project templates
+│   ├── Project Templates/            # ⭐ Streamlit + FastAPI + Supabase templates
+│   │   ├── Topic_1_three-cloud/      # ⭐ Reference architecture
+│   │   │   ├── ui/                   # Streamlit thin client
+│   │   │   ├── api/                  # FastAPI + PyTorch (Render)
+│   │   │   ├── db/                   # Supabase migrations + seed
+│   │   │   ├── shared/               # Pydantic contract + data gen
+│   │   │   ├── tests/                # pytest suite
+│   │   │   ├── README.md             # Project documentation
+│   │   │   └── TUTORIAL.md           # Step-by-step guide
+│   │   ├── Topic_2_income-insight/   # ⭐ Tabular classifier (same 3 clouds)
+│   │   ├── Topic_3_see-sense/        # ⭐ Image classifier (same 3 clouds)
+│   │   ├── Topic_4_attend-it/        # ⭐ LSTM + attention (same 3 clouds)
+│   │   ├── Topic_5_former-it/        # ⭐ Transformer encoder (same 3 clouds)
+│   │   ├── Topic_6_fine-it/          # ⭐ Pretrain + fine-tune char Transformer
+│   │   └── Topic_7_gen-it/           # ⭐ Variational autoencoder (same 3 clouds)
+│   └── Tutorials/                    # HTML + DOCX topic tutorials (math + DL)
+│
+├── Intro to Machine Learning/         # 📗 Course: HTML tutorials + exercises
+│   ├── Topic_1_SQL_Basics_*.html
+│   ├── Topic_2_Data_Quality_*.html
+│   ├── Topic_3_Linear_Regression_*.html
+│   ├── Topic_4_Naive_Bayes_*.html
+│   ├── Topic_5_Classification_*.html
+│   ├── Topic_6_Clustering_*.html
+│   └── Topic_7_DVC_Features_*.html
+│
+└── Cloud deployment models/           # ☁️ Course-agnostic deployment survey
+    ├── react-azure/                  # Azure Static Web Apps + Container Apps
+    │   ├── frontend/                 # React TypeScript app
+    │   ├── backend/                  # FastAPI with Docker
+    │   ├── README.md                 # Project documentation
+    │   └── TUTORIAL.md               # Step-by-step guide
+    ├── react-render/                 # Render (frontend + ML backend)
+    ├── react-vercel/                 # Vercel + Railway
+    ├── react-vercel-render/          # Vercel + Render
+    └── react-local/                  # Browser-based ML (TensorFlow.js)
 ```
 
 ---
