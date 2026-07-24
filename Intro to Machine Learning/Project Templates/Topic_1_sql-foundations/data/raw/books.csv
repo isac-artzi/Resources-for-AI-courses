@@ -1,0 +1,16 @@
+book_id,title,series_id,genre_id,unit_price
+1,The Long Departure,1,1,0.99
+2,Gravity Wells,1,1,0.99
+3,The Midnight Alibi,2,2,1.29
+4,Cold Corner,2,2,1.29
+5,Molten Crown,3,3,0.99
+6,The Anvil King,3,3,0.99
+7,Dance of Embers,4,4,1.29
+8,Neon Hearts,4,4,1.29
+9,Return Path,5,1,0.99
+10,Orbit's Edge,5,1,0.99
+11,Harbor Nights,6,2,1.29
+12,After Hours,6,2,1.29
+13,Skyfall Station,1,1,0.99
+14,One More Chapter,4,4,1.29
+15,Adagio for Kings,3,5,0.99

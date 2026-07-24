@@ -1,0 +1,10 @@
+# Streamlit configuration. Streamlit Community Cloud reads this file when it
+# deploys your app. These are sensible defaults for this course; you can
+# change the theme colors freely.
+[theme]
+primaryColor = "#4C8BF5"
+base = "light"
+
+[server]
+# Keep uploaded-file limits small; this course does not need large uploads.
+maxUploadSize = 5

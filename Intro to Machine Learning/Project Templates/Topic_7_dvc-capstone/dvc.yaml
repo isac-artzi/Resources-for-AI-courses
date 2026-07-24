@@ -1,0 +1,42 @@
+# DVC pipeline definition.
+#
+# DVC (Data Version Control) turns a set of scripts into a reproducible
+# pipeline. Each `stage` declares its command, its inputs (`deps`) and its
+# outputs (`outs`). Run the whole thing with:
+#
+#     pip install dvc          # one-time (not needed just to run the app/tests)
+#     dvc repro                # runs any stage whose inputs changed
+#
+# Because DVC tracks a hash of every dep, it re-runs a stage ONLY when something
+# it depends on actually changed -- so results stay reproducible and cheap to
+# rebuild. The three stages mirror the build pattern: prepare -> featurize ->
+# train.
+stages:
+  prepare:
+    cmd: python src/prepare.py
+    deps:
+      - src/prepare.py
+      - data/raw/houses.csv
+    outs:
+      - data/derived/prepared.csv
+
+  featurize:
+    cmd: python src/featurize.py
+    deps:
+      - src/featurize.py
+      - data/derived/prepared.csv
+    outs:
+      - data/derived/features.csv
+
+  train:
+    cmd: python src/train.py
+    deps:
+      - src/train.py
+      - src/featurize.py
+      - data/derived/prepared.csv
+      - data/derived/features.csv
+    outs:
+      - models/model.joblib
+    metrics:
+      - data/derived/metrics.json:
+          cache: false

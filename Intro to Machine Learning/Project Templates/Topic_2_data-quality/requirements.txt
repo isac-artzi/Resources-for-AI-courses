@@ -1,0 +1,10 @@
+# Runtime dependencies for the deployed Streamlit app.
+# Streamlit Community Cloud installs exactly these versions during the build.
+streamlit==1.38.0
+pandas==2.2.2
+numpy==1.26.4
+matplotlib==3.9.2
+plotly==5.24.0
+# pandera lets us express data-quality expectations as a schema and validate a
+# DataFrame against them programmatically.
+pandera==0.20.4

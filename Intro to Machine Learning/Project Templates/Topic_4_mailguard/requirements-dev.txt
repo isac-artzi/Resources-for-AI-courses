@@ -1,0 +1,6 @@
+# Developer-only dependencies (tests + linting).
+# These are NOT needed to run the app, so they live in a separate file and
+# are installed locally and in CI, but not on Streamlit Cloud.
+-r requirements.txt
+pytest==8.3.2
+ruff==0.6.2

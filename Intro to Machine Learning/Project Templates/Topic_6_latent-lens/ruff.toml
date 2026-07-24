@@ -1,0 +1,10 @@
+# Configuration for ruff, the linter that runs in CI on every push.
+# Keep the rule set small and friendly for a first programming course:
+# it catches real mistakes (unused imports, undefined names, bad whitespace)
+# and sorts imports, without being pedantic about style.
+line-length = 100
+
+[lint]
+# E = pycodestyle errors, W = pycodestyle warnings,
+# F = pyflakes (unused/undefined names), I = import sorting.
+select = ["E", "W", "F", "I"]

@@ -1,0 +1,36 @@
+# Continuous Integration (CI): GitHub runs this automatically on every push
+# and pull request. It installs the project, lints it with ruff, and runs the
+# test suite with pytest. A green check mark means your code builds and passes
+# its tests on a clean machine -- not just on your laptop.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Check out your repository's code.
+      - uses: actions/checkout@v4
+
+      # 2. Install the Python version this course targets.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # 3. Install runtime + developer dependencies.
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      # 4. Lint: fail the build if ruff finds problems.
+      - name: Lint with ruff
+        run: ruff check .
+
+      # 5. Test: fail the build if any pytest test fails.
+      - name: Run tests
+        run: pytest -q

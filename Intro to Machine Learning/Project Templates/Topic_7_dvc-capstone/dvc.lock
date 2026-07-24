@@ -1,0 +1,62 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python src/prepare.py
+    deps:
+    - path: data/raw/houses.csv
+      hash: md5
+      md5: e27816b508286a1cac0909b9368fc002
+      size: 53859
+    - path: src/prepare.py
+      hash: md5
+      md5: cd5a9df3dbc9a349b0f5a32b27787d43
+      size: 1554
+    outs:
+    - path: data/derived/prepared.csv
+      hash: md5
+      md5: e27816b508286a1cac0909b9368fc002
+      size: 53859
+  featurize:
+    cmd: python src/featurize.py
+    deps:
+    - path: data/derived/prepared.csv
+      hash: md5
+      md5: e27816b508286a1cac0909b9368fc002
+      size: 53859
+    - path: src/featurize.py
+      hash: md5
+      md5: cab442141bd089ddf0d53288e5aabf6a
+      size: 3985
+    outs:
+    - path: data/derived/features.csv
+      hash: md5
+      md5: d370943dc1c0b2672f7f6c7305d80747
+      size: 177764
+  train:
+    cmd: python src/train.py
+    deps:
+    - path: data/derived/features.csv
+      hash: md5
+      md5: d370943dc1c0b2672f7f6c7305d80747
+      size: 177764
+    - path: data/derived/prepared.csv
+      hash: md5
+      md5: e27816b508286a1cac0909b9368fc002
+      size: 53859
+    - path: src/featurize.py
+      hash: md5
+      md5: cab442141bd089ddf0d53288e5aabf6a
+      size: 3985
+    - path: src/train.py
+      hash: md5
+      md5: b14cfb12c968a365d01d233b9df46b27
+      size: 4055
+    outs:
+    - path: data/derived/metrics.json
+      hash: md5
+      md5: 7d07f827b05e5ace600a2e86cacf7a0b
+      size: 166
+    - path: models/model.joblib
+      hash: md5
+      md5: cbf2233b40acefdc26f29b738ec0e054
+      size: 1644
