@@ -7,7 +7,7 @@ cloud deployment architectures:
 | | What it is |
 |---|---|
 | 📘 **[Deep Learning](#deep-learning)** | Course tutorials + full-stack **project templates** (Streamlit + FastAPI + Supabase). |
-| 📗 **[Intro to Machine Learning](#intro-to-machine-learning)** | Course tutorials covering the classical ML toolkit (SQL, data quality, regression, classification, clustering). |
+| 📗 **[Intro to Machine Learning](#intro-to-machine-learning)** | Course tutorials **and single-tier project templates** (Streamlit + SQLite + pandas + scikit-learn) covering the classical ML toolkit. |
 | ☁️ **[Cloud Deployment](#cloud-deployment-survey)** | A survey of different deployment stacks (Azure, Vercel, Render, Railway, TF.js). Not tied to any one course. |
 
 > Each course folder groups the tutorials and resources for one subject area. The
@@ -164,10 +164,37 @@ images and then generates, reconstructs, and interpolates in it.
 
 ## Intro to Machine Learning
 
-The [`Intro to Machine Learning/`](./Intro%20to%20Machine%20Learning) course is a
-set of self-contained **HTML tutorials and exercises** (a Tutorial + an Exercises
-file per topic) covering the classical ML toolkit — no deployment templates,
-just the concepts and hands-on practice:
+The [`Intro to Machine Learning/`](./Intro%20to%20Machine%20Learning) course, like
+Deep Learning, pairs two subfolders that go hand in hand to support each topic:
+
+- **[`Project Templates/`](./Intro%20to%20Machine%20Learning/Project%20Templates)** —
+  **7 complete, forkable single-tier templates**, one per topic, all built on the
+  same lightweight stack: a **Streamlit** app running an in-process **scikit-learn**
+  model, a local **SQLite** database (basic CRUD), and **pandas** for the analysis.
+  No cloud backend to stand up — each one runs on Streamlit Community Cloud straight
+  from a fork.
+- **[`Tutorials/`](./Intro%20to%20Machine%20Learning/Tutorials)** — the matching
+  **HTML tutorials and exercises** (a Tutorial + an Exercises file per topic) covering
+  the underlying concepts and hands-on practice.
+
+### Project Templates
+
+Each template follows the same universal build pattern —
+`raw CSV → SQLite (CRUD) → pandas + scikit-learn → Streamlit UI` — with deterministic
+synthetic data, a pytest suite, and heavily commented code aimed at first-semester
+students.
+
+| Topic | Template | What it does |
+|-------|----------|--------------|
+| 1 | [SQL Foundations](./Intro%20to%20Machine%20Learning/Project%20Templates/Topic_1_sql-foundations/README.md) | Answer business questions over a synthetic SQLite database with basic CRUD and pandas + SQL. |
+| 2 | [Data-Quality Dashboard](./Intro%20to%20Machine%20Learning/Project%20Templates/Topic_2_data-quality/README.md) | Profile a messy dataset, flag quality issues, and clean it — with a before/after quality score. |
+| 3 | [Honest Forecast](./Intro%20to%20Machine%20Learning/Project%20Templates/Topic_3_honest-forecast/README.md) | Fit a linear-regression forecaster with an honest train/test split and held-out metrics. |
+| 4 | [Mailguard](./Intro%20to%20Machine%20Learning/Project%20Templates/Topic_4_mailguard/README.md) | Classify messages with a Naive Bayes model and inspect which words drive each decision. |
+| 5 | [ClassifierLab](./Intro%20to%20Machine%20Learning/Project%20Templates/Topic_5_classifier-lab/README.md) | Train and compare several scikit-learn classifiers head-to-head on the same task. |
+| 6 | [LatentLens](./Intro%20to%20Machine%20Learning/Project%20Templates/Topic_6_latent-lens/README.md) | Segment shoppers with K-Means, visualise them with PCA, and mine association rules. |
+| 7 | [FeatureForge](./Intro%20to%20Machine%20Learning/Project%20Templates/Topic_7_dvc-capstone/README.md) | Engineer features that measurably beat a baseline, wired into a reproducible DVC pipeline. |
+
+### Tutorials
 
 | Topic | Subject |
 |-------|---------|
@@ -400,14 +427,16 @@ Resources-for-AI-courses/
 │   │   └── Topic_7_gen-it/           # ⭐ Variational autoencoder (same 3 clouds)
 │   └── Tutorials/                    # HTML + DOCX topic tutorials (math + DL)
 │
-├── Intro to Machine Learning/         # 📗 Course: HTML tutorials + exercises
-│   ├── Topic_1_SQL_Basics_*.html
-│   ├── Topic_2_Data_Quality_*.html
-│   ├── Topic_3_Linear_Regression_*.html
-│   ├── Topic_4_Naive_Bayes_*.html
-│   ├── Topic_5_Classification_*.html
-│   ├── Topic_6_Clustering_*.html
-│   └── Topic_7_DVC_Features_*.html
+├── Intro to Machine Learning/         # 📗 Course: templates + HTML tutorials
+│   ├── Project Templates/            # Streamlit + SQLite + pandas + scikit-learn
+│   │   ├── Topic_1_sql-foundations/  # SQLite CRUD + pandas SQL analytics
+│   │   ├── Topic_2_data-quality/     # Profiling + cleaning + quality score
+│   │   ├── Topic_3_honest-forecast/  # Linear regression, honest train/test
+│   │   ├── Topic_4_mailguard/        # Naive Bayes message classifier
+│   │   ├── Topic_5_classifier-lab/   # Compare scikit-learn classifiers
+│   │   ├── Topic_6_latent-lens/      # K-Means + PCA + association rules
+│   │   └── Topic_7_dvc-capstone/     # Feature engineering + DVC pipeline
+│   └── Tutorials/                    # HTML tutorials + exercises (Topics 1-7)
 │
 └── Cloud deployment models/           # ☁️ Course-agnostic deployment survey
     ├── react-azure/                  # Azure Static Web Apps + Container Apps
@@ -562,4 +591,4 @@ These projects demonstrate modern web development and cloud deployment best prac
 
 ---
 
-*Last Updated: July 22, 2026*
+*Last Updated: July 23, 2026*
