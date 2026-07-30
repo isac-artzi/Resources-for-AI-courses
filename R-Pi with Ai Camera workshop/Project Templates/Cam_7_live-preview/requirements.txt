@@ -1,0 +1,5 @@
+# picamera2 is NOT listed here -- it comes preinstalled via apt on
+# Raspberry Pi OS (Bookworm+) and is tied to the system's libcamera
+# bindings. Do not pip install it. See this project's README for the
+# venv setup that lets your virtual environment still see it.
+numpy>=1.26

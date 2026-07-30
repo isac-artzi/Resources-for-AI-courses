@@ -1,0 +1,4 @@
+# Developer-only dependencies (tests). These are NOT needed to run the
+# script on the Pi -- they let you (or CI, on a non-Pi machine) run the
+# unit tests, since picamera2 only imports successfully on real hardware.
+pytest==8.3.2
