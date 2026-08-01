@@ -1,6 +1,6 @@
 # Resources for AI Courses
 
-A collection of teaching resources. The repository holds **two courses**, each
+A collection of teaching resources. The repository holds **three courses**, each
 with its own tutorials and hands-on resources, plus a course-agnostic survey of
 cloud deployment architectures:
 
@@ -8,6 +8,7 @@ cloud deployment architectures:
 |---|---|
 | 📘 **[Deep Learning](#deep-learning)** | Course tutorials + full-stack **project templates** (Streamlit + FastAPI + Supabase). |
 | 📗 **[Intro to Machine Learning](#intro-to-machine-learning)** | Course tutorials **and single-tier project templates** (Streamlit + SQLite + pandas + scikit-learn) covering the classical ML toolkit. |
+| 📕 **[Natural Language Processing](#natural-language-processing)** | Course lecture notes, exercises, and **starter skeletons** on the same three-cloud stack — infrastructure finished, the NLP layer left to build. |
 | ☁️ **[Cloud Deployment](#cloud-deployment-survey)** | A survey of different deployment stacks (Azure, Vercel, Render, Railway, TF.js). Not tied to any one course. |
 
 > Each course folder groups the tutorials and resources for one subject area. The
@@ -211,6 +212,61 @@ students.
 
 ---
 
+## Natural Language Processing
+
+The [`Natural Language Processing/`](./Natural%20Language%20Processing) course
+pairs two subfolders, one set per topic:
+
+- **[`Project Templates/`](./Natural%20Language%20Processing/Project%20Templates)** —
+  **7 starter skeletons**, one per topic, on the same **three-cloud architecture**
+  used in Deep Learning (Streamlit UI + FastAPI API + Supabase Postgres).
+- **[`Tutorials/`](./Natural%20Language%20Processing/Tutorials)** — **lecture notes
+  and exercises** (HTML) for each topic, covering the concepts behind the build.
+
+A video walkthrough also accompanies each topic. The recordings are **not stored
+in this repository** — video files would bloat every clone and fork — and are
+distributed separately.
+
+> **These templates are skeletons, not solutions.** Unlike the Deep Learning
+> templates — which ship complete and working — each NLP template hands you a
+> finished, deployable three-tier app with the NLP layer hollowed out. Every
+> function in `api/nlp.py` is left to implement, and a `contract` test suite plus
+> a `shared/schemas.py` contract define what "done" means. Topic 1 is the base
+> template; Topics 2–7 reuse its exact layout with the middle box swapped.
+
+### Project Templates
+
+| Topic | Template | What you build |
+|-------|----------|----------------|
+| 1 | [TokenForge](./Natural%20Language%20Processing/Project%20Templates/Topic_1_tokenforge/README.md) | A text-preprocessing and tokenization service — at least two tokenization algorithms, compared side by side. **Start here: this is the base template.** |
+| 2 | [Classify-It](./Natural%20Language%20Processing/Project%20Templates/Topic_2_classify-it/README.md) | A text-classification service, built twice — TF-IDF + logistic regression, then a transformer — returning a label, an actionable probability, and a record of every answer. |
+| 3 | [GenText](./Natural%20Language%20Processing/Project%20Templates/Topic_3_gentext/README.md) | A controllable text-generation service on a pretrained decoder transformer, with human evaluation across scored quality dimensions. |
+| 4 | [MoodLens](./Natural%20Language%20Processing/Project%20Templates/Topic_4_moodlens/README.md) | A sentiment and **aspect-based** sentiment service, with per-slice metrics rather than one headline number. |
+| 5 | [EntityFinder](./Natural%20Language%20Processing/Project%20Templates/Topic_5_entityfinder/README.md) | A named-entity-recognition service where two models produce **spans** and a human review queue writes corrections back. |
+| 6 | [TagWise](./Natural%20Language%20Processing/Project%20Templates/Topic_6_tagwise/README.md) | A part-of-speech tagging service, with error analysis over the word classes the model actually confuses. |
+| 7 | [AskMyDocs](./Natural%20Language%20Processing/Project%20Templates/Topic_7_askmydocs/README.md) | A **retrieval-augmented** question-answering service — embeddings, chunking, and vector search on Supabase Postgres with **pgvector**. |
+
+Every template ships with a `MODEL_CARD.md` to fill in, a `render.yaml` for the
+API deploy, Supabase migrations, and a pytest suite split into `contract` and
+`network` markers so the contract tests run offline.
+
+### Tutorials
+
+| Topic | Subject |
+|-------|---------|
+| 1 | Text Preprocessing and Tokenization — [Lecture Notes](./Natural%20Language%20Processing/Tutorials/Topic_1_-_Text_Preprocessing_and_Tokenization/Lecture_Notes_Topic_1_Text_Preprocessing_and_Tokenization.html) · [Exercises](./Natural%20Language%20Processing/Tutorials/Topic_1_-_Text_Preprocessing_and_Tokenization/Exercises_Topic_1_Text_Preprocessing_and_Tokenization.html) |
+| 2 | Natural Language Understanding — [Lecture Notes](./Natural%20Language%20Processing/Tutorials/Topic_2_-_Natural_Language_Understanding/Lecture_Notes_Topic_2_Natural_Language_Understanding.html) · [Exercises](./Natural%20Language%20Processing/Tutorials/Topic_2_-_Natural_Language_Understanding/Exercises_Topic_2_Natural_Language_Understanding.html) |
+| 3 | Natural Language Generation — [Lecture Notes](./Natural%20Language%20Processing/Tutorials/Topic_3_-_Natural_Language_Generation/Lecture_Notes_Topic_3_Natural_Language_Generation.html) · [Exercises](./Natural%20Language%20Processing/Tutorials/Topic_3_-_Natural_Language_Generation/Exercises_Topic_3_Natural_Language_Generation.html) |
+| 4 | Sentiment Analysis — [Lecture Notes](./Natural%20Language%20Processing/Tutorials/Topic_4_-_Sentiment_Analysis/Lecture_Notes_Topic_4_Sentiment_Analysis.html) · [Exercises](./Natural%20Language%20Processing/Tutorials/Topic_4_-_Sentiment_Analysis/Exercises_Topic_4_Sentiment_Analysis.html) |
+| 5 | Named Entity Recognition — [Lecture Notes](./Natural%20Language%20Processing/Tutorials/Topic_5_-_Named_Entity_Recognition/Lecture_Notes_Topic_5_Named_Entity_Recognition.html) · [Exercises](./Natural%20Language%20Processing/Tutorials/Topic_5_-_Named_Entity_Recognition/Exercises_Topic_5_Named_Entity_Recognition.html) |
+| 6 | Part-of-Speech Tagging — [Lecture Notes](./Natural%20Language%20Processing/Tutorials/Topic_6_-_Part_of_Speech_Tagging/Lecture_Notes_Topic_6_Part_of_Speech_Tagging.html) · [Exercises](./Natural%20Language%20Processing/Tutorials/Topic_6_-_Part_of_Speech_Tagging/Exercises_Topic_6_Part_of_Speech_Tagging.html) |
+| 7 | Language Modeling, Embeddings and RAG — [Lecture Notes](./Natural%20Language%20Processing/Tutorials/Topic_7_-_Language_Modeling_Embeddings_and_RAG/Lecture_Notes_Topic_7_Language_Modeling_Embeddings_and_RAG.html) · [Exercises](./Natural%20Language%20Processing/Tutorials/Topic_7_-_Language_Modeling_Embeddings_and_RAG/Exercises_Topic_7_Language_Modeling_Embeddings_and_RAG.html) |
+
+> GitHub renders `.html` files as source. Clone or download the folder (or enable
+> GitHub Pages) to view them as formatted pages in a browser.
+
+---
+
 ## Cloud Deployment (survey)
 
 The [`Cloud deployment models/`](./Cloud%20deployment%20models) folder is a
@@ -308,11 +364,22 @@ Handwritten digit recognition running entirely in the browser using TensorFlow.j
 | **former-it** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch Transformer Encoder | Algorithmic Sequences (Former-It) | Medium |
 | **fine-it** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch Char Transformer | Pretrain + Fine-Tune (Fine-It) | Medium |
 | **gen-it** ⭐ | Streamlit Cloud | Render (FastAPI) + Supabase | PyTorch VAE | Generative Modelling (Gen-It) | Medium |
+| **tokenforge** 📕 | Streamlit Cloud | Render (FastAPI) + Supabase | *yours to choose* | Tokenization (TokenForge) | Medium |
+| **classify-it** 📕 | Streamlit Cloud | Render (FastAPI) + Supabase | TF-IDF + transformer | Text Classification (Classify-It) | Medium |
+| **gentext** 📕 | Streamlit Cloud | Render (FastAPI) + Supabase | Pretrained decoder transformer | Text Generation (GenText) | Medium |
+| **moodlens** 📕 | Streamlit Cloud | Render (FastAPI) + Supabase | *yours to choose* | Sentiment Analysis (MoodLens) | Medium |
+| **entityfinder** 📕 | Streamlit Cloud | Render (FastAPI) + Supabase | *yours to choose* | Named Entities (EntityFinder) | Medium |
+| **tagwise** 📕 | Streamlit Cloud | Render (FastAPI) + Supabase | *yours to choose* | POS Tagging (TagWise) | Medium |
+| **askmydocs** 📕 | Streamlit Cloud | Render (FastAPI) + Supabase (pgvector) | Embeddings + retrieval | RAG Q&A (AskMyDocs) | Hard |
 | React-Azure | Azure Static Web Apps | Azure Container Apps | None | Todo App | Medium |
 | React-Render | Render | Render | PyTorch/TensorFlow | Image Classification | Medium |
 | React-Vercel | Vercel | Railway | TensorFlow | Image Classification | Medium |
 | React-Vercel-Render | Vercel | Render | TensorFlow | Image Classification | Medium |
 | React-local | Any Static Host | None | TensorFlow.js | Digit Recognition | Easy |
+
+> ⭐ = complete, working template. 📕 = starter skeleton — infrastructure
+> finished, the NLP layer left to implement (hence *yours to choose* where the
+> model is an open decision).
 
 ---
 
@@ -437,6 +504,24 @@ Resources-for-AI-courses/
 │   │   ├── Topic_6_latent-lens/      # K-Means + PCA + association rules
 │   │   └── Topic_7_dvc-capstone/     # Feature engineering + DVC pipeline
 │   └── Tutorials/                    # HTML tutorials + exercises (Topics 1-7)
+│
+├── Natural Language Processing/       # 📕 Course: starter skeletons + notes
+│   ├── Project Templates/            # Same three-cloud stack, NLP layer left to build
+│   │   ├── Topic_1_tokenforge/       # Base template — tokenization
+│   │   │   ├── ui/                   # Streamlit thin client
+│   │   │   ├── api/                  # FastAPI (Render) — nlp.py is yours
+│   │   │   ├── db/                   # Supabase migrations + seed
+│   │   │   ├── shared/               # Pydantic contract
+│   │   │   ├── tests/                # pytest (contract + network markers)
+│   │   │   ├── README.md             # Project documentation
+│   │   │   └── MODEL_CARD.md         # Model card to fill in
+│   │   ├── Topic_2_classify-it/      # Text classification
+│   │   ├── Topic_3_gentext/          # Controllable text generation
+│   │   ├── Topic_4_moodlens/         # Sentiment + aspect-based sentiment
+│   │   ├── Topic_5_entityfinder/     # NER + human review queue
+│   │   ├── Topic_6_tagwise/          # Part-of-speech tagging
+│   │   └── Topic_7_askmydocs/        # RAG Q&A (Supabase pgvector)
+│   └── Tutorials/                    # Lecture notes + exercises (Topics 1-7)
 │
 └── Cloud deployment models/           # ☁️ Course-agnostic deployment survey
     ├── react-azure/                  # Azure Static Web Apps + Container Apps
@@ -591,4 +676,4 @@ These projects demonstrate modern web development and cloud deployment best prac
 
 ---
 
-*Last Updated: July 23, 2026*
+*Last Updated: July 31, 2026*
