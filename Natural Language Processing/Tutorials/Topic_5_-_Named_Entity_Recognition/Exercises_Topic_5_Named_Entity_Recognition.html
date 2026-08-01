@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 5 Exercises — Named Entity Recognition</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+       margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6; }
+.container { max-width: 980px; margin: 24px auto 48px; background: white;
+             padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.35em; margin-top: 40px;
+     border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+h4 { color: #555; font-size: 1.0em; margin-top: 18px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 6px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7;
+       padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px; overflow-x: auto;
+      border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79;
+           padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px;
+        margin: 14px 0; border-radius: 4px; font-size: 0.93em; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+        padding: 22px; margin: 22px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.controls { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 180px; }
+.control input[type="number"] { width: 80px; padding: 4px 8px;
+            border: 1px solid #CFD7DF; border-radius: 4px; font-family: inherit; }
+.control select { padding: 5px 8px; border: 1px solid #CFD7DF; border-radius: 4px;
+                  font-family: inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px;
+           border-radius: 6px; font-family: "SF Mono", Consolas, monospace;
+           font-size: 0.88em; min-width: 220px; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 16px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.93em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+      background: #F2F4F7; padding: 4px 8px; border-radius: 4px; }
+.eq-block { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+            background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+            text-align: center; margin: 14px 0; display: block; }
+.nav { display: flex; justify-content: space-between; margin-top: 40px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+       padding: 16px 22px; margin-bottom: 28px; font-size: 0.92em; }
+.toc h3 { margin: 0 0 8px; color: #1F4E79; font-size: 1.0em; }
+.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 24px; }
+.toc a { color: #1F4E79; text-decoration: none; } .toc a:hover { text-decoration: underline; }
+.tag { display: inline-block; padding: 2px 8px; background: #E0E5EB;
+       border-radius: 12px; font-size: 0.75em; color: #555;
+       text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px; }
+.tag.interactive { background: #E1F0EA; color: #1B5E20; }
+.tag.code { background: #F2F4F7; color: #555; }
+.tag.math { background: #FCE8EE; color: #6E1414; }
+table.cmp { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 0.92em; }
+table.cmp th, table.cmp td { border: 1px solid #E0E5EB; padding: 8px 12px; text-align: left; }
+table.cmp th { background: #F2F4F7; color: #1F4E79; }
+.archetype { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
+.arc-card { border: 1px solid #D0D8E0; border-radius: 8px; padding: 14px;
+            background: white; font-size: 0.9em; }
+.arc-card .name { color: #1F4E79; font-weight: 600; }
+.arc-card .role { color: #555; margin-top: 6px; }
+/* --- appended: exercise helpers --- */
+details { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+          padding: 12px 18px; margin: 16px 0; }
+details[open] { background: #FFFFFF; border-color: #CFD7DF; }
+summary { cursor: pointer; color: #1F4E79; font-weight: 600; font-size: 0.95em;
+          list-style: none; }
+summary::-webkit-details-marker { display: none; }
+summary::before { content: "▸ "; color: #1F4E79; }
+details[open] summary::before { content: "▾ "; }
+.qtype { color: #888; font-size: 0.8em; letter-spacing: 0.04em; text-transform: uppercase; }
+.diff { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75em;
+        letter-spacing: 0.04em; text-transform: uppercase; margin-left: 8px; }
+.diff.warm { background: #E1F0EA; color: #1B5E20; }
+.diff.mid { background: #FFF3E0; color: #8D4E00; }
+.diff.hard { background: #FDE2E4; color: #6E1414; }
+.chip { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 0.8em;
+        margin: 2px 3px 2px 0; font-family: "SF Mono", Consolas, monospace; }
+.chip.PER { background: #E3F2FD; color: #0D47A1; }
+.chip.ORG { background: #E1F0EA; color: #1B5E20; }
+.chip.LOC { background: #FFF3E0; color: #8D4E00; }
+.chip.DATE { background: #F3E5F5; color: #4A148C; }
+.chip.MISC { background: #ECEFF1; color: #37474F; }
+.ok { color: #1B5E20; } .bad { color: #B00020; }
+.mono { font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em; }
+table.cmp td.num { text-align: right; font-family: "SF Mono", Consolas, monospace; }
+input.wide { width: 100%; padding: 6px 8px; border: 1px solid #CFD7DF; border-radius: 4px;
+             font-family: "SF Mono", Consolas, monospace; font-size: 0.88em; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="brand">Exercises · ~ 90 min</div>
+<h1>Topic 5 — Named Entity Recognition</h1>
+<p class="subtitle">Fourteen problems, in order of difficulty: tagging and decoding by hand, entity-level metrics by hand, three predict-then-check widgets, three short code-writing tasks, and three questions you answer in prose.</p>
+
+<div class="callout">
+  <strong>How to use these.</strong> Work each problem on paper before opening the solution — the widgets are there to <em>check</em> an answer you have already committed to, not to produce one for you. Every solution is complete, including the arithmetic. Problems 1 to 6 are by hand; 7 and 8 ask you to predict a widget's output first; 9 to 11 are code with a stated expected output; 12 to 14 are written answers.
+</div>
+
+<div class="toc">
+  <h3>The problems</h3>
+  <ol>
+    <li><a href="#e1">Tag a sentence in BIO</a></li>
+    <li><a href="#e2">Find and repair illegal transitions</a></li>
+    <li><a href="#e3">Convert BIO to BIOES</a></li>
+    <li><a href="#e4">Decode tags to character spans</a></li>
+    <li><a href="#e5">Entity-level P, R, F1 by hand</a></li>
+    <li><a href="#e6">Token-level on the same predictions</a></li>
+    <li><a href="#e7">Predict the damage from broken alignment</a></li>
+    <li><a href="#e8">Predict the Viterbi flip point</a></li>
+    <li><a href="#e9">Write the span decoder</a></li>
+    <li><a href="#e10">Write the label aligner</a></li>
+    <li><a href="#e11">Write entity F1 and a queue filter</a></li>
+    <li><a href="#e12">Explain: which metric goes in the report</a></li>
+    <li><a href="#e13">Explain: the 0.9 threshold request</a></li>
+    <li><a href="#e14">Explain: newswire model, support tickets</a></li>
+  </ol>
+</div>
+
+<div class="warn">
+  All personal names in these problems are invented. The label set throughout is <code>PER</code>, <code>ORG</code>, <code>LOC</code>, <code>DATE</code> with BIO prefixes, so the full tag set is nine tags.
+</div>
+
+<h2 id="tool">A scorer you can use throughout <span class="tag interactive">interactive</span></h2>
+<p>This widget takes a tokenised sentence and two tag sequences, validates both, decodes both into spans with character offsets, and computes entity-level and token-level metrics. Problems 1, 2, 4, 5, and 6 can all be checked with it.</p>
+
+<div class="demo">
+  <h3>Widget A · BIO validator, span decoder, and scorer</h3>
+  <div class="controls" style="align-items:stretch">
+    <div class="control" style="flex:1 1 100%">
+      <label for="sc-tok">tokens (space separated)</label>
+      <input type="text" id="sc-tok" class="wide" value="Aurora Labs opened a service centre in Cape Town on 3 March .">
+    </div>
+    <div class="control" style="flex:1 1 100%">
+      <label for="sc-gold">gold tags</label>
+      <input type="text" id="sc-gold" class="wide" value="B-ORG I-ORG O O O O O B-LOC I-LOC O B-DATE I-DATE O">
+    </div>
+    <div class="control" style="flex:1 1 100%">
+      <label for="sc-pred">your tags (or a model's prediction)</label>
+      <input type="text" id="sc-pred" class="wide" value="B-ORG I-ORG O O O O O B-LOC I-LOC O B-DATE I-DATE O">
+    </div>
+  </div>
+  <div class="readout" id="sc-valid" style="min-width:100%"></div>
+  <div class="readout" id="sc-spans" style="min-width:100%; margin-top:10px"></div>
+  <canvas id="sc-canvas" width="880" height="180" style="margin-top:12px"></canvas>
+  <div class="readout" id="sc-metrics" style="min-width:100%; margin-top:12px"></div>
+</div>
+
+<!-- 1 -->
+<h2 id="e1">1 · Tag a sentence in BIO <span class="diff warm">warm-up</span></h2>
+<p class="qtype">By hand · tagging</p>
+<p>Here is a tokenised sentence. Token indices are shown for reference.</p>
+<pre>0        1     2       3  4        5       6   7     8     9   10  11     12
+Aurora   Labs  opened  a  service  centre  in  Cape  Town  on  3   March  .</pre>
+<p>The gold annotation contains exactly three entities: the organisation <em>Aurora Labs</em>, the location <em>Cape Town</em>, and the date <em>3 March</em>. Write the full BIO tag sequence, one tag per token.</p>
+<details>
+  <summary>Show solution</summary>
+  <pre>B-ORG  I-ORG  O  O  O  O  O  B-LOC  I-LOC  O  B-DATE  I-DATE  O</pre>
+  <p>Reasoning token by token:</p>
+  <ul>
+    <li>Token 0 <em>Aurora</em> opens the organisation → <code>B-ORG</code>. Token 1 <em>Labs</em> continues it → <code>I-ORG</code>.</li>
+    <li>Tokens 2–6 are ordinary words. <em>service centre</em> is a common noun phrase, not a name, so it is <code>O</code> — this is the most common mistake on this exercise. An entity has to be a <em>name</em>, not a description.</li>
+    <li>Tokens 7–8 <em>Cape Town</em> → <code>B-LOC I-LOC</code>.</li>
+    <li>Token 9 <em>on</em> is a preposition and sits outside the date, by the same convention that puts <em>the</em> outside <em>the European Central Bank</em>.</li>
+    <li>Tokens 10–11 <em>3 March</em> → <code>B-DATE I-DATE</code>. The digit token is inside the entity; digits are not automatically <code>O</code>.</li>
+    <li>Token 12, the full stop, is <code>O</code>.</li>
+  </ul>
+  <p>Three entities, thirteen tags, and eight of them are <code>O</code> — a typical ratio. Paste this into Widget A above as both gold and prediction and you should see F1 = 1.000.</p>
+</details>
+
+<!-- 2 -->
+<h2 id="e2">2 · Find and repair illegal transitions <span class="diff warm">warm-up</span></h2>
+<p class="qtype">By hand · well-formedness</p>
+<p>A model produced this output:</p>
+<pre>0    1      2       3   4      5       6       7
+The  Hague  office  of  Delta  Health  closed  .
+O    I-LOC  O       O   B-ORG  I-PER   O       O</pre>
+<p>(a) List every illegal transition and say precisely why it is illegal. (b) Give the entities a repair-on-decode decoder emits. (c) The gold annotation is <code>LOC</code> for <em>Hague</em> and <code>ORG</code> for <em>Delta Health</em>. Compute entity-level TP, FP, FN.</p>
+<details>
+  <summary>Show solution</summary>
+  <p><strong>(a) Two illegal transitions.</strong></p>
+  <ul>
+    <li>Position 1: <code>O → I-LOC</code>. An <code>I-</code> tag must continue an entity of the same type, and no entity is open — position 0 is <code>O</code>. This is a continuation of something that never began.</li>
+    <li>Position 5: <code>B-ORG → I-PER</code>. An entity is open, but it is an <code>ORG</code>, and the tag claims to continue a <code>PER</code>. An entity cannot change type halfway through.</li>
+  </ul>
+  <p><strong>(b) Repair-on-decode output.</strong> The standard rule treats an orphaned <code>I-X</code> as if it were <code>B-X</code>:</p>
+  <ul>
+    <li><span class="chip LOC">LOC</span> tokens [1,1] — <em>Hague</em> (repaired from the orphaned <code>I-LOC</code>)</li>
+    <li><span class="chip ORG">ORG</span> tokens [4,4] — <em>Delta</em> (the <code>B-ORG</code> span is closed by the type change at 5)</li>
+    <li><span class="chip PER">PER</span> tokens [5,5] — <em>Health</em> (repaired from the orphaned <code>I-PER</code>)</li>
+  </ul>
+  <p>Three entities out of a sequence that contained two illegal transitions. Note that repair never crashes and never drops a token — it just produces spans no annotator would have written.</p>
+  <p><strong>(c) Metrics.</strong> Gold = {LOC[1,1], ORG[4,5]} → 2 entities. Predicted = {LOC[1,1], ORG[4,4], PER[5,5]} → 3 entities. Exact matches on (type, start, end): LOC[1,1] only.</p>
+  <p class="eq-block">TP = 1 &nbsp;·&nbsp; FP = 3 − 1 = 2 &nbsp;·&nbsp; FN = 2 − 1 = 1<br>
+     P = 1/3 = 0.333 &nbsp;·&nbsp; R = 1/2 = 0.500 &nbsp;·&nbsp; F1 = 2(0.333)(0.5)/(0.833) = 0.400</p>
+  <p>A constrained decode (Viterbi with illegal transitions at −∞) would instead have forced a legal path — most likely <code>B-LOC</code> at position 1 and <code>I-ORG</code> at position 5, which would have scored TP = 2 and F1 = 1.000. That difference is exactly what the transition matrix buys you.</p>
+</details>
+
+<!-- 3 -->
+<h2 id="e3">3 · Convert BIO to BIOES <span class="diff warm">warm-up</span></h2>
+<p class="qtype">By hand · tagging schemes <span class="tag interactive">interactive</span></p>
+<p>Convert this BIO sequence to BIOES, then state how many tags each scheme needs for a label set with these three types.</p>
+<pre>O  B-PER  I-PER  O  B-ORG  O  B-LOC  I-LOC  I-LOC  O</pre>
+<details>
+  <summary>Show solution</summary>
+  <pre>BIO    O  B-PER  I-PER  O  B-ORG  O  B-LOC  I-LOC  I-LOC  O   ← given
+BIOES  O  B-PER  E-PER  O  S-ORG  O  B-LOC  I-LOC  E-LOC  O   ← answer</pre>
+  <p>The rule for each non-<code>O</code> tag is: look at the <em>next</em> tag.</p>
+  <ul>
+    <li>Position 1 <code>B-PER</code>: the next tag is <code>I-PER</code>, so the entity continues → stays <code>B-PER</code>.</li>
+    <li>Position 2 <code>I-PER</code>: the next tag is <code>O</code>, so this is the last token → <code>E-PER</code>.</li>
+    <li>Position 4 <code>B-ORG</code>: the next tag is <code>O</code>, so the entity is one token long → <code>S-ORG</code>. This is the case people forget.</li>
+    <li>Positions 6, 7, 8: <code>B-LOC</code> (continues), <code>I-LOC</code> (continues), <code>I-LOC</code> at the end of the entity → <code>E-LOC</code>.</li>
+  </ul>
+  <p><strong>Tag-set sizes.</strong> With <span class="eq">T = 3</span> types: BIO needs <span class="eq">2T + 1 = 7</span> tags; BIOES needs <span class="eq">4T + 1 = 13</span>. Nearly twice as many classes over the same training data, which is why BIOES tends to help on large corpora and hurt on small ones.</p>
+  <p><strong>Why no information is added.</strong> Mapping back (<code>S→B</code>, <code>E→I</code>, others unchanged) reproduces the original sequence exactly. Check it in the BIO ⇄ BIOES widget below. What changes is the learning problem: under BIOES the model gets a dedicated class for "this token ends an entity", so boundary evidence has somewhere to land.</p>
+</details>
+
+<div class="demo">
+  <h3>Widget B · BIO ⇄ BIOES, with round trip</h3>
+  <div class="controls" style="align-items:stretch">
+    <div class="control" style="flex:1 1 100%">
+      <label for="bx-in">BIO tags</label>
+      <input type="text" id="bx-in" class="wide" value="O B-PER I-PER O B-ORG O B-LOC I-LOC I-LOC O">
+    </div>
+  </div>
+  <pre id="bx-out"></pre>
+  <div class="readout" id="bx-stat" style="min-width:100%"></div>
+</div>
+
+<!-- 4 -->
+<h2 id="e4">4 · Decode tags to character spans <span class="diff mid">medium</span></h2>
+<p class="qtype">By hand · decoding</p>
+<p>The raw string, with single spaces between tokens, is exactly:</p>
+<pre>Ana Moreau joined Aurora Labs in Zurich .</pre>
+<p>The tag sequence is:</p>
+<pre>B-PER  I-PER  O  B-ORG  I-ORG  O  B-LOC  O</pre>
+<p>Produce the JSON your API should return: for each entity, its type, its half-open character span <code>[start, end)</code>, and the exact substring. Show your offset arithmetic.</p>
+<details>
+  <summary>Show solution</summary>
+  <p>First the token offsets. Each token starts where the previous one ended plus one space:</p>
+  <table class="cmp">
+    <tr><th>i</th><th>token</th><th>length</th><th>[start, end)</th></tr>
+    <tr><td class="num">0</td><td>Ana</td><td class="num">3</td><td class="num">[0, 3)</td></tr>
+    <tr><td class="num">1</td><td>Moreau</td><td class="num">6</td><td class="num">[4, 10)</td></tr>
+    <tr><td class="num">2</td><td>joined</td><td class="num">6</td><td class="num">[11, 17)</td></tr>
+    <tr><td class="num">3</td><td>Aurora</td><td class="num">6</td><td class="num">[18, 24)</td></tr>
+    <tr><td class="num">4</td><td>Labs</td><td class="num">4</td><td class="num">[25, 29)</td></tr>
+    <tr><td class="num">5</td><td>in</td><td class="num">2</td><td class="num">[30, 32)</td></tr>
+    <tr><td class="num">6</td><td>Zurich</td><td class="num">6</td><td class="num">[33, 39)</td></tr>
+    <tr><td class="num">7</td><td>.</td><td class="num">1</td><td class="num">[40, 41)</td></tr>
+  </table>
+  <p>Then the decoder: <code>B-PER</code> opens a span at token 0, <code>I-PER</code> extends it to token 1, <code>O</code> closes it. Same shape for the <code>ORG</code>. The <code>B-LOC</code> at token 6 opens a span that the <code>O</code> at token 7 closes. An entity's character span runs from the <em>start</em> of its first token to the <em>end</em> of its last token:</p>
+  <pre>[
+  {"type": "PER", "start":  0, "end": 10, "text": "Ana Moreau"},
+  {"type": "ORG", "start": 18, "end": 29, "text": "Aurora Labs"},
+  {"type": "LOC", "start": 33, "end": 39, "text": "Zurich"}
+]</pre>
+  <p>Checks worth doing every time: <code>end − start</code> equals the length of <code>text</code> (10, 11, 6 here); <code>text</code> is a slice of the original string, not a re-join of tokens; and the ends are exclusive, so the <code>PER</code> ends at 10 even though the last character of <em>Moreau</em> is at index 9.</p>
+  <p>Note what the whitespace does: the <code>PER</code> span covers characters 0–9, which includes the space at index 3 <em>inside</em> the entity. Entity spans routinely contain whitespace; token spans never do.</p>
+</details>
+
+<!-- 5 -->
+<h2 id="e5">5 · Entity-level precision, recall, and F1 by hand <span class="diff mid">medium</span></h2>
+<p class="qtype">By hand · metrics</p>
+<p>One document, two sentences. Gold above, prediction below.</p>
+<pre>Sentence 1
+0      1       2      3     4       5   6          7
+Delta  Health  hired  Ines  Duarte  in  Frankfurt  .
+gold:  B-ORG  I-ORG  O  B-PER  I-PER  O  B-LOC  O
+pred:  B-ORG  O      O  B-PER  I-PER  O  B-LOC  O
+
+Sentence 2
+0    1      2       3       4   5        6
+The  Hague  summit  begins  on  Tuesday  .
+gold:  O      B-LOC  O  O  O  B-DATE  O
+pred:  B-LOC  I-LOC  O  O  O  B-LOC   O</pre>
+<p>Compute entity-level TP, FP, FN, precision, recall, and F1 for the document as a whole. Name each error.</p>
+<details>
+  <summary>Show solution</summary>
+  <p><strong>Step 1 — decode both sides.</strong></p>
+  <table class="cmp">
+    <tr><th></th><th>Gold</th><th>Predicted</th></tr>
+    <tr><td>Sentence 1</td>
+        <td>ORG[0,1] <em>Delta Health</em><br>PER[3,4] <em>Ines Duarte</em><br>LOC[6,6] <em>Frankfurt</em></td>
+        <td>ORG[0,0] <em>Delta</em><br>PER[3,4] <em>Ines Duarte</em><br>LOC[6,6] <em>Frankfurt</em></td></tr>
+    <tr><td>Sentence 2</td>
+        <td>LOC[1,1] <em>Hague</em><br>DATE[5,5] <em>Tuesday</em></td>
+        <td>LOC[0,1] <em>The Hague</em><br>LOC[5,5] <em>Tuesday</em></td></tr>
+  </table>
+  <p>Gold entities: 3 + 2 = <strong>5</strong>. Predicted entities: 3 + 2 = <strong>5</strong>.</p>
+  <p><strong>Step 2 — match on the triple (type, start, end).</strong></p>
+  <table class="cmp">
+    <tr><th>Predicted</th><th>Verdict</th><th>Error name</th></tr>
+    <tr><td>S1 ORG[0,0]</td><td class="bad">no match (gold is ORG[0,1])</td><td>boundary error — too short</td></tr>
+    <tr><td>S1 PER[3,4]</td><td class="ok">TP</td><td>—</td></tr>
+    <tr><td>S1 LOC[6,6]</td><td class="ok">TP</td><td>—</td></tr>
+    <tr><td>S2 LOC[0,1]</td><td class="bad">no match (gold is LOC[1,1])</td><td>boundary error — too long, the determiner was swallowed</td></tr>
+    <tr><td>S2 LOC[5,5]</td><td class="bad">no match (gold is DATE[5,5])</td><td>type confusion — right span, wrong label</td></tr>
+  </table>
+  <p><strong>Step 3 — the counts.</strong> TP = 2. FP = 5 − 2 = 3. FN = 5 − 2 = 3.</p>
+  <p class="eq-block">
+    P = TP / (TP + FP) = 2 / 5 = 0.400<br>
+    R = TP / (TP + FN) = 2 / 5 = 0.400<br>
+    F1 = 2 · 0.4 · 0.4 / (0.4 + 0.4) = 0.32 / 0.8 = <strong>0.400</strong>
+  </p>
+  <p>Three observations. First, precision and recall are equal here only because the model happened to predict as many entities as there were gold entities; that is a coincidence, not a rule. Second, each of the two boundary errors cost <em>two</em> counts — one FP and one FN — which is why boundary errors are so expensive. Third, F1 = 0.400 on a document where the model got every entity roughly right. Entity-level scoring is unforgiving on purpose.</p>
+</details>
+
+<!-- 6 -->
+<h2 id="e6">6 · The same predictions, scored per token <span class="diff mid">medium</span></h2>
+<p class="qtype">By hand · metrics</p>
+<p>Take the exact predictions from Problem 5. Compute token-level micro precision, recall, and F1, where a token counts as correct if its predicted <em>type</em> (ignoring the B/I prefix) matches gold, and only non-<code>O</code> positions enter the counts. Then state the gap between the two F1 scores and explain, in one sentence, what caused it.</p>
+<details>
+  <summary>Show solution</summary>
+  <p><strong>Sentence 1.</strong> Gold non-<code>O</code> tokens: 0 (ORG), 1 (ORG), 3 (PER), 4 (PER), 6 (LOC) → 5. Predicted non-<code>O</code>: 0 (ORG), 3 (PER), 4 (PER), 6 (LOC) → 4. All four predicted types match gold → 4 correct.</p>
+  <p><strong>Sentence 2.</strong> Gold non-<code>O</code>: 1 (LOC), 5 (DATE) → 2. Predicted non-<code>O</code>: 0 (LOC), 1 (LOC), 5 (LOC) → 3. Correct: token 1 only — token 0 is gold <code>O</code>, and token 5 is predicted LOC against gold DATE → 1 correct.</p>
+  <table class="cmp">
+    <tr><th></th><th>gold non-O</th><th>pred non-O</th><th>correct</th></tr>
+    <tr><td>Sentence 1</td><td class="num">5</td><td class="num">4</td><td class="num">4</td></tr>
+    <tr><td>Sentence 2</td><td class="num">2</td><td class="num">3</td><td class="num">1</td></tr>
+    <tr><td><strong>Total</strong></td><td class="num"><strong>7</strong></td><td class="num"><strong>7</strong></td><td class="num"><strong>5</strong></td></tr>
+  </table>
+  <p class="eq-block">
+    P<sub>token</sub> = 5 / 7 = 0.714 &nbsp;·&nbsp; R<sub>token</sub> = 5 / 7 = 0.714 &nbsp;·&nbsp; F1<sub>token</sub> = <strong>0.714</strong>
+  </p>
+  <p><strong>The gap:</strong> 0.714 − 0.400 = <strong>0.314</strong>, or 31 F1 points on identical predictions.</p>
+  <p><strong>Cause, in one sentence:</strong> the two boundary errors — dropping <em>Health</em> and swallowing <em>The</em> — cost one token each at token level but destroy an entire entity (one FP plus one FN) at entity level, so partial credit that has no downstream value inflates the token-level score.</p>
+  <p>Verify with Widget A: paste sentence 1's tokens and both tag sequences, then sentence 2's, and compare the two metric rows.</p>
+</details>
+
+<!-- 7 -->
+<h2 id="e7">7 · Predict the damage from broken alignment <span class="diff mid">medium</span> <span class="tag interactive">interactive</span></h2>
+<p class="qtype">Predict, then check · subword alignment</p>
+<p>Five words, their gold tags, and the sub-tokens a cased WordPiece tokenizer produces (special tokens omitted for clarity):</p>
+<pre>words:      Delta   Health   hired         Ines        Duarte
+gold:       B-ORG   I-ORG    O             B-PER       I-PER
+pieces:     Delta   Health   hire  ##d     In  ##es    Du  ##arte</pre>
+<p>A teammate wrote <code>labels = gold_tags</code> and passed it straight to the model, so the five word labels were zipped onto the first five of the eight pieces and the remaining pieces got <code>O</code>.</p>
+<p><strong>Before touching the widget</strong>, write down: (a) the label each of the eight pieces receives; (b) the word-level tags recovered at inference by reading each word's first piece; (c) the entity-level TP, FP, FN, and F1 against gold. Then check with the widget.</p>
+
+<div class="demo">
+  <h3>Widget C · Alignment strategies on this sentence</h3>
+  <div class="controls">
+    <div class="control"><label for="ax-mode">strategy</label>
+      <select id="ax-mode">
+        <option value="first">label first piece, mask the rest</option>
+        <option value="zip">zip word labels onto pieces (the bug in this problem)</option>
+      </select></div>
+    <div class="readout" id="ax-read" style="min-width:320px"></div>
+  </div>
+  <div style="overflow-x:auto"><table class="cmp" id="ax-table"></table></div>
+  <div class="readout" id="ax-out" style="min-width:100%; margin-top:10px"></div>
+</div>
+
+<details>
+  <summary>Show solution</summary>
+  <p><strong>(a) Piece labels under the bug.</strong> The five gold labels are consumed in order by the first five pieces:</p>
+  <table class="cmp">
+    <tr><th>piece</th><td class="mono">Delta</td><td class="mono">Health</td><td class="mono">hire</td><td class="mono">##d</td><td class="mono">In</td><td class="mono">##es</td><td class="mono">Du</td><td class="mono">##arte</td></tr>
+    <tr><th>label</th><td>B-ORG</td><td>I-ORG</td><td>O</td><td>B-PER</td><td>I-PER</td><td>O</td><td>O</td><td>O</td></tr>
+  </table>
+  <p>Notice that <code>B-PER</code> has landed on <code>##d</code>, the second half of the verb <em>hired</em>.</p>
+  <p><strong>(b) Recovered word tags.</strong> Inference reads the first piece of each word — pieces 1, 2, 3, 5, 7:</p>
+  <pre>Delta → B-ORG    Health → I-ORG    hired → O    Ines → I-PER    Duarte → O</pre>
+  <p><strong>(c) Metrics.</strong> Gold entities: ORG[0,1] <em>Delta Health</em>, PER[3,4] <em>Ines Duarte</em> → 2. Decoding the recovered tags: <code>B-ORG I-ORG</code> gives ORG[0,1]; the orphaned <code>I-PER</code> at index 3 is repaired into PER[3,3] <em>Ines</em>; <em>Duarte</em> is <code>O</code>. Predicted: ORG[0,1], PER[3,3] → 2.</p>
+  <p class="eq-block">
+    TP = 1 (ORG[0,1] matches exactly) &nbsp;·&nbsp; FP = 1 (PER[3,3]) &nbsp;·&nbsp; FN = 1 (PER[3,4])<br>
+    P = 1/2 = 0.500 &nbsp;·&nbsp; R = 1/2 = 0.500 &nbsp;·&nbsp; F1 = <strong>0.500</strong>
+  </p>
+  <p>The half that survived did so by luck: <em>Delta</em> and <em>Health</em> happen to be single-piece words at the front of the sentence, so the zip had not drifted yet. Every word after the first multi-piece word is mislabelled, and the drift grows with sentence length. In a real corpus with long sentences, F1 collapses to near zero.</p>
+  <p><strong>What makes this so dangerous:</strong> nothing raises an error. The tensors have compatible shapes (the teammate padded to length), the loss decreases, and training completes. The only way to catch it is to decode your own training labels back into spans and eyeball them against the source text.</p>
+</details>
+
+<!-- 8 -->
+<h2 id="e8">8 · Predict the Viterbi flip point <span class="diff hard">hard</span> <span class="tag math">math</span> <span class="tag interactive">interactive</span></h2>
+<p class="qtype">Predict, then check · CRF decoding</p>
+<p>A three-tag CRF (<code>O</code>, <code>B-PER</code>, <code>I-PER</code>) produced these unary scores:</p>
+<table class="cmp">
+  <tr><th>token</th><th class="num">O</th><th class="num">B-PER</th><th class="num">I-PER</th></tr>
+  <tr><td>0 · Ana</td><td class="num">1.0</td><td class="num">2.2</td><td class="num">2.6</td></tr>
+  <tr><td>1 · Moreau</td><td class="num">0.8</td><td class="num">1.5</td><td class="num">2.9</td></tr>
+  <tr><td>2 · spoke</td><td class="num">3.0</td><td class="num">0.4</td><td class="num">0.3</td></tr>
+  <tr><td>3 · .</td><td class="num">3.1</td><td class="num">0.2</td><td class="num">0.2</td></tr>
+</table>
+<p>All legal transitions score 0. Every illegal transition — including "sequence start → <code>I-PER</code>" — scores <span class="eq">−p</span>.</p>
+<p>(a) What does independent per-token argmax produce, and is it well-formed? (b) At what value of <span class="eq">p</span> does the Viterbi path change, and what does it change to? (c) Give the score of both candidate paths as a function of <span class="eq">p</span>.</p>
+
+<div class="demo">
+  <h3>Widget D · Viterbi on exactly these scores</h3>
+  <div class="controls">
+    <div class="control"><label for="vx-pen">illegal-transition penalty p</label>
+      <input type="range" id="vx-pen" min="0" max="2" step="0.05" value="0"></div>
+    <div class="readout" id="vx-read" style="min-width:340px"></div>
+  </div>
+  <canvas id="vx-canvas" width="560" height="200"></canvas>
+  <div class="readout" id="vx-out" style="min-width:100%; margin-top:12px"></div>
+</div>
+
+<details>
+  <summary>Show solution</summary>
+  <p><strong>(a) Independent argmax.</strong> Token by token, the largest score wins: 2.6 → <code>I-PER</code>, 2.9 → <code>I-PER</code>, 3.0 → <code>O</code>, 3.1 → <code>O</code>.</p>
+  <pre>I-PER  I-PER  O  O</pre>
+  <p>It is <strong>not</strong> well-formed: an <code>I-PER</code> at position 0 continues an entity that never began. A repair-on-decode reader would still produce PER[0,1], so the visible damage here is nil — but on a longer sentence the same failure mode merges or splits entities.</p>
+  <p><strong>(c) The two candidate paths.</strong> Tokens 2 and 3 are <code>O</code> in every sensible path, contributing 3.0 + 3.1 = 6.1, so compare only the first two positions:</p>
+  <table class="cmp">
+    <tr><th>path</th><th>unary sum</th><th>transition</th><th>total</th></tr>
+    <tr><td class="mono">I-PER I-PER O O</td><td class="num">2.6 + 2.9 + 6.1 = 11.6</td><td class="num">−p (start → I-PER)</td><td class="num">11.6 − p</td></tr>
+    <tr><td class="mono">B-PER I-PER O O</td><td class="num">2.2 + 2.9 + 6.1 = 11.2</td><td class="num">0 (all legal)</td><td class="num">11.2</td></tr>
+  </table>
+  <p>Note that <code>I-PER → I-PER</code> at position 1 is legal in both paths — the types match and an entity is open — so it costs nothing either way.</p>
+  <p><strong>(b) The flip point.</strong> The legal path wins when</p>
+  <p class="eq-block">11.6 − p &lt; 11.2 &nbsp;⇔&nbsp; p &gt; 0.4</p>
+  <p>So for <span class="eq">p &lt; 0.4</span> Viterbi reproduces the illegal argmax path; at <span class="eq">p = 0.4</span> the two tie; for <span class="eq">p &gt; 0.4</span> the path becomes <code>B-PER I-PER O O</code>. Drag the widget's slider past 0.40 and watch it switch.</p>
+  <p><strong>The general point.</strong> The flip point is the unary margin, 2.6 − 2.2 = 0.4. A transition weight only changes the decision when it exceeds the unary evidence against it. This is also why a real CRF, whose illegal transitions are learned at very large negative values, effectively never emits an illegal sequence: no unary margin is that big.</p>
+</details>
+
+<!-- 9 -->
+<h2 id="e9">9 · Write the span decoder <span class="diff mid">medium</span> <span class="tag code">code</span></h2>
+<p class="qtype">Code · decoding</p>
+<p>Write <code>decode_spans(text, tokens, offsets, tags)</code> returning a list of dicts with keys <code>type</code>, <code>start</code>, <code>end</code>, <code>text</code>. It must repair orphaned <code>I-</code> tags, flush an entity that is still open at the end, and take every character offset from the supplied <code>offsets</code> list. With this input:</p>
+<pre>text    = "Ana Moreau joined Aurora Labs in Zurich"
+tokens  = ["Ana", "Moreau", "joined", "Aurora", "Labs", "in", "Zurich"]
+offsets = [(0,3), (4,10), (11,17), (18,24), (25,29), (30,32), (33,39)]
+tags    = ["B-PER", "I-PER", "O", "B-ORG", "I-ORG", "O", "I-LOC"]</pre>
+<p>the expected output is exactly:</p>
+<pre>[{'type': 'PER', 'start': 0,  'end': 10, 'text': 'Ana Moreau'},
+ {'type': 'ORG', 'start': 18, 'end': 29, 'text': 'Aurora Labs'},
+ {'type': 'LOC', 'start': 33, 'end': 39, 'text': 'Zurich'}]</pre>
+<details>
+  <summary>Show solution</summary>
+<pre>def decode_spans(text, tokens, offsets, tags):
+    spans, cur = [], None
+
+    def flush():
+        nonlocal cur
+        if cur is not None:
+            s = offsets[cur["i0"]][0]
+            e = offsets[cur["i1"]][1]
+            spans.append({"type": cur["type"], "start": s, "end": e,
+                          "text": text[s:e]})
+            cur = None
+
+    for i, tag in enumerate(tags):
+        if tag == "O":
+            flush()
+        elif tag.startswith("B-"):
+            flush()
+            cur = {"type": tag[2:], "i0": i, "i1": i}
+        elif tag.startswith("I-"):
+            t = tag[2:]
+            if cur is not None and cur["type"] == t:
+                cur["i1"] = i                 # continue
+            else:
+                flush()                       # repair an orphaned I-
+                cur = {"type": t, "i0": i, "i1": i}
+        else:
+            raise ValueError(f"unrecognised tag {tag!r} at position {i}")
+
+    flush()                                   # the entity open at the end
+    return spans</pre>
+  <p>Why it produces the expected output on this input:</p>
+  <ul>
+    <li>Tokens 0–1: <code>B-PER</code> opens, <code>I-PER</code> extends, the <code>O</code> at token 2 flushes → start = <code>offsets[0][0]</code> = 0, end = <code>offsets[1][1]</code> = 10, and <code>text[0:10]</code> is <em>"Ana Moreau"</em> including the internal space.</li>
+    <li>Tokens 3–4: same shape → chars [18, 29).</li>
+    <li>Token 6 is an orphaned <code>I-LOC</code> — the buffer is empty because token 5 was <code>O</code>. The repair branch opens a <code>LOC</code> span rather than dropping the token.</li>
+    <li>The sequence ends with that span still open, so the final <code>flush()</code> emits it. Delete that line and <em>Zurich</em> vanishes with no error — the single most common bug in this function.</li>
+  </ul>
+  <p>Two things the implementation deliberately does not do: it never calls <code>text.index()</code>, and it never joins tokens back into a string. Both are the traps from the offsets section.</p>
+  <p>A test worth writing: assert that for every returned span, <code>span["end"] - span["start"] == len(span["text"])</code>, and that <code>text[span["start"]:span["end"]] == span["text"]</code>. Those two assertions catch every offset bug you will hit.</p>
+</details>
+
+<!-- 10 -->
+<h2 id="e10">10 · Write the label aligner <span class="diff mid">medium</span> <span class="tag code">code</span></h2>
+<p class="qtype">Code · subword alignment</p>
+<p>Write <code>align(word_ids, word_labels, label2id)</code> that returns the per-piece label list for training: the first piece of each word gets that word's label id, and every other position — special tokens and continuation pieces — gets <code>-100</code>. With</p>
+<pre>word_ids    = [None, 0, 0, 1, 2, 2, 3, None]
+word_labels = ["B-ORG", "I-ORG", "O", "B-LOC"]
+label2id    = {"O": 0, "B-ORG": 1, "I-ORG": 2, "B-LOC": 3, "I-LOC": 4}</pre>
+<p>the expected output is exactly <code>[-100, 1, -100, 2, 0, -100, 3, -100]</code>. Then write the variant that labels <em>every</em> piece, converting <code>B-</code> to <code>I-</code> on continuations, and give its output on the same input.</p>
+<details>
+  <summary>Show solution</summary>
+<pre>def align(word_ids, word_labels, label2id):
+    labels, prev = [], None
+    for wid in word_ids:
+        if wid is None:                    # [CLS], [SEP], padding
+            labels.append(-100)
+        elif wid != prev:                  # first piece of a new word
+            labels.append(label2id[word_labels[wid]])
+        else:                              # continuation piece
+            labels.append(-100)
+        prev = wid
+    return labels</pre>
+  <p>Walking the input: <code>None</code> → −100; <code>0</code> is new → <code>label2id["B-ORG"]</code> = 1; <code>0</code> again is a continuation → −100; <code>1</code> is new → <code>label2id["I-ORG"]</code> = 2; <code>2</code> is new → <code>label2id["O"]</code> = 0; <code>2</code> again → −100; <code>3</code> is new → <code>label2id["B-LOC"]</code> = 3; <code>None</code> → −100. That is <code>[-100, 1, -100, 2, 0, -100, 3, -100]</code>.</p>
+  <p>The <code>prev</code> variable is not optional. Comparing <code>wid</code> to the previous <em>index</em> rather than the previous <em>word id</em> breaks the moment a word has more than two pieces.</p>
+  <p><strong>The label-every-piece variant:</strong></p>
+<pre>def align_all(word_ids, word_labels, label2id):
+    labels, prev = [], None
+    for wid in word_ids:
+        if wid is None:
+            labels.append(-100)
+        else:
+            lab = word_labels[wid]
+            if wid == prev and lab.startswith("B-"):
+                lab = "I-" + lab[2:]       # a continuation cannot begin an entity
+            labels.append(label2id[lab])
+        prev = wid
+    return labels
+
+# same input -> [-100, 1, 2, 2, 0, 0, 3, -100]</pre>
+  <p>Check the two continuation positions: index 2 is the second piece of word 0, whose label <code>B-ORG</code> becomes <code>I-ORG</code> = 2; index 5 is the second piece of word 2, whose label <code>O</code> stays <code>O</code> = 0.</p>
+  <p>Both variants decode identically at inference as long as you read each word's first piece, so the choice is about the loss, not the output. What you must never do is skip <code>word_ids()</code> and zip the two lists — Problem 7 shows what that costs.</p>
+  <p>One guard worth adding: <code>assert tokenizer.is_fast</code>. A slow tokenizer has no <code>word_ids()</code>, and the failure mode is an <code>AttributeError</code> deep inside your data collator hours later.</p>
+</details>
+
+<!-- 11 -->
+<h2 id="e11">11 · Write entity F1 and a review-queue filter <span class="diff hard">hard</span> <span class="tag code">code</span></h2>
+<p class="qtype">Code · metrics and thresholds</p>
+<p><strong>Part 1.</strong> Write <code>entity_f1(gold_seqs, pred_seqs)</code> taking two lists of tag sequences (one per sentence) and returning <code>(precision, recall, f1)</code> computed at the entity level, with entities keyed by (sentence index, type, start, end). Run it on the Problem 5 data:</p>
+<pre>gold = [["B-ORG","I-ORG","O","B-PER","I-PER","O","B-LOC","O"],
+        ["O","B-LOC","O","O","O","B-DATE","O"]]
+pred = [["B-ORG","O","O","B-PER","I-PER","O","B-LOC","O"],
+        ["B-LOC","I-LOC","O","O","O","B-LOC","O"]]</pre>
+<p>Expected output: <code>(0.4, 0.4, 0.4)</code>.</p>
+<p><strong>Part 2.</strong> Write <code>entity_confidence(token_probs)</code> that aggregates per-token probabilities into one entity score using the minimum, and <code>review_queue(entities, threshold)</code> that returns the entities below the threshold sorted by ascending confidence. On</p>
+<pre>ents = [{"text": "Delta Health", "probs": [0.99, 0.71]},
+        {"text": "Frankfurt",    "probs": [0.95]},
+        {"text": "Ines Duarte",  "probs": [0.88, 0.84]}]
+threshold = 0.85</pre>
+<p>the queue must contain <em>Delta Health</em> (0.71) then <em>Ines Duarte</em> (0.84).</p>
+<details>
+  <summary>Show solution</summary>
+  <p><strong>Part 1.</strong></p>
+<pre>def spans(tags):
+    """BIO -> set of (type, start, end), repairing orphaned I- tags."""
+    out, cur = [], None
+    for i, t in enumerate(tags):
+        if t == "O":
+            if cur: out.append(cur); cur = None
+        elif t.startswith("B-"):
+            if cur: out.append(cur)
+            cur = [t[2:], i, i]
+        else:
+            ty = t[2:]
+            if cur and cur[0] == ty:
+                cur[2] = i
+            else:
+                if cur: out.append(cur)
+                cur = [ty, i, i]
+    if cur: out.append(cur)
+    return {tuple(s) for s in out}
+
+def entity_f1(gold_seqs, pred_seqs):
+    tp = fp = fn = 0
+    for si, (g, p) in enumerate(zip(gold_seqs, pred_seqs)):
+        G, P = spans(g), spans(p)
+        tp += len(G &amp; P)
+        fp += len(P - G)
+        fn += len(G - P)
+    precision = tp / (tp + fp) if tp + fp else 0.0
+    recall    = tp / (tp + fn) if tp + fn else 0.0
+    f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
+    return precision, recall, f1</pre>
+  <p>Because the sets are built per sentence and intersected per sentence, the sentence index is already part of the key — no global offset trick is needed. On the given data: sentence 1 contributes <code>{("ORG",0,1),("PER",3,4),("LOC",6,6)}</code> gold against <code>{("ORG",0,0),("PER",3,4),("LOC",6,6)}</code> predicted → 2 TP, 1 FP, 1 FN. Sentence 2 contributes <code>{("LOC",1,1),("DATE",5,5)}</code> against <code>{("LOC",0,1),("LOC",5,5)}</code> → 0 TP, 2 FP, 2 FN. Totals: TP 2, FP 3, FN 3 → 0.4, 0.4, 0.4.</p>
+  <p>Two implementation notes. Using a <code>set</code> is only safe because duplicate identical spans cannot occur inside one sentence under BIO decoding. And do not be tempted to compare tag strings position by position — that computes something else entirely, as Problem 6 showed.</p>
+  <p><strong>Part 2.</strong></p>
+<pre>def entity_confidence(token_probs):
+    """Aggregate per-token probabilities into one entity-level score."""
+    if not token_probs:
+        raise ValueError("an entity must have at least one token")
+    return min(token_probs)
+
+def review_queue(entities, threshold):
+    scored = [dict(e, confidence=entity_confidence(e["probs"])) for e in entities]
+    below = [e for e in scored if e["confidence"] &lt; threshold]
+    return sorted(below, key=lambda e: e["confidence"])
+
+# entity_confidence([0.99, 0.71]) -> 0.71
+# review_queue(ents, 0.85) -> [{... 'Delta Health', 'confidence': 0.71},
+#                              {... 'Ines Duarte',  'confidence': 0.84}]</pre>
+  <p><em>Frankfurt</em> at 0.95 is auto-accepted. <em>Delta Health</em> scores 0.71 rather than its mean of 0.85, because the minimum is driven by the weakest token — which is exactly the token most likely to be a boundary error. That is the argument for the minimum over the mean: it surfaces the entity whose <em>edge</em> the model was unsure about, and edges are where the errors live.</p>
+  <p>Whichever aggregation you choose, write it in the model card. A reviewer cannot interpret a queue without knowing how its numbers were produced, and switching from mean to minimum silently changes the queue's contents overnight.</p>
+</details>
+
+<!-- 12 -->
+<h2 id="e12">12 · Explain: which metric goes in the report <span class="diff hard">hard</span></h2>
+<p class="qtype">Written answer · metrics</p>
+<p>A teammate's draft report says: "Our model achieves 0.94 accuracy on the test set, so it is production-ready." Write a short critique. Address: what number they have actually computed, why it is close to meaningless for NER, which numbers belong in the report instead, and what a reader should be able to check from the report alone.</p>
+<details>
+  <summary>Show solution</summary>
+  <p><strong>What they computed.</strong> Token accuracy: the fraction of token positions where the predicted tag equals the gold tag, <code>O</code> positions included. In newswire, roughly five of every six tokens are <code>O</code>. A model that predicts <code>O</code> for every token — extracting nothing at all — scores around 0.83 on that measure. The 0.94 therefore sits only about eleven points above a model that does nothing, and it is not possible to tell from the number how much of that margin came from actual extraction.</p>
+  <p><strong>Why it is meaningless here.</strong> Three reasons, in order of importance. First, the majority class dominates, so the metric is mostly measuring the ability to recognise ordinary words. Second, it is computed over tokens, so an entity the model split in half or clipped by one token still earns most of its tokens as correct — the metric gives partial credit for output that a downstream lookup, a redaction step, or a knowledge graph cannot use at all. Third, accuracy conflates precision and recall, which have completely different costs: in a redaction product a missed entity is a privacy incident, while a spurious one is a minor annoyance.</p>
+  <p><strong>What belongs in the report.</strong></p>
+  <ul>
+    <li>Entity-level precision, recall, and F1 with exact boundary matching — the standard <code>seqeval</code> computation — as the headline.</li>
+    <li>A per-type breakdown, plus both micro and macro averages, so a rare type cannot hide behind a frequent one.</li>
+    <li>The counts themselves: TP, FP, FN, and the number of gold entities. A reader can then recompute every derived figure.</li>
+    <li>The same numbers for the CRF baseline on the identical split, so the transformer's gain is legible.</li>
+    <li>An error breakdown by category — boundary, type confusion, unseen entity — with one worked example of each.</li>
+    <li>F1 split by whether the entity string appeared in training, because the unseen figure is the one that predicts production behaviour.</li>
+  </ul>
+  <p><strong>What a reader should be able to check.</strong> Enough to reproduce the arithmetic: the matching criterion (exact, not relaxed), the tagging scheme, the split sizes, the label distribution, and whether the split was made at the document level. If the report states F1 without stating the matching criterion, the number cannot be compared with anything.</p>
+  <p>A fair way to keep token-level numbers in the report: present them as a diagnostic next to the entity-level ones, and say plainly that the gap between them measures how much of the error is boundary error.</p>
+</details>
+
+<!-- 13 -->
+<h2 id="e13">13 · Explain: the 0.9 threshold request <span class="diff hard">hard</span></h2>
+<p class="qtype">Written answer · confidence and review</p>
+<p>A product manager says: "Only show entities the model is at least 90% confident about. That way we will not show wrong answers." Explain what this actually does, what it demonstrably fails to do, and what you would build instead. Be concrete about the trade-off.</p>
+<details>
+  <summary>Show solution</summary>
+  <p><strong>What the softmax value is.</strong> It is the normalised exponential of one logit against the others at that position. It reports the shape of the model's output layer, not a measured frequency of correctness. Cross-entropy training explicitly rewards putting all the mass on one class, so a converged model is confident by construction — including where it is wrong. Until you check the number against reviewed outcomes, "0.9" means "the winning logit dominated", nothing more.</p>
+  <p><strong>What thresholding does do.</strong> It removes low-confidence predictions, which are enriched in errors. Precision on what remains goes up. That is real and useful.</p>
+  <p><strong>What it cannot do.</strong> Three things, and each of them defeats the stated goal.</p>
+  <ul>
+    <li><strong>It does not remove wrong answers, only unconfident ones.</strong> Confidently wrong predictions sail through. In the reviewed sample in the lecture notes, the single highest-confidence prediction in the batch, at 0.985, was wrong. No threshold below 1.0 catches it.</li>
+    <li><strong>It does nothing about misses.</strong> An entity the model never predicted has no confidence score to threshold. Raising the bar increases the number of entities you silently fail to extract, so recall falls with no visible signal anywhere in the product.</li>
+    <li><strong>The number is not calibrated.</strong> "90% confident" does not mean 90% of such predictions are right. Measure it: bin reviewed predictions by confidence and compare mean confidence to observed accuracy. Overconfidence is the normal finding.</li>
+  </ul>
+  <p><strong>What to build instead.</strong></p>
+  <ol>
+    <li><strong>Calibrate first.</strong> Fit temperature scaling on a held-out set — one scalar dividing the logits. It never changes which entity is predicted; it makes the attached number mean what it says, which is the precondition for any threshold conversation.</li>
+    <li><strong>Choose the threshold from a curve, not from a round number.</strong> Plot review workload, errors caught, and errors shipped against the threshold, and pick the point that fits the reviewer capacity you actually have. 0.9 is a number someone liked, not a decision.</li>
+    <li><strong>Show low-confidence entities, marked, rather than hiding them.</strong> Hiding converts a visible, correctable error into an invisible omission. A dotted underline with "unverified" keeps the human in a position to fix it.</li>
+    <li><strong>Route the below-threshold items to a review queue</strong> and store both the model's original prediction and the reviewer's decision, so the queue produces training data as a side effect.</li>
+    <li><strong>Report both error directions.</strong> Precision of the auto-accepted set <em>and</em> an estimate of what was missed, obtained by having a reviewer sample the auto-accepted stream periodically.</li>
+  </ol>
+  <p><strong>The trade-off, stated plainly.</strong> Every point of threshold buys precision with reviewer hours and with recall. There is no setting that removes wrong answers; there is only a setting that decides who sees them first — a reviewer, or the customer.</p>
+</details>
+
+<!-- 14 -->
+<h2 id="e14">14 · Explain: newswire model, support tickets <span class="diff hard">hard</span></h2>
+<p class="qtype">Written answer · domain shift</p>
+<p>Your team plugs an off-the-shelf English NER model, trained on newswire, into a pipeline over customer support tickets. Entity-level F1 on 200 hand-annotated tickets comes back at 0.42 against 0.91 reported on the newswire test set. Explain the most likely causes, in order, say how you would confirm each one cheaply, and describe what you would do about it. State one thing you would <em>not</em> do.</p>
+<details>
+  <summary>Show solution</summary>
+  <p><strong>Cause 1 — capitalisation.</strong> Support tickets are typed quickly and are often entirely lowercase. Case is the strongest single cue for names in cased English models, and a model that leans on it loses a large share of its F1 when the cue disappears. <em>Confirm:</em> take the 200 tickets, apply title case with a crude heuristic, and re-evaluate; if F1 jumps sharply, case was the dominant cause. Also evaluate the model on properly-cased newswire that you have lowercased — the drop you see there is attributable to case alone. <em>Fix:</em> fine-tune on lowercased or case-augmented data, or use an uncased checkpoint fine-tuned for this domain. Case augmentation — training on each sentence in original, lowercased, and uppercased form — is cheap and effective.</p>
+  <p><strong>Cause 2 — the label set does not match the product.</strong> Tickets are full of order numbers, SKUs, product names, plan tiers, and error codes. A newswire model has <code>PER</code>, <code>ORG</code>, <code>LOC</code>, <code>MISC</code> and physically cannot emit a type it was never trained on, so every one of those is a guaranteed false negative. <em>Confirm:</em> count how many gold entities in your 200 tickets have a type outside the model's label set. If that fraction is large, no amount of tuning on the existing types helps. <em>Fix:</em> define your own label set and fine-tune. This is a data-collection project, not a hyperparameter project.</p>
+  <p><strong>Cause 3 — genre and syntax.</strong> Tickets contain greetings, signatures, quoted email threads, URLs, order tables, and sentence fragments. The model has never seen this structure, and boundaries in fragments are genuinely harder. <em>Confirm:</em> break your F1 down by ticket section — body versus signature versus quoted thread. <em>Fix:</em> pre-process to strip quoted threads and signatures, or annotate them so the model learns to skip them.</p>
+  <p><strong>Cause 4 — annotation mismatch.</strong> Your 200 tickets were annotated by your team, under your guidelines; the newswire test set was annotated under someone else's. Some of the "errors" may be boundary conventions that differ. <em>Confirm:</em> categorise a sample of the errors. If a large share are the right type with edges that differ systematically (determiners, corporate suffixes, honorifics), it is a guideline mismatch, not a model failure. <em>Fix:</em> write the guideline down, re-annotate consistently, and re-measure.</p>
+  <p><strong>Order of work.</strong> Categorise the errors first — an afternoon — because the categorisation tells you which of the four causes dominates, and they call for completely different projects. Then run the case experiment, since it is the cheapest possible test with the largest expected effect. Then decide between fine-tuning on existing types and collecting annotations for new ones.</p>
+  <p><strong>What I would not do:</strong> conclude from 0.42 that "the model is bad" and start swapping in larger checkpoints. A bigger newswire model still cannot emit an order-number type, still relies on case, and still does not know your guidelines. Model shopping is the most expensive way to avoid looking at your errors.</p>
+</details>
+
+<div class="callout">
+  <strong>If you finished all fourteen.</strong> The next useful thing is not another exercise, it is a measurement: take 100 sentences of the text your project will actually see, annotate them yourself under a guideline you write down, and evaluate both a CRF baseline and a fine-tuned token classifier on them at the entity level. Everything in these problems exists to make that measurement trustworthy.
+</div>
+
+<div class="nav">
+  <a href="Lecture_Notes_Topic_5_Named_Entity_Recognition.html">← Lecture notes</a>
+  <a href="#e1">↑ Back to problem 1</a>
+</div>
+
+</div>
+<script>
+/* ============================ shared helpers ============================ */
+var TYPE_COLOR = {PER:'#0D47A1', ORG:'#1B5E20', LOC:'#8D4E00', DATE:'#4A148C', MISC:'#37474F'};
+var TYPE_FILL  = {PER:'#E3F2FD', ORG:'#E1F0EA', LOC:'#FFF3E0', DATE:'#F3E5F5', MISC:'#ECEFF1'};
+
+function typeOf(t){ return (t === 'O' || t === '-100') ? 'O' : t.slice(2); }
+
+function decodeBIO(tags){
+  var ents = [], cur = null, i, t, ty;
+  for(i = 0; i < tags.length; i++){
+    t = tags[i];
+    if(t === 'O' || t === '-100'){ if(cur){ ents.push(cur); cur = null; } continue; }
+    ty = t.slice(2);
+    if(t.charAt(0) === 'B'){
+      if(cur) ents.push(cur);
+      cur = {type: ty, s: i, e: i, repaired: false};
+    } else {
+      if(cur && cur.type === ty){ cur.e = i; }
+      else { if(cur) ents.push(cur); cur = {type: ty, s: i, e: i, repaired: true}; }
+    }
+  }
+  if(cur) ents.push(cur);
+  return ents;
+}
+
+function bioViolations(tags){
+  var out = [], i, t, prev;
+  for(i = 0; i < tags.length; i++){
+    t = tags[i];
+    if(t.charAt(0) !== 'I') continue;
+    prev = (i > 0) ? tags[i-1] : null;
+    if(prev === null) out.push({i: i, msg: t + ' at position 0 cannot open an entity'});
+    else if(prev === 'O') out.push({i: i, msg: 'position ' + i + ': O → ' + t});
+    else if(prev.slice(2) !== t.slice(2)) out.push({i: i, msg: 'position ' + i + ': ' + prev + ' → ' + t + ' (type change)'});
+  }
+  return out;
+}
+
+function entKey(e){ return e.type + ':' + e.s + ':' + e.e; }
+
+function entityMetrics(gold, pred){
+  var G = {}, tp = 0, used = {}, k;
+  gold.forEach(function(e){ G[entKey(e)] = true; });
+  pred.forEach(function(e){ k = entKey(e); if(G[k] && !used[k]){ tp++; used[k] = true; } });
+  var fp = pred.length - tp, fn = gold.length - tp;
+  var P = pred.length ? tp / pred.length : 0;
+  var R = gold.length ? tp / gold.length : 0;
+  return {tp: tp, fp: fp, fn: fn, P: P, R: R, F: (P + R) ? 2 * P * R / (P + R) : 0,
+          nPred: pred.length, nGold: gold.length};
+}
+
+function tokenMetrics(gold, pred){
+  var correct = 0, pn = 0, gn = 0, i, g, p, n = Math.max(gold.length, pred.length);
+  for(i = 0; i < n; i++){
+    g = typeOf(gold[i] || 'O'); p = typeOf(pred[i] || 'O');
+    if(g !== 'O') gn++;
+    if(p !== 'O') pn++;
+    if(p !== 'O' && p === g) correct++;
+  }
+  var P = pn ? correct / pn : 0, R = gn ? correct / gn : 0;
+  return {correct: correct, nPred: pn, nGold: gn, P: P, R: R,
+          F: (P + R) ? 2 * P * R / (P + R) : 0};
+}
+
+function offsetsFromTokens(tokens){
+  var offs = [], c = 0;
+  tokens.forEach(function(t){ offs.push([c, c + t.length]); c += t.length + 1; });
+  return offs;
+}
+
+function fmt(x){ return (Math.round(x * 1000) / 1000).toFixed(3); }
+
+function esc(s){
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  if(ctx.roundRect){ ctx.roundRect(x, y, w, h, r); return; }
+  ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
+}
+
+function splitTags(s){ return s.trim().split(/\s+/).filter(function(x){ return x.length; }); }
+
+/* ===================== Widget A · validator + scorer ===================== */
+(function(){
+  var tokIn = document.getElementById('sc-tok');
+  var goldIn = document.getElementById('sc-gold');
+  var predIn = document.getElementById('sc-pred');
+  var vOut = document.getElementById('sc-valid');
+  var sOut = document.getElementById('sc-spans');
+  var mOut = document.getElementById('sc-metrics');
+  var cv = document.getElementById('sc-canvas'), ctx = cv.getContext('2d');
+  var OK = /^(O|[BI]-[A-Z][A-Z_]*)$/;
+
+  function spanList(tokens, offs, text, tags){
+    return decodeBIO(tags).map(function(e){
+      var a = offs[e.s] ? offs[e.s][0] : 0, b = offs[e.e] ? offs[e.e][1] : 0;
+      return '<span class="chip ' + e.type + '">' + e.type + '</span>"' + esc(text.slice(a, b)) +
+             '" [' + a + ', ' + b + ')' + (e.repaired ? ' <span class="bad">repaired</span>' : '');
+    });
+  }
+
+  function draw(tokens, gold, pred){
+    var W = cv.width, H = cv.height, i;
+    ctx.clearRect(0, 0, W, H);
+    var n = Math.max(tokens.length, 1), bw = (W - 20) / n;
+    ctx.font = '10px monospace'; ctx.textAlign = 'center';
+    var gv = {}, pv = {};
+    bioViolations(gold).forEach(function(v){ gv[v.i] = true; });
+    bioViolations(pred).forEach(function(v){ pv[v.i] = true; });
+    for(i = 0; i < tokens.length; i++){
+      var x = 10 + i * bw;
+      ctx.fillStyle = '#333'; ctx.font = '10px monospace';
+      var lbl = tokens[i].length > 9 ? tokens[i].slice(0, 8) + '…' : tokens[i];
+      ctx.fillText(lbl, x + bw / 2, 16);
+      [[gold[i] || '', 28, gv[i], 'gold'], [pred[i] || '', 74, pv[i], 'pred']].forEach(function(row){
+        var ty = typeOf(row[0] || 'O');
+        ctx.fillStyle = (row[0] && ty !== 'O') ? TYPE_FILL[ty] || '#F2F4F7' : '#F2F4F7';
+        ctx.strokeStyle = row[2] ? '#B00020' : '#E0E5EB'; ctx.lineWidth = row[2] ? 2 : 1;
+        roundRect(ctx, x + 2, row[1], bw - 4, 26, 4); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = (row[0] && ty !== 'O') ? TYPE_COLOR[ty] || '#555' : '#777';
+        ctx.font = '9px monospace';
+        ctx.fillText(row[0] || '—', x + bw / 2, row[1] + 17);
+      });
+      if((gold[i] || 'O') !== (pred[i] || 'O')){
+        ctx.strokeStyle = '#B00020'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(x + bw / 2, 56); ctx.lineTo(x + bw / 2, 72); ctx.stroke();
+      }
+    }
+    /* span ribbons */
+    [[gold, 118, 'gold spans'], [pred, 146, 'predicted spans']].forEach(function(row){
+      decodeBIO(row[0]).forEach(function(e){
+        var x0 = 10 + e.s * bw + 3, x1 = 10 + (e.e + 1) * bw - 3;
+        ctx.fillStyle = TYPE_COLOR[e.type] || '#555';
+        ctx.fillRect(x0, row[1], x1 - x0, 8);
+        ctx.font = 'bold 9px sans-serif';
+        ctx.fillText(e.type, (x0 + x1) / 2, row[1] - 2);
+      });
+      ctx.textAlign = 'left'; ctx.fillStyle = '#888'; ctx.font = '9px sans-serif';
+      ctx.fillText(row[2], 10, row[1] + 18);
+      ctx.textAlign = 'center';
+    });
+    ctx.textAlign = 'left'; ctx.fillStyle = '#888'; ctx.font = '9px sans-serif';
+    ctx.fillText('gold', 10, 44); ctx.fillText('pred', 10, 90);
+  }
+
+  function update(){
+    var tokens = splitTags(tokIn.value);
+    var gold = splitTags(goldIn.value), pred = splitTags(predIn.value);
+    var text = tokens.join(' '), offs = offsetsFromTokens(tokens);
+    var msgs = [];
+    var badG = gold.filter(function(t){ return !OK.test(t); });
+    var badP = pred.filter(function(t){ return !OK.test(t); });
+    if(badG.length) msgs.push('<span class="bad">unrecognised gold tag(s): ' + esc(badG.join(', ')) + '</span>');
+    if(badP.length) msgs.push('<span class="bad">unrecognised predicted tag(s): ' + esc(badP.join(', ')) + '</span>');
+    if(gold.length !== tokens.length) msgs.push('<span class="bad">gold has ' + gold.length + ' tags for ' + tokens.length + ' tokens</span>');
+    if(pred.length !== tokens.length) msgs.push('<span class="bad">prediction has ' + pred.length + ' tags for ' + tokens.length + ' tokens</span>');
+    if(badG.length || badP.length){
+      vOut.innerHTML = msgs.join('<br>');
+      sOut.innerHTML = '—'; mOut.innerHTML = '—';
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      return;
+    }
+    var gViol = bioViolations(gold), pViol = bioViolations(pred);
+    msgs.push('gold: ' + (gViol.length
+      ? '<span class="bad">' + gViol.length + ' illegal transition(s) — ' + gViol.map(function(v){ return esc(v.msg); }).join('; ') + '</span>'
+      : '<span class="ok">well-formed</span>'));
+    msgs.push('prediction: ' + (pViol.length
+      ? '<span class="bad">' + pViol.length + ' illegal transition(s) — ' + pViol.map(function(v){ return esc(v.msg); }).join('; ') + '</span>'
+      : '<span class="ok">well-formed</span>'));
+    vOut.innerHTML = msgs.join('<br>');
+
+    var gs = spanList(tokens, offs, text, gold), ps = spanList(tokens, offs, text, pred);
+    sOut.innerHTML = 'gold spans (' + gs.length + '): ' + (gs.length ? gs.join(' ') : 'none') +
+      '<br>predicted spans (' + ps.length + '): ' + (ps.length ? ps.join(' ') : 'none');
+
+    var em = entityMetrics(decodeBIO(gold), decodeBIO(pred));
+    var tm = tokenMetrics(gold, pred);
+    mOut.innerHTML =
+      'entity level&nbsp; TP ' + em.tp + ' · FP ' + em.fp + ' · FN ' + em.fn +
+      ' · P ' + fmt(em.P) + ' · R ' + fmt(em.R) + ' · <strong>F1 ' + fmt(em.F) + '</strong>' +
+      '<br>token level&nbsp;&nbsp; correct ' + tm.correct + ' / predicted non-O ' + tm.nPred +
+      ' / gold non-O ' + tm.nGold + ' · P ' + fmt(tm.P) + ' · R ' + fmt(tm.R) +
+      ' · <strong>F1 ' + fmt(tm.F) + '</strong>' +
+      '<br>gap (token − entity) = <strong class="' + (tm.F - em.F > 0.001 ? 'bad' : 'ok') + '">' +
+      fmt(tm.F - em.F) + '</strong>';
+    draw(tokens, gold, pred);
+  }
+  tokIn.oninput = update; goldIn.oninput = update; predIn.oninput = update;
+  update();
+})();
+
+/* ===================== Widget B · BIO <-> BIOES ===================== */
+(function(){
+  var inp = document.getElementById('bx-in');
+  var out = document.getElementById('bx-out');
+  var stat = document.getElementById('bx-stat');
+  var OK = /^(O|[BI]-[A-Z][A-Z_]*)$/;
+
+  function toBIOES(tags){
+    return tags.map(function(t, i){
+      if(t === 'O') return 'O';
+      var ty = t.slice(2);
+      var nextSame = (i + 1 < tags.length) && (tags[i+1] === 'I-' + ty);
+      if(t.charAt(0) === 'B') return (nextSame ? 'B-' : 'S-') + ty;
+      return (nextSame ? 'I-' : 'E-') + ty;
+    });
+  }
+  function toBIO(tags){
+    return tags.map(function(t){
+      if(t === 'O') return 'O';
+      var ty = t.slice(2), p = t.charAt(0);
+      return ((p === 'B' || p === 'S') ? 'B-' : 'I-') + ty;
+    });
+  }
+  function update(){
+    var tags = splitTags(inp.value);
+    var bad = tags.filter(function(t){ return !OK.test(t); });
+    if(bad.length || !tags.length){
+      out.textContent = tags.length ? 'Unrecognised tag(s): ' + bad.join(', ') : '(empty)';
+      stat.innerHTML = '<span class="bad">Cannot convert.</span>';
+      return;
+    }
+    var bioes = toBIOES(tags), back = toBIO(bioes);
+    var w = tags.map(function(t, i){ return Math.max(t.length, bioes[i].length, back[i].length); });
+    function line(a){ return a.map(function(v, i){ return v + Array(w[i] - v.length + 3).join(' '); }).join(''); }
+    out.textContent = 'BIO    ' + line(tags) + '\nBIOES  ' + line(bioes) + '\nBIO\'   ' + line(back);
+    var ents = decodeBIO(tags), types = {};
+    ents.forEach(function(e){ types[e.type] = 1; });
+    var nT = Object.keys(types).length;
+    var singles = ents.filter(function(e){ return e.s === e.e; }).length;
+    stat.innerHTML = (back.join(' ') === tags.join(' ')
+        ? '<span class="ok">Round trip is lossless</span> — BIOES carries exactly the same span information.'
+        : '<span class="bad">Round trip changed the sequence</span> — the input was not well-formed and the conversion repaired it.') +
+      '<br>' + ents.length + ' entities, ' + singles + ' of them single-token (→ ' + singles + ' S- tag' +
+      (singles === 1 ? '' : 's') + '), ' + (ents.length - singles) + ' with an explicit E- tag.' +
+      '<br>tag-set size for ' + nT + ' type' + (nT === 1 ? '' : 's') + ': BIO ' + (2 * nT + 1) +
+      ', BIOES ' + (4 * nT + 1) + '.';
+  }
+  inp.oninput = update; update();
+})();
+
+/* ===================== Widget C · alignment strategies ===================== */
+(function(){
+  var WORDS = ['Delta','Health','hired','Ines','Duarte'];
+  var GOLD  = ['B-ORG','I-ORG','O','B-PER','I-PER'];
+  var PIECES = {Delta: ['Delta'], Health: ['Health'], hired: ['hire','##d'],
+                Ines: ['In','##es'], Duarte: ['Du','##arte']};
+  var sel = document.getElementById('ax-mode');
+  var read = document.getElementById('ax-read');
+  var tbl = document.getElementById('ax-table');
+  var out = document.getElementById('ax-out');
+
+  var F = [];
+  WORDS.forEach(function(w, wi){
+    PIECES[w].forEach(function(p, pi){ F.push({p: p, wi: wi, first: pi === 0}); });
+  });
+
+  function labelsFor(mode){
+    if(mode === 'first') return F.map(function(x){ return x.first ? GOLD[x.wi] : '-100'; });
+    var k = 0;
+    return F.map(function(){ var l = k < GOLD.length ? GOLD[k] : 'O'; k++; return l; });
+  }
+  function recover(labels){
+    var word = WORDS.map(function(){ return 'O'; });
+    F.forEach(function(x, i){ if(x.first) word[x.wi] = (labels[i] === '-100') ? 'O' : labels[i]; });
+    return word;
+  }
+  function update(){
+    var mode = sel.value, labels = labelsFor(mode), rec = recover(labels);
+    var rows = ['<tr><th>piece</th>' + F.map(function(x){
+      return '<td class="mono">' + esc(x.p) + '</td>'; }).join('') + '</tr>'];
+    rows.push('<tr><th>belongs to word</th>' + F.map(function(x){
+      return '<td class="num">' + x.wi + (x.first ? '' : ' (cont.)') + '</td>'; }).join('') + '</tr>');
+    rows.push('<tr><th>training label</th>' + F.map(function(x, i){
+      var l = labels[i], m = l === '-100';
+      return '<td class="mono" style="color:' + (m ? '#AAA' : (typeOf(l) === 'O' ? '#555' : TYPE_COLOR[typeOf(l)])) +
+             '">' + l + '</td>'; }).join('') + '</tr>');
+    tbl.innerHTML = rows.join('');
+    var wrong = 0;
+    rec.forEach(function(t, i){ if(t !== GOLD[i]) wrong++; });
+    var m = entityMetrics(decodeBIO(GOLD), decodeBIO(rec));
+    read.innerHTML = 'labels used in the loss: ' + labels.filter(function(l){ return l !== '-100'; }).length +
+      ' / ' + labels.length + '<br>word tags recovered wrongly: <strong class="' + (wrong ? 'bad' : 'ok') + '">' +
+      wrong + ' / ' + WORDS.length + '</strong><br>entity F1: <strong class="' + (m.F === 1 ? 'ok' : 'bad') +
+      '">' + fmt(m.F) + '</strong>';
+    out.innerHTML =
+      'gold word tags:&nbsp;&nbsp;&nbsp;&nbsp; <span class="mono">' + GOLD.join('  ') + '</span>' +
+      '<br>recovered at inference: <span class="mono">' + rec.join('  ') + '</span>' +
+      '<br>gold entities: ' + decodeBIO(GOLD).map(function(e){ return e.type + '[' + e.s + ',' + e.e + ']'; }).join(', ') +
+      '<br>decoded entities: ' + (decodeBIO(rec).length ? decodeBIO(rec).map(function(e){
+        return e.type + '[' + e.s + ',' + e.e + ']' + (e.repaired ? ' (repaired)' : ''); }).join(', ') : 'none') +
+      '<br>TP ' + m.tp + ' · FP ' + m.fp + ' · FN ' + m.fn + ' · P ' + fmt(m.P) + ' · R ' + fmt(m.R) +
+      ' · <strong>F1 ' + fmt(m.F) + '</strong>';
+  }
+  sel.onchange = update; update();
+})();
+
+/* ===================== Widget D · Viterbi on the given scores ===================== */
+(function(){
+  var TAGS = ['O','B-PER','I-PER'];
+  var TOK = ['Ana','Moreau','spoke','.'];
+  var EM = [[1.0, 2.2, 2.6], [0.8, 1.5, 2.9], [3.0, 0.4, 0.3], [3.1, 0.2, 0.2]];
+  var rng = document.getElementById('vx-pen');
+  var read = document.getElementById('vx-read');
+  var out = document.getElementById('vx-out');
+  var cv = document.getElementById('vx-canvas'), ctx = cv.getContext('2d');
+
+  function legal(prev, cur){
+    if(cur.charAt(0) !== 'I') return true;
+    if(prev === null || prev === 'O') return false;
+    return prev.slice(2) === cur.slice(2);
+  }
+  function trans(pen, prev, cur){ return legal(prev, cur) ? 0 : -pen; }
+  function argmaxPath(){
+    return EM.map(function(r){
+      var b = 0, i; for(i = 1; i < r.length; i++) if(r[i] > r[b]) b = i; return TAGS[b];
+    });
+  }
+  function viterbi(pen){
+    var T = EM.length, K = TAGS.length, dp = [], bp = [], t, k, j, best, bi, s;
+    dp.push(EM[0].map(function(e, kk){ return e + trans(pen, null, TAGS[kk]); }));
+    bp.push([]);
+    for(t = 1; t < T; t++){
+      var row = [], b = [];
+      for(k = 0; k < K; k++){
+        best = -Infinity; bi = 0;
+        for(j = 0; j < K; j++){
+          s = dp[t-1][j] + trans(pen, TAGS[j], TAGS[k]);
+          if(s > best){ best = s; bi = j; }
+        }
+        row.push(best + EM[t][k]); b.push(bi);
+      }
+      dp.push(row); bp.push(b);
+    }
+    var last = 0;
+    for(k = 1; k < K; k++) if(dp[T-1][k] > dp[T-1][last]) last = k;
+    var path = [last];
+    for(t = T - 1; t > 0; t--){ last = bp[t][last]; path.unshift(last); }
+    return {idx: path, path: path.map(function(i){ return TAGS[i]; }), score: dp[T-1][path[T-1]]};
+  }
+  function draw(v){
+    var W = cv.width, H = cv.height, i, k;
+    ctx.clearRect(0, 0, W, H);
+    var lx = 76, ly = 40, cw = 100, rh = 44;
+    ctx.textAlign = 'right'; ctx.font = '10px monospace';
+    for(k = 0; k < TAGS.length; k++){ ctx.fillStyle = '#555'; ctx.fillText(TAGS[k], lx - 8, ly + k * rh + 20); }
+    ctx.textAlign = 'center';
+    for(i = 0; i < TOK.length; i++){
+      ctx.fillStyle = '#1F4E79'; ctx.font = 'bold 10px sans-serif';
+      ctx.fillText(TOK[i], lx + i * cw + 34, ly - 12);
+      for(k = 0; k < TAGS.length; k++){
+        var x = lx + i * cw, y = ly + k * rh, on = v.idx[i] === k;
+        ctx.fillStyle = on ? (TAGS[k] === 'O' ? '#EAF1F8' : TYPE_FILL[typeOf(TAGS[k])]) : '#FAFBFC';
+        ctx.strokeStyle = on ? '#1F4E79' : '#E0E5EB'; ctx.lineWidth = on ? 2 : 1;
+        roundRect(ctx, x, y, 68, 30, 4); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = on ? '#1F4E79' : '#999'; ctx.font = '10px monospace';
+        ctx.fillText(EM[i][k].toFixed(1), x + 34, y + 20);
+      }
+    }
+    ctx.strokeStyle = '#C00000'; ctx.lineWidth = 2; ctx.beginPath();
+    for(i = 0; i < TOK.length; i++){
+      var px = lx + i * cw + 34, py = ly + v.idx[i] * rh + 15;
+      if(i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    ctx.textAlign = 'left'; ctx.fillStyle = '#C00000'; ctx.font = 'bold 10px sans-serif';
+    ctx.fillText('red line = Viterbi best path', 76, H - 10);
+  }
+  function update(){
+    var pen = +rng.value, v = viterbi(pen), am = argmaxPath();
+    var vio = bioViolations(v.path);
+    var illegalTotal = 11.6 - pen, legalTotal = 11.2;
+    read.innerHTML = 'p = ' + pen.toFixed(2) +
+      '<br>path: <span class="mono">' + v.path.join(' ') + '</span>' +
+      '<br>score = ' + v.score.toFixed(2) + ' · ' +
+      (vio.length ? '<span class="bad">illegal</span>' : '<span class="ok">well-formed</span>');
+    out.innerHTML =
+      'independent argmax: <span class="mono">' + am.join(' ') + '</span> ' +
+      (bioViolations(am).length ? '<span class="bad">← illegal at position 0</span>' : '<span class="ok">← legal</span>') +
+      '<br>path <span class="mono">I-PER I-PER O O</span> scores 11.60 − p = <strong>' + illegalTotal.toFixed(2) + '</strong>' +
+      '<br>path <span class="mono">B-PER I-PER O O</span> scores <strong>' + legalTotal.toFixed(2) + '</strong>' +
+      '<br>' + (pen > 0.4
+        ? '<span class="ok">p &gt; 0.4</span> — the legal path wins and Viterbi returns B-PER I-PER O O.'
+        : (Math.abs(pen - 0.4) < 1e-9
+            ? 'p = 0.4 exactly — the two paths tie, and the tie is broken by implementation order.'
+            : '<span class="bad">p &lt; 0.4</span> — the penalty is smaller than the unary margin 2.6 − 2.2 = 0.4, so the illegal path still wins.'));
+    draw(v);
+  }
+  rng.oninput = update; update();
+})();
+</script>
+</body>
+</html>

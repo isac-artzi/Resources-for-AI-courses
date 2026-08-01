@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 1 Exercises — Text Preprocessing and Tokenization</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+       margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6; }
+.container { max-width: 980px; margin: 24px auto 48px; background: white;
+             padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.35em; margin-top: 40px;
+     border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+h4 { color: #555; font-size: 1.0em; margin-top: 18px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 6px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7;
+       padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px; overflow-x: auto;
+      border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79;
+           padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px;
+        margin: 14px 0; border-radius: 4px; font-size: 0.93em; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+        padding: 22px; margin: 22px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.controls { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 180px; }
+.control input[type="number"] { width: 80px; padding: 4px 8px;
+            border: 1px solid #CFD7DF; border-radius: 4px; font-family: inherit; }
+.control select { padding: 5px 8px; border: 1px solid #CFD7DF; border-radius: 4px;
+                  font-family: inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px;
+           border-radius: 6px; font-family: "SF Mono", Consolas, monospace;
+           font-size: 0.88em; min-width: 220px; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 16px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.93em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+      background: #F2F4F7; padding: 4px 8px; border-radius: 4px; }
+.eq-block { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+            background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+            text-align: center; margin: 14px 0; display: block; }
+.nav { display: flex; justify-content: space-between; margin-top: 40px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+       padding: 16px 22px; margin-bottom: 28px; font-size: 0.92em; }
+.toc h3 { margin: 0 0 8px; color: #1F4E79; font-size: 1.0em; }
+.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 24px; }
+.toc a { color: #1F4E79; text-decoration: none; } .toc a:hover { text-decoration: underline; }
+.tag { display: inline-block; padding: 2px 8px; background: #E0E5EB;
+       border-radius: 12px; font-size: 0.75em; color: #555;
+       text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px; }
+.tag.interactive { background: #E1F0EA; color: #1B5E20; }
+.tag.code { background: #F2F4F7; color: #555; }
+.tag.math { background: #FCE8EE; color: #6E1414; }
+table.cmp { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 0.92em; }
+table.cmp th, table.cmp td { border: 1px solid #E0E5EB; padding: 8px 12px; text-align: left; }
+table.cmp th { background: #F2F4F7; color: #1F4E79; }
+.archetype { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
+.arc-card { border: 1px solid #D0D8E0; border-radius: 8px; padding: 14px;
+            background: white; font-size: 0.9em; }
+.arc-card .name { color: #1F4E79; font-weight: 600; }
+.arc-card .role { color: #555; margin-top: 6px; }
+
+/* ---- additions for this topic (appended; nothing above is modified) ---- */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; }
+.chip { background: #EAF1F8; border: 1px solid #C6D6E6; color: #1F4E79; border-radius: 4px;
+        padding: 2px 8px; font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.85em; }
+.chip.sub { background: #E1F0EA; border-color: #B9DCC9; color: #1B5E20; }
+textarea { width: 100%; font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em;
+           padding: 8px 10px; border: 1px solid #CFD7DF; border-radius: 6px; resize: vertical; }
+input[type="text"] { padding: 6px 10px; border: 1px solid #CFD7DF; border-radius: 4px;
+                     font-family: inherit; font-size: 0.95em; }
+.small { font-size: 0.88em; color: #555; }
+table.cmp tr.win td { background: #FFF8E1; font-weight: 600; }
+table.cmp td.num { text-align: right; font-family: "SF Mono", Consolas, Monaco, monospace; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
+.exercise { border: 1px solid #E0E5EB; border-radius: 8px; padding: 20px 26px;
+            margin: 24px 0; background: #FCFDFE; }
+.exercise h3 { margin: 0 0 4px; color: #1F4E79; font-size: 1.1em; }
+.exercise .qtype { color: #888; font-size: 0.8em; text-transform: uppercase;
+                   letter-spacing: 0.05em; margin-bottom: 12px; }
+.exercise .difficulty { float: right; font-size: 0.75em; color: #888;
+                        text-transform: uppercase; letter-spacing: 0.05em; }
+details { background: #F4F7FA; border: 1px solid #D8E1EA; border-radius: 8px;
+          padding: 12px 18px; margin: 16px 0 0; }
+details summary { cursor: pointer; color: #1F4E79; font-weight: 600; outline: none; }
+details[open] summary { margin-bottom: 10px; border-bottom: 1px solid #D8E1EA; padding-bottom: 8px; }
+details pre { background: #FFFFFF; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="brand">Exercises · ~ 90 min</div>
+<h1>Topic 1 — Text Preprocessing and Tokenization</h1>
+<p class="subtitle">Thirteen problems in increasing order of difficulty: by-hand computation, prediction against a live widget, short code-writing tasks with stated expected output, and open questions with no single right answer. Every solution is worked in full — do the work before you open it.</p>
+
+<div class="callout">
+  <strong>How to use this page.</strong> Exercises 4, 6, 7 and 8 pair with the three widgets embedded below them. In each case write your answer down <em>first</em>, then run the widget. The value of the exercise is in the gap between your prediction and the output, and that gap disappears if you look first.
+</div>
+
+<div class="toc">
+  <h3>The thirteen</h3>
+  <ol>
+    <li><a href="#e1">Count the tokens</a></li>
+    <li><a href="#e2">Which normalization makes these equal?</a></li>
+    <li><a href="#e3">The stop list ate the meaning</a></li>
+    <li><a href="#e4">Stem five words by hand</a></li>
+    <li><a href="#e5">Stem against lemma</a></li>
+    <li><a href="#e6">Compute an OOV rate</a></li>
+    <li><a href="#e7">Run four BPE merges by hand</a></li>
+    <li><a href="#e8">Encode an unseen word</a></li>
+    <li><a href="#e9">WordPiece by hand</a></li>
+    <li><a href="#e10">Write <code>fertility()</code></a></li>
+    <li><a href="#e11">Write <code>oov_rates()</code></a></li>
+    <li><a href="#e12">The 0.0% OOV report</a></li>
+    <li><a href="#e13">Pick a tokenizer for two products</a></li>
+  </ol>
+</div>
+
+<!-- ================================ 1 ================================ -->
+<div class="exercise" id="e1">
+  <div class="difficulty">warm-up</div>
+  <div class="qtype">By hand · segmentation</div>
+  <h3>Exercise 1 — Count the tokens</h3>
+  <p>Take this string exactly as written:</p>
+  <pre>Dr. Smith's e-mail (dr.smith@example.com) arrived at 9:45 a.m. — it wasn't urgent.</pre>
+  <ol>
+    <li>How many tokens does a pure whitespace split produce? List them.</li>
+    <li>How many tokens does the regular expression <code>[A-Za-z0-9]+|[^\sA-Za-z0-9]</code> produce — that is, "a run of letters or digits, or a single non-space character that is neither"? List them.</li>
+    <li>Name four things in this string that the second tokenizer damaged.</li>
+  </ol>
+
+  <details>
+    <summary>Show solution</summary>
+    <p><strong>1. Whitespace split — 12 tokens.</strong></p>
+<pre>Dr.   Smith's   e-mail   (dr.smith@example.com)   arrived   at
+9:45   a.m.   —   it   wasn't   urgent.</pre>
+    <p>Nothing is broken, but nearly every token carries attached punctuation, so <code>urgent.</code> and <code>urgent</code> are different types.</p>
+
+    <p><strong>2. Regex split — 33 tokens.</strong></p>
+<pre>Dr  .  Smith  '  s  e  -  mail  (  dr  .  smith  @  example  .  com  )
+arrived  at  9  :  45  a  .  m  .  —  it  wasn  '  t  urgent  .</pre>
+    <p>Count them in groups of ten if you lost your place: <code>Dr . Smith ' s e - mail ( dr</code> (10), <code>. smith @ example . com ) arrived at 9</code> (20), <code>: 45 a . m . — it wasn '</code> (30), <code>t urgent .</code> (33).</p>
+
+    <p><strong>3. Four things it damaged.</strong></p>
+    <ul>
+      <li><strong>The email address.</strong> One meaningful unit became eight tokens, none of which is useful, and all of which are rare types.</li>
+      <li><strong>The contraction.</strong> <code>wasn't</code> became <code>wasn</code> + <code>'</code> + <code>t</code>. The negation is now unrecoverable by any downstream rule that looks for a negation word.</li>
+      <li><strong>The abbreviation <code>a.m.</code></strong> became <code>a . m .</code> — and the final period is now indistinguishable from a sentence-ending period, so sentence splitting downstream will cut the sentence in the wrong place.</li>
+      <li><strong>The hyphenated word <code>e-mail</code></strong> became <code>e</code> + <code>-</code> + <code>mail</code>, so it no longer matches <code>email</code> <em>or</em> <code>e-mail</code> as a unit.</li>
+    </ul>
+    <p>Also acceptable: <code>9:45</code> lost its structure, and <code>Dr.</code> lost the marker that distinguishes an abbreviation from a sentence end.</p>
+  </details>
+</div>
+
+<!-- ================================ 2 ================================ -->
+<div class="exercise" id="e2">
+  <div class="difficulty">warm-up</div>
+  <div class="qtype">By hand · normalization</div>
+  <h3>Exercise 2 — Which normalization makes these equal?</h3>
+  <p>For each pair, say which of the four operations makes the two strings compare equal: <strong>(a)</strong> ASCII lowercasing, <strong>(b)</strong> Unicode NFC, <strong>(c)</strong> Unicode NFKC, <strong>(d)</strong> NFD followed by deleting combining marks (accent stripping). More than one may apply, and for one pair none of the four is enough.</p>
+  <table class="cmp">
+    <tr><th>#</th><th>string A</th><th>string B</th></tr>
+    <tr><td>1</td><td><code>Café</code></td><td><code>cafe</code></td></tr>
+    <tr><td>2</td><td><code>ﬁle</code> (with the fi ligature)</td><td><code>file</code></td></tr>
+    <tr><td>3</td><td><code>e</code> + U+0301 combining acute</td><td><code>é</code> (U+00E9)</td></tr>
+    <tr><td>4</td><td><code>STRASSE</code></td><td><code>straße</code></td></tr>
+    <tr><td>5</td><td><code>Q2</code></td><td><code>q2</code></td></tr>
+  </table>
+
+  <details>
+    <summary>Show solution</summary>
+    <ol>
+      <li><strong><code>Café</code> / <code>cafe</code> — needs (a) <em>and</em> (d).</strong> Lowercasing alone leaves <code>café</code> against <code>cafe</code>. Accent stripping alone leaves <code>Cafe</code> against <code>cafe</code>. Both together give <code>cafe</code> = <code>cafe</code>.</li>
+      <li><strong><code>ﬁle</code> / <code>file</code> — needs (c) NFKC.</strong> The ligature is a <em>compatibility</em> variant, so only the K forms map it to <code>f</code> + <code>i</code>. NFC leaves it alone, because the ligature is not canonically equivalent to the two letters.</li>
+      <li><strong>Both forms of <code>é</code> — (b) NFC works, and so does plain NFD, and so does (c).</strong> This is canonical equivalence: NFC composes both to U+00E9, NFD decomposes both to <code>e</code> + U+0301. Either direction works as long as you apply the <em>same</em> form to both sides. Note that (d) also makes them equal, but by deleting the accent, which is a different and more destructive claim.</li>
+      <li><strong><code>STRASSE</code> / <code>straße</code> — none of the four.</strong> ASCII lowercasing gives <code>strasse</code> against <code>straße</code>; no normalization form maps <code>ß</code> to <code>ss</code>, because they are not equivalent characters. You need full Unicode <em>case folding</em>, which does map <code>ß</code> to <code>ss</code> — in Python that is <code>str.casefold()</code>, not <code>str.lower()</code>. This is the single most common reason a "lowercase everything" pipeline silently fails on German text.</li>
+      <li><strong><code>Q2</code> / <code>q2</code> — (a) alone.</strong> Pure ASCII case difference.</li>
+    </ol>
+    <p><strong>The transferable point.</strong> "Normalize the text" is not one operation. Write down which form you apply and where, because the pipeline that indexes your documents and the pipeline that handles a query at serving time must apply the same one, or the match fails for reasons no log will show you.</p>
+  </details>
+</div>
+
+<!-- ================================ 3 ================================ -->
+<div class="exercise" id="e3">
+  <div class="difficulty">easy</div>
+  <div class="qtype">Explain why · no single right answer</div>
+  <h3>Exercise 3 — The stop list ate the meaning</h3>
+  <p>Stop list:</p>
+  <pre>{ a, an, and, be, but, do, for, i, in, is, it, no, not, of, or,
+  the, to, was, were, would, you }</pre>
+  <p>Sentence: <code>I would not say the film was bad.</code></p>
+  <ol>
+    <li>Lowercase, drop punctuation, remove stop words. Write the surviving token list.</li>
+    <li>A bag-of-words sentiment classifier is trained on token lists produced by exactly this pipeline. What label will it predict for this document, and what did the writer actually mean?</li>
+    <li>Propose two different fixes. For each, state one cost.</li>
+  </ol>
+
+  <details>
+    <summary>Show solution</summary>
+    <p><strong>1. Survivors:</strong> <code>say</code>, <code>film</code>, <code>bad</code>. Everything else — <code>i</code>, <code>would</code>, <code>not</code>, <code>the</code>, <code>was</code> — is on the list, and the period is dropped as punctuation.</p>
+
+    <p><strong>2.</strong> The classifier sees a document whose only polarity-bearing token is <code>bad</code>, and will predict <strong>negative</strong>. The writer used litotes — "I would not say the film was bad" is a guarded <em>positive</em>, or at worst a neutral. The preprocessing deleted the single token, <code>not</code>, on which the entire reading depended, and it did so before the model ever saw the text. No amount of model capacity recovers this; the information is gone.</p>
+
+    <p><strong>3. Two fixes, with costs.</strong></p>
+    <ul>
+      <li><strong>Fix A — remove negations from the stop list.</strong> Keep <code>not</code>, <code>no</code>, <code>never</code>, <code>nor</code>, and the <code>n't</code> suffix. Cheap and immediate. <em>Cost:</em> a bag of words has no order, so <code>not</code> now floats free — the model learns only that documents containing <code>not</code> lean negative, which is itself wrong roughly as often as it is right ("not bad").</li>
+      <li><strong>Fix B — negation-scope marking before removal.</strong> Rewrite tokens from a negator to the next punctuation mark with a prefix: <code>say film NOT_bad</code>. Now <code>NOT_bad</code> is its own feature and the ordering problem disappears. <em>Cost:</em> vocabulary roughly doubles for the affected words, each new feature has less training data, and the scope rule ("to the next punctuation") is wrong for plenty of sentences.</li>
+      <li><strong>Fix C — stop removing stop words and use a model with order.</strong> Any sequence model, and certainly a transformer, uses function words as signal. <em>Cost:</em> compute, and a heavier serving footprint for what may be a task a linear model could do.</li>
+    </ul>
+    <p>Two of the three are acceptable answers; the graded part is naming a real cost rather than presenting a fix as free.</p>
+  </details>
+</div>
+
+<!-- ================================ 4 ================================ -->
+<div class="exercise" id="e4">
+  <div class="difficulty">easy</div>
+  <div class="qtype">Predict, then check · stemming</div>
+  <h3>Exercise 4 — Stem five words by hand</h3>
+  <p>Here is the rule cascade. Apply the <strong>first</strong> rule whose suffix matches, and only if at least three characters would remain. Then, if the result ends in a doubled consonant drawn from <code>{b d f g m n p r t}</code>, drop one of the pair. Words of three characters or fewer are returned unchanged.</p>
+<pre>1.  -ization  → ize          6.  -ies  → y
+2.  -iness    → y            7.  -ly   → (delete)
+3.  -ness     → (delete)     8.  -est  → (delete)
+4.  -ing      → (delete)     9.  -er   → (delete)
+5.  -ed       → (delete)    10.  -es   → (delete)
+                            11.  -s    → (delete)</pre>
+  <p>Write down the stem of <code>running</code>, <code>caring</code>, <code>better</code>, <code>flies</code>, <code>studies</code> before you touch the widget. Then check, and for each word say whether the result is a real English word.</p>
+
+  <div class="demo">
+    <h3>Widget · stemmer and lemmatizer</h3>
+    <p class="small">Type any words separated by spaces. The stemmer is the cascade above (with a few extra rules); the lemmatizer is a small dictionary plus plural rules. Neither is production grade — the point is where they disagree.</p>
+    <input type="text" id="ex-stem-in" style="width:100%" value="running caring better flies studies">
+    <table class="cmp" id="ex-stem-out"></table>
+    <div class="readout" id="ex-stem-read"></div>
+  </div>
+
+  <details>
+    <summary>Show solution</summary>
+    <table class="cmp">
+      <tr><th>word</th><th>rule applied</th><th>intermediate</th><th>stem</th><th>a real word?</th></tr>
+      <tr><td><code>running</code></td><td>4 (<code>-ing</code>), 7 characters minus 3 leaves 4 ≥ 3</td><td><code>runn</code></td><td><code>run</code> (doubled <code>n</code> collapsed)</td><td>yes</td></tr>
+      <tr><td><code>caring</code></td><td>4 (<code>-ing</code>), 6 minus 3 leaves exactly 3</td><td><code>car</code></td><td><code>car</code></td><td>yes — and that is the problem</td></tr>
+      <tr><td><code>better</code></td><td>9 (<code>-er</code>), 6 minus 2 leaves 4</td><td><code>bett</code></td><td><code>bet</code> (doubled <code>t</code> collapsed)</td><td>yes — and unrelated in meaning</td></tr>
+      <tr><td><code>flies</code></td><td>rule 6 (<code>-ies</code>) would leave only 2 characters, so it is skipped; rule 10 (<code>-es</code>) leaves 3</td><td>—</td><td><code>fli</code></td><td>no</td></tr>
+      <tr><td><code>studies</code></td><td>6 (<code>-ies</code> → <code>y</code>), 7 minus 3 leaves 4</td><td><code>stud</code> + <code>y</code></td><td><code>study</code></td><td>yes, and correct</td></tr>
+    </table>
+    <p><strong>The two failures have names.</strong> <code>caring → car</code> is <em>over-stemming</em>: two unrelated senses now share an index, so a document about childcare and a document about vehicles look more similar than they are. <code>better → bet</code> is over-stemming as well, and it is the case a lemmatizer handles correctly (<code>better → good</code>) because no suffix rule can ever produce an irregular form.</p>
+    <p><code>flies → fli</code> is worth a second look: the stem is not a word, and that is <em>fine</em>. A stemmer's output is an index key, not text for a human. The only requirement is that related forms map to the same key: <code>flies</code>, <code>flying</code> → <code>fli</code>, <code>fly</code> ... and there the requirement fails, since <code>fly</code> is only three characters and is returned unchanged. Under-stemming and over-stemming in the same word.</p>
+  </details>
+</div>
+
+<!-- ================================ 5 ================================ -->
+<div class="exercise" id="e5">
+  <div class="difficulty">easy</div>
+  <div class="qtype">By hand · conflation</div>
+  <h3>Exercise 5 — Stem against lemma</h3>
+  <ol>
+    <li>Give the stem and the lemma of <code>was</code>, <code>mice</code>, <code>better</code>, <code>universities</code>. (Use the widget in Exercise 4 to check the stems.)</li>
+    <li>The word <code>saw</code> has two different lemmas. Give both, and say what a lemmatizer needs to know to choose.</li>
+    <li>You are building a search index over ten million product reviews and latency matters. Stemmer or lemmatizer? Defend it in two sentences.</li>
+  </ol>
+
+  <details>
+    <summary>Show solution</summary>
+    <p><strong>1.</strong></p>
+    <table class="cmp">
+      <tr><th>word</th><th>stem</th><th>lemma</th><th>comment</th></tr>
+      <tr><td><code>was</code></td><td><code>was</code></td><td><code>be</code></td><td>Three characters, so the cascade returns it unchanged. No suffix rule connects <code>was</code> to <code>be</code>; only a dictionary can.</td></tr>
+      <tr><td><code>mice</code></td><td><code>mice</code></td><td><code>mouse</code></td><td>Irregular plural. No suffix to strip.</td></tr>
+      <tr><td><code>better</code></td><td><code>bet</code></td><td><code>good</code></td><td>Suppletive comparative — the lemma shares no characters with the surface form.</td></tr>
+      <tr><td><code>universities</code></td><td><code>university</code></td><td><code>university</code></td><td>Both succeed. Regular morphology is where a stemmer is as good as a lemmatizer and far cheaper.</td></tr>
+    </table>
+
+    <p><strong>2.</strong> <code>saw</code> lemmatizes to <strong><code>see</code></strong> when it is the past tense of the verb ("I saw it") and to <strong><code>saw</code></strong> when it is the noun ("a rusty saw") or the verb meaning to cut. The lemmatizer needs the <strong>part of speech</strong>, which in turn usually needs a POS tagger, which needs sentence context. This is why lemmatization is not a per-word function: calling <code>lemmatize("saw")</code> with no context forces the library to guess, and most default to the noun reading.</p>
+
+    <p><strong>3.</strong> A stemmer. Ten million documents means the conflation runs tens of millions of times at index time and again on every query, and stemming is a handful of string operations with no lexicon load, no tagger, and no per-word dictionary lookup. The cost — <code>caring</code> and <code>car</code> colliding — is tolerable in a search index where recall matters more than precision and where the ranker has other signals; it would not be tolerable if the conflated form were shown to a user or used as a linguistic claim.</p>
+  </details>
+</div>
+
+<!-- ================================ 6 ================================ -->
+<div class="exercise" id="e6">
+  <div class="difficulty">moderate</div>
+  <div class="qtype">By hand, then check · OOV arithmetic</div>
+  <h3>Exercise 6 — Compute an OOV rate</h3>
+  <p>A corpus has exactly these types and counts:</p>
+  <pre>the         500
+of          300
+model       120
+token        60
+word         40
+subword      20
+tokenizer    10
+lemmatize     6
+(44 further types, each occurring exactly once)</pre>
+  <ol>
+    <li>How many tokens and how many types does the corpus contain?</li>
+    <li>You build a word-level vocabulary from the <strong>five</strong> most frequent types. Compute the OOV token rate and the OOV type rate.</li>
+    <li>Now use the <strong>eight</strong> most frequent types. Compute both rates again.</li>
+    <li>The vocabulary grew by 60% between (2) and (3). Explain, in terms of the shape of the frequency distribution, why the token rate improved so much more than the type rate.</li>
+    <li>What vocabulary size drives the OOV token rate to exactly zero, and why is that number useless in practice?</li>
+  </ol>
+  <p>Work all five out before using the widget.</p>
+
+  <div class="demo">
+    <h3>Widget · OOV calculator over exactly this table</h3>
+    <div class="controls">
+      <div class="control"><label for="ex-oov-v">vocabulary = top V types by frequency</label>
+        <input type="range" id="ex-oov-v" min="1" max="52" step="1" value="5"></div>
+      <div class="readout" id="ex-oov-read"></div>
+    </div>
+    <table class="cmp" id="ex-oov-out"></table>
+  </div>
+
+  <details>
+    <summary>Show solution</summary>
+    <p><strong>1.</strong> Tokens: 500 + 300 + 120 + 60 + 40 + 20 + 10 + 6 + 44 = <strong>1,100</strong>. Types: 8 named + 44 singletons = <strong>52</strong>.</p>
+
+    <p><strong>2. V = 5</strong> (<code>the, of, model, token, word</code>). Covered tokens = 500 + 300 + 120 + 60 + 40 = 1,020. Unknown tokens = 1,100 − 1,020 = 80.</p>
+    <p class="eq-block">OOV<sub>token</sub> = 80 / 1100 = 0.0727 = <strong>7.27%</strong><br>
+       OOV<sub>type</sub> = (52 − 5) / 52 = 47 / 52 = <strong>90.4%</strong></p>
+
+    <p><strong>3. V = 8</strong> (adds <code>subword, tokenizer, lemmatize</code>). Covered tokens = 1,020 + 20 + 10 + 6 = 1,056. Unknown tokens = 44 — one for each singleton.</p>
+    <p class="eq-block">OOV<sub>token</sub> = 44 / 1100 = 0.04 = <strong>4.00%</strong><br>
+       OOV<sub>type</sub> = (52 − 8) / 52 = 44 / 52 = <strong>84.6%</strong></p>
+
+    <p><strong>4.</strong> The distribution is extremely top-heavy: the two most frequent types alone account for 800 of the 1,100 tokens, and the 44 singletons account for 4% of the tokens while making up 85% of the distinct word list. Adding three types to the vocabulary added 36 tokens of coverage — a large share of what was left uncovered — while removing only three of the 47 unknown types. The token rate is a <em>frequency-weighted</em> measure, so it is dominated by the head of the distribution; the type rate is <em>unweighted</em>, so it is dominated by the tail. This is Zipf's law doing exactly what it always does, and it is why the two rates must never be reported as if they were the same number.</p>
+
+    <p><strong>5.</strong> V = <strong>52</strong>, the full type count — nothing less can cover the singletons, because each contributes its own type. It is useless in practice for two reasons. First, by Heaps' law the type count keeps growing with corpus size, so "all types in the training corpus" is not "all types you will meet"; the first unseen document reintroduces unknowns. Second, a vocabulary that includes every singleton spends an embedding row on words the model saw once, which cannot produce a usable vector. The correct response is not a bigger word vocabulary but a different unit — subwords, whose pieces are all frequent by construction.</p>
+  </details>
+</div>
+
+<!-- ================================ 7 ================================ -->
+<div class="exercise" id="e7">
+  <div class="difficulty">moderate</div>
+  <div class="qtype">Predict, then check · BPE training</div>
+  <h3>Exercise 7 — Run four BPE merges by hand</h3>
+  <p>Corpus, with <code>_</code> as the end-of-word marker:</p>
+  <pre>4 × b a n a n a _
+3 × b a n d _
+2 × a n d _</pre>
+  <p>Tie-break rule: when two pairs have the same count, take the one whose <strong>first occurrence</strong> comes earlier in a left-to-right scan of the corpus in the order printed above.</p>
+  <ol>
+    <li>List the starting symbol inventory and its size.</li>
+    <li>Compute the pair counts for round 1 and give merge 1.</li>
+    <li>Carry on to merge 4, showing the corpus state after each merge. Merge 4 requires the tie-break rule — say explicitly which pairs were tied and why your winner won.</li>
+    <li>What is the vocabulary size after four merges?</li>
+  </ol>
+  <p>Then use the widget to check, one press at a time.</p>
+
+  <div class="demo">
+    <h3>Widget · BPE on this corpus, one merge at a time</h3>
+    <div class="controls">
+      <button id="ex-bpe-step">Next merge</button>
+      <button id="ex-bpe-reset" class="secondary">Reset</button>
+      <div class="readout" id="ex-bpe-read"></div>
+    </div>
+    <div class="grid2">
+      <div>
+        <h4>Corpus, current segmentation</h4>
+        <table class="cmp" id="ex-bpe-corpus"></table>
+        <h4>Merges learned</h4>
+        <table class="cmp" id="ex-bpe-merges"></table>
+      </div>
+      <div>
+        <h4>Pair counts right now</h4>
+        <table class="cmp" id="ex-bpe-pairs"></table>
+        <p class="small">The highlighted row is what the next press will merge.</p>
+        <h4>Encode a word with the merges learned so far</h4>
+        <input type="text" id="ex-bpe-enc" style="width:100%" value="bananas">
+        <div class="readout" id="ex-bpe-encread" style="margin-top:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <details>
+    <summary>Show solution</summary>
+    <p><strong>1.</strong> Symbols present: <code>_ a b d n</code> — <strong>5 symbols</strong>.</p>
+
+    <p><strong>2. Round 1 pair counts.</strong> Remember to weight by the word count, and that <code>banana_</code> contributes two copies of some pairs.</p>
+<pre>from  b a n a n a _  (×4):  (b,a)×1, (a,n)×2, (n,a)×2, (a,_)×1   → 4, 8, 8, 4
+from  b a n d _      (×3):  (b,a)×1, (a,n)×1, (n,d)×1, (d,_)×1   → 3, 3, 3, 3
+from  a n d _        (×2):  (a,n)×1, (n,d)×1, (d,_)×1            → 2, 2, 2
+
+totals:  (a,n) 13   (n,a) 8   (b,a) 7   (n,d) 5   (d,_) 5   (a,_) 4</pre>
+    <p><strong>Merge 1: (a, n) → an</strong>, count 13, no tie.</p>
+<pre>4 × b an an a _
+3 × b an d _
+2 × an d _</pre>
+    <p>Note that <code>b a n a n a _</code> becomes <code>b an an a _</code>: applying the merge left to right consumes the first <code>a n</code>, then the second, leaving the final <code>a</code> alone.</p>
+
+    <p><strong>3. Round 2.</strong></p>
+<pre>(b,an) 4+3 = 7   (an,an) 4   (an,a) 4   (a,_) 4   (an,d) 3+2 = 5   (d,_) 3+2 = 5</pre>
+    <p><strong>Merge 2: (b, an) → ban</strong>, count 7, no tie.</p>
+<pre>4 × ban an a _
+3 × ban d _
+2 × an d _</pre>
+
+    <p><strong>Round 3.</strong></p>
+<pre>(ban,an) 4   (an,a) 4   (a,_) 4   (ban,d) 3   (d,_) 3+2 = 5   (an,d) 2</pre>
+    <p><strong>Merge 3: (d, _) → d_</strong>, count 5, no tie.</p>
+<pre>4 × ban an a _
+3 × ban d_
+2 × an d_</pre>
+
+    <p><strong>Round 4 — the tie.</strong></p>
+<pre>(ban,an) 4   (an,a) 4   (a,_) 4   (ban,d_) 3   (an,d_) 2</pre>
+    <p>Three pairs are tied at 4: <code>(ban,an)</code>, <code>(an,a)</code> and <code>(a,_)</code>. Scanning the corpus left to right, the first word is <code>ban an a _</code>, in which <code>(ban,an)</code> occupies positions 1–2, <code>(an,a)</code> positions 2–3 and <code>(a,_)</code> positions 3–4. The earliest first occurrence is <code>(ban,an)</code>.</p>
+    <p><strong>Merge 4: (ban, an) → banan</strong>, count 4.</p>
+<pre>4 × banan a _
+3 × ban d_
+2 × an d_</pre>
+
+    <p><strong>4.</strong> 5 starting symbols + 4 merged symbols = <strong>9</strong>. In general the vocabulary after <em>k</em> merges is (number of base symbols) + <em>k</em>, which is why "target vocabulary size" and "number of merges" are two ways of stating the same stopping condition.</p>
+
+    <p><strong>If your merge 3 was different:</strong> a common error is to merge <code>(an,a)</code> or <code>(ban,an)</code> at round 3 because they look salient inside <code>banana</code>. They are at 4; <code>(d,_)</code> is at 5 because it is supported by two different words. BPE has no notion of which word "matters" — it counts.</p>
+  </details>
+</div>
+
+<!-- ================================ 8 ================================ -->
+<div class="exercise" id="e8">
+  <div class="difficulty">moderate</div>
+  <div class="qtype">Predict, then check · BPE encoding</div>
+  <h3>Exercise 8 — Encode an unseen word</h3>
+  <p>Take the four merges you learned in Exercise 7, in order:</p>
+  <pre>1. (a, n)    → an
+2. (b, an)   → ban
+3. (d, _)    → d_
+4. (ban, an) → banan</pre>
+  <ol>
+    <li>Encode <code>bananas</code>. Show the state after each of the four rules.</li>
+    <li>Encode <code>bans</code>.</li>
+    <li>The vocabulary contains <code>an</code>, <code>ban</code> and <code>banan</code>. A greedy longest-match tokenizer looking at <code>bananas</code> would take <code>banan</code>, then <code>a</code>, then <code>s</code>. BPE, applying its merges in order, produces the same answer here. Construct a merge list and a word for which the two procedures <em>disagree</em>, and say which one BPE follows.</li>
+  </ol>
+  <p>The widget in Exercise 7 has an encode box — set it to run all four merges first.</p>
+
+  <details>
+    <summary>Show solution</summary>
+    <p><strong>1. <code>bananas</code></strong> — start from characters plus the end-of-word marker: <code>b a n a n a s _</code></p>
+<pre>rule 1  (a,n) → an     :  b an an a s _      fired twice
+rule 2  (b,an) → ban   :  ban an a s _       fired once
+rule 3  (d,_) → d_     :  ban an a s _       no match
+rule 4  (ban,an) → banan: banan a s _        fired once
+
+result: banan | a | s | _        (4 pieces)</pre>
+
+    <p><strong>2. <code>bans</code></strong> — start from <code>b a n s _</code></p>
+<pre>rule 1  (a,n) → an     :  b an s _
+rule 2  (b,an) → ban   :  ban s _
+rule 3  (d,_) → d_     :  no match
+rule 4  (ban,an) → banan: no match
+
+result: ban | s | _              (3 pieces)</pre>
+    <p>Neither word appeared in the training corpus, and both encoded without any unknown symbol. That is the property being bought.</p>
+
+    <p><strong>3. A case where the two disagree.</strong> Suppose the learned merges are, in this order:</p>
+<pre>1. (a, b) → ab
+2. (c, d) → cd
+3. (ab, c) → abc</pre>
+    <p>and the word is <code>abcd</code> (ignore the end-of-word marker for clarity).</p>
+    <ul>
+      <li><strong>BPE, merges in learned order:</strong> rule 1 gives <code>ab c d</code>; rule 2 matches <code>c d</code> and gives <code>ab cd</code>; rule 3 looks for <code>ab</code> followed by <code>c</code> and finds none, because the <code>c</code> was consumed by rule 2. Result: <code>ab | cd</code> — <strong>2 pieces</strong>.</li>
+      <li><strong>Greedy longest match</strong> over the vocabulary <code>{a, b, c, d, ab, cd, abc}</code>: at position 0 the longest vocabulary entry that matches is <code>abc</code>, leaving <code>d</code>. Result: <code>abc | d</code> — also 2 pieces, but a <em>different</em> segmentation, and therefore different token ids and a different input to the model.</li>
+    </ul>
+    <p>BPE follows the first: <strong>merge order, not length</strong>. A merge learned earlier is applied earlier even when a longer piece exists in the vocabulary, and once a symbol has been consumed by an earlier merge it is not available to a later one. WordPiece is the algorithm that does the second thing — greedy longest match — which is exactly why the two produce different segmentations from vocabularies that look similar.</p>
+  </details>
+</div>
+
+<!-- ================================ 9 ================================ -->
+<div class="exercise" id="e9">
+  <div class="difficulty">harder</div>
+  <div class="qtype">By hand · WordPiece</div>
+  <h3>Exercise 9 — WordPiece by hand</h3>
+  <p>Vocabulary:</p>
+  <pre>un, token, ##ize, ##ization, ##er, ##ers, ##s, ##happy, ##ness
+plus every single lowercase letter, both bare and with the ## prefix</pre>
+  <p>WordPiece encoding is greedy longest-match-first, left to right, with <code>##</code> on every piece after the first. Segment:</p>
+  <ol>
+    <li><code>tokenization</code></li>
+    <li><code>tokenizers</code></li>
+    <li><code>unhappiness</code></li>
+    <li><code>untokenized</code></li>
+  </ol>
+  <p>Then answer: item 4 fragments badly even though <code>token</code> is in the vocabulary. Why?</p>
+
+  <details>
+    <summary>Show solution</summary>
+    <p><strong>1. <code>tokenization</code> → <code>token</code> + <code>##ization</code> (2 pieces).</strong> At position 0 the longest vocabulary entry matching a prefix is <code>token</code>. From position 5 the remainder is <code>ization</code>, and <code>##ization</code> is in the vocabulary. Clean.</p>
+
+    <p><strong>2. <code>tokenizers</code> → <code>token</code> + <code>##ize</code> + <code>##r</code> + <code>##s</code> (4 pieces).</strong> After <code>token</code> the remainder is <code>izers</code>. Longest match: <code>##izers</code> is not in the vocabulary, <code>##izer</code> is not either, <code>##ize</code> is — so it is taken. The remainder is now <code>rs</code>. <code>##rs</code> is not in the vocabulary, so <code>##r</code> is taken, then <code>##s</code>.</p>
+    <p>Notice what the greedy rule cost you: <code>##ers</code> <em>is</em> in the vocabulary, and <code>token</code> + <code>##iz</code> + <code>##ers</code> would have been three pieces — but <code>##iz</code> is not in the vocabulary, and in any case greedy longest-match never reconsiders an earlier choice. Greedy is fast and deterministic; it is not optimal.</p>
+
+    <p><strong>3. <code>unhappiness</code> → <code>un</code> + <code>##h</code> + <code>##a</code> + <code>##p</code> + <code>##p</code> + <code>##i</code> + <code>##ness</code> (7 pieces).</strong> At position 0, <code>un</code> is the longest match. The remainder is <code>happiness</code>. Now the trap: the vocabulary has <code>##happy</code>, not <code>##happi</code>, and <code>happiness</code> begins <code>h-a-p-p-i</code>. The match fails at every length down to the single letter <code>##h</code>. The same happens for <code>##a</code>, <code>##p</code>, <code>##p</code>, <code>##i</code> — and only then does the remainder become <code>ness</code>, which matches <code>##ness</code>.</p>
+    <p>One character of spelling difference between <code>happy</code> and <code>happi</code> turned a two-piece word into a seven-piece word. This is what a domain shift does to fertility.</p>
+
+    <p><strong>4. <code>untokenized</code> → <code>un</code> + <code>##t</code> + <code>##o</code> + <code>##k</code> + <code>##e</code> + <code>##n</code> + <code>##i</code> + <code>##z</code> + <code>##e</code> + <code>##d</code> (10 pieces).</strong></p>
+    <p><strong>Why:</strong> <code>token</code> is in the vocabulary <em>only in its word-initial form</em>. There is no <code>##token</code>. Once <code>un</code> has been emitted, every subsequent piece must carry the <code>##</code> prefix, and <code>##token</code> does not exist, so the matcher falls all the way to single letters. The <code>##</code> marker is not cosmetic — it partitions the vocabulary into two disjoint sets, word-initial and word-internal, and a piece present in one is absent from the other unless it was added twice.</p>
+    <p>This is a real property of real vocabularies: a subword tokenizer's behaviour on <code>X</code> tells you very little about its behaviour on <code>preX</code>, and it is why fertility must be measured on your own text rather than assumed.</p>
+  </details>
+</div>
+
+<!-- ================================ 10 ================================ -->
+<div class="exercise" id="e10">
+  <div class="difficulty">harder</div>
+  <div class="qtype">Write code · stated expected output</div>
+  <h3>Exercise 10 — Write <code>fertility()</code></h3>
+  <p>Write a function with this signature:</p>
+<pre>def fertility(text: str, pieces_fn) -> tuple[int, int, float]:
+    """Return (n_words, n_pieces, pieces_per_word).
+
+    n_words   : whitespace-delimited words in `text`
+    n_pieces  : total pieces produced by applying `pieces_fn` to each word
+    pieces_per_word : n_pieces / n_words, rounded to 2 decimal places
+                      (return 0.0 when the text has no words)
+    """</pre>
+  <p>It must satisfy exactly this:</p>
+<pre>FAKE = {
+    "the":          ["the"],
+    "tokenizer":    ["token", "##izer"],
+    "preprocesses": ["pre", "##process", "##es"],
+    "text":         ["text"],
+}
+
+print(fertility("the tokenizer preprocesses text", lambda w: FAKE[w]))
+# expected:  (4, 7, 1.75)
+
+print(fertility("   ", lambda w: FAKE[w]))
+# expected:  (0, 0, 0.0)</pre>
+
+  <details>
+    <summary>Show solution</summary>
+<pre>def fertility(text, pieces_fn):
+    words = text.split()          # split() with no argument handles
+                                  # runs of spaces, tabs and newlines,
+                                  # and returns [] for whitespace-only input
+    if not words:
+        return (0, 0, 0.0)
+
+    n_pieces = sum(len(pieces_fn(w)) for w in words)
+    return (len(words), n_pieces, round(n_pieces / len(words), 2))</pre>
+    <p><strong>Checking the first case by hand:</strong> four words; pieces 1 + 2 + 3 + 1 = 7; 7 / 4 = 1.75, which needs no rounding. Output <code>(4, 7, 1.75)</code>.</p>
+    <p><strong>Three things the tests are actually checking.</strong></p>
+    <ul>
+      <li><code>text.split()</code> with no argument, not <code>text.split(" ")</code>. The latter returns <code>['', '', '', '']</code> for a string of spaces, giving <code>n_words = 4</code> and a division that produces the wrong answer instead of an error you would notice.</li>
+      <li>The empty guard returns <code>0.0</code>, a float, matching the declared return type. Returning <code>0</code> would compare equal in Python but is a different type in a schema that a service will serialize.</li>
+      <li>Fertility is pieces per <em>word</em>, not pieces per <em>character</em> and not pieces per <em>input token</em>. If you divide by <code>len(text)</code> the number is meaningless across texts of different length.</li>
+    </ul>
+    <p><strong>Using it for real.</strong> With a Hugging Face fast tokenizer the callable is <code>lambda w: tok.tokenize(w)</code>. Run it over a sample of your own traffic and over a sample of general text, and report both — the gap between them is the domain-shift cost, and it is the single most useful number in a tokenizer comparison.</p>
+  </details>
+</div>
+
+<!-- ================================ 11 ================================ -->
+<div class="exercise" id="e11">
+  <div class="difficulty">harder</div>
+  <div class="qtype">Write code · stated expected output</div>
+  <h3>Exercise 11 — Write <code>oov_rates()</code></h3>
+  <p>Write a function that computes <em>both</em> out-of-vocabulary rates from a frequency table:</p>
+<pre>def oov_rates(counts: dict[str, int], vocab: set[str]) -> tuple[float, float]:
+    """Return (token_rate, type_rate), each rounded to 4 decimal places.
+
+    token_rate : share of all token occurrences whose type is not in `vocab`
+    type_rate  : share of distinct types that are not in `vocab`
+    Both are 0.0 when `counts` is empty.
+    """</pre>
+  <p>It must satisfy exactly this:</p>
+<pre>counts = {"the": 5, "cat": 3, "sat": 2, "mat": 1, "hat": 1}
+
+print(oov_rates(counts, {"the", "cat"}))
+# expected:  (0.3333, 0.6)
+
+print(oov_rates(counts, set(counts)))
+# expected:  (0.0, 0.0)
+
+print(oov_rates({}, {"the"}))
+# expected:  (0.0, 0.0)</pre>
+  <p>Then answer in one sentence: why does the function take a <em>frequency table</em> rather than the raw text?</p>
+
+  <details>
+    <summary>Show solution</summary>
+<pre>def oov_rates(counts, vocab):
+    total_tokens = sum(counts.values())
+    total_types  = len(counts)
+    if total_types == 0 or total_tokens == 0:
+        return (0.0, 0.0)
+
+    oov_tokens = sum(n for t, n in counts.items() if t not in vocab)
+    oov_types  = sum(1 for t in counts if t not in vocab)
+
+    return (round(oov_tokens / total_tokens, 4),
+            round(oov_types  / total_types,  4))</pre>
+    <p><strong>Checking the first case by hand.</strong> Total tokens = 5 + 3 + 2 + 1 + 1 = 12. Out-of-vocabulary types are <code>sat</code>, <code>mat</code>, <code>hat</code>, contributing 2 + 1 + 1 = 4 tokens.</p>
+    <p class="eq-block">token_rate = 4 / 12 = 0.33333… → 0.3333<br>
+       type_rate = 3 / 5 = 0.6</p>
+    <p>Note that <code>round(0.6, 4)</code> is <code>0.6</code>, not <code>0.6000</code> — Python prints the shortest representation, so the expected output is <code>(0.3333, 0.6)</code>. If your test compares strings rather than floats this will look like a failure when it is not.</p>
+
+    <p><strong>The two rates are genuinely different here:</strong> 33% of running text is unknown but 60% of the word list is. Reporting only one of them, without saying which, makes the result impossible to interpret.</p>
+
+    <p><strong>Why a frequency table and not raw text.</strong> Because the function then has one job, has no opinion about tokenization, and is testable: the moment it accepts raw text it also owns the segmentation policy, and its result silently depends on a regular expression buried inside it. Counting is the caller's job; the caller already had to tokenize to build the table, and it should use the same tokenizer that the rest of the pipeline uses.</p>
+  </details>
+</div>
+
+<!-- ================================ 12 ================================ -->
+<div class="exercise" id="e12">
+  <div class="difficulty">open</div>
+  <div class="qtype">Explain why · no single right answer</div>
+  <h3>Exercise 12 — The 0.0% OOV report</h3>
+  <p>A colleague's report contains this paragraph:</p>
+  <div class="callout">
+    "We evaluated two tokenizers on 50,000 support tickets. The GPT-2 tokenizer achieved an out-of-vocabulary rate of 0.00%, while the BERT tokenizer achieved 0.31%. We therefore recommend the GPT-2 tokenizer."
+  </div>
+  <ol>
+    <li>What is wrong with the comparison as a piece of reasoning?</li>
+    <li>The 0.31% is not a mistake — explain mechanically where it comes from.</li>
+    <li>Name three numbers you would report instead, and for each say what decision it informs.</li>
+  </ol>
+
+  <details>
+    <summary>Show solution</summary>
+    <p><strong>1. The metric cannot distinguish the two systems, because one of them cannot fail it.</strong> The GPT-2 tokenizer is byte-level: its base vocabulary is the 256 byte values, every string has a UTF-8 encoding, and therefore every possible input encodes without an unknown symbol. Its 0.00% is not a measurement of the support tickets — it is a restatement of the algorithm, and it would be 0.00% on random binary data. Comparing a number that is structurally fixed against one that varies is not a comparison, and the conclusion drawn from it is unsupported no matter which tokenizer is in fact better.</p>
+
+    <p><strong>2. Where the 0.31% comes from.</strong> BERT's WordPiece has a real <code>[UNK]</code> token, and it emits one for a whole word whenever greedy longest-match fails at some position — which happens when the word contains a character outside the vocabulary's character set. On support tickets that means emoji, non-Latin scripts, unusual Unicode punctuation such as typographic quotation marks or non-breaking spaces, and control characters pasted from other systems. Note the granularity: a single unmapped character loses the entire word, not only that character.</p>
+
+    <p><strong>3. Three numbers, and the decision each one informs.</strong></p>
+    <ul>
+      <li><strong>Fertility (pieces per word) on these 50,000 tickets, per tokenizer.</strong> Decides cost and effective context length: fewer pieces means shorter sequences, cheaper attention, and more of the ticket fitting in a fixed window. Report the distribution, not only the mean, because a long tail matters more than the average.</li>
+      <li><strong>Total piece count for the whole sample, per tokenizer.</strong> Converts directly to serving cost and latency, and it is the number a non-specialist reader can act on. A 15% difference in total pieces is a 15% difference in the bill.</li>
+      <li><strong>Round-trip fidelity: the share of tickets for which <code>decode(encode(t)) == t</code> exactly.</strong> Decides whether the tokenizer is safe to put in front of anything that stores or displays the original text. This is where BERT's uncased normalization and its <code>[UNK]</code> both show up as real, quantified data loss, and it is the honest form of the comparison the colleague was reaching for.</li>
+    </ul>
+    <p>Also creditable: the share of words that emitted more than one piece; per-language token cost if tickets are multilingual; and, if a downstream model already exists, the task metric itself — which outranks all tokenizer-internal measures when it is available.</p>
+    <p><strong>The general lesson.</strong> Before reporting a metric, ask what value it takes when the system is trivially good and when it is trivially bad. A metric that is pinned at one end by construction tells you nothing.</p>
+  </details>
+</div>
+
+<!-- ================================ 13 ================================ -->
+<div class="exercise" id="e13">
+  <div class="difficulty">open</div>
+  <div class="qtype">Explain why · design decision</div>
+  <h3>Exercise 13 — Pick a tokenizer for two products</h3>
+  <p>Two products, one week of work each:</p>
+  <ul>
+    <li><strong>Product A — code search.</strong> Users type a natural-language query; the system retrieves matching functions from a large Python and JavaScript repository.</li>
+    <li><strong>Product B — a multilingual support inbox.</strong> Messages arrive in roughly twenty languages, including Japanese, Arabic and Finnish, mixed with product codes and the occasional emoji.</li>
+  </ul>
+  <p>For each: choose a tokenization strategy, name one measurement you would run in the first day to justify the choice, and name one drawback you are accepting. Then say what changes if the two products have to share a single tokenizer.</p>
+
+  <details>
+    <summary>Show solution</summary>
+    <p>There is no single right answer here; a strong answer is specific about the trade and honest about the cost. One defensible pair:</p>
+
+    <p><strong>Product A — code search.</strong> Use a subword tokenizer <em>trained on code</em>, not on prose — or, if training is out of scope for a week, a byte-level BPE from a model that was pre-trained on code. Reasons: identifiers such as <code>user_id</code> and <code>getElementById</code> are compositional and a code-trained vocabulary keeps their parts intact; indentation is significant in Python and code tokenizers commonly include whitespace-run pieces so that sixteen spaces cost one token rather than sixteen; and byte-level fallback means no <code>[UNK]</code> on the odd Unicode identifier or string literal.</p>
+    <ul>
+      <li><strong>Day-one measurement:</strong> fertility on a sample of a few thousand real functions, computed separately for identifiers and for whole files, comparing a prose tokenizer against a code tokenizer. Also count the tokens spent on leading whitespace — if it is a large share, the vocabulary is wrong for the corpus.</li>
+      <li><strong>Drawback accepted:</strong> a code-trained vocabulary fragments ordinary English, and half of this product's input is English queries. You are optimizing for the document side at some cost to the query side.</li>
+    </ul>
+
+    <p><strong>Product B — multilingual inbox.</strong> Use a SentencePiece-style tokenizer from an established multilingual checkpoint, with byte fallback enabled. Reasons: Japanese has no whitespace, so any design that pre-tokenizes on spaces fails outright; SentencePiece treats the raw string including spaces, so the same pipeline works for every language without per-language rules; and reversibility matters because support text is stored, displayed back to agents, and quoted in replies.</p>
+    <ul>
+      <li><strong>Day-one measurement:</strong> tokens per message, broken down by language, on real traffic. If Japanese or Arabic messages cost three or four times more tokens than English for the same content, that is a fairness and cost problem you need to see before launch, not after — it means those users get less context and cost more to serve.</li>
+      <li><strong>Drawback accepted:</strong> a vocabulary spread across twenty languages gives every individual language a smaller share than a monolingual vocabulary would, so fertility on English is worse than an English-only tokenizer would deliver.</li>
+    </ul>
+
+    <p><strong>If they must share one tokenizer.</strong> The requirements genuinely conflict: code wants whitespace pieces and identifier-friendly merges, multilingual text wants broad script coverage and no whitespace assumptions. Three honest options, in order of preference:</p>
+    <ol>
+      <li><strong>Do not share.</strong> Two tokenizers are two config entries; the coupling buys almost nothing unless the two products also share a model. Establish first whether they actually do.</li>
+      <li><strong>Share a byte-level BPE trained on a mixture of both corpora.</strong> Byte level guarantees coverage of every script and every code point, so nothing breaks. Measure fertility on both corpora before and after and state the regression explicitly — expect both to get worse than their specialist alternatives, and decide whether the loss is acceptable.</li>
+      <li><strong>Share the multilingual tokenizer and accept the code fertility.</strong> Reasonable if code search is the smaller product; it means longer sequences and lower recall on long functions, which you should quantify rather than assume.</li>
+    </ol>
+    <p>What makes an answer weak is naming a tokenizer without naming the measurement, or claiming a choice with no drawback. Every tokenizer choice trades sequence length against vocabulary size against coverage, and a design that appears to escape the trade has usually hidden it somewhere else.</p>
+  </details>
+</div>
+
+<div class="callout">
+  <strong>Carrying this into the topic project.</strong> Exercises 10 and 11 are the two functions the TokenForge comparison view needs, and Exercise 12 is the argument for what that view should display. If your "Compare Tokenizers" tab reports OOV rate as its headline number, it will show two zeros and tell the reader nothing.
+</div>
+
+<div class="nav">
+  <a href="Lecture_Notes_Topic_1_Text_Preprocessing_and_Tokenization.html">← Back to the lecture notes</a>
+  <span>Topic 1 of 7</span>
+</div>
+
+</div>
+
+<script>
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ---------------- stemmer and lemmatizer (same rules as the notes) -------- */
+var STEM_RULES = [['ational','ate'],['izations','ize'],['ization','ize'],['iveness','ive'],
+ ['fulness','ful'],['ousness','ous'],['iness','y'],['ities','ity'],['ement','e'],['ness',''],
+ ['ing',''],['edly',''],['ed',''],['ies','y'],['ly',''],['est',''],['ers',''],['er',''],
+ ['es',''],['s','']];
+function stem(w){
+  var lw = String(w).toLowerCase();
+  if(lw.length <= 3) return lw;
+  for(var i=0;i<STEM_RULES.length;i++){
+    var suf = STEM_RULES[i][0], rep = STEM_RULES[i][1];
+    if(lw.slice(-suf.length) === suf && lw.length - suf.length >= 3){
+      var base = lw.slice(0, lw.length - suf.length) + rep;
+      return base.replace(/([bdfgmnprt])\1$/, '$1');
+    }
+  }
+  return lw;
+}
+var LEMMA_DICT = Object.assign(Object.create(null), {
+  was:'be', were:'be', is:'be', are:'be', am:'be', been:'be', being:'be',
+  ran:'run', running:'run', runs:'run', went:'go', goes:'go', going:'go', gone:'go',
+  better:'good', best:'good', worse:'bad', worst:'bad',
+  mice:'mouse', geese:'goose', feet:'foot', teeth:'tooth', children:'child', people:'person',
+  saw:'see', seen:'see', sees:'see', seeing:'see', said:'say', says:'say', saying:'say',
+  caring:'care', cares:'care', cared:'care',
+  studies:'study', studying:'study', studied:'study', universities:'university',
+  wolves:'wolf', leaves:'leaf', knives:'knife', flies:'fly', flew:'fly', flown:'fly',
+  tokenizing:'tokenize', tokenized:'tokenize', tokenizers:'tokenizer',
+  tokenization:'tokenization', unhappiness:'unhappiness', happiness:'happiness',
+  bought:'buy', brought:'bring', does:'do', did:'do', done:'do',
+  has:'have', had:'have', having:'have'
+});
+function lemma(w){
+  var lw = String(w).toLowerCase();
+  if(LEMMA_DICT[lw]) return LEMMA_DICT[lw];
+  if(/[^aeiou]ies$/.test(lw)) return lw.slice(0,-3) + 'y';
+  if(/(ches|shes|sses|xes|zes)$/.test(lw)) return lw.slice(0,-2);
+  if(/[^su]s$/.test(lw) && lw.length > 3) return lw.slice(0,-1);
+  return lw;
+}
+
+/* ------------------------- widget A · stem vs lemma ---------------------- */
+(function(){
+  var inp = document.getElementById('ex-stem-in');
+  if(!inp) return;
+  var tbl = document.getElementById('ex-stem-out'), read = document.getElementById('ex-stem-read');
+  function up(){
+    var words = inp.value.match(/[A-Za-z']+/g) || [];
+    var html = '<tr><th>word</th><th>stem</th><th>lemma</th><th>agree?</th></tr>';
+    var agree = 0;
+    for(var i=0;i<words.length;i++){
+      var s = stem(words[i]), l = lemma(words[i]);
+      if(s === l) agree++;
+      html += '<tr><td><code>' + esc(words[i]) + '</code></td><td><code>' + esc(s)
+            + '</code></td><td><code>' + esc(l) + '</code></td><td>'
+            + (s === l ? 'same' : '<span style="color:#C00000;">differ</span>') + '</td></tr>';
+    }
+    tbl.innerHTML = html;
+    read.textContent = words.length + ' words · ' + agree + ' agree · '
+      + (words.length - agree) + ' differ';
+  }
+  inp.addEventListener('input', up);
+  up();
+})();
+
+/* --------------------- widget B · OOV over the Ex-6 table ---------------- */
+(function(){
+  var slider = document.getElementById('ex-oov-v');
+  if(!slider) return;
+  var read = document.getElementById('ex-oov-read'), tbl = document.getElementById('ex-oov-out');
+  var NAMED = [['the',500],['of',300],['model',120],['token',60],['word',40],
+               ['subword',20],['tokenizer',10],['lemmatize',6]];
+  var counts = NAMED.map(function(r){ return r[1]; });
+  var i;
+  for(i=0;i<44;i++) counts.push(1);
+  var TOTAL = counts.reduce(function(a,b){ return a+b; }, 0);
+  var TYPES = counts.length;
+
+  function up(){
+    var V = +slider.value;
+    var covered = 0;
+    for(var k=0;k<V && k<TYPES;k++) covered += counts[k];
+    var oovTok = (TOTAL - covered) / TOTAL;
+    var oovTyp = (TYPES - V) / TYPES;
+    read.textContent = 'V = ' + V + ' of ' + TYPES + ' types  ·  covered ' + covered + ' / '
+      + TOTAL + ' tokens  ·  OOV token ' + (oovTok*100).toFixed(2) + '%  ·  OOV type '
+      + (oovTyp*100).toFixed(1) + '%';
+    var html = '<tr><th>rank</th><th>type</th><th>count</th><th>in vocabulary?</th><th>cumulative tokens</th></tr>';
+    var run = 0;
+    for(var r=0;r<NAMED.length;r++){
+      run += counts[r];
+      var inV = (r < V);
+      html += '<tr' + (inV ? ' class="win"' : '') + '><td class="num">' + (r+1)
+            + '</td><td><code>' + esc(NAMED[r][0]) + '</code></td><td class="num">' + counts[r]
+            + '</td><td>' + (inV ? 'yes' : 'no') + '</td><td class="num">' + run + '</td></tr>';
+    }
+    var singlesIn = Math.max(0, Math.min(44, V - NAMED.length));
+    html += '<tr><td class="num">9–52</td><td><em>44 singleton types</em></td><td class="num">1 each</td><td>'
+          + singlesIn + ' of 44 in vocabulary</td><td class="num">' + TOTAL + '</td></tr>';
+    tbl.innerHTML = html;
+  }
+  slider.addEventListener('input', up);
+  up();
+})();
+
+/* ---------------- widget C · BPE learner on the banana corpus ------------ */
+(function(){
+  var stepBtn = document.getElementById('ex-bpe-step');
+  if(!stepBtn) return;
+  var resetBtn = document.getElementById('ex-bpe-reset');
+  var tCorpus = document.getElementById('ex-bpe-corpus'),
+      tPairs  = document.getElementById('ex-bpe-pairs'),
+      tMerges = document.getElementById('ex-bpe-merges'),
+      read    = document.getElementById('ex-bpe-read'),
+      encIn   = document.getElementById('ex-bpe-enc'),
+      encRead = document.getElementById('ex-bpe-encread');
+  var CORPUS = [['banana',4],['band',3],['and',2]];
+  var SEP = '\u0001';
+  var seq, merges, baseSymbols;
+
+  function reset(){
+    seq = CORPUS.map(function(r){
+      return { w: r[0], c: r[1], sym: r[0].split('').concat(['_']) };
+    });
+    merges = [];
+    var s = new Set();
+    seq.forEach(function(r){ r.sym.forEach(function(x){ s.add(x); }); });
+    baseSymbols = s.size;
+    render();
+  }
+  function pairCounts(){
+    var m = new Map();
+    seq.forEach(function(r){
+      for(var i=0;i+1<r.sym.length;i++){
+        var k = r.sym[i] + SEP + r.sym[i+1];
+        m.set(k, (m.get(k) || 0) + r.c);
+      }
+    });
+    return m;
+  }
+  function bestPair(m){
+    var bk = null, bv = 0;
+    m.forEach(function(v, k){ if(v > bv){ bv = v; bk = k; } });
+    return bk === null ? null : { k: bk, v: bv };
+  }
+  function applyMerge(sym, a, b){
+    var out = [], i = 0, fired = false;
+    while(i < sym.length){
+      if(i+1 < sym.length && sym[i] === a && sym[i+1] === b){ out.push(a + b); i += 2; fired = true; }
+      else { out.push(sym[i]); i++; }
+    }
+    return { sym: out, fired: fired };
+  }
+  function step(){
+    var m = pairCounts(), b = bestPair(m);
+    if(!b) return false;
+    var parts = b.k.split(SEP), a = parts[0], bb = parts[1];
+    seq.forEach(function(r){ r.sym = applyMerge(r.sym, a, bb).sym; });
+    merges.push({ a: a, b: bb, n: a + bb, count: b.v });
+    return true;
+  }
+  function encode(){
+    if(!encIn) return;
+    var word = (encIn.value.match(/[A-Za-z]+/) || [''])[0].toLowerCase();
+    if(!word.length){ encRead.textContent = 'type a word made of letters'; return; }
+    var sym = word.split('').concat(['_']), fired = 0;
+    merges.forEach(function(mm){
+      var res = applyMerge(sym, mm.a, mm.b);
+      sym = res.sym;
+      if(res.fired) fired++;
+    });
+    encRead.textContent = '"' + word + '"  →  ' + sym.join(' | ') + '   ('
+      + sym.length + ' pieces, ' + fired + ' of ' + merges.length + ' rules fired)';
+  }
+  function render(){
+    var html = '<tr><th>word</th><th>count</th><th>current symbols</th></tr>';
+    seq.forEach(function(r){
+      html += '<tr><td><code>' + esc(r.w) + '</code></td><td class="num">' + r.c + '</td><td>'
+            + r.sym.map(function(s){ return '<span class="chip sub">' + esc(s) + '</span>'; }).join(' ')
+            + '</td></tr>';
+    });
+    tCorpus.innerHTML = html;
+
+    var m = pairCounts(), arr = [];
+    m.forEach(function(v, k){ arr.push({ k: k, v: v, i: arr.length }); });
+    var winner = bestPair(m);
+    arr.sort(function(x, y){ return (y.v - x.v) || (x.i - y.i); });
+    var ph = '<tr><th>pair</th><th>merged</th><th>count</th></tr>';
+    if(arr.length === 0) ph += '<tr><td colspan="3">No adjacent pairs remain.</td></tr>';
+    arr.slice(0, 8).forEach(function(o){
+      var p = o.k.split(SEP), isWin = winner && o.k === winner.k;
+      ph += '<tr' + (isWin ? ' class="win"' : '') + '><td><code>(' + esc(p[0]) + ', ' + esc(p[1])
+          + ')</code></td><td><code>' + esc(p[0] + p[1]) + '</code></td><td class="num">' + o.v + '</td></tr>';
+    });
+    tPairs.innerHTML = ph;
+
+    var mh = '<tr><th>#</th><th>pair</th><th>new symbol</th><th>count</th></tr>';
+    if(merges.length === 0) mh += '<tr><td colspan="4">none yet</td></tr>';
+    merges.forEach(function(mm, i){
+      mh += '<tr><td class="num">' + (i+1) + '</td><td><code>(' + esc(mm.a) + ', ' + esc(mm.b)
+          + ')</code></td><td><code>' + esc(mm.n) + '</code></td><td class="num">' + mm.count + '</td></tr>';
+    });
+    tMerges.innerHTML = mh;
+
+    read.textContent = 'merges applied: ' + merges.length + '  ·  vocabulary: ' + baseSymbols
+      + ' base + ' + merges.length + ' merged = ' + (baseSymbols + merges.length) + ' symbols';
+    stepBtn.disabled = (arr.length === 0);
+    encode();
+  }
+  stepBtn.addEventListener('click', function(){ if(step()) render(); });
+  resetBtn.addEventListener('click', reset);
+  if(encIn) encIn.addEventListener('input', encode);
+  reset();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Local development and the test suite, from the repository root:
+#   pip install -r requirements-dev.txt && pytest
+#
+# This pulls in torch through api/requirements.txt, so the first install is
+# large and slow. That is expected. If you only want to work on the offline
+# parts — chunking arithmetic, cosine similarity, the disjointness check — you
+# can install fastapi, pydantic, supabase, pytest and httpx by hand and run
+#   pytest -m "not network"
+-r api/requirements.txt
+-r ui/requirements.txt
+pytest==8.3.3
+httpx==0.27.2

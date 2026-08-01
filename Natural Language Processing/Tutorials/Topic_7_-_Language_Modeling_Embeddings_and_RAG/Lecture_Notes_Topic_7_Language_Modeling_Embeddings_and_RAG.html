@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 7 Lecture Notes — Language Modeling, Embeddings and Retrieval-Augmented Generation</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+       margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6; }
+.container { max-width: 980px; margin: 24px auto 48px; background: white;
+             padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.35em; margin-top: 40px;
+     border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+h4 { color: #555; font-size: 1.0em; margin-top: 18px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 6px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7;
+       padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px; overflow-x: auto;
+      border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79;
+           padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px;
+        margin: 14px 0; border-radius: 4px; font-size: 0.93em; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+        padding: 22px; margin: 22px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.controls { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 180px; }
+.control input[type="number"] { width: 80px; padding: 4px 8px;
+            border: 1px solid #CFD7DF; border-radius: 4px; font-family: inherit; }
+.control select { padding: 5px 8px; border: 1px solid #CFD7DF; border-radius: 4px;
+                  font-family: inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px;
+           border-radius: 6px; font-family: "SF Mono", Consolas, monospace;
+           font-size: 0.88em; min-width: 220px; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 16px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.93em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+      background: #F2F4F7; padding: 4px 8px; border-radius: 4px; }
+.eq-block { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+            background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+            text-align: center; margin: 14px 0; display: block; }
+.nav { display: flex; justify-content: space-between; margin-top: 40px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+       padding: 16px 22px; margin-bottom: 28px; font-size: 0.92em; }
+.toc h3 { margin: 0 0 8px; color: #1F4E79; font-size: 1.0em; }
+.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 24px; }
+.toc a { color: #1F4E79; text-decoration: none; } .toc a:hover { text-decoration: underline; }
+.tag { display: inline-block; padding: 2px 8px; background: #E0E5EB;
+       border-radius: 12px; font-size: 0.75em; color: #555;
+       text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px; }
+.tag.interactive { background: #E1F0EA; color: #1B5E20; }
+.tag.code { background: #F2F4F7; color: #555; }
+.tag.math { background: #FCE8EE; color: #6E1414; }
+table.cmp { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 0.92em; }
+table.cmp th, table.cmp td { border: 1px solid #E0E5EB; padding: 8px 12px; text-align: left; }
+table.cmp th { background: #F2F4F7; color: #1F4E79; }
+.archetype { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
+.arc-card { border: 1px solid #D0D8E0; border-radius: 8px; padding: 14px;
+            background: white; font-size: 0.9em; }
+.arc-card .name { color: #1F4E79; font-weight: 600; }
+.arc-card .role { color: #555; margin-top: 6px; }
+/* --- appended: widget-specific rules --- */
+.tokgrid { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 4px; }
+.tokcell { background: white; border: 1px solid #E0E5EB; border-radius: 6px;
+           padding: 6px 8px; font-size: 0.82em; text-align: center; }
+.tokcell .tk { font-family: "SF Mono", Consolas, monospace; color: #1F4E79; font-weight: 600; }
+.tokcell input { width: 76px; padding: 3px 6px; border: 1px solid #CFD7DF;
+                 border-radius: 4px; font-family: inherit; font-size: 0.95em; margin-top: 4px; }
+.chunkbox { border: 1px solid #D0D8E0; border-left: 4px solid #1F4E79; border-radius: 6px;
+            background: white; padding: 10px 12px; margin: 8px 0; font-size: 0.88em; }
+.chunkbox .cid { color: #1F4E79; font-weight: 600; font-family: "SF Mono", Consolas, monospace; }
+.chunkbox.has-answer { border-left-color: #2E7D32; }
+.chunkbox.part-answer { border-left-color: #C00000; }
+.ansmark { background: #FFF1A8; border-radius: 3px; padding: 0 2px; }
+.hitrow { display: grid; grid-template-columns: 54px 70px 1fr; gap: 10px;
+          padding: 7px 10px; border-bottom: 1px solid #EDF1F5; font-size: 0.87em; align-items: start; }
+.hitrow.sent { background: #E8F3EC; }
+.hitrow.cut { color: #999; }
+.hitrow .sc { font-family: "SF Mono", Consolas, monospace; }
+.hitrow.gold .sc { color: #2E7D32; font-weight: 700; }
+.answerpane { background: white; border: 1px solid #E0E5EB; border-radius: 6px;
+              padding: 12px 16px; margin: 10px 0; font-size: 0.92em; }
+.answerpane .lbl { font-size: 0.78em; text-transform: uppercase; letter-spacing: 0.05em;
+                   color: #888; margin-bottom: 6px; }
+.unsupported { background: #FDECEA; border-bottom: 2px solid #C00000; padding: 0 2px; }
+.supported { background: #E8F5E9; border-bottom: 2px solid #2E7D32; padding: 0 2px; }
+.qgrid { display: flex; flex-wrap: wrap; gap: 4px; margin: 10px 0; }
+.qcell { width: 30px; height: 30px; border-radius: 4px; font-size: 0.72em;
+         display: flex; align-items: center; justify-content: center;
+         border: 1px solid #D0D8E0; font-family: "SF Mono", Consolas, monospace; }
+.qcell.mem { background: #E0E5EB; color: #555; }
+.qcell.ret { background: #E8F3EC; color: #1B5E20; }
+.qcell.both { background: #FFF1A8; color: #6E5000; }
+.qcell.none { background: #FDECEA; color: #6E1414; }
+.rankrow { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 8px 0; }
+.rankrow label { font-size: 0.8em; background: white; border: 1px solid #E0E5EB;
+                 border-radius: 6px; padding: 4px 7px; }
+details { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 6px;
+          padding: 10px 14px; margin: 12px 0; }
+details summary { cursor: pointer; color: #1F4E79; font-weight: 600; font-size: 0.93em; }
+details[open] summary { margin-bottom: 8px; }
+.srcline { font-size: 0.82em; color: #666; font-family: "SF Mono", Consolas, monospace; }
+</style>
+</head>
+<body>
+<div class="container" id="top">
+
+<div class="brand">Lecture notes · ~ 80 min read</div>
+<h1>Topic 7 — Language Modeling, Embeddings and Retrieval-Augmented Generation</h1>
+<p class="subtitle">From the next-token objective and perplexity computed by hand, through dense embeddings and chunking, to a retrieval-augmented generator whose answers you can audit line by line.</p>
+
+<div class="callout">
+  <strong>What you should walk away with.</strong> (1) Able to state the language-modelling objective and compute perplexity by hand from a list of token probabilities. (2) Clear about the difference between what a fine-tuned model <em>memorises</em> and what a retriever <em>looks up</em>. (3) Fluent with cosine similarity: able to compute it on paper, and able to say precisely what an inner product over un-normalised vectors ranks instead. (4) Able to choose chunk size and overlap, and to predict when a boundary destroys an answer. (5) Able to describe the retrieve → condition → cite loop, and to separate a retrieval failure from a grounding failure using logs. (6) Convinced, for a concrete reason, that the fine-tuning corpus and the retrieval collection must be disjoint. (7) Able to evaluate retrieval and generation as two separate measurements, and to explain why the audit trail is part of the product, not an extra.
+</div>
+
+<div class="toc">
+  <h3>What's in these notes</h3>
+  <ol>
+    <li><a href="#s1">The language-modelling objective</a></li>
+    <li><a href="#s2">Perplexity, worked by hand</a></li>
+    <li><a href="#s3">What perplexity does not tell you</a></li>
+    <li><a href="#s4">Pretraining, fine-tuning, memorisation</a></li>
+    <li><a href="#s5">Memorise or look up</a></li>
+    <li><a href="#s6">Dense embeddings: vectors as meaning</a></li>
+    <li><a href="#s7">Cosine similarity and normalisation</a></li>
+    <li><a href="#s8">Dimensionality: the number that must match</a></li>
+    <li><a href="#s9">Chunking the collection</a></li>
+    <li><a href="#s10">Vector search and approximate neighbours</a></li>
+    <li><a href="#s11">Retrieval: top-k and the context window</a></li>
+    <li><a href="#s12">Generation: conditioning and citing</a></li>
+    <li><a href="#s13">Grounding failure vs retrieval failure</a></li>
+    <li><a href="#s14">Why the two corpora must be disjoint</a></li>
+    <li><a href="#s15">Evaluating retrieval and generation separately</a></li>
+    <li><a href="#s16">The audit trail as a product requirement</a></li>
+  </ol>
+</div>
+
+<!-- ==================== 1 ==================== -->
+<h2 id="s1">1 · The language-modelling objective <span class="tag math">math</span></h2>
+<p>A language model assigns a probability to a sequence of tokens. Given a sequence <code>w₁ … w_N</code>, the chain rule of probability decomposes the joint probability into a product of conditionals:</p>
+<p class="eq-block">P(w₁ … w_N) = P(w₁) · P(w₂ | w₁) · P(w₃ | w₁ w₂) · … · P(w_N | w₁ … w_{N−1})</p>
+<p>A <strong>causal</strong> (autoregressive, decoder-only) language model computes each factor directly: feed it the prefix, read a distribution over the whole vocabulary, look up the probability of the token that actually came next. Training maximises the log of that product over a corpus, which is the same as minimising the mean negative log-probability per token:</p>
+<p class="eq-block">L = − (1/N) · Σ<sub>t=1…N</sub> log P(w<sub>t</sub> | w<sub>&lt;t</sub>)</p>
+<p>That quantity is the cross-entropy between the model's predicted distribution and the one-hot distribution that puts all its mass on the observed token. It is exactly what a training loop reports as <code>loss</code>. Nothing else is going on: a language model is a next-token classifier over a vocabulary of tens of thousands of classes, trained on every position of every document at once.</p>
+<p>Two variants of the objective matter for this topic:</p>
+<ul>
+  <li><strong>Causal language modelling (CLM).</strong> Predict token <em>t</em> from tokens <em>1 … t−1</em>. Used by decoder-only models. Because the model only ever looks left, the same forward pass gives a training signal at every position, and the trained model can generate.</li>
+  <li><strong>Masked language modelling (MLM).</strong> Corrupt roughly 15 percent of positions and predict the originals from both sides. Used by encoder-only models. The bidirectional context makes the resulting representations strong for classification and for <em>embedding</em> — which is why the sentence-embedding models used later in these notes are encoders, not generators.</li>
+</ul>
+<p>Keep both in view. In the retrieval pipeline you will build, an encoder produces the vectors and a decoder produces the prose. They are trained with different objectives and they are good at different things.</p>
+
+<div class="warn">
+  <strong>A shift you will meet in code.</strong> Hugging Face causal models expect <code>labels</code> equal to <code>input_ids</code>; the model shifts them internally so that position <em>t</em> is scored against token <em>t+1</em>. If you shift them yourself as well, you train the model to predict two tokens ahead and the loss will plateau at a value you cannot explain. Positions set to <code>-100</code> are excluded from the loss — that is how padding is kept out of the average.
+</div>
+
+<!-- ==================== 2 ==================== -->
+<h2 id="s2">2 · Perplexity, worked by hand <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>Perplexity is the exponentiated mean negative log-likelihood per token. With natural logs and the loss <em>L</em> above:</p>
+<p class="eq-block">PPL = exp(L) = exp( − (1/N) Σ log P(w<sub>t</sub> | w<sub>&lt;t</sub>) )</p>
+<p>Equivalently, with base-2 logs, PPL = 2 raised to the mean surprisal in bits. And equivalently again, PPL is the inverse geometric mean of the per-token probabilities:</p>
+<p class="eq-block">PPL = ( P(w₁ … w_N) )<sup>−1/N</sup></p>
+<p>The three forms are the same number. Use whichever makes the arithmetic easiest.</p>
+
+<h3>Worked example — do this one on paper</h3>
+<p>A model reads the four-token sequence <code>the cat sat down</code> and reports these probabilities for the tokens that actually occurred:</p>
+<table class="cmp">
+  <tr><th>step</th><th>token</th><th>P(token | prefix)</th><th>−log₂ P (bits of surprisal)</th></tr>
+  <tr><td>1</td><td><code>the</code></td><td>1/2 = 0.500</td><td>1</td></tr>
+  <tr><td>2</td><td><code>cat</code></td><td>1/4 = 0.250</td><td>2</td></tr>
+  <tr><td>3</td><td><code>sat</code></td><td>1/8 = 0.125</td><td>3</td></tr>
+  <tr><td>4</td><td><code>down</code></td><td>1/4 = 0.250</td><td>2</td></tr>
+</table>
+<p><strong>Route 1 — joint probability.</strong> The product is (1/2)(1/4)(1/8)(1/4) = 1/256. Then</p>
+<p class="eq-block">PPL = (1/256)<sup>−1/4</sup> = 256<sup>1/4</sup> = 4</p>
+<p><strong>Route 2 — mean surprisal in bits.</strong> The bits column sums to 1 + 2 + 3 + 2 = 8 bits over 4 tokens, so the mean is 2 bits per token, and PPL = 2² = <strong>4</strong>.</p>
+<p><strong>Route 3 — natural logs, the way a trainer reports it.</strong> ln(0.5) = −0.6931, ln(0.25) = −1.3863, ln(0.125) = −2.0794, ln(0.25) = −1.3863. The sum is −5.5452; divide by 4 to get L = 1.3863 nats; exp(1.3863) = <strong>4.00</strong>. If your evaluation loop prints <code>eval_loss = 1.3863</code>, then <code>math.exp(1.3863)</code> is the perplexity. That is the whole conversion.</p>
+<p><strong>Reading the number.</strong> A perplexity of 4 means the model is, on average across these positions, as uncertain as someone choosing uniformly among 4 equally likely tokens. Perplexity has the units of an <em>effective vocabulary size per position</em>. A model with a 50,000-token vocabulary that has learned nothing has perplexity 50,000; a model that assigns probability 1 to the correct token every time has perplexity 1. Lower is better, and the floor is 1, never 0.</p>
+
+<h3>One bad token is expensive</h3>
+<p>Change only the last token's probability from 1/4 to 1/64. The bits become 1 + 2 + 3 + 6 = 12 over 4 tokens, so the mean is 3 bits and PPL = 2³ = 8. A single token that dropped by a factor of 16 <em>doubled</em> the perplexity of the whole sequence. This is the geometric mean at work: because perplexity multiplies probabilities, one confidently wrong prediction cannot be averaged away by many mildly good ones. Push it to the limit — if the model assigns probability 0 to a token that actually occurred, the log is −∞ and the perplexity of the corpus is infinite. Any model that must be evaluated with perplexity has to reserve some probability for everything, which is what smoothing did for count-based models and what a softmax does automatically for a neural one.</p>
+
+<div class="demo">
+  <h3>Widget 1 · Perplexity calculator</h3>
+  <p>Edit any probability. The bars show per-token surprisal in bits; the dashed line is the mean, and perplexity is 2 raised to that mean. Try dropping one token to 0.01 and watch a single position dominate.</p>
+  <div class="controls">
+    <div class="control"><label for="pp-preset">preset sequence</label>
+      <select id="pp-preset">
+        <option value="worked">worked example (PPL = 4)</option>
+        <option value="bad">one surprising token</option>
+        <option value="conf">confident model</option>
+        <option value="flat">near-uniform over 8 options</option>
+      </select></div>
+    <div class="control"><label for="pp-base">report in</label>
+      <select id="pp-base"><option value="2">bits (log₂)</option><option value="e">nats (ln)</option></select></div>
+    <button class="secondary" id="pp-reset">Reset</button>
+  </div>
+  <div class="tokgrid" id="pp-tokens"></div>
+  <canvas id="pp-canvas" width="880" height="230"></canvas>
+  <div class="readout" id="pp-readout" style="margin-top:12px"></div>
+</div>
+
+<!-- ==================== 3 ==================== -->
+<h2 id="s3">3 · What perplexity does not tell you <span class="tag math">math</span></h2>
+<p>Perplexity is the right metric for the language-modelling objective and only for that objective. Four limits you must be able to state:</p>
+<h4>It is tied to the tokenizer</h4>
+<p>Perplexity is per <em>token</em>, and tokens are whatever the tokenizer says they are. A model with a large vocabulary spends fewer tokens per word, so each token carries more information and per-token perplexity rises even if the two models are equally good at predicting text. <strong>Perplexity is not comparable across tokenizers.</strong> The fix, when you must compare, is to normalise by a unit both models agree on — characters or bytes:</p>
+<p class="eq-block">bits per character = ( Σ<sub>t</sub> −log₂ P(w<sub>t</sub> | w<sub>&lt;t</sub>) ) / (number of characters in the text)</p>
+<p>For the worked example: total surprisal was 8 bits, and <code>the cat sat down</code> is 16 characters including the three spaces, so the model scores 0.5 bits per character on this sequence. That number survives a change of tokenizer; a per-token perplexity of 4 does not.</p>
+<h4>It is tied to the evaluation text</h4>
+<p>Perplexity on a held-out split of the same corpus you fine-tuned on measures how well the model learned <em>that domain</em>. Move the same model to a different domain and the number moves, sometimes by an order of magnitude. Always report perplexity together with what it was measured on, and how many tokens the split contained.</p>
+<h4>Contamination inflates it silently</h4>
+<p>If any evaluation document also appears in training — even once, even reformatted — the model can score it by recall rather than by prediction, and the perplexity you report is not a measurement of generalisation. Split by <em>document</em>, never by sampled line, and deduplicate before splitting. This is the same failure that Section 14 discusses for retrieval, in a different costume.</p>
+<h4>It does not measure usefulness</h4>
+<p>A model can have excellent perplexity and still answer a question with a confident fabrication. Perplexity rewards putting mass on the token that actually followed in <em>your corpus</em>; it says nothing about factual accuracy, refusal behaviour, or whether the model used a source you handed it. Those need their own measurements, and Section 15 sets them up.</p>
+
+<div class="callout">
+  <strong>How to report perplexity honestly.</strong> "Perplexity 21.4 on a held-out split of 41,000 tokens from the fine-tuning corpus, tokenizer <code>gpt2</code>, sequence length 512, computed with a non-overlapping sliding window." Every one of those qualifiers changes the number. A bare "perplexity 21.4" is not a result anyone can reproduce.
+</div>
+
+<!-- ==================== 4 ==================== -->
+<h2 id="s4">4 · Pretraining, fine-tuning, and what gets memorised <span class="tag math">math</span></h2>
+<p>Pretraining runs the objective from Section 1 over a very large, general corpus. The result is a model with broad linguistic competence and a diffuse, lossy store of whatever facts were frequent in that corpus. Fine-tuning continues the <em>same</em> objective on a smaller, specific corpus, usually with a lower learning rate and for a few passes.</p>
+<p>What does fine-tuning actually change?</p>
+<ul>
+  <li><strong>Style and format, quickly.</strong> A few hundred examples are enough to move register, vocabulary preference, and layout conventions. This is the cheapest and most reliable thing fine-tuning buys.</li>
+  <li><strong>Domain distribution, reliably.</strong> Perplexity on in-domain held-out text drops, because the model has shifted probability mass towards the words and constructions that domain uses.</li>
+  <li><strong>Specific facts, unreliably.</strong> A fact that occurs once in the fine-tuning corpus may or may not be recoverable. A fact that occurs many times, verbatim, often is — which is memorisation, not understanding, and it comes with no pointer back to where it came from.</li>
+</ul>
+<p>That last point is the crux of the whole topic. Weights are a <em>lossy, unaddressed</em> store. You cannot ask a set of weights "which document did that come from"; you cannot delete one fact from them; you cannot update one fact without retraining or accepting drift elsewhere. And the model's confidence is not correlated with whether the fact was actually memorised, so a half-remembered detail comes out with the same fluent phrasing as a correct one.</p>
+<p>Parameter-efficient fine-tuning (adapters such as LoRA, which trains small low-rank matrices alongside frozen weights) changes the economics — you can fine-tune a mid-sized model on one GPU — but it does not change the epistemics. An adapter-tuned model still stores what it stores in weights, and still cannot cite.</p>
+<table class="cmp">
+  <tr><th>Question</th><th>Weights (fine-tuning)</th><th>Index (retrieval)</th></tr>
+  <tr><td>Where did this fact come from?</td><td>unanswerable</td><td>a chunk id, with an offset into a document</td></tr>
+  <tr><td>Update one fact</td><td>retrain, or accept drift</td><td>re-embed one chunk</td></tr>
+  <tr><td>Delete one document</td><td>practically impossible</td><td><code>DELETE</code> the rows</td></tr>
+  <tr><td>Add a document today</td><td>a training run</td><td>an insert, seconds</td></tr>
+  <tr><td>Cost at query time</td><td>a forward pass</td><td>a forward pass plus a vector search</td></tr>
+  <tr><td>Good at</td><td>style, format, domain fluency, task behaviour</td><td>facts, freshness, provenance</td></tr>
+</table>
+
+<!-- ==================== 5 ==================== -->
+<h2 id="s5">5 · Memorise or look up <span class="tag math">math</span></h2>
+<p>Put the table above in the form of a decision. Ask, for each capability the product needs: <em>does this need to be in the weights, or can it be looked up?</em></p>
+<ul>
+  <li><strong>Put in the weights:</strong> "always answer in two sentences and never speculate"; "use our field vocabulary, not the consumer synonyms"; "when the question is out of scope, say so in this exact form". These are behaviours, and they generalise. A retriever cannot supply them.</li>
+  <li><strong>Look up:</strong> "the torque specification for the current bracket revision"; "the retention period for archived tickets"; "what the policy said last March". These are facts, they change, and each one needs a source the reader can check.</li>
+</ul>
+<p>The failure mode of getting this backwards is easy to recognise once you have seen it. Fine-tune a model on your fact corpus and it will answer fluently, in the right register, with details that are <em>close</em> to the truth: the right shape of part number with the wrong digits, a plausible retention period that no document states. Retrieval does not make a model smarter; it changes where the specifics come from. The specifics are the part that has to be right.</p>
+<p>The two are complementary, and the strongest configuration uses both — a model fine-tuned for the <em>behaviour</em> you want, retrieving the <em>facts</em> it answers with. That combination is exactly what makes the corpus-separation rule in Section 14 non-negotiable: the corpus you tune behaviour on must not be the collection you retrieve facts from.</p>
+
+<!-- ==================== 6 ==================== -->
+<h2 id="s6">6 · Dense embeddings: vectors as meaning <span class="tag math">math</span></h2>
+<p>An embedding model maps a piece of text to a fixed-length vector of real numbers — 384 numbers, or 768, regardless of whether the input was three words or three hundred. The map is trained so that <em>texts people would judge similar end up close together</em>. Nothing about the individual coordinates is interpretable; the geometry is the meaning.</p>
+<p>How is such a model trained? The dominant recipe is contrastive: take pairs known to belong together (a question and its answer paragraph, a title and its abstract, two sentences from the same section), push their vectors together, and push apart pairs drawn at random. Sentence-BERT (Reimers and Gurevych, 2019, <a href="https://arxiv.org/abs/1908.10084">arxiv.org/abs/1908.10084</a>) is the standard reference for turning an MLM encoder into a usable sentence embedder this way; Dense Passage Retrieval (Karpukhin et al., 2020, <a href="https://arxiv.org/abs/2004.04906">arxiv.org/abs/2004.04906</a>) applies the same idea with separate question and passage encoders.</p>
+<p>Two properties follow from the recipe and both matter in practice:</p>
+<ul>
+  <li><strong>Pooling matters.</strong> A transformer encoder emits one vector per token. Getting one vector per text means pooling — usually a mean over the token vectors, sometimes the <code>[CLS]</code> position. Mean pooling must exclude padding positions using the attention mask, or short texts in a padded batch get their vectors diluted towards whatever the pad token embeds to. This is a real and common defect: the same sentence embedded alone and embedded in a padded batch produces different vectors.</li>
+  <li><strong>Symmetry is a design choice.</strong> Some models are trained for symmetric similarity (sentence vs sentence); others for asymmetric retrieval (short query vs long passage) and expect a prefix such as <code>query:</code> or <code>passage:</code>. Using a model in the mode it was not trained for costs real accuracy. Read the model card on <a href="https://huggingface.co/models">huggingface.co</a> before assuming.</li>
+</ul>
+<p>Two concrete models to keep in mind as reference points, both documented on the Hub: <a href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2">all-MiniLM-L6-v2</a> emits 384 dimensions and is small and fast; <a href="https://huggingface.co/sentence-transformers/all-mpnet-base-v2">all-mpnet-base-v2</a> emits 768 and is slower. The number of dimensions is a property of the checkpoint, not something you choose at call time, and Section 8 explains why that number becomes a hard constraint on your database schema.</p>
+
+<div class="warn">
+  <strong>Embedding a query and embedding a chunk must use the same model.</strong> Not the same family, not a newer version — the same checkpoint. Two models trained separately produce vectors in unrelated coordinate systems even when the dimension happens to match, and cosine similarity between them is noise that looks like a number. If you upgrade the embedding model, you must re-embed the entire collection.
+</div>
+
+<!-- ==================== 7 ==================== -->
+<h2 id="s7">7 · Cosine similarity, and why normalisation matters <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>Cosine similarity between vectors <strong>a</strong> and <strong>b</strong> is the inner product divided by both lengths:</p>
+<p class="eq-block">cos(a, b) = (a · b) / (‖a‖ · ‖b‖),   where a · b = Σ<sub>i</sub> a<sub>i</sub>b<sub>i</sub>,  ‖a‖ = √(Σ<sub>i</sub> a<sub>i</sub>²)</p>
+<p>It is the cosine of the angle between the two vectors: 1 when they point the same way, 0 when perpendicular, −1 when opposite. The division by the lengths is the entire point — it removes magnitude and leaves direction.</p>
+
+<h3>Worked example — do this one on paper</h3>
+<p>Take three 2-D vectors: <strong>a</strong> = (3, 4), <strong>b</strong> = (4, 3), <strong>c</strong> = (6, 8).</p>
+<p><strong>Lengths.</strong> ‖a‖ = √(9 + 16) = √25 = 5. ‖b‖ = √(16 + 9) = 5. ‖c‖ = √(36 + 64) = √100 = 10.</p>
+<p><strong>a versus b.</strong> a · b = 3·4 + 4·3 = 12 + 12 = 24. So cos(a, b) = 24 / (5 · 5) = 24/25 = <strong>0.96</strong>. Euclidean distance ‖a − b‖ = ‖(−1, 1)‖ = √2 ≈ <strong>1.414</strong>.</p>
+<p><strong>a versus c.</strong> a · c = 3·6 + 4·8 = 18 + 32 = 50. So cos(a, c) = 50 / (5 · 10) = 50/50 = <strong>1.000</strong> — <strong>c</strong> is <strong>a</strong> scaled by 2, so the angle is zero. Euclidean distance ‖a − c‖ = ‖(−3, −4)‖ = <strong>5.000</strong>.</p>
+<p>Read the two rows against each other. By cosine, <strong>c</strong> is a perfect match for <strong>a</strong> and <strong>b</strong> is slightly worse. By Euclidean distance, <strong>b</strong> is more than three times closer than <strong>c</strong>. <em>The two metrics rank the two candidates in opposite orders.</em> That is not a curiosity; it is the reason the choice of metric is a design decision you have to make deliberately.</p>
+
+<h3>What an inner product over un-normalised vectors actually computes</h3>
+<p>Suppose you skip the denominator and rank candidates by the raw inner product, calling it "cosine similarity" because that is what the variable was named. Since a · b = ‖a‖ ‖b‖ cos(a, b), and the query length ‖q‖ is the same for every candidate, ranking by inner product is ranking by</p>
+<p class="eq-block">‖candidate‖ · cos(query, candidate)</p>
+<p>— that is, <strong>similarity weighted by the candidate's own length</strong>. In our example, the raw inner products are 24 for <strong>b</strong> and 50 for <strong>c</strong>: <strong>c</strong> wins by a factor of two, and it would still win if its direction were noticeably worse, purely because it is longer. In a document index, vector length is not meaningless — it correlates loosely with chunk length and with how "generic" the text is — so this bug produces a stable, plausible-looking ranking that quietly prefers long chunks. It does not crash and it does not look wrong. It just retrieves the wrong passage a few percent of the time, forever.</p>
+<p>The fix is one line: normalise every vector to unit length before you store it, and normalise the query the same way. Then ‖a‖ = ‖b‖ = 1 and inner product <em>is</em> cosine, exactly.</p>
+<p>Normalising also collapses the third metric into the other two. For unit vectors,</p>
+<p class="eq-block">‖a − b‖² = ‖a‖² + ‖b‖² − 2(a · b) = 2 − 2·cos(a, b)</p>
+<p>so squared Euclidean distance is a decreasing function of cosine similarity: <strong>on unit vectors, L2 nearest-neighbour order and cosine order are identical.</strong> That is worth knowing because indexes are often built for L2 while your semantics are cosine — if everything is normalised, there is no conflict.</p>
+<p>In pgvector the three operators are <code>&lt;-&gt;</code> for L2 distance, <code>&lt;#&gt;</code> for negative inner product, and <code>&lt;=&gt;</code> for cosine distance, where cosine distance = 1 − cosine similarity. Note that all three are <em>distances</em> in the sense that <code>ORDER BY</code> ascending gives you the best matches first, and that a similarity of 1.0 shows up as a distance of 0.0. Converting one to the other with the wrong sign is the second most common bug in this pipeline, right after forgetting to normalise. See the pgvector documentation at <a href="https://supabase.com/docs/guides/database/extensions/pgvector">supabase.com/docs/guides/database/extensions/pgvector</a>.</p>
+
+<div class="demo">
+  <h3>Widget 2 · Drag the vectors: cosine versus Euclidean</h3>
+  <p>Drag <strong>q</strong> (the query), <strong>a</strong>, or <strong>b</strong>. The readout computes both metrics live and tells you when they disagree about which candidate wins. Tick "normalise" to project every vector onto the unit circle before measuring — and watch the disagreement vanish.</p>
+  <div class="controls">
+    <div class="control"><label><input type="checkbox" id="em-norm"> normalise to unit length</label></div>
+    <div class="control"><label><input type="checkbox" id="em-dot" checked> show raw inner product</label></div>
+    <button class="secondary" id="em-reset">Reset positions</button>
+    <button class="secondary" id="em-diverge">Show a disagreement</button>
+  </div>
+  <canvas id="em-canvas" width="620" height="420" style="cursor:grab"></canvas>
+  <div class="readout" id="em-readout" style="margin-top:12px; white-space:pre"></div>
+</div>
+
+<!-- ==================== 8 ==================== -->
+<h2 id="s8">8 · Dimensionality: the number that must match <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>An embedding model's output dimension <em>d</em> is fixed by its architecture. Everything downstream inherits it:</p>
+<pre>create extension if not exists vector;
+
+create table chunks (
+  id          bigserial primary key,
+  doc_id      text not null,
+  chunk_index int  not null,
+  content     text not null,
+  embedding   vector(384) not null   -- d is baked into the schema
+);</pre>
+<p>Declare <code>vector(384)</code> and the column will accept 384-dimensional vectors and nothing else. Hand it a 768-dimensional vector and the insert fails with an error naming both numbers — an expected-versus-actual dimension mismatch. That failure is the <em>good</em> case: it is loud, it happens at write time, and it names the problem.</p>
+<p>The bad cases are the quiet ones:</p>
+<ul>
+  <li><strong>Truncating to fit.</strong> Someone sees the error, slices the vector to its first 384 entries, and the insert succeeds. The similarity you now compute is a similarity between two different objects. There is no reason the first 384 coordinates of a 768-dimensional embedding carry the same information as a 384-dimensional model's whole output — the coordinates are not ordered by importance in an ordinary embedding, so a truncated vector is a random projection of the meaning, not a summary of it. (Models trained with Matryoshka-style objectives are the deliberate exception; they are <em>trained</em> so prefixes remain usable, and you must know that before relying on it.)</li>
+  <li><strong>Padding with zeros.</strong> Pad a 384-dimensional query out to 768 and every stored vector's last 384 coordinates are multiplied by zero. You have silently discarded half of every document vector, and the remaining half is compared against coordinates that mean something else entirely.</li>
+  <li><strong>Mixed generations in one table.</strong> Half the collection embedded with the old model, half with the new. Same dimension, unrelated coordinate systems. Queries return whichever half the query model agrees with, and recall on the other half quietly falls to chance. Nothing errors.</li>
+</ul>
+<p>The discipline that prevents all three: store the model identifier and the dimension alongside every vector, and refuse at the API boundary any query whose model identifier does not match the collection's. Re-embedding the whole collection is the only correct response to changing models — treat it as a migration, with a new table and a cutover, not an in-place edit.</p>
+
+<div class="demo">
+  <h3>Widget 3 · What truncation does to a similarity</h3>
+  <p>Two fixed 768-dimensional vectors. The curve is the cosine similarity computed using only the first <em>k</em> coordinates. The full-dimension value on the right is the only correct answer; every other point on the curve is a number some pipeline reported after slicing a vector to make an insert succeed. Note that this is the <em>flattering</em> case: both vectors here were truncated the same way, so the truncated value is at least an unbiased estimate of the real one and converges as <em>k</em> grows. The case you will actually hit — a truncated 768-dimensional vector compared against a native 384-dimensional model's output — has no such relationship, because the two coordinate systems are unrelated.</p>
+  <div class="controls">
+    <div class="control"><label for="dm-k">coordinates kept, k</label>
+      <input type="range" id="dm-k" min="8" max="768" step="8" value="384"></div>
+    <div class="readout" id="dm-readout"></div>
+  </div>
+  <canvas id="dm-canvas" width="880" height="260"></canvas>
+  <h4>Schema check</h4>
+  <div class="controls">
+    <div class="control"><label>column <code>vector(d)</code></label><input type="number" id="dm-store" value="384" min="1" max="4096"></div>
+    <div class="control"><label>query vector length</label><input type="number" id="dm-query" value="768" min="1" max="4096"></div>
+  </div>
+  <pre id="dm-check"></pre>
+</div>
+
+<!-- ==================== 9 ==================== -->
+<h2 id="s9">9 · Chunking the collection <span class="tag interactive">interactive</span></h2>
+<p>Embedding models have a maximum input length, and even where they do not, a single vector for a 40-page document is useless: it averages away everything specific. So documents are cut into <strong>chunks</strong>, each chunk is embedded, and the chunk — not the document — is the unit of retrieval and the unit of citation.</p>
+<p>Two parameters do most of the work.</p>
+<h4>Chunk size</h4>
+<p>Measured in tokens, because the embedding model's limit is in tokens. Something in the range of a few hundred tokens is a common starting point; 300 to 500 is a reasonable default for prose. The trade-off is symmetric and unavoidable:</p>
+<ul>
+  <li><strong>Too small</strong> and a chunk loses the context that makes it interpretable. "It must be replaced rather than repaired" is a fine sentence and a useless chunk — <em>what</em> must be replaced is in the previous sentence, which is now in a different vector.</li>
+  <li><strong>Too large</strong> and the chunk's embedding is an average over several topics. The specific sentence that answers the question contributes a small fraction of the vector, so the chunk's similarity to the query is diluted and a less relevant but more focused chunk outranks it. Large chunks also burn context window: five chunks of 800 tokens is 4,000 tokens of prompt before the question is even asked.</li>
+</ul>
+<h4>Overlap</h4>
+<p>Consecutive chunks share their last / first few tokens. With size <em>S</em> and overlap <em>V</em>, the <strong>stride</strong> is <em>S − V</em>, and:</p>
+<p class="eq-block">chunk starts: 0, (S−V), 2(S−V), 3(S−V), …   number of chunks = 1 + ⌈ (N − S) / (S − V) ⌉ for N &gt; S</p>
+<p>Overlap exists for exactly one reason: <strong>a hard boundary that lands in the middle of the sentence containing the answer produces two chunks, neither of which answers the question.</strong> The first ends with "archived tickets remain searchable for" and the second begins with "ninety days after the final invoice". Retrieval then behaves in a way that is genuinely confusing to debug: the query has high lexical and semantic overlap with the first chunk, so that chunk is retrieved with a good score, and the generator receives a passage that <em>is</em> about the right subject and <em>does not contain</em> the fact. The log shows a successful retrieval. The answer is wrong. Nothing in the trace says "boundary".</p>
+<p>Overlap buys that back at a cost: with 20 percent overlap you store and embed about 25 percent more vectors, and near-duplicate neighbours start competing for the same top-k slots — two chunks that share 100 tokens can both rank highly and fill your context with the same sentence twice.</p>
+
+<h3>Worked example — chunk boundaries by hand</h3>
+<p>A document is <strong>N = 48</strong> tokens. Chunk size <strong>S = 20</strong>, overlap <strong>V = 5</strong>, so the stride is 15.</p>
+<ul>
+  <li>Chunk 1 = tokens [0, 20)</li>
+  <li>Chunk 2 = tokens [15, 35)</li>
+  <li>Chunk 3 = tokens [30, 48) — starts at 30, would run to 50, so it is clipped at the end of the document</li>
+</ul>
+<p>Check with the formula: 1 + ⌈(48 − 20)/15⌉ = 1 + ⌈1.867⌉ = 1 + 2 = <strong>3 chunks</strong>. Now suppose the answer occupies tokens 32 through 38. Chunk 2 covers 15–34 and cuts it; chunk 3 covers 30–47 and contains it whole, so this document is safe. Move the answer to tokens 27 through 33 and check again: chunk 2 covers it (15–34 contains 27–33), so it survives. Move it to 12–18 and chunk 1 covers it. With this size and stride, any answer shorter than the overlap survives somewhere — that is precisely the guarantee overlap gives you: <strong>an answer span shorter than the overlap is always contained whole in at least one chunk.</strong> An answer longer than the overlap has no such guarantee.</p>
+
+<h4>Splitting on structure beats splitting on counts</h4>
+<p>Fixed-length token windows are the baseline, not the goal. If the documents have structure — headings, numbered clauses, list items, log records — split on that first and only fall back to fixed windows inside a section that is too long. A chunk that corresponds to one clause is a better retrieval unit and a far better citation than a chunk that starts in the middle of one clause and ends in the middle of the next. Prepending the document title and section heading to each chunk's text before embedding is cheap and usually helps, because it puts the topic words into a chunk whose body may not repeat them.</p>
+
+<div class="demo">
+  <h3>Widget 4 · Chunk size, overlap, and an answer that gets cut in half</h3>
+  <p>The paragraph below is chunked live. The highlighted span is the answer to <em>"How long do archived tickets remain searchable?"</em>. The strip shows chunk intervals over the token axis with the answer span marked in red. Start at size 25, overlap 0 — the answer is split. Then raise the overlap.</p>
+  <div class="controls">
+    <div class="control"><label for="ck-size">chunk size (tokens): <span id="ck-size-v">25</span></label>
+      <input type="range" id="ck-size" min="8" max="60" step="1" value="25"></div>
+    <div class="control"><label for="ck-ov">overlap (tokens): <span id="ck-ov-v">0</span></label>
+      <input type="range" id="ck-ov" min="0" max="30" step="1" value="0"></div>
+    <button class="secondary" id="ck-fix">Find the smallest overlap that saves the answer</button>
+  </div>
+  <canvas id="ck-canvas" width="880" height="150"></canvas>
+  <div class="readout" id="ck-readout" style="margin-top:12px"></div>
+  <div id="ck-chunks" style="margin-top:12px; max-height:340px; overflow-y:auto"></div>
+</div>
+
+<!-- ==================== 10 ==================== -->
+<h2 id="s10">10 · Vector search and approximate nearest neighbours <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>With every chunk embedded and normalised, retrieval is a nearest-neighbour problem: given the query vector <strong>q</strong>, find the <em>k</em> stored vectors with the largest cosine similarity.</p>
+<h4>Exact search</h4>
+<p>Compute the similarity against every stored vector and keep the top <em>k</em>. Cost is O(<em>n·d</em>) per query: 50,000 chunks at 384 dimensions is about 19 million multiply-adds, which a database does in a few milliseconds. <strong>For a collection of a few tens of thousands of chunks, exact search is the right answer.</strong> It is simple, it has no recall loss, and it has no tuning parameters. Reach for an approximate index when measurement says you need one, not before.</p>
+<h4>Approximate search</h4>
+<p>At millions of vectors, scanning everything stops being viable, and approximate nearest-neighbour (ANN) indexes trade a little accuracy for a lot of speed. Two families dominate:</p>
+<ul>
+  <li><strong>Inverted file / cluster-based (IVF).</strong> Cluster the vectors once (k-means) into <em>lists</em>. At query time, compare the query to the list centroids, pick the <em>nprobe</em> nearest lists, and scan only those. Cost falls roughly by the fraction of lists you probe. The failure mode is geometric: if the query lands near a boundary between lists, its true nearest neighbours may sit in a list you did not probe, and they are simply invisible. Raising <em>nprobe</em> raises recall and cost together.</li>
+  <li><strong>Graph-based (HNSW).</strong> Build a navigable small-world graph in which each vector links to a few near neighbours, with sparse long-range links in upper layers; search by greedy descent from an entry point. Malkov and Yashunin (2018, <a href="https://arxiv.org/abs/1603.09320">arxiv.org/abs/1603.09320</a>) is the reference. Typically higher recall than IVF at the same speed, at the cost of a slower, memory-hungrier build. Search effort is controlled at query time by the size of the candidate list.</li>
+</ul>
+<p>The quantity you must measure is <strong>recall@k</strong>: of the <em>k</em> results exact search would have returned, what fraction did the index actually return? You measure it by running exact search on a sample of queries and comparing. An ANN index is a knob between recall and latency, and shipping one without having measured its recall means you do not know what your retrieval quality is — you only know your latency.</p>
+<p>Both index types exist in pgvector (<code>ivfflat</code> and <code>hnsw</code>), and both need the index's operator class to match the distance you query with. An index built for L2 does not accelerate a cosine query; the planner will fall back to a sequential scan and your "index" does nothing but consume disk. Check the query plan once, at build time, and you never have to wonder.</p>
+
+<div class="demo">
+  <h3>Widget 5 · Exact search versus a cluster-probing index</h3>
+  <p>400 stored vectors, drawn in 2-D so you can see the geometry, partitioned into 8 lists by their centroids. Drag the red query point. The widget runs <em>both</em> searches on every frame: exact top-5 (circled) and the index's top-5 from the probed lists only (filled). Recall and the number of vectors actually scanned are computed, not asserted.</p>
+  <div class="controls">
+    <div class="control"><label for="an-nprobe">nprobe (lists scanned): <span id="an-nprobe-v">1</span></label>
+      <input type="range" id="an-nprobe" min="1" max="8" step="1" value="1"></div>
+    <button class="secondary" id="an-worst">Move query to a boundary</button>
+    <div class="readout" id="an-readout"></div>
+  </div>
+  <canvas id="an-canvas" width="880" height="380" style="cursor:crosshair"></canvas>
+  <p style="font-size:0.88em;color:#555;margin-top:8px">Distances here are Euclidean so the picture is readable. On unit-normalised vectors the ordering is identical to cosine ordering — that is the identity from Section 7, ‖a − b‖² = 2 − 2·cos(a, b).</p>
+</div>
+
+<!-- ==================== 11 ==================== -->
+<h2 id="s11">11 · Retrieval: top-k and what reaches the generator <span class="tag interactive">interactive</span></h2>
+<p>The retrieval step is three lines conceptually and a pile of consequences in practice:</p>
+<pre>q_vec  = normalise(embed(question))          # same checkpoint as the chunks
+hits   = search(q_vec, k)                    # ordered by similarity, descending
+context = "\n\n".join(h.content for h in hits)</pre>
+<p><em>k</em> is the single most consequential number in the system after chunk size, because it decides what the generator is even able to see. Everything below rank <em>k</em> does not exist as far as the answer is concerned.</p>
+<ul>
+  <li><strong>k too small</strong> and a question whose answer sits at rank 4 gets an answer built from ranks 1–3. The generator now has context that is topically related and factually silent, which is the situation most likely to produce a confident wrong answer — the model has something to talk about and nothing to ground the specific.</li>
+  <li><strong>k too large</strong> and you spend context window on marginal passages, raise cost and latency, and give the model more opportunity to answer from a passage that is about something else. Long contexts also make position effects real: material in the middle of a long prompt is used less reliably than material at either end.</li>
+</ul>
+<p><strong>k = 5 is a reasonable place to start</strong> and a bad place to stop. Tune it by measuring recall@k on a set of questions whose correct chunk you have labelled (Section 15), then pick the smallest <em>k</em> that gets recall where you need it.</p>
+<h4>Two refinements worth knowing</h4>
+<ul>
+  <li><strong>A similarity floor.</strong> Discard hits below a threshold even if that leaves fewer than <em>k</em>. If the best match to "what is our parental leave policy" scores 0.11 against a collection of hardware manuals, the honest response is to retrieve nothing and let the generator say it has no source. Passing three weak chunks instead invites a fabricated answer with citations attached, which is worse than no answer because it looks checked.</li>
+  <li><strong>Retrieve wide, then re-rank.</strong> Fetch 30 candidates with the cheap vector search, then score each one against the query with a slower cross-encoder that reads query and passage together, and keep the best 5. The bi-encoder is fast because it never sees the pair; the cross-encoder is accurate for the same reason it is slow. This two-stage pattern is the standard way to buy accuracy without scanning the collection with an expensive model.</li>
+</ul>
+
+<div class="demo">
+  <h3>Widget 6 · Top-k over a small collection</h3>
+  <p>Ten passages from a field handbook. Similarity here is cosine over term-frequency vectors — a transparent stand-in for a dense embedding, so you can verify any score by hand. Pick a question and move <em>k</em>. Rows above the cut are sent to the generator; the row marked ★ is the one that actually contains the answer.</p>
+  <div class="controls">
+    <div class="control"><label for="rt-q">question</label>
+      <select id="rt-q">
+        <option value="0">What is the maximum current draw in freezing conditions?</option>
+        <option value="1">How tight should the mounting bracket bolts be?</option>
+        <option value="2">Is a cracked enclosure covered by the warranty?</option>
+        <option value="3">What does enabling the diagnostic port leave behind?</option>
+      </select></div>
+    <div class="control"><label for="rt-k">k: <span id="rt-k-v">2</span></label>
+      <input type="range" id="rt-k" min="1" max="8" step="1" value="2"></div>
+    <div class="control"><label for="rt-floor">similarity floor: <span id="rt-floor-v">0.00</span></label>
+      <input type="range" id="rt-floor" min="0" max="0.5" step="0.01" value="0"></div>
+  </div>
+  <div class="readout" id="rt-readout"></div>
+  <div id="rt-out" style="margin-top:12px"></div>
+</div>
+
+<!-- ==================== 12 ==================== -->
+<h2 id="s12">12 · Generation: conditioning on context, and citing <span class="tag interactive">interactive</span></h2>
+<p>Retrieval-augmented generation, in the form introduced by Lewis et al. (2020, <a href="https://arxiv.org/abs/2005.11401">arxiv.org/abs/2005.11401</a>), conditions a generator on passages fetched by a retriever rather than on the model's parameters alone. In a service you build today the loop is:</p>
+<pre>1. embed(question)                  -> q_vec
+2. search(q_vec, k)                 -> hits [(chunk_id, score, content, source)]
+3. prompt = system + context(hits) + question
+4. generate(prompt)                 -> answer
+5. log(question, q_vec_id, [chunk_ids], [scores], answer, model, timestamp)
+6. return answer + citations([hits used])</pre>
+<p>Step 3 is where most of the quality lives. A prompt that works has four parts, and the order matters less than their presence:</p>
+<pre>You answer only from the numbered sources below.
+If the sources do not contain the answer, reply exactly:
+"The provided sources do not contain this information."
+Cite the source number in square brackets after each claim.
+
+[1] (handbook 2.7) Cold weather reduces usable battery capacity. Below
+    minus ten degrees Celsius the pack limits output current to forty amps
+    until the internal heater brings the cells into range.
+[2] (handbook 7.5) Freezing rain can obstruct the vent. Inspect the vent
+    for ice after freezing conditions and clear it before the unit draws load.
+
+Question: What is the maximum current draw in freezing conditions?</pre>
+<p>The four parts: a <strong>scope instruction</strong> ("only from the sources"), an <strong>escape hatch</strong> (an exact refusal string, so refusals are detectable by a string match in your logs), <strong>numbered sources with their identifiers</strong> (so the citation the model emits maps back to a row in the database), and the <strong>question last</strong>.</p>
+<p>Three details that decide whether citations are worth anything:</p>
+<ul>
+  <li><strong>Number the sources in the prompt and validate the numbers on the way out.</strong> If the answer cites [4] and you only supplied three sources, that is a detectable defect — reject or flag the answer. A citation that is not checked against what you actually supplied is decoration.</li>
+  <li><strong>Return chunk ids, not just document titles.</strong> The reader needs to land on the sentence, not the manual.</li>
+  <li><strong>Make refusal cheap and specific.</strong> A model that has been told it may refuse, in a fixed form, refuses far more often than one that has only been told to be accurate. Then count that fixed string in the logs: a refusal rate that climbs after a data change is a signal, and a refusal rate of zero on a hard question set means the escape hatch is not working.</li>
+</ul>
+
+<div class="demo">
+  <h3>Widget 7 · With retrieval and without</h3>
+  <p>Three questions against the same handbook collection. "Closed book" is the generator answering from its weights alone; "grounded" is the same generator conditioned on the retrieved passage. The widget extracts every specific claim — numbers, quantities, named parts — from the answer and checks, by string matching, whether each one appears in the supplied context. That check is what "grounded" means operationally.</p>
+  <div class="controls">
+    <div class="control"><label for="rg-q">question</label>
+      <select id="rg-q">
+        <option value="0">What is the maximum current draw in freezing conditions?</option>
+        <option value="1">What torque is specified for the mounting bracket bolts?</option>
+        <option value="2">How long are diagnostic port sessions kept in the audit log?</option>
+      </select></div>
+    <div class="control"><label for="rg-mode">mode</label>
+      <select id="rg-mode">
+        <option value="both">show both</option>
+        <option value="closed">closed book only</option>
+        <option value="rag">grounded only</option>
+      </select></div>
+  </div>
+  <div id="rg-out"></div>
+</div>
+
+<!-- ==================== 13 ==================== -->
+<h2 id="s13">13 · Grounding failure versus retrieval failure <span class="tag math">math</span></h2>
+<p>A wrong answer from a retrieval-augmented system has exactly three causes, and from the outside they are indistinguishable.</p>
+<table class="cmp">
+  <tr><th>Cause</th><th>What actually happened</th><th>What the user sees</th><th>Fix</th></tr>
+  <tr><td><strong>Retrieval failure</strong></td><td>The chunk containing the answer was never returned — wrong <em>k</em>, a boundary that split it, a query the embedding model reads differently, or an ANN index that missed it.</td><td>A wrong or evasive answer.</td><td>Chunking, <em>k</em>, embedding model, index recall.</td></tr>
+  <tr><td><strong>Grounding failure</strong></td><td>The right chunk <em>was</em> in the context and the generator answered from its weights anyway, or blended the passage with something it half-remembers.</td><td>A wrong or evasive answer.</td><td>Prompt, model, refusal instruction, context length.</td></tr>
+  <tr><td><strong>Collection failure</strong></td><td>No document in the collection contains the answer at all.</td><td>A wrong or evasive answer.</td><td>Add the document, or refuse honestly.</td></tr>
+</table>
+<p>The user-visible column is identical in all three rows. <strong>You cannot tell them apart from the answer.</strong> You can tell them apart trivially — mechanically, in seconds — if and only if you logged, for every query: the question, the retrieved chunk ids, their similarity scores, the exact context string assembled, and the answer. Then:</p>
+<ul>
+  <li>The gold chunk is not among the retrieved ids → retrieval failure. Go look at chunk boundaries and <em>k</em>.</li>
+  <li>The gold chunk <em>is</em> among the retrieved ids and the answer contradicts it → grounding failure. Go look at the prompt.</li>
+  <li>No chunk in the whole collection contains the fact → collection failure. The correct behaviour was refusal; check whether the system refused.</li>
+</ul>
+<p>This is the entire argument for the audit log, and it is an engineering argument before it is a compliance one. Without those five fields you are reduced to re-running queries by hand and guessing, and every fix you attempt is uncontrolled: you change the chunk size, the answer changes, and you have no idea whether you fixed retrieval or accidentally moved a grounding failure into a different question.</p>
+<div class="warn">
+  <strong>Log the context string, not just the chunk ids.</strong> Chunk 1841 today is not chunk 1841 after you re-chunk the collection next week. Storing the exact text that was placed in the prompt makes an old query reproducible after the index has moved on; storing only ids makes your history unreadable the first time you re-embed. Store both.
+</div>
+
+<!-- ==================== 14 ==================== -->
+<h2 id="s14">14 · Why the fine-tuning corpus and the retrieval collection must be disjoint <span class="tag interactive">interactive</span></h2>
+<p>Here is the claim you are asked to demonstrate in the topic project: retrieval improves answer quality. The experiment is the obvious one — take a set of questions, answer each twice, once with retrieval and once without, and compare.</p>
+<p>That experiment is only valid if the model answering "without retrieval" genuinely does not know the answers. If you fine-tuned the generator on the very documents you are now retrieving, it has already seen them, possibly many times, and it can answer a good share of the questions from memorised text. Then:</p>
+<ul>
+  <li>The <em>without</em> condition scores high, because memorisation is doing the work.</li>
+  <li>The <em>with</em> condition scores about the same — the retrieved passage adds nothing the model did not already have.</li>
+  <li>The measured gain from retrieval is near zero.</li>
+</ul>
+<p>And that near-zero is not a finding about retrieval. It is an artefact of the overlap. You will have run a careful experiment and measured your own experimental design. Worse, it fails in the direction that is hardest to detect, because "retrieval did not help much" is a believable result that nobody questions.</p>
+<p>The rule, then: <strong>the corpus you fine-tune on and the collection you retrieve from must be disjoint at the document level</strong>, and you must be able to describe how you enforced it. Splitting a single corpus in half is acceptable and is the easiest defensible arrangement, provided the split is by document. Practical steps:</p>
+<ol>
+  <li>Assign every document a stable identifier before anything else happens.</li>
+  <li>Deduplicate first — near-duplicates that differ by a header or a date line will otherwise land on both sides and reintroduce the leak.</li>
+  <li>Split by document identifier, never by sampled line or paragraph.</li>
+  <li>Record both manifests (identifier, source, token count) in the report, and assert the empty intersection in code — a test that fails the build, not a claim in prose.</li>
+  <li>Keep the held-out split used for perplexity inside the <em>fine-tuning</em> side. Perplexity is a measurement of the fine-tuned model on its own domain; measuring it on the retrieval collection mixes two things and answers neither.</li>
+</ol>
+<p>The same discipline appears in a third place: the questions used to compare with and without retrieval must not themselves have been part of the fine-tuning corpus, and their gold chunk labels must come from the retrieval collection.</p>
+
+<div class="demo">
+  <h3>Widget 8 · Watch the measured gain collapse</h3>
+  <p>20 test questions. The slider sets the fraction of the retrieval collection that also appears in the fine-tuning corpus. Memorised questions are answered correctly with no retrieval; retrieval succeeds on a fixed 18 of the 20 regardless. Both accuracies and the measured gain are computed from the grid below, which shows exactly which questions each condition gets right.</p>
+  <div class="controls">
+    <div class="control"><label for="ov-frac">corpus overlap: <span id="ov-frac-v">0%</span></label>
+      <input type="range" id="ov-frac" min="0" max="100" step="5" value="0"></div>
+    <div class="readout" id="ov-readout"></div>
+  </div>
+  <canvas id="ov-canvas" width="880" height="230"></canvas>
+  <div class="qgrid" id="ov-grid"></div>
+  <p style="font-size:0.86em;color:#555">
+    <span class="qcell mem" style="display:inline-flex;width:22px;height:22px;vertical-align:middle"></span> memorised only ·
+    <span class="qcell ret" style="display:inline-flex;width:22px;height:22px;vertical-align:middle"></span> retrieved only ·
+    <span class="qcell both" style="display:inline-flex;width:22px;height:22px;vertical-align:middle"></span> both (retrieval adds nothing) ·
+    <span class="qcell none" style="display:inline-flex;width:22px;height:22px;vertical-align:middle"></span> neither
+  </p>
+</div>
+
+<!-- ==================== 15 ==================== -->
+<h2 id="s15">15 · Evaluating retrieval and generation separately <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>One end-to-end accuracy number tells you the system is at 62 percent and tells you nothing about what to change. Measure the two stages independently.</p>
+<h4>Retrieval metrics — need a labelled gold chunk per question</h4>
+<ul>
+  <li><strong>recall@k</strong> — the fraction of questions whose gold chunk appears anywhere in the top <em>k</em>. This is the ceiling on everything downstream: a fact that is not retrieved cannot be used. Plot it against <em>k</em> and the right <em>k</em> chooses itself.</li>
+  <li><strong>precision@k</strong> — the fraction of the returned <em>k</em> that are relevant. Matters because irrelevant passages cost context and distract the generator.</li>
+  <li><strong>MRR</strong> (mean reciprocal rank) — average of 1/rank of the first relevant hit, 0 if none in the top <em>k</em>. Rewards putting the right chunk <em>first</em>, which matters given position effects in long prompts.</li>
+  <li><strong>nDCG@k</strong> — the graded version, for when relevance is not binary.</li>
+</ul>
+<p>Worked: a question's gold chunk comes back at rank 3 out of k = 5, and one other returned chunk is also relevant. Then recall@5 = 1 (it is in there), precision@5 = 2/5 = 0.4, and the reciprocal rank is 1/3 ≈ 0.333. Average the reciprocal ranks over all questions to get MRR.</p>
+<h4>Generation metrics — given the retrieved context</h4>
+<ul>
+  <li><strong>Groundedness.</strong> Is every specific claim in the answer supported by the supplied context? The cheap automatic version is what Widget 7 does: extract the specifics and check them against the context string. The expensive version is human annotation on a sample. Both are worth having.</li>
+  <li><strong>Answer correctness.</strong> Does the answer match the reference answer? Independent of groundedness — an answer can be perfectly grounded in a passage that does not answer the question.</li>
+  <li><strong>Citation validity.</strong> Do the cited ids exist, and does the cited chunk actually support the claim attached to it?</li>
+  <li><strong>Refusal behaviour.</strong> On a set of questions whose answers are deliberately absent from the collection, what fraction does the system refuse? A system that never refuses is a system that always fabricates.</li>
+</ul>
+<p>The 2 × 2 that the split buys you:</p>
+<table class="cmp">
+  <tr><th></th><th>Generation grounded</th><th>Generation ungrounded</th></tr>
+  <tr><td><strong>Retrieval found it</strong></td><td>Working as intended.</td><td>Grounding failure — fix the prompt or the model.</td></tr>
+  <tr><td><strong>Retrieval missed it</strong></td><td>Grounded in the wrong passage; the correct behaviour is refusal.</td><td>Two independent defects; fix retrieval first, because it is the ceiling.</td></tr>
+</table>
+
+<div class="demo">
+  <h3>Widget 9 · Retrieval metrics calculator</h3>
+  <p>Tick the ranks at which a relevant chunk was returned for one query, then move <em>k</em>. Every metric is computed from the ticks — including the case where the only relevant chunk sits just below the cut.</p>
+  <div class="controls">
+    <div class="control"><label for="mt-k">k: <span id="mt-k-v">5</span></label>
+      <input type="range" id="mt-k" min="1" max="10" step="1" value="5"></div>
+    <button class="secondary" id="mt-reset">Relevant at rank 3 only</button>
+    <button class="secondary" id="mt-none">Nothing relevant in top 10</button>
+  </div>
+  <div class="rankrow" id="mt-ranks"></div>
+  <pre id="mt-out"></pre>
+</div>
+
+<!-- ==================== 16 ==================== -->
+<h2 id="s16">16 · The audit trail as a product requirement <span class="tag code">code</span></h2>
+<p>The knowledge-management team asking for this assistant did not ask for a log because they like logs. They asked because an answer without provenance cannot be acted on. The audit trail is not instrumentation bolted to the side of the product; it is the feature that makes the product's answers usable.</p>
+<p>A minimal schema that supports every diagnostic in Section 13:</p>
+<pre>create table query_log (
+  id            bigserial primary key,
+  created_at    timestamptz not null default now(),
+  question      text        not null,
+  k             int         not null,
+  retrieved_ids bigint[]    not null,   -- chunk ids, in rank order
+  scores        real[]      not null,   -- same order, same length
+  context_text  text        not null,   -- exactly what went into the prompt
+  answer        text        not null,
+  cited_ids     bigint[]    not null,   -- parsed out of the answer, validated
+  refused       boolean     not null,
+  gen_model     text        not null,
+  embed_model   text        not null,   -- checkpoint id, not a family name
+  latency_ms    int
+);</pre>
+<p>What each field earns its place for:</p>
+<ul>
+  <li><code>retrieved_ids</code> + <code>scores</code> — separates retrieval failure from grounding failure, and lets you compute recall@k retrospectively once questions are labelled.</li>
+  <li><code>context_text</code> — makes an old query reproducible after re-chunking.</li>
+  <li><code>cited_ids</code> — a citation that was never compared against <code>retrieved_ids</code> is not evidence. The comparison is one line and it catches invented citations.</li>
+  <li><code>refused</code> — the denominator for "did the escape hatch work".</li>
+  <li><code>embed_model</code> — the first thing you check when recall falls off a cliff on a Tuesday.</li>
+</ul>
+<p>Two operational points specific to hosting this on Supabase. First, the service writes logs with a privileged key from the server side; the user-facing application reads through a restricted key against a view that exposes only what a reader should see. Never let the browser hold a key that can write to the log table. Second, put the audit view in the interface, not in a notebook: a reader who can see the retrieved passages and their scores next to the answer can judge it themselves, and that is worth more than any aggregate number you could show them.</p>
+
+<h3>The pipeline in one page</h3>
+<pre>OFFLINE (once per document)
+  document -> clean -> chunk(size, overlap) -> embed(checkpoint) -> normalise
+           -> insert (doc_id, chunk_index, content, embedding, embed_model)
+
+ONLINE (per question)
+  question -> embed(same checkpoint) -> normalise
+           -> vector search top-k (+ similarity floor)   [log ids + scores]
+           -> assemble numbered context                  [log context_text]
+           -> generate with scope instruction + refusal escape hatch
+           -> validate cited ids against retrieved ids   [log answer + citations]
+           -> return answer + citations
+
+OFFLINE (evaluation, on a labelled question set)
+  retrieval: recall@k, precision@k, MRR       -- needs gold chunk labels
+  generation: groundedness, correctness, citation validity, refusal rate
+  comparison: with vs without retrieval       -- valid ONLY if the fine-tuning
+                                                 corpus and the collection are disjoint
+  language model: perplexity on a held-out split OF THE FINE-TUNING CORPUS</pre>
+
+<div class="callout">
+  <strong>Checklist before you claim the pipeline works.</strong> (1) Query vectors and stored vectors come from the same checkpoint, and you can prove it from a field in the database. (2) Every vector is unit-normalised, or you are using a genuine cosine operator. (3) The declared column dimension equals the model's output dimension, and nothing anywhere truncates or pads. (4) Chunk size and overlap are recorded, with a sentence saying why. (5) The fine-tuning corpus and the retrieval collection have an empty intersection, asserted by a test. (6) Every query writes a row containing the retrieved ids, the scores, the context, and the answer. (7) You can name, for the last wrong answer you saw, which of the three failures in Section 13 it was.
+</div>
+
+<h3>Sources worth reading in full</h3>
+<ul>
+  <li>Jurafsky and Martin, <em>Speech and Language Processing</em>, 3rd edition draft — chapters on n-gram language models and on large language models cover the objective, perplexity, and sampling: <a href="https://web.stanford.edu/~jurafsky/slp3/">web.stanford.edu/~jurafsky/slp3/</a></li>
+  <li>Vaswani et al., "Attention Is All You Need" (2017): <a href="https://arxiv.org/abs/1706.03762">arxiv.org/abs/1706.03762</a></li>
+  <li>Lewis et al., "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks" (2020): <a href="https://arxiv.org/abs/2005.11401">arxiv.org/abs/2005.11401</a></li>
+  <li>Karpukhin et al., "Dense Passage Retrieval for Open-Domain Question Answering" (2020): <a href="https://arxiv.org/abs/2004.04906">arxiv.org/abs/2004.04906</a></li>
+  <li>Reimers and Gurevych, "Sentence-BERT" (2019): <a href="https://arxiv.org/abs/1908.10084">arxiv.org/abs/1908.10084</a></li>
+  <li>Malkov and Yashunin, HNSW (2018): <a href="https://arxiv.org/abs/1603.09320">arxiv.org/abs/1603.09320</a></li>
+  <li>pgvector on Supabase Postgres: <a href="https://supabase.com/docs/guides/database/extensions/pgvector">supabase.com/docs/guides/database/extensions/pgvector</a></li>
+  <li>Sentence-embedding checkpoints: <a href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2">all-MiniLM-L6-v2</a> (384-d) and <a href="https://huggingface.co/sentence-transformers/all-mpnet-base-v2">all-mpnet-base-v2</a> (768-d)</li>
+</ul>
+
+<div class="nav">
+  <a href="#top">↑ Back to the top</a>
+  <a href="Exercises_Topic_7_Language_Modeling_Embeddings_and_RAG.html">Practice exercises →</a>
+</div>
+
+</div>
+
+<script>
+/* ---------- shared helpers ---------- */
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0;
+  var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t;
+  return ((t^t>>>14)>>>0)/4294967296; }; }
+function fmt(x,n){ return (Math.round(x*Math.pow(10,n))/Math.pow(10,n)).toFixed(n); }
+function pad(s,n){ s=String(s); while(s.length<n) s=' '+s; return s; }
+function padr(s,n){ s=String(s); while(s.length<n) s=s+' '; return s; }
+function canvasPos(c, ev){
+  const r=c.getBoundingClientRect();
+  return { x:(ev.clientX-r.left)*(c.width/r.width), y:(ev.clientY-r.top)*(c.height/r.height) };
+}
+
+/* ================= WIDGET 1 · perplexity ================= */
+(function(){
+  const PRESETS = {
+    worked: { toks:['the','cat','sat','down'], ps:[0.5,0.25,0.125,0.25] },
+    bad:    { toks:['the','cat','sat','down'], ps:[0.5,0.25,0.125,0.015625] },
+    conf:   { toks:['the','policy','takes','effect','today'], ps:[0.62,0.41,0.55,0.72,0.34] },
+    flat:   { toks:['a','b','c','d','e','f','g','h'], ps:[0.125,0.125,0.125,0.125,0.125,0.125,0.125,0.125] }
+  };
+  const grid=document.getElementById('pp-tokens');
+  const cv=document.getElementById('pp-canvas'), ctx=cv.getContext('2d');
+  const out=document.getElementById('pp-readout');
+  const presetSel=document.getElementById('pp-preset'), baseSel=document.getElementById('pp-base');
+  let toks=[], ps=[];
+
+  function load(name){
+    const p=PRESETS[name]; toks=p.toks.slice(); ps=p.ps.slice(); build(); draw();
+  }
+  function build(){
+    grid.innerHTML='';
+    toks.forEach(function(t,i){
+      const cell=document.createElement('div'); cell.className='tokcell';
+      const lab=document.createElement('div'); lab.className='tk'; lab.textContent=t;
+      const inp=document.createElement('input');
+      inp.type='number'; inp.step='0.001'; inp.min='0.0001'; inp.max='1'; inp.value=ps[i];
+      inp.addEventListener('input', function(){
+        const v=parseFloat(inp.value);
+        ps[i] = (isFinite(v) && v>0 && v<=1) ? v : ps[i];
+        draw();
+      });
+      cell.appendChild(lab); cell.appendChild(inp); grid.appendChild(cell);
+    });
+  }
+  function draw(){
+    const N=ps.length;
+    const bits=ps.map(function(p){ return -Math.log(p)/Math.LN2; });
+    const sumBits=bits.reduce(function(a,b){return a+b;},0);
+    const meanBits=sumBits/N;
+    const ppl=Math.pow(2, meanBits);
+    const W=cv.width, H=cv.height; ctx.clearRect(0,0,W,H);
+    const left=54, bottom=H-34, top=26;
+    const maxB=Math.max(4, Math.max.apply(null, bits)*1.15);
+    const bw=(W-left-24)/N;
+    // axis
+    ctx.strokeStyle='#CFD7DF'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(left,top-8); ctx.lineTo(left,bottom); ctx.lineTo(W-16,bottom); ctx.stroke();
+    ctx.fillStyle='#888'; ctx.font='10px monospace';
+    for(let g=0; g<=maxB; g+=Math.max(1,Math.round(maxB/6))){
+      const y=bottom-(g/maxB)*(bottom-top);
+      ctx.fillText(String(g), 22, y+4);
+      ctx.strokeStyle='#EEF2F6'; ctx.beginPath(); ctx.moveTo(left,y); ctx.lineTo(W-16,y); ctx.stroke();
+    }
+    // bars
+    bits.forEach(function(b,i){
+      const h=(b/maxB)*(bottom-top);
+      const x=left+i*bw+bw*0.15, w=bw*0.7;
+      ctx.fillStyle = (b>meanBits*1.6) ? '#C00000' : '#1F4E79';
+      ctx.fillRect(x, bottom-h, w, h);
+      ctx.fillStyle='#333'; ctx.font='10px monospace';
+      ctx.fillText(fmt(b,2), x, bottom-h-4);
+      ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+      ctx.fillText(toks[i], x, bottom+14);
+    });
+    // mean line
+    const my=bottom-(meanBits/maxB)*(bottom-top);
+    ctx.strokeStyle='#F9A825'; ctx.lineWidth=2; ctx.setLineDash([6,4]);
+    ctx.beginPath(); ctx.moveTo(left,my); ctx.lineTo(W-16,my); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#8A6100'; ctx.font='bold 11px sans-serif';
+    ctx.fillText('mean surprisal = '+fmt(meanBits,3)+' bits/token', left+8, my-6);
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 12px sans-serif';
+    ctx.fillText('surprisal −log₂ P(token)  [bits]', left, 16);
+
+    const nats=sumBits*Math.LN2, meanNats=nats/N;
+    const chars = toks.join(' ').length;
+    let lines;
+    if(baseSel.value==='2'){
+      lines =
+        'N tokens          = '+N+'\n'+
+        'Σ −log2 P         = '+fmt(sumBits,4)+' bits\n'+
+        'mean surprisal    = '+fmt(sumBits,4)+' / '+N+' = '+fmt(meanBits,4)+' bits/token\n'+
+        'perplexity        = 2^'+fmt(meanBits,4)+' = '+fmt(ppl,4)+'\n'+
+        'bits per character= '+fmt(sumBits,4)+' / '+chars+' chars = '+fmt(sumBits/chars,4);
+    } else {
+      lines =
+        'N tokens          = '+N+'\n'+
+        'Σ −ln P           = '+fmt(nats,4)+' nats\n'+
+        'mean loss L       = '+fmt(nats,4)+' / '+N+' = '+fmt(meanNats,4)+' nats/token\n'+
+        'perplexity        = exp('+fmt(meanNats,4)+') = '+fmt(ppl,4)+'\n'+
+        '(this L is exactly what a trainer prints as eval_loss)';
+    }
+    const jointLog2=-sumBits;
+    lines += '\njoint P(sequence) = 2^('+fmt(jointLog2,3)+') = '+ (Math.pow(2,jointLog2)).toExponential(3);
+    out.textContent=lines;
+  }
+  presetSel.addEventListener('change', function(){ load(presetSel.value); });
+  baseSel.addEventListener('change', draw);
+  document.getElementById('pp-reset').addEventListener('click', function(){
+    presetSel.value='worked'; load('worked');
+  });
+  load('worked');
+})();
+
+/* ================= WIDGET 2 · cosine vs euclidean playground ================= */
+(function(){
+  const cv=document.getElementById('em-canvas'), ctx=cv.getContext('2d');
+  const out=document.getElementById('em-readout');
+  const normBox=document.getElementById('em-norm'), dotBox=document.getElementById('em-dot');
+  const OX=60, OY=380, U=52;
+  const HOME={ q:[2,2], a:[2.6,2.4], b:[0.8,3.2] };
+  let P={ q:HOME.q.slice(), a:HOME.a.slice(), b:HOME.b.slice() };
+  let drag=null;
+
+  function sx(v){ return OX+v*U; }
+  function sy(v){ return OY-v*U; }
+  function ix(px){ return (px-OX)/U; }
+  function iy(py){ return (OY-py)/U; }
+  function norm(v){ const n=Math.hypot(v[0],v[1]); return n>1e-9?[v[0]/n,v[1]/n]:[0,0]; }
+  function dot(u,v){ return u[0]*v[0]+u[1]*v[1]; }
+  function len(v){ return Math.hypot(v[0],v[1]); }
+  function cos(u,v){ const d=len(u)*len(v); return d>1e-9 ? dot(u,v)/d : 0; }
+  function dist(u,v){ return Math.hypot(u[0]-v[0], u[1]-v[1]); }
+
+  function arrow(v, color, label){
+    const x=sx(v[0]), y=sy(v[1]);
+    ctx.strokeStyle=color; ctx.lineWidth=2.4;
+    ctx.beginPath(); ctx.moveTo(sx(0),sy(0)); ctx.lineTo(x,y); ctx.stroke();
+    const ang=Math.atan2(y-sy(0), x-sx(0));
+    ctx.beginPath(); ctx.moveTo(x,y);
+    ctx.lineTo(x-11*Math.cos(ang-0.32), y-11*Math.sin(ang-0.32));
+    ctx.lineTo(x-11*Math.cos(ang+0.32), y-11*Math.sin(ang+0.32));
+    ctx.closePath(); ctx.fillStyle=color; ctx.fill();
+    ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2); ctx.fillStyle=color; ctx.fill();
+    ctx.fillStyle='#FFF'; ctx.font='bold 10px sans-serif'; ctx.fillText(label, x-3, y+3.5);
+  }
+  function draw(){
+    const W=cv.width, H=cv.height; ctx.clearRect(0,0,W,H);
+    // grid
+    ctx.strokeStyle='#EEF2F6'; ctx.lineWidth=1;
+    for(let g=0; g<=7; g++){
+      ctx.beginPath(); ctx.moveTo(sx(g),sy(0)); ctx.lineTo(sx(g),sy(6.6)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(sx(0),sy(g)); ctx.lineTo(sx(10.4),sy(g)); ctx.stroke();
+    }
+    ctx.strokeStyle='#CFD7DF'; ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.moveTo(sx(0),sy(0)); ctx.lineTo(W-10,sy(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(sx(0),sy(0)); ctx.lineTo(sx(0),8); ctx.stroke();
+    // unit circle
+    ctx.strokeStyle='#B9C7D6'; ctx.setLineDash([4,4]); ctx.beginPath();
+    ctx.arc(sx(0),sy(0),U,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#8B9AAB'; ctx.font='10px sans-serif'; ctx.fillText('unit circle', sx(0)+8, sy(1)-6);
+
+    const use = normBox.checked
+      ? { q:norm(P.q), a:norm(P.a), b:norm(P.b) }
+      : { q:P.q, a:P.a, b:P.b };
+
+    if(normBox.checked){
+      ['q','a','b'].forEach(function(k){
+        ctx.strokeStyle='#D8DEE6'; ctx.setLineDash([3,3]);
+        ctx.beginPath(); ctx.moveTo(sx(P[k][0]),sy(P[k][1]));
+        ctx.lineTo(sx(use[k][0]),sy(use[k][1])); ctx.stroke(); ctx.setLineDash([]);
+        ctx.beginPath(); ctx.arc(sx(P[k][0]),sy(P[k][1]),5,0,Math.PI*2);
+        ctx.strokeStyle='#C3CDD8'; ctx.stroke();
+      });
+    }
+    arrow(use.q,'#C00000','q'); arrow(use.a,'#1F4E79','a'); arrow(use.b,'#2E7D32','b');
+
+    const cq=[cos(use.q,use.a), cos(use.q,use.b)];
+    const dq=[dist(use.q,use.a), dist(use.q,use.b)];
+    const iq=[dot(use.q,use.a), dot(use.q,use.b)];
+    const cosWin = cq[0]>cq[1] ? 'a' : (cq[1]>cq[0] ? 'b' : 'tie');
+    const eucWin = dq[0]<dq[1] ? 'a' : (dq[1]<dq[0] ? 'b' : 'tie');
+    const ipWin  = iq[0]>iq[1] ? 'a' : (iq[1]>iq[0] ? 'b' : 'tie');
+
+    let t='';
+    t += padr('',6)+pad('x',6)+pad('y',7)+pad('|v|',8)+pad('dot(q,·)',10)+pad('cos(q,·)',10)+pad('||q-c||',10)+'\n';
+    [['q',use.q],['a',use.a],['b',use.b]].forEach(function(r){
+      const k=r[0], v=r[1];
+      t += padr(k,6)+pad(fmt(v[0],2),6)+pad(fmt(v[1],2),7)+pad(fmt(len(v),3),8);
+      if(k==='q'){ t += pad('—',10)+pad('—',10)+pad('—',10)+'\n'; }
+      else{
+        const i=(k==='a')?0:1;
+        t += pad(fmt(iq[i],3),10)+pad(fmt(cq[i],4),10)+pad(fmt(dq[i],3),10)+'\n';
+      }
+    });
+    t += '\ncosine     ranks: '+cosWin+' first';
+    t += '\neuclidean  ranks: '+eucWin+' first';
+    if(dotBox.checked) t += '\ninner prod ranks: '+ipWin+' first  (= |candidate| × cos)';
+    t += '\n\n' + (cosWin===eucWin
+        ? 'the two metrics AGREE on the winner here.'
+        : '>>> the two metrics DISAGREE: cosine picks '+cosWin+', distance picks '+eucWin+'.');
+    if(!normBox.checked && ipWin!==cosWin)
+      t += '\n>>> raw inner product also disagrees with cosine: it is rewarding length.';
+    if(normBox.checked)
+      t += '\nnormalised: |v| = 1 for all, so dot = cos exactly, and distance order matches cosine order.';
+    out.textContent=t;
+  }
+  cv.addEventListener('mousedown', function(ev){
+    const p=canvasPos(cv,ev);
+    let best=null, bd=1e9;
+    ['q','a','b'].forEach(function(k){
+      const d=Math.hypot(p.x-sx(P[k][0]), p.y-sy(P[k][1]));
+      if(d<bd){ bd=d; best=k; }
+    });
+    if(bd<18){ drag=best; cv.style.cursor='grabbing'; }
+  });
+  cv.addEventListener('mousemove', function(ev){
+    if(!drag) return;
+    const p=canvasPos(cv,ev);
+    P[drag]=[clamp(ix(p.x),0.05,10), clamp(iy(p.y),0.05,6.4)];
+    draw();
+  });
+  window.addEventListener('mouseup', function(){ drag=null; cv.style.cursor='grab'; });
+  normBox.addEventListener('change', draw);
+  dotBox.addEventListener('change', draw);
+  document.getElementById('em-reset').addEventListener('click', function(){
+    P={ q:HOME.q.slice(), a:HOME.a.slice(), b:HOME.b.slice() }; normBox.checked=false; draw();
+  });
+  document.getElementById('em-diverge').addEventListener('click', function(){
+    P={ q:[2,2], a:[2.6,2.4], b:[5.6,5.6] }; normBox.checked=false; draw();
+  });
+  draw();
+})();
+
+/* ================= WIDGET 3 · truncation ================= */
+(function(){
+  const cv=document.getElementById('dm-canvas'), ctx=cv.getContext('2d');
+  const kIn=document.getElementById('dm-k'), out=document.getElementById('dm-readout');
+  const D=768, rnd=mulberry32(770077);
+  const A=[], B=[];
+  for(let i=0;i<D;i++){
+    const u=rnd(), v=rnd();
+    const g1=Math.sqrt(-2*Math.log(u+1e-12))*Math.cos(2*Math.PI*v);
+    const u2=rnd(), v2=rnd();
+    const g2=Math.sqrt(-2*Math.log(u2+1e-12))*Math.cos(2*Math.PI*v2);
+    A.push(g1); B.push(0.62*g1 + 0.78*g2);
+  }
+  function cosPrefix(k){
+    let d=0, na=0, nb=0;
+    for(let i=0;i<k;i++){ d+=A[i]*B[i]; na+=A[i]*A[i]; nb+=B[i]*B[i]; }
+    return (na>0&&nb>0) ? d/Math.sqrt(na*nb) : 0;
+  }
+  const KS=[]; for(let k=8;k<=D;k+=8) KS.push(k);
+  const CURVE=KS.map(cosPrefix);
+  const full=cosPrefix(D);
+  function draw(){
+    const k=+kIn.value, W=cv.width, H=cv.height; ctx.clearRect(0,0,W,H);
+    const L=64, R=W-20, T=24, Bm=H-34;
+    const lo=Math.min.apply(null, CURVE.concat([full]))-0.05;
+    const hi=Math.max.apply(null, CURVE.concat([full]))+0.05;
+    const px=function(kk){ return L+(kk-8)/(D-8)*(R-L); };
+    const py=function(c){ return Bm-(c-lo)/(hi-lo)*(Bm-T); };
+    ctx.strokeStyle='#CFD7DF'; ctx.beginPath();
+    ctx.moveTo(L,T); ctx.lineTo(L,Bm); ctx.lineTo(R,Bm); ctx.stroke();
+    ctx.fillStyle='#888'; ctx.font='10px monospace';
+    for(let i=0;i<=4;i++){
+      const c=lo+(hi-lo)*i/4, y=py(c);
+      ctx.fillText(fmt(c,2), 20, y+4);
+      ctx.strokeStyle='#EEF2F6'; ctx.beginPath(); ctx.moveTo(L,y); ctx.lineTo(R,y); ctx.stroke();
+    }
+    [8,128,256,384,512,640,768].forEach(function(kk){
+      ctx.fillStyle='#888'; ctx.fillText(String(kk), px(kk)-10, Bm+16);
+    });
+    // full-dim reference
+    ctx.strokeStyle='#2E7D32'; ctx.lineWidth=2; ctx.setLineDash([6,4]);
+    ctx.beginPath(); ctx.moveTo(L,py(full)); ctx.lineTo(R,py(full)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#1B5E20'; ctx.font='bold 11px sans-serif';
+    ctx.fillText('correct value, all 768 coordinates = '+fmt(full,4), L+10, py(full)-6);
+    // curve
+    ctx.strokeStyle='#1F4E79'; ctx.lineWidth=2; ctx.beginPath();
+    KS.forEach(function(kk,i){ const X=px(kk), Y=py(CURVE[i]); if(i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y); });
+    ctx.stroke();
+    // marker
+    const ck=cosPrefix(k);
+    ctx.fillStyle='#C00000'; ctx.beginPath(); ctx.arc(px(k),py(ck),6,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 12px sans-serif';
+    ctx.fillText('cosine using only the first k coordinates', L, 16);
+    out.textContent =
+      'k = '+k+'\ncos over first k   = '+fmt(ck,4)+
+      '\ncos over all 768   = '+fmt(full,4)+
+      '\nabsolute error     = '+fmt(Math.abs(ck-full),4)+
+      '\nrelative error     = '+fmt(100*Math.abs(ck-full)/Math.abs(full),1)+'%';
+  }
+  kIn.addEventListener('input', draw); draw();
+
+  const st=document.getElementById('dm-store'), qy=document.getElementById('dm-query');
+  const chk=document.getElementById('dm-check');
+  function check(){
+    const s=+st.value, q=+qy.value;
+    if(s===q){
+      chk.textContent =
+        '-- column: embedding vector('+s+')\n'+
+        '-- query : '+q+' floats\n'+
+        'INSERT / SELECT ... ORDER BY embedding <=> $1  -> OK\n'+
+        '   dimensions match. Also confirm the vectors came from the SAME checkpoint:\n'+
+        '   equal dimension is necessary, not sufficient.';
+    } else {
+      chk.textContent =
+        '-- column: embedding vector('+s+')\n'+
+        '-- query : '+q+' floats\n'+
+        'ERROR: expected '+s+' dimensions, not '+q+'\n\n'+
+        'WRONG fixes:\n'+
+        '  vec[:'+s+']'+padr('',10)+'-> '+(q>s ? 'silently drops '+(q-s)+' coordinates; similarity is now a different quantity'
+                                             : 'not even possible; the query is shorter than the column')+'\n'+
+        '  vec + [0]*'+padr(Math.abs(q-s),(String(s).length+8))+'-> zero-pads; multiplies '+Math.abs(q-s)+' stored coordinates by 0\n\n'+
+        'RIGHT fix:\n'+
+        '  re-embed the whole collection with one checkpoint, into a new table\n'+
+        '  declared vector('+q+'), then cut over.';
+    }
+  }
+  st.addEventListener('input',check); qy.addEventListener('input',check); check();
+})();
+
+/* ================= WIDGET 4 · chunking ================= */
+(function(){
+  const PARA = "The support policy has three tiers. Standard tier customers receive a response within two business days, and the response clock starts when the ticket is acknowledged rather than when it is filed. Priority tier customers receive a response within four hours on weekdays. The escalation path is the same for both tiers: an unresolved ticket moves to a named engineer after three exchanges. Archived tickets remain searchable for ninety days after the final invoice is issued, after which they are removed from the live store and kept only in cold storage. Refund requests must reference the ticket identifier, and the finance team processes them on the first Monday of each month.";
+  const TOK = PARA.split(/\s+/);
+  const N = TOK.length;
+  const PHRASE = "ninety days after the final invoice is issued,".split(/\s+/);
+  let aS=-1;
+  for(let i=0;i+PHRASE.length<=N;i++){
+    let ok=true;
+    for(let j=0;j<PHRASE.length;j++) if(TOK[i+j]!==PHRASE[j]){ ok=false; break; }
+    if(ok){ aS=i; break; }
+  }
+  const aE = aS + PHRASE.length - 1;
+
+  const sizeIn=document.getElementById('ck-size'), ovIn=document.getElementById('ck-ov');
+  const sizeV=document.getElementById('ck-size-v'), ovV=document.getElementById('ck-ov-v');
+  const cv=document.getElementById('ck-canvas'), ctx=cv.getContext('2d');
+  const out=document.getElementById('ck-readout'), box=document.getElementById('ck-chunks');
+
+  function chunks(size, ov){
+    const stride=Math.max(1, size-ov), res=[];
+    for(let s=0; s<N; s+=stride){
+      res.push([s, Math.min(N, s+size)]);
+      if(s+size>=N) break;
+    }
+    return res;
+  }
+  function draw(){
+    let size=+sizeIn.value;
+    let ov=+ovIn.value;
+    if(ov>size-1){ ov=size-1; ovIn.value=ov; }
+    ovIn.max=Math.max(0,size-1);
+    sizeV.textContent=size; ovV.textContent=ov;
+    const cs=chunks(size,ov);
+    const stride=Math.max(1,size-ov);
+    const whole=[]; const partial=[];
+    cs.forEach(function(c,i){
+      if(c[0]<=aS && c[1]>aE) whole.push(i+1);
+      else if(c[1]>aS && c[0]<=aE) partial.push(i+1);
+    });
+
+    // canvas strip
+    const W=cv.width, H=cv.height; ctx.clearRect(0,0,W,H);
+    const L=16, R=W-16;
+    const X=function(t){ return L+(t/N)*(R-L); };
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 12px sans-serif';
+    ctx.fillText('token axis: 0 … '+N, L, 16);
+    // answer band
+    ctx.fillStyle='#FBD9D6';
+    ctx.fillRect(X(aS), 24, X(aE+1)-X(aS), H-46);
+    ctx.strokeStyle='#C00000'; ctx.lineWidth=1.4;
+    ctx.strokeRect(X(aS), 24, X(aE+1)-X(aS), H-46);
+    ctx.fillStyle='#6E1414'; ctx.font='10px sans-serif';
+    ctx.fillText('answer span '+aS+'–'+aE, X(aS)+2, H-10);
+    // chunk bars, staggered on 3 rows
+    cs.forEach(function(c,i){
+      const row=i%3, y=32+row*26;
+      const good = (c[0]<=aS && c[1]>aE);
+      const cut  = !good && (c[1]>aS && c[0]<=aE);
+      ctx.fillStyle = good ? '#CDE6D4' : (cut ? '#F8CFCB' : '#DCE6F0');
+      ctx.strokeStyle = good ? '#2E7D32' : (cut ? '#C00000' : '#1F4E79');
+      ctx.lineWidth=1.6;
+      ctx.fillRect(X(c[0]), y, X(c[1])-X(c[0]), 20);
+      ctx.strokeRect(X(c[0]), y, X(c[1])-X(c[0]), 20);
+      ctx.fillStyle='#333'; ctx.font='10px monospace';
+      ctx.fillText('c'+(i+1)+' ['+c[0]+','+c[1]+')', X(c[0])+4, y+14);
+    });
+
+    out.textContent =
+      'N = '+N+' tokens · size S = '+size+' · overlap V = '+ov+' · stride S−V = '+stride+'\n'+
+      'chunks = '+cs.length+'   (formula for N > S: 1 + ceil((N−S)/(S−V)) = '+
+        (N>size ? (1+Math.ceil((N-size)/stride)) : 1)+')\n'+
+      'answer span = tokens '+aS+'–'+aE+'  ('+(aE-aS+1)+' tokens; overlap is '+ov+')\n'+
+      (whole.length
+        ? 'ANSWER INTACT in chunk '+whole.join(', ')+' — retrieval can return a passage that contains it.'
+        : 'ANSWER SPLIT across chunk '+partial.join(' and ')+' — NO single chunk contains it.\n'+
+          'Retrieval will still score one of these highly: it is about the right subject and\n'+
+          'silent on the fact. The log will show a successful retrieval and a wrong answer.');
+
+    // chunk cards
+    box.innerHTML='';
+    cs.forEach(function(c,i){
+      const good=(c[0]<=aS && c[1]>aE), cut=!good && (c[1]>aS && c[0]<=aE);
+      const d=document.createElement('div');
+      d.className='chunkbox'+(good?' has-answer':(cut?' part-answer':''));
+      let html='<span class="cid">chunk '+(i+1)+' · tokens ['+c[0]+', '+c[1]+') · '+(c[1]-c[0])+' tokens</span>'+
+               (good?' <span class="tag interactive">answer intact</span>':'')+
+               (cut?' <span class="tag math">answer cut</span>':'')+'<br>';
+      for(let t=c[0]; t<c[1]; t++){
+        const w=TOK[t].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        html += (t>=aS && t<=aE) ? '<span class="ansmark">'+w+'</span> ' : w+' ';
+      }
+      d.innerHTML=html; box.appendChild(d);
+    });
+  }
+  sizeIn.addEventListener('input', draw);
+  ovIn.addEventListener('input', draw);
+  document.getElementById('ck-fix').addEventListener('click', function(){
+    const size=+sizeIn.value;
+    for(let v=0; v<=size-1; v++){
+      const cs=chunks(size,v);
+      const ok=cs.some(function(c){ return c[0]<=aS && c[1]>aE; });
+      if(ok){ ovIn.max=Math.max(0,size-1); ovIn.value=v; draw(); return; }
+    }
+    draw();
+  });
+  draw();
+})();
+
+/* ================= WIDGET 5 · exact vs cluster-probing search ================= */
+(function(){
+  const cv=document.getElementById('an-canvas'), ctx=cv.getContext('2d');
+  const npIn=document.getElementById('an-nprobe'), npV=document.getElementById('an-nprobe-v');
+  const out=document.getElementById('an-readout');
+  const COLORS=['#1F4E79','#2E7D32','#8E5C00','#6A1B9A','#00838F','#AD1457','#4E5D6C','#B34700'];
+  const rnd=mulberry32(20250731);
+  const seeds=[], pts=[];
+  for(let c=0;c<8;c++) seeds.push([70+rnd()*740, 45+rnd()*280]);
+  for(let c=0;c<8;c++) for(let i=0;i<50;i++){
+    const u=rnd(), v=rnd();
+    const g1=Math.sqrt(-2*Math.log(u+1e-12))*Math.cos(2*Math.PI*v);
+    const u2=rnd(), v2=rnd();
+    const g2=Math.sqrt(-2*Math.log(u2+1e-12))*Math.cos(2*Math.PI*v2);
+    pts.push({ x:clamp(seeds[c][0]+g1*72, 14, cv.width-14),
+               y:clamp(seeds[c][1]+g2*46, 14, cv.height-14), c:c });
+  }
+  let C=seeds.map(function(s){ return s.slice(); });
+  for(let it=0; it<12; it++){
+    pts.forEach(function(p){
+      let bi=0, bd=1e18;
+      C.forEach(function(c,i){ const d=(p.x-c[0])*(p.x-c[0])+(p.y-c[1])*(p.y-c[1]); if(d<bd){bd=d;bi=i;} });
+      p.c=bi;
+    });
+    const acc=C.map(function(){ return [0,0,0]; });
+    pts.forEach(function(p){ acc[p.c][0]+=p.x; acc[p.c][1]+=p.y; acc[p.c][2]++; });
+    C=acc.map(function(a,i){ return a[2]? [a[0]/a[2], a[1]/a[2]] : C[i]; });
+  }
+  let Q=[260,190];
+
+  function search(nprobe){
+    const d=function(p){ return Math.hypot(p.x-Q[0], p.y-Q[1]); };
+    const exact=pts.map(function(p,i){ return {i:i,d:d(p)}; })
+                   .sort(function(a,b){ return a.d-b.d; }).slice(0,5).map(function(o){ return o.i; });
+    const lists=C.map(function(c,i){ return {i:i, d:Math.hypot(c[0]-Q[0], c[1]-Q[1])}; })
+                 .sort(function(a,b){ return a.d-b.d; }).slice(0,nprobe).map(function(o){ return o.i; });
+    const cand=[];
+    pts.forEach(function(p,i){ if(lists.indexOf(p.c)>=0) cand.push(i); });
+    const approx=cand.map(function(i){ return {i:i, d:d(pts[i])}; })
+                     .sort(function(a,b){ return a.d-b.d; }).slice(0,5).map(function(o){ return o.i; });
+    let hit=0; approx.forEach(function(i){ if(exact.indexOf(i)>=0) hit++; });
+    return { exact:exact, approx:approx, lists:lists, scanned:cand.length, recall:hit/5 };
+  }
+  function draw(){
+    const nprobe=+npIn.value; npV.textContent=nprobe;
+    const r=search(nprobe);
+    const W=cv.width, H=cv.height; ctx.clearRect(0,0,W,H);
+    pts.forEach(function(p,i){
+      const probed=r.lists.indexOf(p.c)>=0;
+      ctx.globalAlpha = probed ? 0.95 : 0.16;
+      ctx.fillStyle=COLORS[p.c];
+      ctx.beginPath(); ctx.arc(p.x,p.y,3.1,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha=1;
+    });
+    C.forEach(function(c,i){
+      const probed=r.lists.indexOf(i)>=0;
+      ctx.strokeStyle=COLORS[i]; ctx.lineWidth=probed?2.4:1;
+      ctx.globalAlpha=probed?1:0.35;
+      ctx.beginPath(); ctx.arc(c[0],c[1],9,0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(c[0]-4,c[1]); ctx.lineTo(c[0]+4,c[1]); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(c[0],c[1]-4); ctx.lineTo(c[0],c[1]+4); ctx.stroke();
+      ctx.globalAlpha=1;
+    });
+    r.exact.forEach(function(i){
+      ctx.strokeStyle='#111'; ctx.lineWidth=1.8;
+      ctx.beginPath(); ctx.arc(pts[i].x, pts[i].y, 9, 0, Math.PI*2); ctx.stroke();
+    });
+    r.approx.forEach(function(i){
+      ctx.fillStyle='#F9A825';
+      ctx.beginPath(); ctx.arc(pts[i].x, pts[i].y, 5, 0, Math.PI*2); ctx.fill();
+    });
+    ctx.fillStyle='#C00000';
+    ctx.beginPath(); ctx.arc(Q[0],Q[1],7,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#FFF'; ctx.lineWidth=1.6; ctx.stroke();
+    ctx.fillStyle='#333'; ctx.font='11px sans-serif';
+    ctx.fillText('● query (drag me)   ○ exact top-5   ● returned by the index', 14, 16);
+    const missed=r.exact.filter(function(i){ return r.approx.indexOf(i)<0; }).length;
+    out.textContent =
+      'nprobe = '+nprobe+' of 8 lists\n'+
+      'vectors scanned  = '+r.scanned+' of 400  ('+fmt(100*r.scanned/400,1)+'%)\n'+
+      'recall@5         = '+fmt(r.recall,2)+'   ('+(5-missed)+' of the 5 true neighbours returned)\n'+
+      (r.recall<1 ? 'MISSED '+missed+' true neighbour(s): they live in a list this query did not probe.'
+                  : 'exact and approximate agree for this query.');
+  }
+  let dragging=false;
+  cv.addEventListener('mousedown', function(ev){ dragging=true; const p=canvasPos(cv,ev); Q=[p.x,p.y]; draw(); });
+  cv.addEventListener('mousemove', function(ev){ if(!dragging) return; const p=canvasPos(cv,ev); Q=[p.x,p.y]; draw(); });
+  window.addEventListener('mouseup', function(){ dragging=false; });
+  npIn.addEventListener('input', draw);
+  document.getElementById('an-worst').addEventListener('click', function(){
+    let best=null, bestRec=2;
+    for(let x=40; x<cv.width-40; x+=20) for(let y=30; y<cv.height-30; y+=20){
+      const save=Q; Q=[x,y]; const rec=search(1).recall; Q=save;
+      if(rec<bestRec){ bestRec=rec; best=[x,y]; }
+    }
+    if(best){ Q=best; npIn.value=1; draw(); }
+  });
+  draw();
+})();
+
+/* ================= shared corpus for widgets 6 and 7 ================= */
+var HANDBOOK = [
+ {id:'C1', src:'handbook 2.1', text:'Battery packs shipped after the March revision use a sealed enclosure. The sealed enclosure is rated for outdoor mounting and does not require a separate weather shield.'},
+ {id:'C2', src:'handbook 4.3', text:'Firmware updates are delivered over the air. A unit that misses three consecutive update windows is flagged in the fleet console and must be updated on site.'},
+ {id:'C3', src:'handbook 3.2', text:'Over-torquing the mounting bracket bolts cracks the enclosure and voids the warranty. Use a calibrated torque wrench on every bracket.'},
+ {id:'C4', src:'handbook 6.1', text:'Warranty claims require the serial number, the installation date, and a photograph of the mounting bracket. Claims without a photograph are returned to the installer.'},
+ {id:'C5', src:'handbook 5.4', text:'The diagnostic port is disabled by default on sealed units. Enabling the diagnostic port requires a technician key and leaves an entry in the audit log.'},
+ {id:'C6', src:'handbook 2.7', text:'Cold weather reduces usable battery capacity. Below minus 10 degrees Celsius the pack limits output current to 40 amps until the internal heater brings the cells into range.'},
+ {id:'C7', src:'handbook 9.2', text:'The fleet console reports the current firmware version, the current owner and the current site for every unit under management, and refreshes the view hourly.'},
+ {id:'C8', src:'handbook 3.5', text:'A cracked enclosure must be replaced rather than repaired with adhesive. Field adhesive repairs on a cracked enclosure are not covered by the warranty.'},
+ {id:'C9', src:'handbook 3.1', text:'The recommended torque for the mounting bracket bolts is 18 newton metres, measured cold.'},
+ {id:'C10', src:'handbook 7.5', text:'Freezing rain can obstruct the vent. Inspect the vent for ice after freezing conditions and clear it before the unit draws load.'}
+];
+var STOPWORDS = ('a an the and is are was were of to in on for that this it its be been by with as at from or do does did '+
+  'i my we you what which how when where should use using than then there here their them they he she').split(' ');
+function hbTokens(s){
+  const raw=s.toLowerCase().split(/[^a-z]+/);
+  const out=[];
+  for(let i=0;i<raw.length;i++){
+    const w=raw[i];
+    if(w.length>1 && STOPWORDS.indexOf(w)<0) out.push(w);
+  }
+  return out;
+}
+function hbVec(s){ const v={}; hbTokens(s).forEach(function(t){ v[t]=(v[t]||0)+1; }); return v; }
+function hbCos(a,b){
+  let d=0, na=0, nb=0;
+  for(const k in a){ na+=a[k]*a[k]; if(b[k]) d+=a[k]*b[k]; }
+  for(const k in b){ nb+=b[k]*b[k]; }
+  return (na>0&&nb>0) ? d/Math.sqrt(na*nb) : 0;
+}
+
+/* ================= WIDGET 6 · top-k ================= */
+(function(){
+  const QUESTIONS=[
+    {q:'What is the maximum current draw in freezing conditions?', gold:'C6'},
+    {q:'How tight should the mounting bracket bolts be?',          gold:'C9'},
+    {q:'Is a cracked enclosure covered by the warranty?',          gold:'C8'},
+    {q:'What does enabling the diagnostic port leave behind?',     gold:'C5'}
+  ];
+  const qSel=document.getElementById('rt-q'), kIn=document.getElementById('rt-k');
+  const kV=document.getElementById('rt-k-v'), fIn=document.getElementById('rt-floor');
+  const fV=document.getElementById('rt-floor-v');
+  const out=document.getElementById('rt-out'), read=document.getElementById('rt-readout');
+  const VECS=HANDBOOK.map(function(p){ return hbVec(p.text); });
+
+  function draw(){
+    const qi=+qSel.value, k=+kIn.value, floor=+fIn.value;
+    kV.textContent=k; fV.textContent=fmt(floor,2);
+    const item=QUESTIONS[qi];
+    const qv=hbVec(item.q);
+    const ranked=HANDBOOK.map(function(p,i){ return { p:p, s:hbCos(qv, VECS[i]) }; })
+                         .sort(function(a,b){ return b.s-a.s; });
+    let goldRank=0;
+    ranked.forEach(function(r,i){ if(r.p.id===item.gold) goldRank=i+1; });
+    const sent=ranked.slice(0,k).filter(function(r){ return r.s>=floor; });
+    const goldSent = sent.some(function(r){ return r.p.id===item.gold; });
+
+    let html='';
+    ranked.forEach(function(r,i){
+      const inK=i<k, passes=r.s>=floor, isGold=r.p.id===item.gold;
+      const cls='hitrow'+((inK&&passes)?' sent':' cut')+(isGold?' gold':'');
+      html += '<div class="'+cls+'">'+
+        '<div>'+(inK&&passes ? '→ #'+(i+1) : '#'+(i+1))+'</div>'+
+        '<div class="sc">'+fmt(r.s,3)+'</div>'+
+        '<div>'+(isGold?'★ ':'')+'<strong>'+r.p.id+'</strong> <span class="srcline">('+r.p.src+')</span><br>'+
+        r.p.text+'</div></div>';
+    });
+    out.innerHTML=html;
+    read.textContent =
+      'question: '+item.q+'\n'+
+      'k = '+k+' · similarity floor = '+fmt(floor,2)+' · passages sent to the generator: '+sent.length+'\n'+
+      'the chunk that contains the answer ('+item.gold+') is at rank '+goldRank+'\n'+
+      (goldSent
+        ? 'the generator CAN answer from the sources.'
+        : 'the generator CANNOT answer from the sources: the answer chunk is below the cut.\n'+
+          'Whatever it says next is either a refusal or a fabrication — and the retrieval log\n'+
+          'will show '+sent.length+' passage(s) returned with respectable scores.');
+  }
+  qSel.addEventListener('change', draw);
+  kIn.addEventListener('input', draw);
+  fIn.addEventListener('input', draw);
+  draw();
+})();
+
+/* ================= WIDGET 7 · with vs without retrieval ================= */
+(function(){
+  const CASES=[
+    { q:'What is the maximum current draw in freezing conditions?',
+      chunk:'C6',
+      closed:'In freezing conditions the pack limits output to 25 A and stops charging below -20 degrees Celsius.',
+      rag:'Below minus 10 degrees Celsius the pack limits output current to 40 amps until the internal heater brings the cells into range [1].',
+      note:'Retrieval replaced two invented quantities with two that appear verbatim in the cited chunk.' },
+    { q:'What torque is specified for the mounting bracket bolts?',
+      chunk:'C9',
+      closed:'The bracket bolts are torqued to 25 newton metres and the wrench is recalibrated every 6 months.',
+      rag:'The recommended torque for the mounting bracket bolts is 18 newton metres, measured cold [1].',
+      note:'The closed-book answer is the right shape with the wrong number — the single most dangerous failure in this product, because it reads as expertise.' },
+    { q:'How long are diagnostic port sessions kept in the audit log?',
+      chunk:'C5',
+      closed:'Diagnostic port sessions are retained in the audit log for 90 days before rotation.',
+      rag:'The provided sources do not contain this information.',
+      note:'No document in the collection states a retention period. The grounded system refuses; the closed-book model supplies a number nobody wrote. Refusal is the correct output here, and it is only detectable because the refusal string is fixed.' }
+  ];
+  const qSel=document.getElementById('rg-q'), mSel=document.getElementById('rg-mode');
+  const out=document.getElementById('rg-out');
+  function specifics(s){
+    const m=s.match(/-?\d+(?:\.\d+)?/g);
+    return m ? m : [];
+  }
+  function markup(answer, ctxText){
+    const sp=specifics(answer);
+    let supported=0;
+    let html=answer.replace(/-?\d+(?:\.\d+)?/g, function(tok){
+      const bare=tok.replace(/^-/,'');
+      if(ctxText.indexOf(bare)>=0){ supported++; return '<span class="supported">'+tok+'</span>'; }
+      return '<span class="unsupported">'+tok+'</span>';
+    });
+    return { html:html, total:sp.length, supported:supported };
+  }
+  function chunkById(id){
+    for(let i=0;i<HANDBOOK.length;i++) if(HANDBOOK[i].id===id) return HANDBOOK[i];
+    return null;
+  }
+  function draw(){
+    const c=CASES[+qSel.value], mode=mSel.value;
+    const ch=chunkById(c.chunk);
+    const ctxText=ch.text;
+    let html='<div class="answerpane"><div class="lbl">retrieved context (top-1)</div>'+
+      '<strong>[1]</strong> <span class="srcline">'+ch.id+' · '+ch.src+'</span><br>'+ch.text+'</div>';
+    if(mode==='both' || mode==='closed'){
+      const m=markup(c.closed, ctxText);
+      html += '<div class="answerpane"><div class="lbl">closed book — generator only, no retrieval</div>'+
+        m.html+'<br><br><span class="srcline">specific claims: '+m.total+
+        ' · supported by the context: '+m.supported+' · unsupported: '+(m.total-m.supported)+
+        ' · citations: none</span></div>';
+    }
+    if(mode==='both' || mode==='rag'){
+      const m=markup(c.rag, ctxText);
+      const refused = c.rag.indexOf('do not contain')>=0;
+      html += '<div class="answerpane"><div class="lbl">grounded — same generator, conditioned on [1]</div>'+
+        m.html+'<br><br><span class="srcline">specific claims: '+m.total+
+        ' · supported by the context: '+m.supported+' · unsupported: '+(m.total-m.supported)+
+        ' · citations: '+(refused?'none (refusal)':'[1] -> '+ch.id)+'</span></div>';
+    }
+    html += '<div class="callout" style="font-size:0.92em">'+c.note+'</div>';
+    html += '<pre>-- the row this query writes to query_log\n'+
+      'question      : '+c.q+'\n'+
+      'retrieved_ids : {'+ch.id+'}\n'+
+      'context_text  : "'+ch.text.slice(0,58)+'…"\n'+
+      'answer        : "'+c.rag.slice(0,58)+'…"\n'+
+      'cited_ids     : {'+(c.rag.indexOf('[1]')>=0?ch.id:'')+'}\n'+
+      'refused       : '+(c.rag.indexOf('do not contain')>=0)+'</pre>';
+    out.innerHTML=html;
+  }
+  qSel.addEventListener('change', draw); mSel.addEventListener('change', draw); draw();
+})();
+
+/* ================= WIDGET 8 · corpus overlap ================= */
+(function(){
+  const fIn=document.getElementById('ov-frac'), fV=document.getElementById('ov-frac-v');
+  const cv=document.getElementById('ov-canvas'), ctx=cv.getContext('2d');
+  const out=document.getElementById('ov-readout'), grid=document.getElementById('ov-grid');
+  const NQ=20;
+  const RETRIEVAL_MISSES=[6,13];           // fixed: retrieval fails on these two questions
+  function state(){
+    const frac=+fIn.value/100;
+    const memCount=Math.round(frac*NQ);
+    const rows=[];
+    for(let i=0;i<NQ;i++){
+      const mem = i<memCount;
+      const ret = RETRIEVAL_MISSES.indexOf(i)<0;
+      rows.push({ i:i, mem:mem, ret:ret });
+    }
+    const without=rows.filter(function(r){ return r.mem; }).length/NQ;
+    const withR =rows.filter(function(r){ return r.mem||r.ret; }).length/NQ;
+    return { rows:rows, without:without, withR:withR, gain:withR-without, frac:frac, memCount:memCount };
+  }
+  function draw(){
+    const s=state();
+    fV.textContent=(+fIn.value)+'%';
+    const W=cv.width, H=cv.height; ctx.clearRect(0,0,W,H);
+    const base=H-40, top=30, maxH=base-top;
+    const bars=[
+      { lab:'without retrieval', v:s.without, col:'#8E9BAA' },
+      { lab:'with retrieval',    v:s.withR,   col:'#1F4E79' },
+      { lab:'measured gain',     v:s.gain,    col:s.gain>0.05?'#2E7D32':'#C00000' }
+    ];
+    const bw=150, gap=90, x0=110;
+    ctx.strokeStyle='#CFD7DF'; ctx.beginPath(); ctx.moveTo(60,base); ctx.lineTo(W-30,base); ctx.stroke();
+    ctx.fillStyle='#888'; ctx.font='10px monospace';
+    for(let g=0; g<=1.0001; g+=0.25){
+      const y=base-g*maxH;
+      ctx.fillText(fmt(g,2), 26, y+4);
+      ctx.strokeStyle='#EEF2F6'; ctx.beginPath(); ctx.moveTo(60,y); ctx.lineTo(W-30,y); ctx.stroke();
+    }
+    bars.forEach(function(b,i){
+      const x=x0+i*(bw+gap), h=Math.max(0,b.v)*maxH;
+      ctx.fillStyle=b.col; ctx.fillRect(x, base-h, bw, h);
+      ctx.fillStyle='#1A1A1A'; ctx.font='bold 15px sans-serif';
+      ctx.fillText(fmt(b.v,2), x+bw/2-16, base-h-8);
+      ctx.fillStyle='#555'; ctx.font='12px sans-serif';
+      ctx.fillText(b.lab, x+bw/2-ctx.measureText(b.lab).width/2, base+18);
+    });
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 12px sans-serif';
+    ctx.fillText('answer accuracy over '+NQ+' test questions', 60, 18);
+
+    out.textContent =
+      'overlap        = '+(+fIn.value)+'%  ('+s.memCount+' of '+NQ+' answers already memorised)\n'+
+      'without        = '+fmt(s.without,2)+'\n'+
+      'with           = '+fmt(s.withR,2)+'\n'+
+      'measured gain  = '+fmt(s.gain,2)+'\n'+
+      (s.gain<0.15
+        ? '>>> The experiment now reports that retrieval barely helps. Retrieval did not change.\n'+
+          '    The generator had already memorised what it retrieves. This number measures\n'+
+          '    the corpus overlap, not the retriever.'
+        : 'the comparison is measuring retrieval, because the generator cannot answer from memory.');
+
+    grid.innerHTML='';
+    s.rows.forEach(function(r){
+      const d=document.createElement('div');
+      const cls = r.mem&&r.ret ? 'both' : (r.mem ? 'mem' : (r.ret ? 'ret' : 'none'));
+      d.className='qcell '+cls; d.textContent=String(r.i+1);
+      d.title='question '+(r.i+1)+': memorised='+r.mem+', retrieved='+r.ret;
+      grid.appendChild(d);
+    });
+  }
+  fIn.addEventListener('input', draw); draw();
+})();
+
+/* ================= WIDGET 9 · retrieval metrics ================= */
+(function(){
+  const wrap=document.getElementById('mt-ranks'), kIn=document.getElementById('mt-k');
+  const kV=document.getElementById('mt-k-v'), out=document.getElementById('mt-out');
+  const boxes=[];
+  for(let r=1;r<=10;r++){
+    const lab=document.createElement('label');
+    const cb=document.createElement('input');
+    cb.type='checkbox'; cb.checked=(r===3);
+    cb.addEventListener('change', draw);
+    lab.appendChild(cb); lab.appendChild(document.createTextNode(' rank '+r));
+    wrap.appendChild(lab); boxes.push(cb);
+  }
+  function draw(){
+    const k=+kIn.value; kV.textContent=k;
+    const rel=[]; boxes.forEach(function(b,i){ if(b.checked) rel.push(i+1); });
+    const inK=rel.filter(function(r){ return r<=k; });
+    const totalRel=rel.length;
+    const recall = totalRel ? inK.length/totalRel : 0;
+    const precision = inK.length/k;
+    const firstRel = inK.length ? inK[0] : 0;
+    const rr = firstRel ? 1/firstRel : 0;
+    out.textContent =
+      'relevant chunks in the collection : {'+(rel.join(', ')||'none in the top 10')+'}\n'+
+      'k                                 : '+k+'\n'+
+      'relevant chunks inside the top-k  : '+inK.length+'  {'+(inK.join(', ')||'—')+'}\n'+
+      '\n'+
+      'recall@'+k+'    = '+inK.length+' / '+(totalRel||0)+'  = '+fmt(recall,3)+
+        (totalRel?'':'   (no relevant chunk exists in the top 10; 0 by convention)')+'\n'+
+      'precision@'+k+' = '+inK.length+' / '+k+'  = '+fmt(precision,3)+'\n'+
+      'reciprocal rank = '+(firstRel? '1 / '+firstRel : '0 (nothing relevant inside k)')+'  = '+fmt(rr,3)+'\n'+
+      '   (MRR is the mean of this column over all your test questions)\n'+
+      '\n'+
+      (inK.length
+        ? 'CEILING: the generator can, in principle, answer this question from the context.'
+        : 'CEILING: the generator CANNOT answer this question correctly from the context.\n'+
+          '         No prompt change fixes this. It is a retrieval problem.');
+  }
+  kIn.addEventListener('input', draw);
+  document.getElementById('mt-reset').addEventListener('click', function(){
+    boxes.forEach(function(b,i){ b.checked=(i===2); }); draw();
+  });
+  document.getElementById('mt-none').addEventListener('click', function(){
+    boxes.forEach(function(b){ b.checked=false; }); draw();
+  });
+  draw();
+})();
+</script>
+</body>
+</html>

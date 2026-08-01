@@ -1,0 +1,30 @@
+# API tier — installed by Render.com (see render.yaml buildCommand).
+#
+# This is the ONLY requirements file that may contain torch, transformers,
+# sentence-transformers or chromadb. The UI tier is a thin HTTP client and the
+# moment it imports a model library, the split this whole template is built on
+# has stopped being real.
+#
+# It is also a big install. torch alone is most of it, and on Render's free plan
+# a cold start after a deploy takes minutes. Two consequences worth planning for:
+# the first request after idle will look like a hang, and a generator much larger
+# than the one below will be killed by the memory limit with no useful log line.
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic==2.9.2
+supabase==2.7.4
+python-dotenv==1.0.1
+pyyaml==6.0.2
+
+# Language modelling and embeddings. Import these INSIDE functions in api/nlp.py,
+# never at module level: a top-level `import torch` adds seconds to every cold
+# start, including the /healthz call Render uses to decide the service is alive.
+torch==2.4.1
+transformers==4.44.2
+tokenizers==0.19.1
+sentence-transformers==3.0.1
+
+# Local development vector store. Not used in the deployed path — Supabase
+# pgvector is — but keeping it here means one requirements file, and the version
+# you develop against is the version you deploy with.
+chromadb==0.5.5

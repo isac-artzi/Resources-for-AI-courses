@@ -1,0 +1,18 @@
+.env
+ui/.streamlit/secrets.toml
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+.DS_Store
+
+# Model weights and corpora. Both are too big for git and neither belongs in a
+# public repository: the checkpoint goes to the Hugging Face Hub, the corpus is
+# described in your report by source and hash, not committed.
+artifacts/
+data/
+*.bin
+*.safetensors
+*.pt

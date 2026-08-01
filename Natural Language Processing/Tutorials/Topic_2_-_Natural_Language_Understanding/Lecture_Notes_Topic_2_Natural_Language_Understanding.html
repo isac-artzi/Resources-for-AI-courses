@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 2 Lecture Notes — Natural Language Understanding</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+       margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6; }
+.container { max-width: 980px; margin: 24px auto 48px; background: white;
+             padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.35em; margin-top: 40px;
+     border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+h4 { color: #555; font-size: 1.0em; margin-top: 18px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 6px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7;
+       padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px; overflow-x: auto;
+      border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79;
+           padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px;
+        margin: 14px 0; border-radius: 4px; font-size: 0.93em; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+        padding: 22px; margin: 22px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.controls { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 180px; }
+.control input[type="number"] { width: 80px; padding: 4px 8px;
+            border: 1px solid #CFD7DF; border-radius: 4px; font-family: inherit; }
+.control select { padding: 5px 8px; border: 1px solid #CFD7DF; border-radius: 4px;
+                  font-family: inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px;
+           border-radius: 6px; font-family: "SF Mono", Consolas, monospace;
+           font-size: 0.88em; min-width: 220px; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 16px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.93em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+      background: #F2F4F7; padding: 4px 8px; border-radius: 4px; }
+.eq-block { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+            background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+            text-align: center; margin: 14px 0; display: block; }
+.nav { display: flex; justify-content: space-between; margin-top: 40px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+       padding: 16px 22px; margin-bottom: 28px; font-size: 0.92em; }
+.toc h3 { margin: 0 0 8px; color: #1F4E79; font-size: 1.0em; }
+.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 24px; }
+.toc a { color: #1F4E79; text-decoration: none; } .toc a:hover { text-decoration: underline; }
+.tag { display: inline-block; padding: 2px 8px; background: #E0E5EB;
+       border-radius: 12px; font-size: 0.75em; color: #555;
+       text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px; }
+.tag.interactive { background: #E1F0EA; color: #1B5E20; }
+.tag.code { background: #F2F4F7; color: #555; }
+.tag.math { background: #FCE8EE; color: #6E1414; }
+table.cmp { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 0.92em; }
+table.cmp th, table.cmp td { border: 1px solid #E0E5EB; padding: 8px 12px; text-align: left; }
+table.cmp th { background: #F2F4F7; color: #1F4E79; }
+.archetype { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
+.arc-card { border: 1px solid #D0D8E0; border-radius: 8px; padding: 14px;
+            background: white; font-size: 0.9em; }
+.arc-card .name { color: #1F4E79; font-weight: 600; }
+.arc-card .role { color: #555; margin-top: 6px; }
+/* --- additions for this topic (append-only) --- */
+.demo textarea { width: 100%; padding: 8px 10px; border: 1px solid #CFD7DF; border-radius: 4px;
+                 font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.86em;
+                 line-height: 1.5; resize: vertical; }
+.two-up { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+.scrollbox { max-height: 340px; overflow-y: auto; }
+table.cm { border-collapse: collapse; margin: 12px 0; font-size: 0.9em; }
+table.cm td, table.cm th { border: 1px solid #D0D8E0; padding: 10px 14px; text-align: center;
+                           font-family: "SF Mono", Consolas, monospace; }
+table.cm th { background: #F2F4F7; color: #1F4E79; font-family: inherit; font-size: 0.92em; }
+td.tp { background: #E1F0EA; } td.tn { background: #EAF1F8; }
+td.fp { background: #FFF8E1; } td.fn { background: #FBD9D6; }
+.mini { font-size: 0.85em; color: #666; margin-top: 8px; }
+canvas { max-width: 100%; height: auto; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="brand">Lecture Notes &middot; ~ 75 min read</div>
+<h1>Topic 2 — Natural Language Understanding as Text Classification</h1>
+<p class="subtitle">From a bag of words and a TF-IDF matrix to a fine-tuned encoder transformer, and then the harder half of the job: deciding whether the number you printed actually means anything.</p>
+
+<div class="callout">
+  <strong>What you should walk away with.</strong> (1) Able to build a bag-of-words vector by hand and state precisely what it discards. (2) Able to compute tf, idf and tf&ndash;idf for a term in a document with a calculator and nothing else. (3) A clear mental picture of a linear decision boundary in a very high-dimensional sparse space. (4) Able to say what a pretrained encoder contributes that no reweighting of counts can. (5) Fluent with fine-tuning mechanics: frozen versus unfrozen layers, learning rate, epoch count, and the shape of overfitting on a small corpus. (6) Able to read a 2&times;2 confusion matrix and derive accuracy, precision, recall and F1 without looking anything up. (7) Able to explain, with numbers, why accuracy is a misleading headline under class imbalance. (8) Convinced that a softmax score is not a probability of being correct, and able to measure the gap.
+</div>
+
+<div class="callout">
+  <strong>Scope note.</strong> Everything in these notes is framed for <strong>single-label binary</strong> classification: every example carries exactly one label, and that label takes one of exactly two values. That is what the topic project (Classify-It) requires. Multiclass (more than two label values) and multilabel (more than one label per example) change the definitions of precision, recall and F1 in ways that need their own treatment, and they are out of scope for this course. When you read an external tutorial that averages F1 over classes, notice that it is solving a different problem than yours.
+</div>
+
+<div class="toc">
+  <h3>What's in these notes</h3>
+  <ol>
+    <li><a href="#s1">"Understanding" when the output is a label</a></li>
+    <li><a href="#s2">Bag of words, and what it throws away</a></li>
+    <li><a href="#s3">Term frequency, document frequency, TF&ndash;IDF</a></li>
+    <li><a href="#s4">A TF&ndash;IDF computation done fully by hand</a></li>
+    <li><a href="#s5">Logistic regression on sparse features</a></li>
+    <li><a href="#s6">Where the sparse linear model is blind</a></li>
+    <li><a href="#s7">What a pretrained encoder gives you</a></li>
+    <li><a href="#s8">Transfer learning: what fine-tuning changes</a></li>
+    <li><a href="#s9">The classification head</a></li>
+    <li><a href="#s10">Learning rate, epochs, overfitting</a></li>
+    <li><a href="#s11">The confusion matrix and four metrics</a></li>
+    <li><a href="#s12">The threshold is a decision, not a constant</a></li>
+    <li><a href="#s13">Why accuracy lies under class imbalance</a></li>
+    <li><a href="#s14">Calibration: a softmax score is not a probability</a></li>
+    <li><a href="#s15">Comparing the two models honestly</a></li>
+  </ol>
+</div>
+
+<!-- ================= 1 ================= -->
+<h2 id="s1">1 &middot; "Understanding" when the output is a label</h2>
+<p>Natural language understanding is a broad phrase, and broad phrases are hard to grade. This topic pins it to something measurable: a function that takes a span of text and returns one of two labels, plus a number saying how sure it is.</p>
+<pre>f : text  &rarr;  (label &isin; {0, 1},  confidence &isin; [0, 1])</pre>
+<p>That looks like a reduction, and it is. But most deployed NLU sits exactly here. "Is this support message about billing or not?" "Is this review negative?" "Does this survey comment contain a safety concern?" Each is a binary decision that a system has to make thousands of times a day, and each is a place where the difference between a model that reads context and a model that counts words shows up in real money.</p>
+<p>Two model families dominate, and this topic teaches both because you cannot judge the second without the first:</p>
+<ul>
+  <li><strong>The classical pipeline.</strong> Turn text into a sparse vector of weighted word counts (TF&ndash;IDF), then fit a linear classifier (logistic regression). Trains in seconds on a laptop, needs no GPU, and every weight is a word you can read.</li>
+  <li><strong>The fine-tuned encoder.</strong> Take a transformer encoder that has already been pretrained on a large corpus, bolt a small classification head on top, and continue training the whole thing on your labeled data. Costs orders of magnitude more compute and gives you almost no direct interpretability, but it has read a lot of language before it ever sees your task.</li>
+</ul>
+<p>The interesting engineering question is never "which is better in general." It is "for <em>my</em> corpus, at <em>my</em> label count, under <em>my</em> latency budget, is the second one enough better to justify what it costs?" You answer that with a held-out split and four metrics, and you answer it honestly only if you understand what those metrics hide.</p>
+
+<div class="warn">
+  <strong>A framing trap.</strong> People say "the transformer understands the sentence." A fine-tuned classifier does not understand anything in the way that word implies; it has learned a mapping from token sequences to a label that happens to generalize better than word counts do. When it fails, it fails in ways that have nothing to do with meaning &mdash; it will happily latch onto a spurious cue, such as the fact that in your corpus every complaint happens to contain the word "order". Naming the mechanism instead of the metaphor keeps you honest about where it will break.
+</div>
+
+<!-- ================= 2 ================= -->
+<h2 id="s2">2 &middot; Bag of words, and what it throws away <span class="tag interactive">interactive</span></h2>
+<p>A classifier needs numbers. The oldest way to get them from text is the <strong>bag-of-words</strong> representation:</p>
+<ol>
+  <li>Fix a vocabulary <span class="eq">V</span> &mdash; every distinct term you are willing to count.</li>
+  <li>Represent each document as a vector of length <span class="eq">|V|</span>.</li>
+  <li>Entry <span class="eq">j</span> is the number of times term <span class="eq">j</span> occurs in that document.</li>
+</ol>
+<p>Take <code>"the food was cold and the service was slow"</code>. With a vocabulary drawn from that sentence, the vector is:</p>
+<pre>and=1  cold=1  food=1  service=1  slow=1  the=2  was=2</pre>
+<p>Everything else in <span class="eq">V</span> is zero. That is the defining property of this representation: a real vocabulary has 20,000 to 200,000 entries, a real document has 15 to 300 tokens, so <strong>more than 99.9% of every vector is zero</strong>. This is why the representation is called sparse, and why it is stored as a list of <code>(index, value)</code> pairs rather than a dense array.</p>
+
+<h3>What survives, and what does not</h3>
+<p>The name is exact. Pour the words of a document into a bag and shake it. What survives is which words occurred and how often. What is destroyed:</p>
+<ul>
+  <li><strong>Order.</strong> <code>the dog bit the man</code> and <code>the man bit the dog</code> have identical vectors. Every permutation of a document maps to the same point.</li>
+  <li><strong>Negation scope.</strong> <code>not bad, actually good</code> and <code>not good, actually bad</code> are identical. The word <code>not</code> is present in both; nothing records what it attaches to.</li>
+  <li><strong>Syntax.</strong> Subject and object, main clause and subordinate clause, question and statement &mdash; none of it is encoded.</li>
+  <li><strong>Synonymy.</strong> <code>refund</code> and <code>reimbursement</code> are two unrelated coordinates. A model that learned a weight for one has learned nothing about the other.</li>
+  <li><strong>Morphology, unless you intervene.</strong> <code>refund</code>, <code>refunded</code> and <code>refunds</code> are three separate coordinates. Stemming or lemmatizing collapses them, at the cost of some precision.</li>
+  <li><strong>Word sense.</strong> <code>bank</code> as a river edge and <code>bank</code> as a financial institution share one coordinate and therefore one weight.</li>
+</ul>
+<p>Read that list again with the topic project in mind, because it is the complete case for using something else. It is also the reason the classical pipeline is not a strawman: for many corpora the label is genuinely predictable from which words appear, and then the discarded information was not needed.</p>
+
+<div class="demo">
+  <h3>Demo &middot; Build two bag-of-words vectors and compare them</h3>
+  <p class="mini">Edit either sentence. The table is recomputed on every keystroke; the readout tells you whether the two vectors are literally identical and what their cosine similarity is.</p>
+  <div class="controls">
+    <button class="secondary" data-bow-preset="0">Word order</button>
+    <button class="secondary" data-bow-preset="1">Negation scope</button>
+    <button class="secondary" data-bow-preset="2">Morphology</button>
+    <button class="secondary" data-bow-preset="3">Genuinely different</button>
+  </div>
+  <div class="control" style="width:100%">
+    <label for="bow-a">Document A</label>
+    <textarea id="bow-a" rows="2">the dog bit the man</textarea>
+  </div>
+  <div class="control" style="width:100%; margin-top:10px">
+    <label for="bow-b">Document B</label>
+    <textarea id="bow-b" rows="2">the man bit the dog</textarea>
+  </div>
+  <div class="readout" id="bow-readout" style="margin-top:14px"></div>
+  <div id="bow-table" class="scrollbox" style="margin-top:10px"></div>
+</div>
+
+<h3>The tokenizer is part of the model</h3>
+<p>"Count the words" hides at least five decisions, and each one changes the vectors:</p>
+<ul>
+  <li><strong>Case folding.</strong> Are <code>Refund</code> and <code>refund</code> the same term? Usually yes; but folding case destroys the signal in ALL CAPS complaints.</li>
+  <li><strong>Punctuation and emoji.</strong> Stripping them is the default. In sentiment corpora that is often a mistake &mdash; <code>!!!</code> carries information.</li>
+  <li><strong>Stop words.</strong> Dropping <code>the</code>, <code>is</code>, <code>of</code> shrinks the vocabulary. It also removes function words that matter for some tasks, and as section 3 shows, idf already handles ubiquitous terms without a hand-written list.</li>
+  <li><strong>n-grams.</strong> Counting adjacent pairs (<code>not good</code> as a single term) restores a sliver of word order. It also multiplies the vocabulary size and the sparsity.</li>
+  <li><strong>Minimum document frequency.</strong> Terms occurring in one document out of 5,000 are mostly noise and typos; <code>min_df=2</code> is a common floor.</li>
+</ul>
+<p>Record every one of these choices in your project's configuration. A TF&ndash;IDF baseline whose tokenizer settings are not written down is not reproducible, and an irreproducible baseline is worthless as a point of comparison.</p>
+
+<!-- ================= 3 ================= -->
+<h2 id="s3">3 &middot; Term frequency, document frequency, TF&ndash;IDF <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>Raw counts have an obvious defect: the most frequent terms in every document are the least informative ones. <code>the</code> occurs twice in the example above, more than any content word. If you feed raw counts to a classifier, the largest feature values carry the least signal.</p>
+<p>TF&ndash;IDF fixes this with a product of two factors.</p>
+
+<h3>Term frequency</h3>
+<p>How much of <em>this</em> document is this term? The simplest form is the raw count; the version used throughout these notes normalizes by document length so a 400-word document does not dominate a 20-word one:</p>
+<p class="eq-block">tf(t, d) = count(t, d) / |d|</p>
+<p>where <span class="eq">|d|</span> is the number of tokens in <span class="eq">d</span>. Two other forms you will meet: raw count, and log-scaled <span class="eq">1 + log(count)</span>. All three are monotone in the count; they differ in how quickly the value saturates.</p>
+
+<h3>Inverse document frequency</h3>
+<p>How rare is this term across the corpus? Let <span class="eq">N</span> be the number of documents and <span class="eq">df(t)</span> the number of documents containing <span class="eq">t</span> at least once (the count within a document is irrelevant here &mdash; this is a document count, not a term count):</p>
+<p class="eq-block">idf(t) = log( N / df(t) )</p>
+<p>Read the two limits and the whole idea falls out:</p>
+<ul>
+  <li>A term in <strong>every</strong> document has <span class="eq">df = N</span>, so <span class="eq">idf = log(1) = 0</span>. Its tf&ndash;idf is zero in every document. It cannot influence any decision. This is idf doing automatically and continuously what a stop-word list does crudely and discretely.</li>
+  <li>A term in <strong>one</strong> document out of <span class="eq">N</span> has <span class="eq">idf = log(N)</span>, the maximum. Rarity is treated as informativeness.</li>
+</ul>
+<p>The base of the logarithm is a scale factor on every idf at once. It cannot change the ranking of terms, and for a linear model it is absorbed by the learned weights. These notes use base 10 so the arithmetic is checkable on any calculator; scikit-learn uses the natural log.</p>
+
+<h3>The product</h3>
+<p class="eq-block">tfidf(t, d) = tf(t, d) &times; idf(t)</p>
+<p>A term scores high in a document only if it is <em>frequent here</em> and <em>rare elsewhere</em>. Frequent everywhere gets zeroed by idf; rare here gets a small tf. This is the whole of the classical representation.</p>
+
+<div class="warn">
+  <strong>Two things that trip people up in implementation.</strong> First, scikit-learn's <code>TfidfVectorizer</code> does not use the textbook formula &mdash; by default it computes a smoothed <span class="eq">idf(t) = ln((1 + N) / (1 + df(t))) + 1</span>, which is never zero, and it then L2-normalizes each document vector. Second, <strong>idf must be computed on the training split only</strong>. Call <code>fit_transform</code> on train and <code>transform</code> on test. Fitting the vectorizer on the full corpus leaks test-set document frequencies into training and inflates every number you report.
+</div>
+
+<div class="demo">
+  <h3>Demo &middot; TF&ndash;IDF calculator over an editable corpus</h3>
+  <p class="mini">One document per line. Every quantity below is computed from the text in the box &mdash; change a line and watch df, idf and the products move. The default corpus is the one worked by hand in section 4, so you can check the arithmetic against your own.</p>
+  <div class="control" style="width:100%">
+    <label for="tfidf-docs">Corpus (one document per line)</label>
+    <textarea id="tfidf-docs" rows="5">the service was slow and the food was cold
+the food was excellent and the service was fast
+slow service ruined the meal
+excellent meal and excellent service</textarea>
+  </div>
+  <div class="controls" style="margin-top:12px">
+    <div class="control"><label for="tfidf-doc">Inspect document</label>
+      <select id="tfidf-doc"></select></div>
+    <div class="control"><label for="tfidf-tf">tf definition</label>
+      <select id="tfidf-tf">
+        <option value="norm">count / document length</option>
+        <option value="raw">raw count</option>
+        <option value="log">1 + log10(count)</option>
+      </select></div>
+    <div class="control"><label for="tfidf-idf">idf definition</label>
+      <select id="tfidf-idf">
+        <option value="plain">log10(N / df)</option>
+        <option value="sk">ln((1+N)/(1+df)) + 1 &nbsp;(scikit-learn)</option>
+      </select></div>
+  </div>
+  <div class="readout" id="tfidf-readout"></div>
+  <div id="tfidf-table" class="scrollbox" style="margin-top:12px"></div>
+</div>
+
+<!-- ================= 4 ================= -->
+<h2 id="s4">4 &middot; A TF&ndash;IDF computation done fully by hand <span class="tag math">math</span></h2>
+<p>Do this one with a calculator before you rely on a library. The corpus is four documents, <span class="eq">N = 4</span>:</p>
+<pre>d1: the service was slow and the food was cold
+d2: the food was excellent and the service was fast
+d3: slow service ruined the meal
+d4: excellent meal and excellent service</pre>
+
+<h4>Step 1 &mdash; tokenize d1 and count</h4>
+<p>Lowercase, split on whitespace. <span class="eq">d1</span> has <strong>9 tokens</strong>: <code>the, service, was, slow, and, the, food, was, cold</code>. Seven distinct terms:</p>
+<pre>the = 2    service = 1    was = 2    slow = 1
+and = 1    food = 1       cold = 1        &rarr;  |d1| = 9</pre>
+
+<h4>Step 2 &mdash; document frequencies over the whole corpus</h4>
+<p>For each term of <span class="eq">d1</span>, count how many of the four documents contain it at least once. Note that <code>the</code> occurs twice in <span class="eq">d1</span> and twice in <span class="eq">d2</span>, and that changes nothing here: df counts documents.</p>
+<pre>the      &rarr; d1, d2, d3            &rarr; df = 3
+service  &rarr; d1, d2, d3, d4        &rarr; df = 4
+was      &rarr; d1, d2                &rarr; df = 2
+slow     &rarr; d1, d3                &rarr; df = 2
+and      &rarr; d1, d2, d4            &rarr; df = 3
+food     &rarr; d1, d2                &rarr; df = 2
+cold     &rarr; d1                    &rarr; df = 1</pre>
+
+<h4>Step 3 &mdash; idf, base 10</h4>
+<pre>idf(the)     = log10(4/3) = log10(1.3333) = 0.1249
+idf(service) = log10(4/4) = log10(1.0000) = 0.0000
+idf(was)     = log10(4/2) = log10(2.0000) = 0.3010
+idf(slow)    = log10(4/2) = 0.3010
+idf(and)     = log10(4/3) = 0.1249
+idf(food)    = log10(4/2) = 0.3010
+idf(cold)    = log10(4/1) = log10(4)      = 0.6021</pre>
+<p><code>service</code> occurs in all four documents, so its idf is exactly zero and its tf&ndash;idf will be zero in every document. No stop-word list was consulted; the statistic did the work.</p>
+
+<h4>Step 4 &mdash; tf, normalized by |d1| = 9</h4>
+<pre>tf(the)  = 2/9 = 0.2222      tf(was)     = 2/9 = 0.2222
+tf(slow) = 1/9 = 0.1111      tf(service) = 1/9 = 0.1111
+tf(and)  = 1/9 = 0.1111      tf(food)    = 1/9 = 0.1111
+tf(cold) = 1/9 = 0.1111</pre>
+
+<h4>Step 5 &mdash; multiply</h4>
+<table class="cmp">
+  <tr><th>term</th><th>count</th><th>tf = count/9</th><th>df</th><th>idf = log10(4/df)</th><th>tf&ndash;idf</th></tr>
+  <tr><td><code>cold</code></td><td>1</td><td>0.1111</td><td>1</td><td>0.6021</td><td><strong>0.0669</strong></td></tr>
+  <tr><td><code>was</code></td><td>2</td><td>0.2222</td><td>2</td><td>0.3010</td><td><strong>0.0669</strong></td></tr>
+  <tr><td><code>slow</code></td><td>1</td><td>0.1111</td><td>2</td><td>0.3010</td><td>0.0334</td></tr>
+  <tr><td><code>food</code></td><td>1</td><td>0.1111</td><td>2</td><td>0.3010</td><td>0.0334</td></tr>
+  <tr><td><code>the</code></td><td>2</td><td>0.2222</td><td>3</td><td>0.1249</td><td>0.0278</td></tr>
+  <tr><td><code>and</code></td><td>1</td><td>0.1111</td><td>3</td><td>0.1249</td><td>0.0139</td></tr>
+  <tr><td><code>service</code></td><td>1</td><td>0.1111</td><td>4</td><td>0.0000</td><td>0.0000</td></tr>
+</table>
+<p>Three observations worth more than the arithmetic:</p>
+<ul>
+  <li><code>the</code> is the most frequent term in <span class="eq">d1</span> and lands fifth of seven. Raw counts would have ranked it first.</li>
+  <li><code>cold</code> occurs once and ties for the top score, because it is the only term unique to this document. In a complaint classifier that is exactly the term you want weighted heavily.</li>
+  <li><code>was</code> also scores 0.0669, and it is a function word carrying no sentiment. TF&ndash;IDF is a frequency statistic, not a semantic one: it rewards <em>distinctiveness within this corpus</em>, and in a four-document corpus <code>was</code> happens to be distinctive. With 5,000 documents, <code>was</code> would appear nearly everywhere and its idf would fall toward zero. Small corpora produce unstable idf values; this is one concrete reason the topic project requires at least 5,000 rows.</li>
+</ul>
+
+<div class="callout">
+  <strong>Check yourself.</strong> Compute tf&ndash;idf for <code>excellent</code> in <span class="eq">d4</span> before reading on. <span class="eq">d4</span> = <code>excellent meal and excellent service</code>, so |d4| = 5 and count(excellent, d4) = 2, giving tf = 0.4000. <code>excellent</code> appears in d2 and d4, so df = 2 and idf = log10(2) = 0.3010. The product is <strong>0.1204</strong> &mdash; the largest tf&ndash;idf value anywhere in this corpus, which is the correct outcome: the term is repeated in a short document and absent from half the corpus.
+</div>
+
+<!-- ================= 5 ================= -->
+<h2 id="s5">5 &middot; Logistic regression on sparse features <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>You now have, for each document, a vector <span class="eq">x</span> of length <span class="eq">|V|</span> that is almost all zeros. Logistic regression scores it with a dot product and squashes the result:</p>
+<p class="eq-block">z = w &middot; x + b = &Sigma;<sub>j</sub> w<sub>j</sub> x<sub>j</sub> + b<br>
+p(y = 1 | x) = &sigma;(z) = 1 / (1 + e<sup>&minus;z</sup>)</p>
+<p>Three properties of the sigmoid are worth memorizing: <span class="eq">&sigma;(0) = 0.5</span>; <span class="eq">&sigma;</span> is strictly increasing, so ranking by <span class="eq">z</span> and ranking by <span class="eq">p</span> are the same ranking; and <span class="eq">&sigma;(&minus;z) = 1 &minus; &sigma;(z)</span>. The last one is why binary classification needs only one score.</p>
+<p>Training minimizes binary cross-entropy over the labeled examples:</p>
+<p class="eq-block">L = &minus;(1/n) &Sigma;<sub>i</sub> [ y<sub>i</sub> log p<sub>i</sub> + (1 &minus; y<sub>i</sub>) log(1 &minus; p<sub>i</sub>) ] + &lambda; ||w||<sup>2</sup></p>
+<p>A useful sanity number: a model that outputs 0.5 for everything has a loss of <span class="eq">&minus;log(0.5) = 0.693</span>. That value shows up again in section 10 as the starting point of every fine-tuning curve, and if your training loss is sitting at 0.693 after several epochs, your model has learned nothing at all.</p>
+
+<h3>What the decision boundary is</h3>
+<p>The set of points where <span class="eq">p = 0.5</span> is exactly the set where <span class="eq">z = 0</span>, which is the hyperplane <span class="eq">w &middot; x + b = 0</span>. In two dimensions it is a line; in a 30,000-dimensional TF&ndash;IDF space it is a 29,999-dimensional hyperplane. You cannot picture that, but three facts carry over from the picture you <em>can</em> draw:</p>
+<ul>
+  <li>The boundary is <strong>flat</strong>. No curvature. If the two classes are not separable by a flat surface in this feature space, no amount of training fixes it &mdash; you have to change the features.</li>
+  <li><span class="eq">w</span> is perpendicular to the boundary, and its magnitude controls how sharply <span class="eq">p</span> swings from 0 to 1 as you cross. Large weights mean confident predictions near the boundary; the L2 penalty <span class="eq">&lambda;</span> exists to hold them down.</li>
+  <li>Because <span class="eq">x</span> is sparse, <span class="eq">z</span> is a sum over only the terms actually present in the document &mdash; typically a few dozen products, not 30,000. That is why the classical pipeline serves a prediction in microseconds.</li>
+</ul>
+
+<h3>The weights are readable, which is the real selling point</h3>
+<p>Each coordinate of <span class="eq">w</span> belongs to one term. Sort <span class="eq">w</span> and you get the model's evidence in plain words:</p>
+<pre>most positive weights (push toward label 1 = complaint)
+   +2.91  refund        +2.44  broken       +2.02  cancelled
+   +1.88  never         +1.77  charged      +1.61  unacceptable
+
+most negative weights (push toward label 0 = not a complaint)
+   -2.55  thanks        -2.10  perfect      -1.94  helpful
+   -1.72  quick         -1.55  resolved     -1.39  appreciate</pre>
+<p>Two caveats before you put a list like this in a report. Weight magnitudes are comparable across terms <em>only</em> if the features are on a comparable scale &mdash; with L2-normalized TF&ndash;IDF they roughly are, with raw counts they are not. And a large weight on a term that occurs in nine training documents is memorization, not evidence; check the document frequency before you believe any single row.</p>
+
+<div class="demo">
+  <h3>Demo &middot; Move the decision boundary, watch the sigmoid</h3>
+  <p class="mini">Two features only, so the boundary is a line: the horizontal axis is the tf&ndash;idf weight of <code>slow</code>, the vertical axis the weight of <code>excellent</code>. Red points are complaints (label 1), blue are not (label 0). Drag the black test point anywhere to read its score. "Fit by gradient descent" runs 6,000 real gradient steps on binary cross-entropy with an L2 penalty and moves the sliders to what it found.</p>
+  <div class="controls">
+    <div class="control"><label for="lr-w1">w<sub>slow</sub> = <span id="lr-w1v">0.0</span></label>
+      <input type="range" id="lr-w1" min="-10" max="10" step="0.1" value="3.0"></div>
+    <div class="control"><label for="lr-w2">w<sub>excellent</sub> = <span id="lr-w2v">0.0</span></label>
+      <input type="range" id="lr-w2" min="-10" max="10" step="0.1" value="-3.0"></div>
+    <div class="control"><label for="lr-b">b = <span id="lr-bv">0.0</span></label>
+      <input type="range" id="lr-b" min="-6" max="6" step="0.05" value="-0.4"></div>
+    <button id="lr-fit">Fit by gradient descent</button>
+    <button class="secondary" id="lr-reset">Reset</button>
+  </div>
+  <canvas id="lr-canvas" width="880" height="380"></canvas>
+  <div class="readout" id="lr-readout" style="margin-top:12px"></div>
+</div>
+
+<!-- ================= 6 ================= -->
+<h2 id="s6">6 &middot; Where the sparse linear model is blind</h2>
+<p>The failures below are not bugs and not a shortage of training data. They follow from the representation, and no amount of extra labeled examples removes them.</p>
+<table class="cmp">
+  <tr><th>Input pair</th><th>What the model sees</th><th>Why it cannot recover</th></tr>
+  <tr><td><code>not bad at all</code> vs <code>not good at all</code></td><td>Both contain <code>not</code>; the sentiment word differs, so the vectors differ &mdash; but the model has learned <em>independent</em> weights for <code>not</code>, <code>bad</code> and <code>good</code> and adds them.</td><td>The effect of <code>not</code> is multiplicative on what follows. A sum of independent weights cannot express "flip the sign of the next term".</td></tr>
+  <tr><td><code>not bad, actually good</code> vs <code>not good, actually bad</code></td><td>Identical vectors.</td><td>Bag of words is permutation-invariant. Two inputs mapping to one point must receive one prediction.</td></tr>
+  <tr><td><code>I would like a refund</code> vs <code>I already got my refund</code></td><td>Shares the high-weight term <code>refund</code>.</td><td>Tense and aspect are carried by function words the pipeline often discards, and by structure it never encodes.</td></tr>
+  <tr><td><code>the charge was reversed</code> vs <code>the reversal was charged</code></td><td>Different surface forms of the same stems; after stemming, near-identical vectors.</td><td>Argument structure &mdash; who did what to whom &mdash; lives in syntax.</td></tr>
+  <tr><td><code>my order never arrived</code> vs <code>my parcel did not turn up</code></td><td>Almost no vocabulary overlap.</td><td>Synonymy is invisible: every term is an orthogonal coordinate. Weight learned for <code>order</code> transfers nothing to <code>parcel</code>.</td></tr>
+  <tr><td><code>sarcastic praise</code> ("great, another outage")</td><td><code>great</code> carries a strong negative-class weight.</td><td>Sarcasm is a pragmatic inversion signalled by context and world knowledge, neither of which is in the vector.</td></tr>
+</table>
+<p>Partial mitigations exist and you should know them, because they are cheap and they sometimes close most of the gap: bigrams turn <code>not good</code> into a single feature; character n-grams give some robustness to spelling; a negation-marking preprocessing pass rewrites tokens after <code>not</code> up to the next punctuation as <code>NOT_token</code>. Each buys back a slice of what the representation discarded, and each inflates the vocabulary. None of them gives the model any knowledge of language that is not already in your labeled corpus. That is the line the next section crosses.</p>
+
+<!-- ================= 7 ================= -->
+<h2 id="s7">7 &middot; What a pretrained encoder gives you <span class="tag math">math</span></h2>
+<p>An encoder transformer such as BERT or DistilBERT arrives having already consumed a very large volume of running text through a self-supervised objective &mdash; masked-language modeling: hide a token, predict it from both sides of the context. Nobody labeled that corpus. The supervision came from the text itself.</p>
+<p>What that pretraining leaves behind is a stack of weights that maps a token sequence to a sequence of context-dependent vectors. Four differences from TF&ndash;IDF matter for your classifier, and it is worth being precise about each rather than saying "it understands more".</p>
+
+<h3>7.1 The representation is contextual</h3>
+<p>In TF&ndash;IDF, the coordinate for <code>bank</code> has one value determined by counts, and therefore one learned weight, no matter which sense is meant. In an encoder, the vector at the position of <code>bank</code> is a function of the entire sentence:</p>
+<pre>"I sat on the river bank"        &rarr;  h_bank = [ ... ]
+"I deposited it at the bank"     &rarr;  h_bank = [ ... ]   # a different vector</pre>
+<p>Same surface token, different representation, because self-attention mixed in the surrounding positions. Word order is part of the input via positional information, so <code>the dog bit the man</code> and <code>the man bit the dog</code> produce different hidden states &mdash; the collision that bag of words cannot escape does not arise.</p>
+
+<h3>7.2 The representation is dense and shared</h3>
+<p>A hidden state is typically 768 numbers, all of them non-zero, rather than 30,000 numbers of which 20 are non-zero. Because the space is shared and continuous, similar meanings sit near each other. <code>refund</code> and <code>reimbursement</code> are not orthogonal coordinates; they are nearby points. A weight the head learns for one region of that space transfers to inputs the classifier never saw in training. This is the single mechanism behind most of the accuracy gap on small corpora.</p>
+
+<h3>7.3 Subword tokenization removes the unknown-word problem</h3>
+<p>A TF&ndash;IDF vocabulary is closed: a term absent from the training corpus is dropped at inference and contributes nothing. Encoders use subword vocabularies (WordPiece, byte-pair encoding), so any string is representable:</p>
+<pre>"unrefundable"   &rarr;  ["un", "##ref", "##und", "##able"]
+"Wrigglesworth"  &rarr;  ["wr", "##igg", "##les", "##worth"]</pre>
+<p>Misspellings, product codes and rare compounds degrade gracefully into pieces the model has seen, instead of vanishing.</p>
+
+<h3>7.4 The knowledge was paid for once, by somebody else</h3>
+<p>Pretraining is expensive. Downloading the result is free. Your fine-tuning run starts from weights that already encode a great deal about how English sentences are built, and it only has to learn the last part &mdash; how <em>this</em> label depends on <em>that</em> structure. This is why a fine-tuned encoder can beat a TF&ndash;IDF baseline with 1,000 labeled examples: it is not learning language from your 1,000 examples, it is learning a task on top of language it already has.</p>
+
+<div class="warn">
+  <strong>What the encoder does not give you.</strong> It does not give you interpretability &mdash; there is no list of weights per word to read. It does not give you speed: expect several orders of magnitude more compute per prediction than a dot product over a sparse vector, and a cold-start model load measured in seconds. It does not give you immunity to shortcut learning; a fine-tuned encoder will exploit a spurious correlation in your labels at least as eagerly as a linear model, and it will hide the fact better. And it does not give you calibrated probabilities &mdash; see section 14.
+</div>
+
+<h3>The fixed input length</h3>
+<p>Encoders have a maximum sequence length (512 tokens for BERT-family models, and most fine-tuning setups truncate to 128 or 256 for speed). Text past the cutoff is discarded outright. If your documents are long and the signal sits at the end, truncation quietly destroys it. Measure your token-length distribution before choosing <code>max_length</code>; do not pick 128 because a tutorial did.</p>
+
+<!-- ================= 8 ================= -->
+<h2 id="s8">8 &middot; Transfer learning: what fine-tuning changes <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>Fine-tuning is ordinary gradient descent with an unusual starting point. Concretely:</p>
+<ol>
+  <li>Load pretrained encoder weights.</li>
+  <li>Discard the pretraining head (the masked-language-model output layer) &mdash; you do not need to predict tokens.</li>
+  <li>Attach a fresh, randomly initialized classification head with two output units.</li>
+  <li>Train on your labeled data with a small learning rate for a small number of epochs.</li>
+</ol>
+<pre>from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+tok = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+model = AutoModelForSequenceClassification.from_pretrained(
+    "distilbert-base-uncased",
+    num_labels=2,                      # single-label binary
+    id2label={0: "not_complaint", 1: "complaint"},
+    label2id={"not_complaint": 0, "complaint": 1},
+)
+# The warning about newly initialized classifier weights is expected and correct:
+# the head did not exist before this call.</pre>
+<p>That warning on the first load is not an error. It is the library telling you that <code>pre_classifier</code> and <code>classifier</code> were created from scratch. If you see it while <em>loading your own fine-tuned checkpoint</em>, something is wrong &mdash; you saved or referenced the wrong directory.</p>
+
+<h3>Frozen versus unfrozen</h3>
+<p>Every parameter can be trainable or held fixed. The two ends of the spectrum:</p>
+<table class="cmp">
+  <tr><th></th><th>Feature extraction (encoder frozen)</th><th>Full fine-tuning (everything trainable)</th></tr>
+  <tr><td>What updates</td><td>The classification head only</td><td>Head and all encoder layers</td></tr>
+  <tr><td>Effective model</td><td>Logistic regression on frozen embeddings</td><td>The encoder itself reshapes for your task</td></tr>
+  <tr><td>Compute per step</td><td>Forward pass full, backward pass tiny</td><td>Full forward and backward</td></tr>
+  <tr><td>Memory</td><td>Low &mdash; optimizer state for ~0.6M parameters</td><td>High &mdash; optimizer state for all ~67M</td></tr>
+  <tr><td>Data needed</td><td>Works with a few hundred examples</td><td>Wants a few thousand or strong regularization</td></tr>
+  <tr><td>Typical outcome</td><td>Better than TF&ndash;IDF, worse than full fine-tuning</td><td>Best accuracy; overfits fastest</td></tr>
+</table>
+<p>The middle of the spectrum &mdash; unfreeze the top <span class="eq">k</span> encoder layers, leave the bottom ones fixed &mdash; is the useful default when data is scarce. The justification is empirical but consistent: lower layers of a pretrained encoder encode general lexical and syntactic regularities that your task does not need to change, while upper layers encode more task-shaped structure. Freezing the bottom keeps the general knowledge intact and cuts the number of parameters that can memorize your small training set.</p>
+<pre># Freeze the embedding table and the bottom 4 of DistilBERT's 6 layers
+for p in model.distilbert.embeddings.parameters():
+    p.requires_grad = False
+for layer in model.distilbert.transformer.layer[:4]:
+    for p in layer.parameters():
+        p.requires_grad = False
+
+trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
+total     = sum(p.numel() for p in model.parameters())
+print(f"{trainable:,} / {total:,} trainable ({100*trainable/total:.1f}%)")</pre>
+
+<div class="demo">
+  <h3>Demo &middot; Trainable-parameter calculator</h3>
+  <p class="mini">Counts are computed from a DistilBERT-shaped configuration: 6 layers, d_model = 768, feed-forward width 3072, vocabulary 30,522, 512 position embeddings, plus a 768&rarr;768 pre-classifier and a 768&rarr;2 output layer. Change the shape and the arithmetic follows.</p>
+  <div class="controls">
+    <div class="control"><label>layers L</label><input type="number" id="ft-L" value="6" min="1" max="48"></div>
+    <div class="control"><label>d_model</label><input type="number" id="ft-D" value="768" min="8" step="8"></div>
+    <div class="control"><label>ffn width</label><input type="number" id="ft-F" value="3072" min="8" step="8"></div>
+    <div class="control"><label>vocab V</label><input type="number" id="ft-V" value="30522" min="100"></div>
+    <div class="control"><label for="ft-U">top layers unfrozen = <span id="ft-Uv">6</span></label>
+      <input type="range" id="ft-U" min="0" max="6" step="1" value="6"></div>
+    <div class="control"><label><input type="checkbox" id="ft-emb"> train embeddings</label></div>
+  </div>
+  <canvas id="ft-canvas" width="880" height="150"></canvas>
+  <pre id="ft-out" style="margin-top:12px"></pre>
+</div>
+
+<h3>The learning rate is not the one you use elsewhere</h3>
+<p>Training a network from scratch commonly uses learning rates around <span class="eq">10<sup>&minus;3</sup></span>. Fine-tuning uses <strong>1e-5 to 5e-5</strong>, one to two orders of magnitude smaller, and the reason is structural: the encoder weights are already good. A large step destroys pretrained structure faster than the task signal can rebuild it &mdash; the failure mode has a name, catastrophic forgetting, and on a small corpus it looks like a model that trains to a loss of 0.693 and stays there. The head, being randomly initialized, could tolerate a larger rate; a common refinement is a discriminative schedule with a higher rate on the head and progressively smaller rates down the stack.</p>
+
+<!-- ================= 9 ================= -->
+<h2 id="s9">9 &middot; The classification head <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>The head is the only part of the model that knows your task exists. For a DistilBERT-style sequence classifier it is four operations:</p>
+<pre>tokens        &rarr; encoder &rarr; H  (T &times; 768)      one vector per token
+pool          &rarr; h = H[0]     (768,)            the [CLS] position
+pre_classifier&rarr; a = ReLU(W1 h + b1)   (768,)    768 &times; 768
+dropout       &rarr; a' = dropout(a, p=0.2)         training only
+classifier    &rarr; z = W2 a' + b2       (2,)      768 &times; 2  &rarr; two logits
+softmax       &rarr; p = softmax(z)       (2,)      sums to 1</pre>
+
+<h3>Pooling: which vector represents the document</h3>
+<p>The encoder returns one vector per token; the head needs one vector per document. Three options in common use:</p>
+<ul>
+  <li><strong>[CLS] pooling.</strong> Use the hidden state at the special first position. BERT was pretrained with an objective that pushes sentence-level information into this position, so it is a reasonable default and it is what the Hugging Face sequence-classification classes do.</li>
+  <li><strong>Mean pooling.</strong> Average the hidden states over real tokens, excluding padding. Often slightly better for sentence-similarity work; you must apply the attention mask, or padding positions corrupt the average.</li>
+  <li><strong>Max pooling.</strong> Element-wise maximum. Rare for classification.</li>
+</ul>
+
+<h3>Two logits, one decision</h3>
+<p>For binary classification the head emits two logits and softmax converts them to probabilities:</p>
+<p class="eq-block">p<sub>1</sub> = e<sup>z<sub>1</sub></sup> / (e<sup>z<sub>0</sub></sup> + e<sup>z<sub>1</sub></sup>) = &sigma;(z<sub>1</sub> &minus; z<sub>0</sub>)</p>
+<p>The identity on the right is worth internalizing. A two-class softmax is a sigmoid on the <em>difference</em> of the logits, which means only the difference carries information. Add 100 to both logits and nothing changes. Two consequences: the raw magnitude of a logit tells you nothing on its own, and you could equally have built the head with a single output unit. The two-unit form exists so that the same code path handles more classes; for a binary task it is redundant, not wrong.</p>
+<p>The loss is cross-entropy on the correct class, <span class="eq">L = &minus;log p<sub>y</sub></span>. Note what the library expects: pass <em>logits</em> to the loss, never softmax outputs. <code>CrossEntropyLoss</code> applies log-softmax internally, and applying softmax twice is a silent bug that produces a model which trains slowly and predicts weakly rather than one that crashes.</p>
+
+<div class="demo">
+  <h3>Demo &middot; A classification head forward pass, computed step by step</h3>
+  <p class="mini">A toy 4-dimensional pooled vector instead of 768, with a fixed weight matrix, so every multiplication is visible. Move the sliders and read the arithmetic.</p>
+  <div class="controls">
+    <div class="control"><label for="hd-h0">h[0] = <span id="hd-h0v"></span></label><input type="range" id="hd-h0" min="-2" max="2" step="0.05" value="0.8"></div>
+    <div class="control"><label for="hd-h1">h[1] = <span id="hd-h1v"></span></label><input type="range" id="hd-h1" min="-2" max="2" step="0.05" value="-0.4"></div>
+    <div class="control"><label for="hd-h2">h[2] = <span id="hd-h2v"></span></label><input type="range" id="hd-h2" min="-2" max="2" step="0.05" value="0.3"></div>
+    <div class="control"><label for="hd-h3">h[3] = <span id="hd-h3v"></span></label><input type="range" id="hd-h3" min="-2" max="2" step="0.05" value="1.1"></div>
+    <button class="secondary" id="hd-shift">Add +3 to both logits</button>
+  </div>
+  <div class="two-up">
+    <pre id="hd-out" style="flex:1 1 420px; margin:0"></pre>
+    <canvas id="hd-canvas" width="380" height="200"></canvas>
+  </div>
+</div>
+
+<!-- ================= 10 ================= -->
+<h2 id="s10">10 &middot; Learning rate, epochs, overfitting <span class="tag interactive">interactive</span></h2>
+<p>Fine-tuning has few dials and they interact. The three that decide whether your run works:</p>
+<table class="cmp">
+  <tr><th>Dial</th><th>Usual setting</th><th>Failure at the low end</th><th>Failure at the high end</th></tr>
+  <tr><td>learning rate</td><td>2e-5 &ndash; 5e-5</td><td>Loss barely moves; the run looks like an untrained model</td><td>Loss spikes or sticks at 0.693; pretrained structure is destroyed</td></tr>
+  <tr><td>epochs</td><td>2 &ndash; 4</td><td>Underfit; validation loss still falling when you stop</td><td>Training loss &rarr; 0 while validation loss climbs</td></tr>
+  <tr><td>batch size</td><td>16 &ndash; 32</td><td>Noisy gradient estimates, unstable curves</td><td>Out of GPU memory; also fewer updates per epoch</td></tr>
+</table>
+<p>Two or three epochs looks absurdly small next to the hundreds you may have used for a network trained from scratch. It is not a typo. The encoder is nearly right when it starts, so there is little to learn and a lot to break; past three or four passes over a small corpus, a 67-million-parameter model begins memorizing individual training examples.</p>
+
+<h3>The shape of overfitting</h3>
+<p>Overfitting is a divergence between two curves, and you can only see it if you plot both:</p>
+<ul>
+  <li><strong>Training loss falls, validation loss falls.</strong> Still learning. Keep going.</li>
+  <li><strong>Training loss falls, validation loss flat.</strong> At capacity for this data. Stopping here is reasonable.</li>
+  <li><strong>Training loss falls, validation loss rises.</strong> Memorizing. The best checkpoint was the epoch before the turn.</li>
+  <li><strong>Neither moves.</strong> Learning rate wrong (usually too high), labels shuffled, or the encoder is frozen when you thought it was not.</li>
+</ul>
+<p>The practical counter-measures, in order of how much they buy you: evaluate every epoch and keep the best validation checkpoint (<code>load_best_model_at_end=True</code> with <code>metric_for_best_model</code>); freeze the lower layers; lower the learning rate; add weight decay around 0.01; increase dropout in the head; get more labeled data. Note that the first item costs nothing and is the one people skip.</p>
+<pre>from transformers import TrainingArguments
+
+args = TrainingArguments(
+    output_dir="runs/classify-it",
+    learning_rate=3e-5,
+    per_device_train_batch_size=16,
+    num_train_epochs=3,
+    weight_decay=0.01,
+    eval_strategy="epoch",
+    save_strategy="epoch",
+    load_best_model_at_end=True,
+    metric_for_best_model="f1",
+    seed=42,                       # record this; without it the run is not reproducible
+)</pre>
+
+<div class="demo">
+  <h3>Demo &middot; Fine-tuning simulator</h3>
+  <p class="mini">This is a simulation of the qualitative dynamics &mdash; a closed-form model of how these dials interact &mdash; not a real training run. Use it to build intuition about the <em>shape</em> of the curves, then confirm the shape on your own data. Start at 3e-5 with 3 epochs and 5,000 examples, then break it: push the learning rate to 1e-2, or drop the dataset to 400 examples and run 15 epochs.</p>
+  <div class="controls">
+    <div class="control"><label for="sim-lr">learning rate = <span id="sim-lrv"></span></label>
+      <input type="range" id="sim-lr" min="-6" max="-2" step="0.05" value="-4.5"></div>
+    <div class="control"><label for="sim-ep">epochs = <span id="sim-epv"></span></label>
+      <input type="range" id="sim-ep" min="1" max="20" step="1" value="3"></div>
+    <div class="control"><label for="sim-n">training examples = <span id="sim-nv"></span></label>
+      <input type="range" id="sim-n" min="200" max="10000" step="200" value="5000"></div>
+    <div class="control"><label><input type="checkbox" id="sim-frozen"> freeze the encoder</label></div>
+  </div>
+  <canvas id="sim-canvas" width="880" height="330"></canvas>
+  <div class="readout" id="sim-readout" style="margin-top:12px"></div>
+</div>
+
+<!-- ================= 11 ================= -->
+<h2 id="s11">11 &middot; The confusion matrix and four metrics <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>Everything you report about a binary classifier comes out of four counts. Fix which label is "positive" first and write it down &mdash; for a complaint detector, positive = complaint. Swapping that convention swaps precision and recall, and reversed metrics in a report are a common and embarrassing error.</p>
+<table class="cm">
+  <tr><th></th><th>predicted 1</th><th>predicted 0</th></tr>
+  <tr><th>actual 1</th><td class="tp">TP<br>true positive</td><td class="fn">FN<br>false negative &mdash; a miss</td></tr>
+  <tr><th>actual 0</th><td class="fp">FP<br>false positive &mdash; a false alarm</td><td class="tn">TN<br>true negative</td></tr>
+</table>
+<p class="mini">Row = truth, column = prediction. Confirm the orientation of any matrix before you read it; scikit-learn's <code>confusion_matrix</code> uses this orientation, plotting libraries vary, and a transposed matrix silently exchanges FP with FN.</p>
+
+<p class="eq-block">
+accuracy = (TP + TN) / (TP + TN + FP + FN)<br>
+precision = TP / (TP + FP)<br>
+recall = TP / (TP + FN)<br>
+F1 = 2 &middot; precision &middot; recall / (precision + recall)
+</p>
+
+<p>Say each one in words, because the formulas are easy to permute and the sentences are not:</p>
+<ul>
+  <li><strong>Accuracy</strong> &mdash; of everything I predicted, what fraction was right? The denominator is every example.</li>
+  <li><strong>Precision</strong> &mdash; of the items I <em>flagged</em>, what fraction really was positive? The denominator is my positive predictions. It is the metric that governs how much of a reviewer's time you waste.</li>
+  <li><strong>Recall</strong> &mdash; of the items that really were positive, what fraction did I catch? The denominator is the truth. It is the metric that governs how much you miss.</li>
+  <li><strong>F1</strong> &mdash; the harmonic mean of precision and recall. Harmonic, not arithmetic, so it is dragged toward the smaller of the two: precision 1.00 with recall 0.02 gives F1 = 0.039, whereas the arithmetic mean would have flattered it with 0.51.</li>
+</ul>
+<p>Two degenerate cases to keep in mind. If the model predicts zero positives, precision is <span class="eq">0/0</span> &mdash; undefined. Libraries return 0 with a warning; a report that quietly prints 0.0 hides the fact that the model never fired. And F1 ignores TN entirely: it says nothing about the negative class, which is deliberate when negatives are the boring majority and misleading when they are not.</p>
+
+<div class="demo">
+  <h3>Demo &middot; Confusion-matrix calculator</h3>
+  <p class="mini">Type any four counts. Every metric is recomputed with its arithmetic spelled out, including the undefined cases.</p>
+  <div class="controls">
+    <div class="control"><label>TP</label><input type="number" id="cm-tp" value="41" min="0"></div>
+    <div class="control"><label>FN</label><input type="number" id="cm-fn" value="19" min="0"></div>
+    <div class="control"><label>FP</label><input type="number" id="cm-fp" value="9" min="0"></div>
+    <div class="control"><label>TN</label><input type="number" id="cm-tn" value="131" min="0"></div>
+    <button class="secondary" id="cm-ex1">Rare-class example</button>
+    <button class="secondary" id="cm-ex2">Never-fires example</button>
+  </div>
+  <div class="two-up">
+    <div id="cm-grid"></div>
+    <pre id="cm-out" style="flex:1 1 420px; margin:0"></pre>
+  </div>
+</div>
+
+<!-- ================= 12 ================= -->
+<h2 id="s12">12 &middot; The threshold is a decision, not a constant <span class="tag interactive">interactive</span></h2>
+<p>Your model outputs a score in [0, 1]. To emit a label you compare it to a threshold, and the default of 0.5 is a convention, not a result. Precision, recall, F1 and accuracy are all functions of that threshold; a claim about "the model's recall" without a stated threshold is incomplete.</p>
+<p>The trade-off is mechanical and has no exceptions:</p>
+<ul>
+  <li><strong>Raise the threshold.</strong> Fewer positive predictions. Every remaining one is backed by a higher score, so precision rises (weakly) and recall falls (weakly). At threshold 1.0 you predict nothing positive: recall 0, precision undefined.</li>
+  <li><strong>Lower the threshold.</strong> More positive predictions. Recall rises, precision falls. At threshold 0.0 you flag everything: recall 1.0, precision equal to the positive-class prevalence.</li>
+</ul>
+<p>Which end you want is a property of the application, not of the model:</p>
+<table class="cmp">
+  <tr><th>Application</th><th>Cost of a false positive</th><th>Cost of a false negative</th><th>Choose</th></tr>
+  <tr><td>Auto-close obvious tickets</td><td>A customer's real issue is closed unread</td><td>A human handles a ticket that could have been automated</td><td>High threshold, high precision</td></tr>
+  <tr><td>Flag possible safety concerns for review</td><td>A reviewer spends a minute on a benign message</td><td>A real concern is never seen</td><td>Low threshold, high recall</td></tr>
+  <tr><td>Route to one of two queues</td><td>Symmetric &mdash; a mis-route either way</td><td>Symmetric</td><td>0.5, or whatever maximizes F1</td></tr>
+</table>
+<p>Pick the threshold on a <strong>validation</strong> split and then report the test metrics at that fixed value. Sweeping the threshold on the test set and reporting the best point is a form of test-set fitting; the number you publish will not survive contact with new data.</p>
+
+<div class="demo">
+  <h3>Demo &middot; Threshold sweep with a live confusion matrix</h3>
+  <p class="mini">300 held-out examples with fixed scores (90 positive, 210 negative). The left panel is the score distribution by true class with the threshold drawn on it; the right panel is the precision&ndash;recall curve traced over all thresholds, with your current operating point marked. Everything is recomputed from the same 300 scores.</p>
+  <div class="controls">
+    <div class="control"><label for="th-t">threshold = <span id="th-tv"></span></label>
+      <input type="range" id="th-t" min="0.01" max="0.99" step="0.01" value="0.50"></div>
+    <button class="secondary" id="th-bestf1">Set to best F1</button>
+    <button class="secondary" id="th-rec90">Set to recall &ge; 0.90</button>
+  </div>
+  <div class="two-up">
+    <canvas id="th-hist" width="520" height="280"></canvas>
+    <canvas id="th-pr" width="300" height="280"></canvas>
+  </div>
+  <div class="two-up" style="margin-top:14px">
+    <div id="th-grid"></div>
+    <div class="readout" id="th-readout" style="flex:1 1 380px"></div>
+  </div>
+</div>
+
+<!-- ================= 13 ================= -->
+<h2 id="s13">13 &middot; Why accuracy lies under class imbalance <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>Suppose 3% of incoming support messages are complaints and you build a complaint detector. Here is a classifier written in one line:</p>
+<pre>def predict(text):
+    return 0    # never a complaint</pre>
+<p>It is 97% accurate. It has never been trained, it does not read its input, and it beats plenty of real models on the headline metric. Its recall is 0, its F1 is 0, and it is worth nothing.</p>
+<p>This is not a curiosity. It is the single most common way a text-classification report misleads its reader, and the mechanism is arithmetic: accuracy is dominated by the majority class, so when the majority class is 97% of the data, accuracy is mostly a measurement of how often you predict the majority class.</p>
+
+<h3>The crossover, exactly</h3>
+<p>Let <span class="eq">p</span> be the positive-class prevalence, and let your real detector have true-positive rate <span class="eq">TPR</span> (that is, recall) and false-positive rate <span class="eq">FPR</span>. Then:</p>
+<p class="eq-block">
+accuracy(majority) = 1 &minus; p<br>
+accuracy(detector) = p &middot; TPR + (1 &minus; p)(1 &minus; FPR)
+</p>
+<p>The detector beats the do-nothing baseline on accuracy only when</p>
+<p class="eq-block">p &middot; TPR &gt; (1 &minus; p) &middot; FPR &nbsp; &hArr; &nbsp; p &gt; FPR / (TPR + FPR)</p>
+<p>Put in numbers. A detector with TPR = 0.70 and FPR = 0.05 needs prevalence above <span class="eq">0.05 / 0.75 = 6.7%</span> before it is even <em>accurate</em> enough to justify itself against a constant. Below that, a genuinely useful detector &mdash; catching 70% of complaints while raising a false alarm on 5% of ordinary messages &mdash; scores <em>worse</em> on accuracy than a function that returns zero. Accuracy is not measuring what you care about.</p>
+
+<h3>What to report instead</h3>
+<ul>
+  <li><strong>Precision, recall and F1 on the positive class</strong>, with the threshold stated. These are exactly the quantities that ignore the mass of true negatives.</li>
+  <li><strong>The confusion matrix itself.</strong> Four integers, no interpretation required, impossible to inflate.</li>
+  <li><strong>Class prevalence in every split.</strong> If train, validation and test have different balances, your metrics are not comparable across them.</li>
+  <li><strong>The majority-class baseline number.</strong> State it explicitly. It is the floor any real model has to clear, and printing it in your report proves you know where the floor is.</li>
+</ul>
+<p>Handling imbalance during training is a separate question from measuring it: class weights in the loss, resampling the majority class down or the minority up, and threshold tuning after training all help. Threshold tuning is usually the cheapest and it never distorts the training distribution.</p>
+
+<div class="demo">
+  <h3>Demo &middot; The do-nothing classifier versus a real detector</h3>
+  <p class="mini">2,000 held-out examples. Move the prevalence slider toward 1% and watch the do-nothing model's accuracy climb past the detector's while its F1 stays pinned at zero.</p>
+  <div class="controls">
+    <div class="control"><label for="ib-p">positive prevalence = <span id="ib-pv"></span></label>
+      <input type="range" id="ib-p" min="1" max="50" step="1" value="3"></div>
+    <div class="control"><label for="ib-tpr">detector TPR (recall) = <span id="ib-tprv"></span></label>
+      <input type="range" id="ib-tpr" min="0.30" max="0.98" step="0.01" value="0.70"></div>
+    <div class="control"><label for="ib-fpr">detector FPR = <span id="ib-fprv"></span></label>
+      <input type="range" id="ib-fpr" min="0.01" max="0.30" step="0.01" value="0.05"></div>
+  </div>
+  <canvas id="ib-canvas" width="880" height="240"></canvas>
+  <div id="ib-out" style="margin-top:12px"></div>
+</div>
+
+<!-- ================= 14 ================= -->
+<h2 id="s14">14 &middot; Calibration: a softmax score is not a probability <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>Your service returns <code>{"label": "complaint", "score": 0.94}</code>. A reasonable consumer of that response reads it as "94 times out of 100, this is a complaint". That reading is a claim about the world, and it is usually false.</p>
+<p>Softmax outputs are guaranteed to be non-negative and to sum to one. That makes them a valid probability <em>distribution</em> over the two classes. It does not make them <em>correct</em> probabilities. Nothing in the cross-entropy objective forces the number 0.94 to correspond to being right 94% of the time, and modern fine-tuned networks are reliably <strong>overconfident</strong>: among the predictions they score at 0.95, the fraction that are actually correct is typically lower.</p>
+
+<h3>The definition</h3>
+<p>A model is <strong>calibrated</strong> if, over all predictions it makes with confidence <span class="eq">c</span>, the fraction that are correct equals <span class="eq">c</span>:</p>
+<p class="eq-block">P( y = &#375; | confidence = c ) = c &nbsp; for all c</p>
+<p>You measure it by binning. Sort the held-out predictions into 10 bins by confidence, and in each bin compare the mean confidence against the observed accuracy. Plot accuracy against confidence: a calibrated model lies on the diagonal, an overconfident model sits below it. Summarize with <strong>expected calibration error</strong>, the weighted mean gap:</p>
+<p class="eq-block">ECE = &Sigma;<sub>b</sub> (n<sub>b</sub> / n) &middot; | accuracy(b) &minus; confidence(b) |</p>
+<p>An ECE of 0.12 means that on average the model's stated confidence is off by 12 percentage points. The companion number is the <strong>Brier score</strong>, the mean squared difference between confidence and outcome &mdash; lower is better, and unlike ECE it also penalizes a model that is calibrated but uninformative.</p>
+
+<h3>The fix: temperature scaling</h3>
+<p>Divide the logits by a single learned scalar <span class="eq">T</span> before the softmax:</p>
+<p class="eq-block">p<sub>i</sub> = softmax(z<sub>i</sub> / T)</p>
+<p>Fit <span class="eq">T</span> on a held-out split &mdash; never on training data, and never on the split you report test metrics from &mdash; by minimizing negative log-likelihood over that one parameter. Three properties make this the standard first move:</p>
+<ul>
+  <li><span class="eq">T &gt; 1</span> softens the distribution toward uniform; <span class="eq">T &lt; 1</span> sharpens it.</li>
+  <li>Dividing every logit by the same scalar cannot change which logit is largest, so <strong>accuracy, precision, recall and F1 at a fixed rank ordering are unchanged</strong>. You get honest probabilities for free.</li>
+  <li>One parameter cannot overfit a validation split of any reasonable size.</li>
+</ul>
+<p>Platt scaling (fit a logistic regression on the logit) and isotonic regression (fit a monotone step function) are the other two standard choices; isotonic is more flexible and needs more validation data. Whichever you use, calibrate <em>after</em> training and report the ECE before and after, since that is the evidence that the probability in your API response means something.</p>
+
+<div class="demo">
+  <h3>Demo &middot; Reliability diagram and temperature scaling</h3>
+  <p class="mini">3,000 held-out predictions whose correctness is fixed. "Overconfidence" sharpens the model's stated confidence without changing a single prediction &mdash; exactly what over-training on a small corpus does. Then use temperature to pull it back onto the diagonal. Setting T equal to the overconfidence value restores calibration exactly, because both act linearly on the logit.</p>
+  <div class="controls">
+    <div class="control"><label for="cal-a">overconfidence = <span id="cal-av"></span></label>
+      <input type="range" id="cal-a" min="1" max="4" step="0.1" value="2.5"></div>
+    <div class="control"><label for="cal-t">temperature T = <span id="cal-tv"></span></label>
+      <input type="range" id="cal-t" min="0.5" max="4" step="0.1" value="1.0"></div>
+    <button class="secondary" id="cal-fit">Fit T on this data</button>
+  </div>
+  <div class="two-up">
+    <canvas id="cal-canvas" width="380" height="330"></canvas>
+    <div class="readout" id="cal-readout" style="flex:1 1 400px"></div>
+  </div>
+</div>
+
+<div class="warn">
+  <strong>Where this bites in production.</strong> Any downstream rule of the form "auto-resolve if score &gt; 0.9" is a bet that the score means what it says. If the model is overconfident by 12 points, that rule is auto-resolving a category of message that is wrong roughly one time in five rather than one in ten. The rule looked safe on paper because nobody checked the calibration.
+</div>
+
+<!-- ================= 15 ================= -->
+<h2 id="s15">15 &middot; Comparing the two models honestly</h2>
+<p>The comparison is the deliverable, not the transformer. A comparison is only worth reading if it is fair, and fairness is a checklist:</p>
+<ol>
+  <li><strong>Identical splits.</strong> Same rows in train, validation and test for both models, produced by one seeded split and saved. Not "the same 80/20" &mdash; the same rows.</li>
+  <li><strong>Identical test-time labels and threshold policy.</strong> If you tuned the transformer's threshold on validation, tune the baseline's the same way. Comparing a tuned model against an untuned one is not a comparison.</li>
+  <li><strong>No leakage in either direction.</strong> Fit the vectorizer on train only. Deduplicate near-identical documents <em>before</em> splitting, or the same text lands on both sides and both models look better than they are.</li>
+  <li><strong>Report the cost as well as the score.</strong> Parameters, training time, per-request latency, memory. A 2-point F1 gain that costs 200&times; the inference budget is a finding, not a failure &mdash; state it and let the reader decide.</li>
+  <li><strong>Report the same metrics for both</strong>, at the same threshold, with the confusion matrices printed. Four integers per model make selective reporting impossible.</li>
+  <li><strong>Fix and record the seeds.</strong> Fine-tuning on a small corpus has real run-to-run variance; a single run of each model is weak evidence, and if you can afford three seeds, report the spread.</li>
+</ol>
+
+<h3>Error analysis is where the actual learning happens</h3>
+<p>Metrics tell you how much you are wrong. Only reading the errors tells you why. Pull the examples where the two models disagree and sort them into groups. The categories that usually appear:</p>
+<table class="cmp">
+  <tr><th>Group</th><th>Typical cause</th><th>What to do</th></tr>
+  <tr><td>Transformer right, baseline wrong &mdash; negation or word order</td><td>The exact blindness of section 6</td><td>Quote one as evidence for the transformer in your report</td></tr>
+  <tr><td>Transformer right, baseline wrong &mdash; unseen vocabulary</td><td>Closed vocabulary versus subwords</td><td>Same &mdash; this is the transfer-learning payoff</td></tr>
+  <tr><td>Baseline right, transformer wrong &mdash; a rare, decisive keyword</td><td>Truncation, or the encoder smoothing over a term the linear model weighted heavily</td><td>Check <code>max_length</code>; consider an ensemble</td></tr>
+  <tr><td>Both wrong, and the label looks defensible</td><td>Label noise or an ambiguous annotation guideline</td><td>Fix the guideline; this caps both models' ceiling</td></tr>
+  <tr><td>Both right for the wrong reason</td><td>A shortcut in the data &mdash; a template phrase that co-occurs with the label</td><td>Test on out-of-distribution examples; report the risk</td></tr>
+</table>
+<p>That last row deserves a paragraph. Shortcut learning is the phenomenon where a model achieves high held-out scores by exploiting a superficial correlation that holds in your corpus and nowhere else &mdash; a boilerplate footer that appears only in one class, an artifact of how the data was collected, a length difference between classes. Held-out accuracy will not catch it, because the shortcut is present in the held-out split too. The only reliable detectors are reading errors by hand, testing on data collected differently, and checking whether the model still works when you delete the suspicious cue.</p>
+
+<div class="callout">
+  <strong>Minimum honest report for the topic project.</strong> For each of the two models: the confusion matrix, accuracy, precision, recall and F1 on the same held-out split at a stated threshold; the majority-class accuracy for reference; the ECE before and after calibration; training and inference cost; the seed; and the vectorizer or tokenizer configuration in full. Then three concrete input types where the transformer wins, one worked example each. Anything less is an assertion rather than a result.
+</div>
+
+<h3>Where to read further</h3>
+<ul>
+  <li>Jurafsky and Martin, <em>Speech and Language Processing</em> (3rd edition draft), chapters 4 and 6 &mdash; naive Bayes and text classification, and vector semantics including TF&ndash;IDF. Free online: <a href="https://web.stanford.edu/~jurafsky/slp3/">https://web.stanford.edu/~jurafsky/slp3/</a></li>
+  <li>Devlin, Chang, Lee and Toutanova (2019), "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding": <a href="https://arxiv.org/abs/1810.04805">https://arxiv.org/abs/1810.04805</a></li>
+  <li>Hugging Face, text classification task guide: <a href="https://huggingface.co/docs/transformers/tasks/sequence_classification">https://huggingface.co/docs/transformers/tasks/sequence_classification</a></li>
+  <li>Hugging Face LLM course, chapter 3 &mdash; fine-tuning a pretrained model with the Trainer API: <a href="https://huggingface.co/learn/llm-course/en/chapter3/3">https://huggingface.co/learn/llm-course/en/chapter3/3</a></li>
+  <li>Sanh, Debut, Chaumond and Wolf (2019), "DistilBERT, a distilled version of BERT": <a href="https://arxiv.org/abs/1910.01108">https://arxiv.org/abs/1910.01108</a></li>
+  <li>Guo, Pleiss, Sun and Weinberger (2017), "On Calibration of Modern Neural Networks" &mdash; the source of temperature scaling and reliability diagrams as used above: <a href="https://arxiv.org/abs/1706.04599">https://arxiv.org/abs/1706.04599</a></li>
+  <li>Geirhos and colleagues (2020), "Shortcut Learning in Deep Neural Networks": <a href="https://arxiv.org/abs/2004.07780">https://arxiv.org/abs/2004.07780</a></li>
+</ul>
+
+<div class="nav">
+  <span>Topic 2 &mdash; Natural Language Understanding</span>
+  <a href="Exercises_Topic_2_Natural_Language_Understanding.html">Practice exercises &rarr;</a>
+</div>
+
+</div>
+
+<script>
+/* ---------- shared helpers ---------- */
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+function sig(z){ return 1/(1+Math.exp(-z)); }
+function lcg(seed){ var s = seed>>>0; return function(){ s = (Math.imul(s,1664525)+1013904223)>>>0; return s/4294967296; }; }
+function gaussFrom(r){ return function(){ var u=Math.max(1e-12,r()), v=r(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }; }
+function f(x,n){ return Number(x).toFixed(n); }
+function tokenize(s){ return s.toLowerCase().replace(/[^a-z0-9' ]+/g,' ').split(/\s+/).filter(function(t){ return t.length>0; }); }
+function canvasPos(c, ev){
+  var r = c.getBoundingClientRect();
+  return { x:(ev.clientX-r.left)*(c.width/r.width), y:(ev.clientY-r.top)*(c.height/r.height) };
+}
+function cmTable(tp,fn,fp,tn){
+  return '<table class="cm">' +
+    '<tr><th></th><th>predicted 1</th><th>predicted 0</th></tr>' +
+    '<tr><th>actual 1</th><td class="tp">TP = '+tp+'</td><td class="fn">FN = '+fn+'</td></tr>' +
+    '<tr><th>actual 0</th><td class="fp">FP = '+fp+'</td><td class="tn">TN = '+tn+'</td></tr>' +
+    '</table>';
+}
+function metrics(tp,fn,fp,tn){
+  var n = tp+fn+fp+tn;
+  var acc = n ? (tp+tn)/n : 0;
+  var prec = (tp+fp) ? tp/(tp+fp) : null;
+  var rec = (tp+fn) ? tp/(tp+fn) : null;
+  var f1 = (prec!==null && rec!==null && (prec+rec)>0) ? 2*prec*rec/(prec+rec) : 0;
+  return { n:n, acc:acc, prec:prec, rec:rec, f1:f1 };
+}
+
+/* ---------- §2 bag of words ---------- */
+(function(){
+  var A = document.getElementById('bow-a'), B = document.getElementById('bow-b');
+  var tbl = document.getElementById('bow-table'), out = document.getElementById('bow-readout');
+  if(!A) return;
+  var presets = [
+    ['the dog bit the man', 'the man bit the dog'],
+    ['not bad, actually good', 'not good, actually bad'],
+    ['the ticket was refunded quickly', 'the refund ticket was quick'],
+    ['my order never arrived', 'thanks, the parcel turned up today']
+  ];
+  function counts(ts){ var m = {}; ts.forEach(function(t){ m[t] = (m[t]||0)+1; }); return m; }
+  function render(){
+    var ca = counts(tokenize(A.value)), cb = counts(tokenize(B.value));
+    var vocab = {}, k;
+    for(k in ca) vocab[k]=1;
+    for(k in cb) vocab[k]=1;
+    var terms = Object.keys(vocab).sort();
+    var h = '<table class="cmp"><tr><th>term</th><th>count in A</th><th>count in B</th><th>difference</th></tr>';
+    var dot=0, na=0, nb=0, identical=true;
+    terms.forEach(function(t){
+      var a = ca[t]||0, b = cb[t]||0;
+      dot += a*b; na += a*a; nb += b*b;
+      if(a!==b) identical = false;
+      h += '<tr><td><code>'+t+'</code></td><td>'+a+'</td><td>'+b+'</td><td>'+(a-b===0?'&middot;':(a-b>0?'+':'')+(a-b))+'</td></tr>';
+    });
+    h += '</table>';
+    tbl.innerHTML = h;
+    var cos = (na>0 && nb>0) ? dot/Math.sqrt(na*nb) : 0;
+    out.innerHTML = 'vocabulary |V| = '+terms.length+' &nbsp;|&nbsp; |A| = '+tokenize(A.value).length+
+      ' tokens, |B| = '+tokenize(B.value).length+' tokens<br>cosine(A, B) = '+f(cos,4)+
+      '<br><strong>'+(identical
+        ? 'The two vectors are IDENTICAL. Any bag-of-words classifier must give these two documents the same prediction.'
+        : 'The two vectors differ, so a classifier can in principle tell them apart.')+'</strong>';
+  }
+  A.addEventListener('input', render);
+  B.addEventListener('input', render);
+  Array.prototype.forEach.call(document.querySelectorAll('[data-bow-preset]'), function(btn){
+    btn.addEventListener('click', function(){
+      var p = presets[+btn.getAttribute('data-bow-preset')];
+      A.value = p[0]; B.value = p[1]; render();
+    });
+  });
+  render();
+})();
+
+/* ---------- §3 TF-IDF calculator ---------- */
+(function(){
+  var ta = document.getElementById('tfidf-docs');
+  if(!ta) return;
+  var docSel = document.getElementById('tfidf-doc');
+  var tfSel = document.getElementById('tfidf-tf'), idfSel = document.getElementById('tfidf-idf');
+  var tbl = document.getElementById('tfidf-table'), out = document.getElementById('tfidf-readout');
+  function corpus(){
+    return ta.value.split('\n').map(function(l){ return tokenize(l); }).filter(function(t){ return t.length>0; });
+  }
+  function render(){
+    var docs = corpus(), N = docs.length;
+    if(N === 0){ out.textContent = 'The corpus is empty.'; tbl.innerHTML = ''; return; }
+    var keep = Math.min(+docSel.value || 0, N-1);
+    if(docSel.options.length !== N){
+      docSel.innerHTML = '';
+      for(var i=0;i<N;i++){
+        var o = document.createElement('option');
+        o.value = i; o.textContent = 'd' + (i+1);
+        docSel.appendChild(o);
+      }
+    }
+    docSel.value = keep;
+    var df = {};
+    docs.forEach(function(d){
+      var seen = {};
+      d.forEach(function(t){ if(!seen[t]){ seen[t]=1; df[t]=(df[t]||0)+1; } });
+    });
+    var d = docs[keep], counts = {};
+    d.forEach(function(t){ counts[t] = (counts[t]||0)+1; });
+    var rows = Object.keys(counts).map(function(t){
+      var c = counts[t], tf;
+      if(tfSel.value === 'raw') tf = c;
+      else if(tfSel.value === 'log') tf = 1 + Math.log(c)/Math.LN10;
+      else tf = c/d.length;
+      var idf = (idfSel.value === 'sk')
+        ? Math.log((1+N)/(1+df[t])) + 1
+        : Math.log(N/df[t])/Math.LN10;
+      return { t:t, c:c, tf:tf, df:df[t], idf:idf, w:tf*idf };
+    });
+    rows.sort(function(a,b){ return b.w - a.w; });
+    var h = '<table class="cmp"><tr><th>term</th><th>count in d'+(keep+1)+
+      '</th><th>tf</th><th>df</th><th>idf</th><th>tf&times;idf</th></tr>';
+    rows.forEach(function(r){
+      var zero = (Math.abs(r.w) < 1e-12) ? ' style="opacity:0.55"' : '';
+      h += '<tr'+zero+'><td><code>'+r.t+'</code></td><td>'+r.c+'</td><td>'+f(r.tf,4)+
+           '</td><td>'+r.df+'</td><td>'+f(r.idf,4)+'</td><td><strong>'+f(r.w,4)+'</strong></td></tr>';
+    });
+    h += '</table>';
+    tbl.innerHTML = h;
+    var vocab = {};
+    docs.forEach(function(dd){ dd.forEach(function(t){ vocab[t]=1; }); });
+    var top = rows[0];
+    out.innerHTML = 'N = '+N+' documents &nbsp;|&nbsp; |V| = '+Object.keys(vocab).length+
+      ' terms &nbsp;|&nbsp; |d'+(keep+1)+'| = '+d.length+' tokens'+
+      '<br>highest tf&times;idf in d'+(keep+1)+': <strong>'+top.t+'</strong> = '+f(top.tf,4)+
+      ' &times; '+f(top.idf,4)+' = '+f(top.w,4);
+  }
+  ta.addEventListener('input', render);
+  docSel.addEventListener('change', render);
+  tfSel.addEventListener('change', render);
+  idfSel.addEventListener('change', render);
+  render();
+})();
+
+/* ---------- §5 logistic regression boundary ---------- */
+(function(){
+  var c = document.getElementById('lr-canvas');
+  if(!c) return;
+  var ctx = c.getContext('2d');
+  var w1El = document.getElementById('lr-w1'), w2El = document.getElementById('lr-w2'), bEl = document.getElementById('lr-b');
+  var out = document.getElementById('lr-readout');
+  var X0=70, X1=600, Y0=20, Y1=350;
+  var rnd = lcg(20250131), pts = [];
+  for(var i=0;i<16;i++) pts.push({ u:0.22+0.55*rnd(), v:0.02+0.32*rnd(), lab:1 });
+  for(var j=0;j<16;j++) pts.push({ u:0.02+0.32*rnd(), v:0.22+0.55*rnd(), lab:0 });
+  var tp = { u:0.5, v:0.5 }, dragging = false;
+  function px(u){ return X0 + u*(X1-X0); }
+  function py(v){ return Y1 - v*(Y1-Y0); }
+  function ux(x){ return (x-X0)/(X1-X0); }
+  function vy(y){ return (Y1-y)/(Y1-Y0); }
+  function draw(){
+    var w1=+w1El.value, w2=+w2El.value, b=+bEl.value;
+    document.getElementById('lr-w1v').textContent = f(w1,1);
+    document.getElementById('lr-w2v').textContent = f(w2,1);
+    document.getElementById('lr-bv').textContent = f(b,2);
+    ctx.clearRect(0,0,c.width,c.height);
+    var step = 10;
+    for(var x=X0;x<X1;x+=step) for(var y=Y0;y<Y1;y+=step){
+      var p = sig(w1*ux(x+step/2) + w2*vy(y+step/2) + b);
+      var r = Math.round(234 + 20*p), g = Math.round(241 - 30*p), bb = Math.round(248 - 40*p);
+      ctx.fillStyle = 'rgb('+r+','+g+','+bb+')';
+      ctx.fillRect(x, y, step, step);
+    }
+    ctx.strokeStyle='#CFD7DF'; ctx.lineWidth=1; ctx.strokeRect(X0,Y0,X1-X0,Y1-Y0);
+    ctx.save(); ctx.beginPath(); ctx.rect(X0,Y0,X1-X0,Y1-Y0); ctx.clip();
+    ctx.strokeStyle='#1A1A1A'; ctx.lineWidth=2.5; ctx.beginPath();
+    if(Math.abs(w2) > 1e-6){
+      ctx.moveTo(px(-0.2), py(-(w1*(-0.2)+b)/w2));
+      ctx.lineTo(px(1.2),  py(-(w1*(1.2)+b)/w2));
+    } else if(Math.abs(w1) > 1e-6){
+      ctx.moveTo(px(-b/w1), py(-0.2)); ctx.lineTo(px(-b/w1), py(1.2));
+    }
+    ctx.stroke(); ctx.restore();
+    var correct = 0, loss = 0;
+    pts.forEach(function(p){
+      var z = w1*p.u + w2*p.v + b, pr = sig(z);
+      if((pr >= 0.5 ? 1 : 0) === p.lab) correct++;
+      loss += -(p.lab*Math.log(Math.max(1e-12,pr)) + (1-p.lab)*Math.log(Math.max(1e-12,1-pr)));
+      ctx.beginPath(); ctx.arc(px(p.u), py(p.v), 5.5, 0, Math.PI*2);
+      ctx.fillStyle = p.lab ? '#C00000' : '#1F4E79';
+      ctx.fill(); ctx.strokeStyle='#FFF'; ctx.lineWidth=1.4; ctx.stroke();
+    });
+    loss /= pts.length;
+    ctx.beginPath(); ctx.arc(px(tp.u), py(tp.v), 8, 0, Math.PI*2);
+    ctx.fillStyle='#1A1A1A'; ctx.fill();
+    ctx.strokeStyle='#FFF'; ctx.lineWidth=2; ctx.stroke();
+    ctx.fillStyle='#555'; ctx.font='12px sans-serif';
+    ctx.fillText('tf-idf weight of "slow"  →', X0+130, Y1+22);
+    ctx.save(); ctx.translate(24, (Y0+Y1)/2+90); ctx.rotate(-Math.PI/2);
+    ctx.fillText('tf-idf weight of "excellent"  →', 0, 0); ctx.restore();
+    ctx.fillStyle='#C00000'; ctx.font='bold 12px sans-serif';
+    ctx.fillText('●  label 1 (complaint)', X1+30, 40);
+    ctx.fillStyle='#1F4E79';
+    ctx.fillText('●  label 0 (not a complaint)', X1+30, 62);
+    ctx.fillStyle='#1A1A1A';
+    ctx.fillText('—  boundary: p = 0.5', X1+30, 84);
+    ctx.fillText('●  draggable test point', X1+30, 106);
+    ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+    ctx.fillText('shading: red = high p', X1+30, 132);
+    var zt = w1*tp.u + w2*tp.v + b, pt = sig(zt);
+    out.innerHTML =
+      'test point x = ('+f(tp.u,3)+', '+f(tp.v,3)+')<br>' +
+      'z = '+f(w1,1)+'&times;'+f(tp.u,3)+' + '+f(w2,1)+'&times;'+f(tp.v,3)+' + '+f(b,2)+' = <strong>'+f(zt,4)+'</strong><br>' +
+      'p = &sigma;(z) = 1/(1+e^-('+f(zt,4)+')) = <strong>'+f(pt,4)+'</strong> &rarr; predicted label '+(pt>=0.5?1:0)+'<br>' +
+      'training accuracy = '+correct+'/'+pts.length+' = '+f(correct/pts.length,4)+
+      ' &nbsp;|&nbsp; mean cross-entropy = '+f(loss,4);
+  }
+  function grab(ev){
+    var q = canvasPos(c, ev);
+    if(q.x>=X0-10 && q.x<=X1+10 && q.y>=Y0-10 && q.y<=Y1+10){
+      tp.u = clamp(ux(q.x),0,1); tp.v = clamp(vy(q.y),0,1); draw();
+    }
+  }
+  c.addEventListener('mousedown', function(ev){ dragging = true; grab(ev); });
+  c.addEventListener('mousemove', function(ev){ if(dragging) grab(ev); });
+  window.addEventListener('mouseup', function(){ dragging = false; });
+  document.getElementById('lr-fit').addEventListener('click', function(){
+    var w1=0, w2=0, b=0, lr=2.0, lam=0.01, n=pts.length;
+    for(var it=0; it<6000; it++){
+      var g1=0, g2=0, gb=0;
+      for(var i=0;i<n;i++){
+        var p = pts[i], e = sig(w1*p.u + w2*p.v + b) - p.lab;
+        g1 += e*p.u; g2 += e*p.v; gb += e;
+      }
+      w1 -= lr*(g1/n + lam*w1); w2 -= lr*(g2/n + lam*w2); b -= lr*(gb/n);
+    }
+    w1El.value = f(clamp(w1,-10,10),1); w2El.value = f(clamp(w2,-10,10),1); bEl.value = f(clamp(b,-6,6),2);
+    draw();
+  });
+  document.getElementById('lr-reset').addEventListener('click', function(){
+    w1El.value = 3.0; w2El.value = -3.0; bEl.value = -0.4; tp.u = 0.5; tp.v = 0.5; draw();
+  });
+  w1El.addEventListener('input', draw); w2El.addEventListener('input', draw); bEl.addEventListener('input', draw);
+  draw();
+})();
+
+/* ---------- §8 trainable-parameter calculator ---------- */
+(function(){
+  var out = document.getElementById('ft-out');
+  if(!out) return;
+  var c = document.getElementById('ft-canvas'), ctx = c.getContext('2d');
+  var LEl=document.getElementById('ft-L'), DEl=document.getElementById('ft-D'),
+      FEl=document.getElementById('ft-F'), VEl=document.getElementById('ft-V'),
+      UEl=document.getElementById('ft-U'), embEl=document.getElementById('ft-emb');
+  function up(){
+    var L=Math.max(1,+LEl.value||1), D=Math.max(8,+DEl.value||8),
+        F=Math.max(8,+FEl.value||8), V=Math.max(100,+VEl.value||100);
+    UEl.max = L;
+    if(+UEl.value > L) UEl.value = L;
+    var U = +UEl.value;
+    document.getElementById('ft-Uv').textContent = U;
+    var perLayer = 4*D*D + 4*D + 2*D*F + F + D + 4*D;
+    var emb = V*D + 512*D + 2*D;
+    var head = D*D + D + 2*D + 2;
+    var total = L*perLayer + emb + head;
+    var trainable = head + U*perLayer + (embEl.checked ? emb : 0);
+    var frozen = total - trainable;
+    var optBytes = trainable*12 + total*4;
+    out.textContent =
+      '# per encoder layer\n' +
+      'attention  W_Q,W_K,W_V,W_O : 4 x ' + D + '^2 + 4 x ' + D + ' = ' + (4*D*D+4*D).toLocaleString() + '\n' +
+      'feed-forward (d -> f -> d)  : 2 x ' + D + ' x ' + F + ' + ' + F + ' + ' + D + ' = ' + (2*D*F+F+D).toLocaleString() + '\n' +
+      'two layer norms             : 4 x ' + D + ' = ' + (4*D).toLocaleString() + '\n' +
+      '                              --------------------\n' +
+      '                              ' + perLayer.toLocaleString() + ' per layer\n\n' +
+      '# whole model\n' +
+      'embeddings (word+pos+norm)  : ' + emb.toLocaleString() + '\n' +
+      'encoder (' + L + ' layers)          : ' + (L*perLayer).toLocaleString() + '\n' +
+      'classification head         : ' + head.toLocaleString() + '\n' +
+      'total                       : ' + total.toLocaleString() + '  (' + f(total/1e6,1) + 'M)\n\n' +
+      '# with the top ' + U + ' of ' + L + ' layers unfrozen and embeddings ' +
+        (embEl.checked ? 'trainable' : 'frozen') + '\n' +
+      'trainable : ' + trainable.toLocaleString() + '  (' + f(100*trainable/total,1) + '% of the model)\n' +
+      'frozen    : ' + frozen.toLocaleString() + '  (' + f(100*frozen/total,1) + '%)\n' +
+      'fp32 weights + gradients + two Adam moments ≈ ' + f(optBytes/1048576,0) + ' MB';
+    // bar
+    ctx.clearRect(0,0,c.width,c.height);
+    var W = c.width-60, x = 30, y = 40, h = 46;
+    var segs = [{n:'emb', p:emb, tr:embEl.checked}];
+    for(var i=0;i<L;i++) segs.push({ n:'L'+(i+1), p:perLayer, tr:(i >= L-U) });
+    segs.push({ n:'head', p:head, tr:true });
+    segs.forEach(function(s){
+      var w = W*s.p/total;
+      ctx.fillStyle = s.tr ? '#1F4E79' : '#D0D8E0';
+      ctx.fillRect(x, y, Math.max(1,w-1), h);
+      if(w > 34){
+        ctx.fillStyle = s.tr ? '#FFF' : '#555';
+        ctx.font = '10px sans-serif';
+        ctx.fillText(s.n, x+4, y+h/2+4);
+      }
+      x += w;
+    });
+    ctx.fillStyle='#1A1A1A'; ctx.font='12px sans-serif';
+    ctx.fillText('bar width ∝ parameter count', 30, 26);
+    ctx.fillStyle='#1F4E79'; ctx.fillRect(30, y+h+16, 12, 12);
+    ctx.fillStyle='#333'; ctx.fillText('trainable', 48, y+h+26);
+    ctx.fillStyle='#D0D8E0'; ctx.fillRect(150, y+h+16, 12, 12);
+    ctx.fillStyle='#333'; ctx.fillText('frozen', 168, y+h+26);
+  }
+  [LEl,DEl,FEl,VEl,UEl].forEach(function(e){ e.addEventListener('input', up); });
+  embEl.addEventListener('change', up);
+  up();
+})();
+
+/* ---------- §9 classification head forward pass ---------- */
+(function(){
+  var out = document.getElementById('hd-out');
+  if(!out) return;
+  var c = document.getElementById('hd-canvas'), ctx = c.getContext('2d');
+  var ids = ['hd-h0','hd-h1','hd-h2','hd-h3'];
+  var W1 = [[0.9,-0.6,0.3,0.2],[-0.4,0.8,-0.2,0.5],[0.2,0.3,0.7,-0.9],[0.5,-0.1,-0.4,0.6]];
+  var b1 = [0.1,0.4,0.3,0.0];
+  var W2 = [[-0.8,0.6,-0.5,0.7],[0.9,-0.4,0.6,-0.3]];
+  var b2 = [0.05,-0.1];
+  var shift = 0;
+  function up(){
+    var h = ids.map(function(id){
+      var v = +document.getElementById(id).value;
+      document.getElementById(id+'v').textContent = f(v,2);
+      return v;
+    });
+    var a = W1.map(function(row,i){
+      var s = b1[i];
+      for(var k=0;k<4;k++) s += row[k]*h[k];
+      return Math.max(0, s);
+    });
+    var z = W2.map(function(row,i){
+      var s = b2[i];
+      for(var k=0;k<4;k++) s += row[k]*a[k];
+      return s + shift;
+    });
+    var m = Math.max(z[0], z[1]);
+    var e0 = Math.exp(z[0]-m), e1 = Math.exp(z[1]-m);
+    var p0 = e0/(e0+e1), p1 = e1/(e0+e1);
+    out.textContent =
+      'h  = [' + h.map(function(v){ return f(v,2); }).join(', ') + ']\n\n' +
+      'a  = ReLU(W1 h + b1)\n' +
+      '   = [' + a.map(function(v){ return f(v,3); }).join(', ') + ']\n\n' +
+      'z0 = ' + W2[0].map(function(w,k){ return f(w,1)+'*'+f(a[k],3); }).join(' + ') + ' + ' + f(b2[0],2) +
+        (shift ? ' + ' + shift : '') + '\n   = ' + f(z[0],4) + '\n' +
+      'z1 = ' + W2[1].map(function(w,k){ return f(w,1)+'*'+f(a[k],3); }).join(' + ') + ' + ' + f(b2[1],2) +
+        (shift ? ' + ' + shift : '') + '\n   = ' + f(z[1],4) + '\n\n' +
+      'z1 - z0 = ' + f(z[1]-z[0],4) + '\n' +
+      'p1 = sigma(z1 - z0) = ' + f(sig(z[1]-z[0]),4) + '\n' +
+      'softmax          = [' + f(p0,4) + ', ' + f(p1,4) + ']\n' +
+      'predicted label  = ' + (p1 >= 0.5 ? 1 : 0) + '\n' +
+      'cross-entropy if true label is 1 : ' + f(-Math.log(Math.max(1e-12,p1)),4) + '\n' +
+      'logit shift currently applied    : +' + shift + ' to both';
+    ctx.clearRect(0,0,c.width,c.height);
+    var base = 170, w = 90;
+    [[p0,'class 0','#1F4E79',60],[p1,'class 1','#C00000',210]].forEach(function(t){
+      var hh = t[0]*130;
+      ctx.fillStyle = t[2]; ctx.fillRect(t[3], base-hh, w, hh);
+      ctx.fillStyle = '#333'; ctx.font = '12px sans-serif';
+      ctx.fillText(t[1], t[3]+16, base+18);
+      ctx.fillStyle = '#1A1A1A'; ctx.font = 'bold 13px sans-serif';
+      ctx.fillText(f(t[0],3), t[3]+22, base-hh-6);
+    });
+    ctx.strokeStyle='#CFD7DF'; ctx.beginPath(); ctx.moveTo(40,base); ctx.lineTo(340,base); ctx.stroke();
+    ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+    ctx.fillText('softmax output (sums to 1)', 60, 22);
+  }
+  ids.forEach(function(id){ document.getElementById(id).addEventListener('input', up); });
+  document.getElementById('hd-shift').addEventListener('click', function(){
+    shift = shift ? 0 : 3;
+    this.textContent = shift ? 'Remove the +3 logit shift' : 'Add +3 to both logits';
+    up();
+  });
+  up();
+})();
+
+/* ---------- §10 fine-tuning simulator ---------- */
+(function(){
+  var c = document.getElementById('sim-canvas');
+  if(!c) return;
+  var ctx = c.getContext('2d');
+  var lrEl=document.getElementById('sim-lr'), epEl=document.getElementById('sim-ep'),
+      nEl=document.getElementById('sim-n'), frEl=document.getElementById('sim-frozen'),
+      out=document.getElementById('sim-readout');
+  function curves(){
+    var ll = +lrEl.value, E = +epEl.value, N = +nEl.value, frozen = frEl.checked;
+    var speed = Math.exp(-Math.pow(ll+4.5,2)/(2*0.55*0.55));
+    var instab = Math.max(0, ll+3.6);
+    var floorLoss = frozen ? 0.42 : 0.06;
+    var k = 0.85*speed + 0.03;
+    var gapMax = (frozen ? 0.25 : 1.0) * Math.pow(1500/N, 0.6) * (0.5 + 0.5*speed);
+    var tr = [], va = [];
+    for(var e=0;e<=E;e++){
+      var t = floorLoss + (0.6931-floorLoss)*Math.exp(-k*e) + instab*0.55*(1-Math.exp(-0.6*e));
+      var gap = gapMax*(1 - Math.exp(-0.35*Math.max(0, e-1)));
+      tr.push(t); va.push(t + 0.02 + gap);
+    }
+    return { tr:tr, va:va, E:E, speed:speed, instab:instab, frozen:frozen, N:N, ll:ll };
+  }
+  function accFromLoss(v){
+    var x = clamp(v, 0, 0.6931);
+    return 0.5 + 0.49*Math.pow(1 - x/0.6931, 0.7);
+  }
+  function draw(){
+    var d = curves();
+    document.getElementById('sim-lrv').textContent = Math.pow(10, d.ll).toExponential(1);
+    document.getElementById('sim-epv').textContent = d.E;
+    document.getElementById('sim-nv').textContent = d.N.toLocaleString();
+    var X0=60, X1=700, Y0=25, Y1=280;
+    var maxY = Math.max(0.8, Math.max.apply(null, d.va), Math.max.apply(null, d.tr));
+    ctx.clearRect(0,0,c.width,c.height);
+    ctx.strokeStyle='#EEF1F5'; ctx.lineWidth=1;
+    for(var g=0; g<=5; g++){
+      var yy = Y0 + (Y1-Y0)*g/5;
+      ctx.beginPath(); ctx.moveTo(X0,yy); ctx.lineTo(X1,yy); ctx.stroke();
+      ctx.fillStyle='#888'; ctx.font='10px monospace';
+      ctx.fillText(f(maxY*(1-g/5),2), 26, yy+3);
+    }
+    ctx.strokeStyle='#CFD7DF'; ctx.beginPath();
+    ctx.moveTo(X0,Y0); ctx.lineTo(X0,Y1); ctx.lineTo(X1,Y1); ctx.stroke();
+    var px = function(e){ return X0 + (d.E ? (X1-X0)*e/d.E : 0); };
+    var py = function(v){ return Y1 - (Y1-Y0)*clamp(v,0,maxY)/maxY; };
+    // 0.693 reference
+    ctx.strokeStyle='#F9A825'; ctx.setLineDash([5,4]); ctx.beginPath();
+    ctx.moveTo(X0, py(0.6931)); ctx.lineTo(X1, py(0.6931)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#B07800'; ctx.font='10px sans-serif';
+    ctx.fillText('0.693 = loss of a model that always says 50/50', X0+8, py(0.6931)-5);
+    [['tr','#1F4E79'],['va','#C00000']].forEach(function(s){
+      ctx.strokeStyle=s[1]; ctx.lineWidth=2.4; ctx.beginPath();
+      d[s[0]].forEach(function(v,e){ if(e===0) ctx.moveTo(px(e),py(v)); else ctx.lineTo(px(e),py(v)); });
+      ctx.stroke();
+      ctx.fillStyle=s[1];
+      d[s[0]].forEach(function(v,e){ ctx.beginPath(); ctx.arc(px(e),py(v),3.2,0,Math.PI*2); ctx.fill(); });
+    });
+    var best=1, bv=Infinity;
+    for(var e=1;e<=d.E;e++) if(d.va[e] < bv){ bv=d.va[e]; best=e; }
+    ctx.strokeStyle='#1B5E20'; ctx.setLineDash([3,3]); ctx.lineWidth=1.6;
+    ctx.beginPath(); ctx.moveTo(px(best),Y0); ctx.lineTo(px(best),Y1); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#1B5E20'; ctx.font='bold 11px sans-serif';
+    ctx.fillText('best checkpoint: epoch '+best, px(best)+6, Y0+14);
+    ctx.fillStyle='#555'; ctx.font='12px sans-serif';
+    ctx.fillText('epoch →', (X0+X1)/2-20, Y1+24);
+    for(var e2=0;e2<=d.E;e2++){
+      ctx.fillStyle='#888'; ctx.font='10px monospace';
+      if(d.E<=12 || e2%2===0) ctx.fillText(e2, px(e2)-3, Y1+14);
+    }
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 12px sans-serif';
+    ctx.fillText('— training loss', X1+18, 50);
+    ctx.fillStyle='#C00000';
+    ctx.fillText('— validation loss', X1+18, 72);
+    var verdict;
+    if(d.instab > 0.35) verdict = 'Learning rate far too high. The loss is rising: the pretrained weights are being destroyed faster than the task signal can rebuild them.';
+    else if(d.instab > 0.05) verdict = 'Learning rate on the high side. Training is unstable and the loss floor is worse than it should be.';
+    else if(d.speed < 0.15) verdict = 'Learning rate too low for this epoch budget. The curve has barely left 0.693 — this looks like an untrained model.';
+    else if(d.E > best + 1) verdict = 'Overfitting after epoch ' + best + '. Training loss keeps falling while validation loss climbs; the extra epochs are memorization. Keep the epoch-' + best + ' checkpoint.';
+    else if(best === d.E) verdict = 'Validation loss is still falling at the last epoch — underfit. More epochs would help.';
+    else verdict = 'Reasonable run. Best validation loss at epoch ' + best + '.';
+    out.innerHTML =
+      'learning rate = ' + Math.pow(10,d.ll).toExponential(2) + ' &nbsp;|&nbsp; epochs = ' + d.E +
+      ' &nbsp;|&nbsp; n = ' + d.N.toLocaleString() + ' &nbsp;|&nbsp; encoder ' + (d.frozen ? 'frozen' : 'trainable') + '<br>' +
+      'final train loss = ' + f(d.tr[d.E],4) + ' &nbsp;|&nbsp; final validation loss = ' + f(d.va[d.E],4) +
+      ' &nbsp;|&nbsp; generalization gap = ' + f(d.va[d.E]-d.tr[d.E],4) + '<br>' +
+      'best epoch = ' + best + ' at validation loss ' + f(bv,4) +
+      ' (implied validation accuracy ≈ ' + f(accFromLoss(bv),3) + ')<br><strong>' + verdict + '</strong>';
+  }
+  [lrEl,epEl,nEl].forEach(function(e){ e.addEventListener('input', draw); });
+  frEl.addEventListener('change', draw);
+  draw();
+})();
+
+/* ---------- §11 confusion-matrix calculator ---------- */
+(function(){
+  var out = document.getElementById('cm-out');
+  if(!out) return;
+  var grid = document.getElementById('cm-grid');
+  var ids = ['cm-tp','cm-fn','cm-fp','cm-tn'];
+  function v(id){ return Math.max(0, Math.round(+document.getElementById(id).value || 0)); }
+  function up(){
+    var tp=v('cm-tp'), fn=v('cm-fn'), fp=v('cm-fp'), tn=v('cm-tn');
+    var m = metrics(tp,fn,fp,tn);
+    grid.innerHTML = cmTable(tp,fn,fp,tn);
+    var precStr = (m.prec===null)
+      ? 'precision = TP/(TP+FP) = ' + tp + '/0 = UNDEFINED (the model never predicts 1)'
+      : 'precision = TP/(TP+FP) = ' + tp + '/' + (tp+fp) + ' = ' + f(m.prec,4);
+    var recStr = (m.rec===null)
+      ? 'recall    = TP/(TP+FN) = ' + tp + '/0 = UNDEFINED (there are no positive examples)'
+      : 'recall    = TP/(TP+FN) = ' + tp + '/' + (tp+fn) + ' = ' + f(m.rec,4);
+    var f1Str = (m.prec===null || m.rec===null || (m.prec+m.rec)===0)
+      ? 'F1        = 0 (precision or recall is 0 or undefined)'
+      : 'F1        = 2*' + f(m.prec,4) + '*' + f(m.rec,4) + '/(' + f(m.prec,4) + '+' + f(m.rec,4) + ') = ' + f(m.f1,4);
+    var prevalence = m.n ? (tp+fn)/m.n : 0;
+    out.textContent =
+      'n = ' + m.n + ' examples, ' + (tp+fn) + ' truly positive (prevalence ' + f(100*prevalence,1) + '%)\n\n' +
+      'accuracy  = (TP+TN)/n   = (' + tp + '+' + tn + ')/' + m.n + ' = ' + f(m.acc,4) + '\n' +
+      precStr + '\n' + recStr + '\n' + f1Str + '\n\n' +
+      'majority-class accuracy (always predict the larger class) = ' +
+        f(Math.max(tp+fn, fp+tn)/Math.max(1,m.n),4) + '\n' +
+      'specificity = TN/(TN+FP) = ' + ((tn+fp) ? f(tn/(tn+fp),4) : 'undefined') + '\n' +
+      'false-positive rate      = ' + ((tn+fp) ? f(fp/(tn+fp),4) : 'undefined');
+  }
+  ids.forEach(function(id){ document.getElementById(id).addEventListener('input', up); });
+  document.getElementById('cm-ex1').addEventListener('click', function(){
+    document.getElementById('cm-tp').value=6; document.getElementById('cm-fn').value=54;
+    document.getElementById('cm-fp').value=3; document.getElementById('cm-tn').value=1937; up();
+  });
+  document.getElementById('cm-ex2').addEventListener('click', function(){
+    document.getElementById('cm-tp').value=0; document.getElementById('cm-fn').value=60;
+    document.getElementById('cm-fp').value=0; document.getElementById('cm-tn').value=1940; up();
+  });
+  up();
+})();
+
+/* ---------- §12 threshold sweep ---------- */
+(function(){
+  var hc = document.getElementById('th-hist');
+  if(!hc) return;
+  var hx = hc.getContext('2d');
+  var pc = document.getElementById('th-pr'), px2 = pc.getContext('2d');
+  var tEl = document.getElementById('th-t'), out = document.getElementById('th-readout'),
+      grid = document.getElementById('th-grid');
+  var r = lcg(20240517), g = gaussFrom(r), data = [];
+  var i;
+  for(i=0;i<90;i++)  data.push({ y:1, s:sig(1.15 + 1.25*g()) });
+  for(i=0;i<210;i++) data.push({ y:0, s:sig(-1.25 + 1.15*g()) });
+  function at(t){
+    var tp=0, fn=0, fp=0, tn=0;
+    data.forEach(function(d){
+      var pred = d.s >= t ? 1 : 0;
+      if(d.y===1 && pred===1) tp++;
+      else if(d.y===1) fn++;
+      else if(pred===1) fp++;
+      else tn++;
+    });
+    return { tp:tp, fn:fn, fp:fp, tn:tn, m:metrics(tp,fn,fp,tn) };
+  }
+  var sweep = [];
+  for(var k=0;k<=100;k++){ var t=k/100; var a=at(t); sweep.push({ t:t, p:a.m.prec, r:a.m.rec, f1:a.m.f1 }); }
+  function draw(){
+    var t = +tEl.value;
+    document.getElementById('th-tv').textContent = f(t,2);
+    var a = at(t), m = a.m;
+    // histogram
+    var W=hc.width, H=hc.height, X0=44, X1=W-14, Y0=18, Y1=H-34, NB=25;
+    hx.clearRect(0,0,W,H);
+    var bins = [];
+    for(var b=0;b<NB;b++) bins.push({ p:0, n:0 });
+    data.forEach(function(d){
+      var bi = Math.min(NB-1, Math.floor(d.s*NB));
+      if(d.y===1) bins[bi].p++; else bins[bi].n++;
+    });
+    var mx = 1;
+    bins.forEach(function(b){ mx = Math.max(mx, b.p, b.n); });
+    var bw = (X1-X0)/NB;
+    bins.forEach(function(b,bi){
+      var x = X0 + bi*bw;
+      var hn = (Y1-Y0)*b.n/mx, hp = (Y1-Y0)*b.p/mx;
+      hx.fillStyle='rgba(31,78,121,0.55)'; hx.fillRect(x, Y1-hn, bw-1, hn);
+      hx.fillStyle='rgba(192,0,0,0.55)';   hx.fillRect(x, Y1-hp, bw-1, hp);
+    });
+    hx.strokeStyle='#CFD7DF'; hx.beginPath(); hx.moveTo(X0,Y0); hx.lineTo(X0,Y1); hx.lineTo(X1,Y1); hx.stroke();
+    var tx = X0 + (X1-X0)*t;
+    hx.strokeStyle='#1B5E20'; hx.lineWidth=2.4; hx.beginPath(); hx.moveTo(tx,Y0); hx.lineTo(tx,Y1); hx.stroke();
+    hx.fillStyle='#1B5E20'; hx.font='bold 11px sans-serif';
+    hx.fillText('threshold ' + f(t,2), Math.min(tx+5, X1-84), Y0+11);
+    hx.fillStyle='#555'; hx.font='11px sans-serif';
+    hx.fillText('model score →', (X0+X1)/2-34, Y1+22);
+    hx.fillStyle='rgba(192,0,0,0.75)'; hx.fillText('■ truly positive (90)', X0+6, Y0+12);
+    hx.fillStyle='rgba(31,78,121,0.75)'; hx.fillText('■ truly negative (210)', X0+6, Y0+26);
+    hx.fillStyle='#888'; hx.font='10px monospace';
+    hx.fillText('0.0', X0-8, Y1+13); hx.fillText('1.0', X1-12, Y1+13); hx.fillText(String(mx), 16, Y0+6);
+    // PR curve
+    var W2=pc.width, H2=pc.height, A0=44, A1=W2-14, B0=18, B1=H2-34;
+    px2.clearRect(0,0,W2,H2);
+    px2.strokeStyle='#EEF1F5';
+    for(var gg=0;gg<=4;gg++){
+      var yy=B0+(B1-B0)*gg/4;
+      px2.beginPath(); px2.moveTo(A0,yy); px2.lineTo(A1,yy); px2.stroke();
+    }
+    px2.strokeStyle='#CFD7DF'; px2.beginPath(); px2.moveTo(A0,B0); px2.lineTo(A0,B1); px2.lineTo(A1,B1); px2.stroke();
+    px2.strokeStyle='#1F4E79'; px2.lineWidth=2; px2.beginPath();
+    var started=false;
+    sweep.forEach(function(s){
+      if(s.p===null || s.r===null) return;
+      var X = A0+(A1-A0)*s.r, Y = B1-(B1-B0)*s.p;
+      if(!started){ px2.moveTo(X,Y); started=true; } else px2.lineTo(X,Y);
+    });
+    px2.stroke();
+    if(m.prec!==null && m.rec!==null){
+      var cx = A0+(A1-A0)*m.rec, cy = B1-(B1-B0)*m.prec;
+      px2.fillStyle='#1B5E20'; px2.beginPath(); px2.arc(cx,cy,6,0,Math.PI*2); px2.fill();
+      px2.strokeStyle='#FFF'; px2.lineWidth=2; px2.stroke();
+    }
+    px2.fillStyle='#555'; px2.font='11px sans-serif';
+    px2.fillText('recall →', (A0+A1)/2-22, B1+22);
+    px2.save(); px2.translate(14, (B0+B1)/2+26); px2.rotate(-Math.PI/2);
+    px2.fillText('precision →', 0, 0); px2.restore();
+    px2.fillStyle='#888'; px2.font='10px monospace';
+    px2.fillText('0', A0-8, B1+13); px2.fillText('1', A1-4, B1+13);
+    px2.fillText('1', A0-14, B0+6); px2.fillText('0', A0-14, B1+3);
+    grid.innerHTML = cmTable(a.tp, a.fn, a.fp, a.tn);
+    out.innerHTML =
+      'threshold = ' + f(t,2) + ' &nbsp;|&nbsp; predicted positive: ' + (a.tp+a.fp) + ' of 300<br>' +
+      'accuracy  = ' + f(m.acc,4) + '<br>' +
+      'precision = ' + (m.prec===null ? 'undefined (no positive predictions)' : f(m.prec,4)) + '<br>' +
+      'recall    = ' + (m.rec===null ? 'undefined' : f(m.rec,4)) + '<br>' +
+      'F1        = ' + f(m.f1,4) + '<br>' +
+      'misses (FN) = ' + a.fn + ' &nbsp;|&nbsp; false alarms (FP) = ' + a.fp;
+  }
+  tEl.addEventListener('input', draw);
+  document.getElementById('th-bestf1').addEventListener('click', function(){
+    var best = sweep[0], i2;
+    for(i2=0;i2<sweep.length;i2++) if(sweep[i2].f1 > best.f1) best = sweep[i2];
+    tEl.value = best.t; draw();
+  });
+  document.getElementById('th-rec90').addEventListener('click', function(){
+    var chosen = 0.01, i2;
+    for(i2=0;i2<sweep.length;i2++) if(sweep[i2].r !== null && sweep[i2].r >= 0.90) chosen = sweep[i2].t;
+    tEl.value = Math.max(0.01, chosen); draw();
+  });
+  draw();
+})();
+
+/* ---------- §13 class imbalance ---------- */
+(function(){
+  var c = document.getElementById('ib-canvas');
+  if(!c) return;
+  var ctx = c.getContext('2d');
+  var pEl=document.getElementById('ib-p'), tEl=document.getElementById('ib-tpr'),
+      fEl=document.getElementById('ib-fpr'), out=document.getElementById('ib-out');
+  var N = 2000;
+  function draw(){
+    var p = +pEl.value/100, TPR = +tEl.value, FPR = +fEl.value;
+    document.getElementById('ib-pv').textContent = f(100*p,0) + '%';
+    document.getElementById('ib-tprv').textContent = f(TPR,2);
+    document.getElementById('ib-fprv').textContent = f(FPR,2);
+    var P = Math.round(N*p), Ng = N-P;
+    var maj = metrics(0, P, 0, Ng);
+    var dTP = Math.round(P*TPR), dFP = Math.round(Ng*FPR);
+    var det = metrics(dTP, P-dTP, dFP, Ng-dFP);
+    var pStar = FPR/(TPR+FPR);
+    ctx.clearRect(0,0,c.width,c.height);
+    var groups = [
+      ['accuracy', maj.acc, det.acc],
+      ['precision', maj.prec, det.prec],
+      ['recall', maj.rec, det.rec],
+      ['F1', maj.f1, det.f1]
+    ];
+    var X0=60, Y0=20, Y1=190, gw=190;
+    ctx.strokeStyle='#EEF1F5';
+    for(var g=0;g<=4;g++){
+      var yy = Y1-(Y1-Y0)*g/4;
+      ctx.beginPath(); ctx.moveTo(X0-10,yy); ctx.lineTo(X0+4*gw,yy); ctx.stroke();
+      ctx.fillStyle='#888'; ctx.font='10px monospace'; ctx.fillText(f(g/4,2), 24, yy+3);
+    }
+    groups.forEach(function(gr, gi){
+      var x = X0 + gi*gw;
+      [[gr[1], '#F9A825', 'do-nothing'], [gr[2], '#1F4E79', 'detector']].forEach(function(t, ti){
+        var bx = x + ti*62;
+        if(t[0] === null){
+          ctx.strokeStyle='#BBB'; ctx.setLineDash([3,3]);
+          ctx.strokeRect(bx, Y1-14, 54, 14); ctx.setLineDash([]);
+          ctx.fillStyle='#888'; ctx.font='10px sans-serif'; ctx.fillText('n/a', bx+18, Y1-3);
+        } else {
+          var hh = (Y1-Y0)*t[0];
+          ctx.fillStyle = t[1]; ctx.fillRect(bx, Y1-hh, 54, hh);
+          ctx.fillStyle='#1A1A1A'; ctx.font='bold 11px sans-serif';
+          ctx.fillText(f(t[0],3), bx+8, Y1-hh-5);
+        }
+      });
+      ctx.fillStyle='#333'; ctx.font='12px sans-serif';
+      ctx.fillText(gr[0], x+30, Y1+18);
+    });
+    ctx.fillStyle='#F9A825'; ctx.fillRect(X0, Y1+34, 12, 12);
+    ctx.fillStyle='#333'; ctx.font='12px sans-serif';
+    ctx.fillText('always predict 0 (never trained)', X0+18, Y1+44);
+    ctx.fillStyle='#1F4E79'; ctx.fillRect(X0+280, Y1+34, 12, 12);
+    ctx.fillStyle='#333'; ctx.fillText('real detector', X0+298, Y1+44);
+    var winner = (det.acc > maj.acc)
+      ? 'The detector is ahead on accuracy.'
+      : '<strong>The do-nothing model is ahead on accuracy</strong> even though it catches nothing.';
+    out.innerHTML =
+      '<div class="two-up">' +
+        '<div><div class="mini" style="margin-bottom:4px">always predict 0</div>' + cmTable(0,P,0,Ng) + '</div>' +
+        '<div><div class="mini" style="margin-bottom:4px">real detector</div>' + cmTable(dTP,P-dTP,dFP,Ng-dFP) + '</div>' +
+        '<div class="readout" style="flex:1 1 320px">' +
+          'n = ' + N.toLocaleString() + ', positives = ' + P + ' (' + f(100*p,1) + '%)<br>' +
+          'do-nothing: accuracy ' + f(maj.acc,4) + ', recall 0.0000, F1 0.0000<br>' +
+          'detector:   accuracy ' + f(det.acc,4) + ', recall ' + f(det.rec,4) + ', F1 ' + f(det.f1,4) + '<br>' +
+          'crossover prevalence p* = FPR/(TPR+FPR) = ' + f(FPR,2) + '/' + f(TPR+FPR,2) + ' = <strong>' + f(100*pStar,1) + '%</strong><br>' +
+          winner +
+        '</div>' +
+      '</div>';
+  }
+  [pEl,tEl,fEl].forEach(function(e){ e.addEventListener('input', draw); });
+  draw();
+})();
+
+/* ---------- §14 calibration ---------- */
+(function(){
+  var c = document.getElementById('cal-canvas');
+  if(!c) return;
+  var ctx = c.getContext('2d');
+  var aEl=document.getElementById('cal-a'), tEl=document.getElementById('cal-t'),
+      out=document.getElementById('cal-readout');
+  var r = lcg(991117), g = gaussFrom(r), S = [];
+  for(var i=0;i<3000;i++){
+    var z = 1.7*g(), q = sig(z);
+    var y = (r() < q) ? 1 : 0, pred = z > 0 ? 1 : 0;
+    S.push({ a: Math.abs(z), c: (y === pred) ? 1 : 0 });
+  }
+  function confs(A, T){ return S.map(function(s){ return clamp(sig(A*s.a/T), 1e-6, 1-1e-6); }); }
+  function stats(A, T){
+    var cf = confs(A,T), NB = 10, bins = [];
+    for(var b=0;b<NB;b++) bins.push({ n:0, sc:0, sa:0 });
+    var brier=0, meanConf=0, acc=0, nll=0;
+    for(var i2=0;i2<S.length;i2++){
+      var p = cf[i2], ok = S[i2].c;
+      var bi = clamp(Math.floor((p-0.5)/0.05), 0, NB-1);
+      bins[bi].n++; bins[bi].sc += p; bins[bi].sa += ok;
+      brier += (p-ok)*(p-ok); meanConf += p; acc += ok;
+      nll += -(ok*Math.log(p) + (1-ok)*Math.log(1-p));
+    }
+    var n = S.length, ece = 0;
+    bins.forEach(function(b){
+      if(b.n){ ece += (b.n/n)*Math.abs(b.sa/b.n - b.sc/b.n); }
+    });
+    return { bins:bins, ece:ece, brier:brier/n, meanConf:meanConf/n, acc:acc/n, nll:nll/n, n:n };
+  }
+  function draw(){
+    var A = +aEl.value, T = +tEl.value;
+    document.getElementById('cal-av').textContent = f(A,1);
+    document.getElementById('cal-tv').textContent = f(T,1);
+    var st = stats(A,T), raw = stats(A,1);
+    var W=c.width, H=c.height, X0=48, X1=W-16, Y0=16, Y1=H-46;
+    var lo=0.4, hi=1.0;
+    var mx = function(v){ return X0 + (X1-X0)*(clamp(v,lo,hi)-lo)/(hi-lo); };
+    var my = function(v){ return Y1 - (Y1-Y0)*(clamp(v,lo,hi)-lo)/(hi-lo); };
+    ctx.clearRect(0,0,W,H);
+    ctx.strokeStyle='#EEF1F5';
+    for(var k=0;k<=6;k++){
+      var t2 = lo + (hi-lo)*k/6;
+      ctx.beginPath(); ctx.moveTo(X0,my(t2)); ctx.lineTo(X1,my(t2)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(mx(t2),Y0); ctx.lineTo(mx(t2),Y1); ctx.stroke();
+    }
+    ctx.strokeStyle='#CFD7DF'; ctx.beginPath();
+    ctx.moveTo(X0,Y0); ctx.lineTo(X0,Y1); ctx.lineTo(X1,Y1); ctx.stroke();
+    ctx.strokeStyle='#888'; ctx.setLineDash([5,4]); ctx.beginPath();
+    ctx.moveTo(mx(lo),my(lo)); ctx.lineTo(mx(hi),my(hi)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#888'; ctx.font='10px sans-serif';
+    ctx.fillText('perfect calibration', mx(0.62), my(0.70));
+    var prev = null;
+    st.bins.forEach(function(b){
+      if(!b.n) return;
+      var cc = b.sc/b.n, aa = b.sa/b.n;
+      ctx.strokeStyle='rgba(192,0,0,0.45)'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(mx(cc),my(cc)); ctx.lineTo(mx(cc),my(aa)); ctx.stroke();
+      if(prev){ ctx.strokeStyle='#1F4E79'; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.moveTo(prev[0],prev[1]); ctx.lineTo(mx(cc),my(aa)); ctx.stroke(); }
+      prev = [mx(cc), my(aa)];
+      var rr = 3 + 7*Math.sqrt(b.n/st.n);
+      ctx.fillStyle='#1F4E79'; ctx.beginPath(); ctx.arc(mx(cc),my(aa),rr,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='#FFF'; ctx.lineWidth=1.2; ctx.stroke();
+    });
+    ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+    ctx.fillText('stated confidence →', (X0+X1)/2-52, Y1+22);
+    ctx.save(); ctx.translate(14, (Y0+Y1)/2+38); ctx.rotate(-Math.PI/2);
+    ctx.fillText('observed accuracy →', 0, 0); ctx.restore();
+    ctx.fillStyle='#888'; ctx.font='10px monospace';
+    ctx.fillText('0.4', X0-6, Y1+13); ctx.fillText('1.0', X1-16, Y1+13);
+    ctx.fillText('1.0', X0-40, Y0+6); ctx.fillText('0.4', X0-40, Y1+3);
+    ctx.fillStyle='#555'; ctx.font='10px sans-serif';
+    ctx.fillText('dot area ∝ examples in the bin', X0+6, Y1-6);
+    var gap = st.meanConf - st.acc;
+    out.innerHTML =
+      'overconfidence = ' + f(A,1) + ', temperature T = ' + f(T,1) + '<br><br>' +
+      'mean stated confidence : <strong>' + f(st.meanConf,4) + '</strong><br>' +
+      'observed accuracy      : <strong>' + f(st.acc,4) + '</strong> (unchanged by A and T — no prediction flips)<br>' +
+      'gap                    : ' + (gap >= 0 ? '+' : '') + f(gap,4) +
+        (gap > 0.02 ? ' &rarr; overconfident' : (gap < -0.02 ? ' &rarr; underconfident' : ' &rarr; close to calibrated')) + '<br>' +
+      'ECE (10 bins)          : <strong>' + f(st.ece,4) + '</strong><br>' +
+      'Brier score            : ' + f(st.brier,4) + '<br>' +
+      'mean NLL               : ' + f(st.nll,4) + '<br><br>' +
+      'at T = 1 this model would have ECE ' + f(raw.ece,4) + ', so temperature scaling has ' +
+      (st.ece < raw.ece ? 'removed ' + f(100*(1-st.ece/Math.max(1e-9,raw.ece)),0) + '% of the calibration error.'
+                        : 'not helped at this setting.');
+  }
+  aEl.addEventListener('input', draw);
+  tEl.addEventListener('input', draw);
+  document.getElementById('cal-fit').addEventListener('click', function(){
+    var A = +aEl.value, bestT = 1, bestNLL = Infinity;
+    for(var T = 0.5; T <= 4.001; T += 0.01){
+      var s = stats(A, T);
+      if(s.nll < bestNLL){ bestNLL = s.nll; bestT = T; }
+    }
+    tEl.value = f(bestT,1);
+    draw();
+  });
+  draw();
+})();
+</script>
+</body>
+</html>

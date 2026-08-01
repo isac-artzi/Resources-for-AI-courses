@@ -1,0 +1,86 @@
+# Default configuration for the AskMyDocs pipeline.
+# The API accepts the chunking block per request; this file records the defaults
+# so a run can be reproduced from the repository alone. Every value here also
+# appears in a logged row, which is what lets you attribute a change in answer
+# quality to a change in configuration rather than to the weather.
+
+corpus:
+  # The retrieval collection: what the service searches at query time.
+  # At least 50 documents. Record its source, domain, and total token count in
+  # the README — total token count is sum(token_count) over the documents table.
+  retrieval:
+    name: "<name your collection>"
+    source: "<url, dataset id, or path>"
+    domain: "<what the documents are about>"
+    document_count: 0
+    total_tokens: 0
+
+  # The fine-tuning corpus: what the generator was adapted on. DISJOINT from the
+  # collection above. Not overlapping. Not "mostly separate". Disjoint.
+  #
+  # If the generator has already memorised the documents it later retrieves, it
+  # answers correctly with retrieval switched off, retrieval appears to add
+  # nothing, and the with/without comparison — the point of the assignment —
+  # measures your bookkeeping instead of your pipeline.
+  #
+  # Enforced in three places: api/main.py refuses the ingest with a 409,
+  # nlp.check_corpus_disjointness catches near-duplicates that have a different
+  # hash, and a unique index on documents.content_sha256 refuses it at the
+  # database. Document in your report which of the three caught anything.
+  finetune:
+    name: "<name your fine-tuning corpus>"
+    source: "<url, dataset id, or path>"
+    domain: "<what these documents are about>"
+    held_out_fraction: 0.10   # split by DOCUMENT, never inside a document
+    disjointness:
+      shingle_size: 8         # words per n-gram for near-duplicate detection
+      max_jaccard: 0.10       # above this, two documents are treated as one
+
+chunking:
+  # 300-500 tokens, 10-20 percent overlap. Both ranges are enforced by pydantic
+  # in shared/schemas.py and again by check constraints in the migration, so a
+  # typo fails at the write instead of showing up as mediocre retrieval later.
+  #
+  # Record WHY you chose these numbers, not only what they are. Shorter chunks
+  # retrieve precisely and lose context; longer chunks carry context and dilute
+  # their own embedding until one vector has to stand for five unrelated
+  # paragraphs.
+  chunk_size_tokens: 400
+  overlap_ratio: 0.15         # 60 tokens; the stride is therefore 340
+  tokenizer_name: sentence-transformers/all-MiniLM-L6-v2
+
+embedding:
+  # 384 dimensions. This number must match the vector(384) column in
+  # db/migrations/001_init.sql and nlp.EMBEDDING_DIM. Change one, change all
+  # three, and re-embed everything — there is no partial migration.
+  model: sentence-transformers/all-MiniLM-L6-v2
+  dimension: 384
+  normalise: true             # so a dot product IS cosine similarity downstream
+
+retrieval:
+  k: 5
+  metric: cosine
+  # Optional floor. A passage below this similarity is arguably not a result at
+  # all, and returning it anyway lets the generator build a confident answer on
+  # something irrelevant. If you set one, justify the value from your own score
+  # distribution rather than picking a round number.
+  min_similarity: null
+
+generation:
+  # Free-plan memory will not hold a large model. Either name a small causal
+  # model you have actually watched start, or set provider to an inference API
+  # and keep only the embedding model in your own process. Say which in the
+  # MODEL_CARD, and say how much memory it needed.
+  provider: local              # "local" or "inference_api"
+  model: distilgpt2
+  max_new_tokens: 256
+  do_sample: false             # greedy, so the with/without comparison reproduces
+  context_window_tokens: 1024  # k=5 x 400 tokens will not fit. Truncate on purpose.
+
+# Local development store. ChromaDB keeps the iteration loop fast; Supabase
+# pgvector is what is deployed. Use the SAME embedding model for both — a
+# collection embedded with one model and queried with another returns confident
+# nonsense with no error at all.
+local_store:
+  backend: chromadb
+  path: .chroma/

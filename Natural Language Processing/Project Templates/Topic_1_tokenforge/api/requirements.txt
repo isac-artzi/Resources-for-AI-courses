@@ -1,0 +1,9 @@
+# API tier — installed by Render.com (see render.yaml buildCommand).
+# Keep this list minimal: every megabyte is cold-start time on the free plan.
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic==2.9.2
+transformers==4.44.2
+tokenizers==0.19.1
+supabase==2.7.4
+python-dotenv==1.0.1

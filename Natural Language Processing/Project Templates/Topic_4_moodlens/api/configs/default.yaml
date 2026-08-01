@@ -1,0 +1,71 @@
+# Default configuration for MoodLens.
+#
+# The service reads its serving settings from the environment (see .env.example);
+# this file records the TRAINING configuration so a run can be reproduced from
+# the repository alone. Copy the block you used into runs.config when you log a
+# training run — a config file in the repo tells you what the defaults were, the
+# logged copy tells you what you actually ran.
+
+dataset:
+  # "imdb", or the aspect-annotated corpus you chose instead. Whatever you put
+  # here also goes in the model card, because a metric without its corpus is not
+  # a metric.
+  name: imdb
+  # IMDb ships train and test only. Carve validation out of train with this seed
+  # and never let a validation review reach test.
+  validation_fraction: 0.2
+  split_seed: 13
+  # Set while debugging so a full pass takes a minute. Put it back to null and
+  # report the real numbers.
+  limit: null
+
+baseline:
+  # TF-IDF + linear. Unigrams alone cannot see "not good"; bigrams can see it and
+  # cost you vocabulary size. Report what the change did.
+  ngram_range: [1, 2]
+  min_df: 2
+  sublinear_tf: true
+  max_features: 50000
+  C: 1.0
+
+fine_tune:
+  # A small checkpoint fine-tunes on CPU in a long coffee break. Train OFF
+  # Render — the free tier has neither the memory nor the time.
+  base_model: distilbert-base-uncased
+  output_dir: ./models/moodlens-v1
+  model_version: moodlens-v1
+  learning_rate: 2.0e-5
+  epochs: 3
+  batch_size: 16
+  max_length: 256
+  # "head" keeps the first max_length tokens, "tail" the last, "chunk" splits and
+  # pools. IMDb reviews often turn in the last paragraph ("...but I enjoyed it
+  # anyway"), so this is a modelling decision, not a default to accept quietly.
+  truncation: head
+  seed: 13
+
+calibration:
+  # "none", "platt" or "isotonic". Fit on VALIDATION, evaluate on test. Leaving
+  # it at "none" is allowed; leaving it at "none" and calling the output a
+  # probability is not.
+  method: platt
+  n_bins: 10
+
+aspects:
+  # These three are a modelling decision. See the comment above ASPECTS in
+  # api/nlp.py, and write the mapping rules you used into the model card.
+  names: [acting, plot, production]
+  # "cue" (keyword sentences + document model), "sentence" (classify each
+  # sentence, pool per aspect), or "joint" (aspect-as-input model).
+  strategy: cue
+
+bias_audit:
+  # At least two. review_length is measured; genre is only observed if your
+  # corpus carries the field, and inferring it makes the audit circular.
+  slices: [review_length, genre]
+  length_buckets:
+    short_max_tokens: 59
+    medium_max_tokens: 199
+  # Buckets smaller than this get a "too small to call" note in the tab rather
+  # than a confident claim.
+  min_bucket_n: 100

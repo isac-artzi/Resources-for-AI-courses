@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 6 Exercises — Part-of-Speech Tagging</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+       margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6; }
+.container { max-width: 980px; margin: 24px auto 48px; background: white;
+             padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.35em; margin-top: 40px;
+     border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+h4 { color: #555; font-size: 1.0em; margin-top: 18px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 6px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7;
+       padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px; overflow-x: auto;
+      border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79;
+           padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px;
+        margin: 14px 0; border-radius: 4px; font-size: 0.93em; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+        padding: 22px; margin: 22px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.controls { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 180px; }
+.control input[type="number"] { width: 80px; padding: 4px 8px;
+            border: 1px solid #CFD7DF; border-radius: 4px; font-family: inherit; }
+.control select { padding: 5px 8px; border: 1px solid #CFD7DF; border-radius: 4px;
+                  font-family: inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px;
+           border-radius: 6px; font-family: "SF Mono", Consolas, monospace;
+           font-size: 0.88em; min-width: 220px; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 16px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.93em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+      background: #F2F4F7; padding: 4px 8px; border-radius: 4px; }
+.eq-block { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+            background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+            text-align: center; margin: 14px 0; display: block; }
+.nav { display: flex; justify-content: space-between; margin-top: 40px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+       padding: 16px 22px; margin-bottom: 28px; font-size: 0.92em; }
+.toc h3 { margin: 0 0 8px; color: #1F4E79; font-size: 1.0em; }
+.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 24px; }
+.toc a { color: #1F4E79; text-decoration: none; } .toc a:hover { text-decoration: underline; }
+.tag { display: inline-block; padding: 2px 8px; background: #E0E5EB;
+       border-radius: 12px; font-size: 0.75em; color: #555;
+       text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px; }
+.tag.interactive { background: #E1F0EA; color: #1B5E20; }
+.tag.code { background: #F2F4F7; color: #555; }
+.tag.math { background: #FCE8EE; color: #6E1414; }
+table.cmp { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 0.92em; }
+table.cmp th, table.cmp td { border: 1px solid #E0E5EB; padding: 8px 12px; text-align: left; }
+table.cmp th { background: #F2F4F7; color: #1F4E79; }
+.archetype { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
+.arc-card { border: 1px solid #D0D8E0; border-radius: 8px; padding: 14px;
+            background: white; font-size: 0.9em; }
+.arc-card .name { color: #1F4E79; font-weight: 600; }
+.arc-card .role { color: #555; margin-top: 6px; }
+/* --- appended: exercise layout --- */
+.exercise { border: 1px solid #E0E5EB; border-radius: 8px; padding: 18px 24px;
+            margin: 22px 0; background: #fff; }
+.exercise h3 { margin-top: 2px; color: #1F4E79; }
+.qtype { color: #888; font-size: 0.76em; text-transform: uppercase; letter-spacing: 0.05em; }
+.stem { margin: 10px 0; }
+details { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 6px;
+          padding: 10px 16px; margin-top: 16px; }
+details[open] { background: #F7FBF9; border-color: #BFD9CB; }
+summary { cursor: pointer; color: #1F4E79; font-weight: 600; font-size: 0.92em; }
+details[open] summary { margin-bottom: 10px; }
+table.mini { border-collapse: collapse; font-size: 0.85em; margin: 10px 0; }
+table.mini th, table.mini td { border: 1px solid #E0E5EB; padding: 4px 9px; text-align: left; }
+table.mini th { background: #F2F4F7; color: #1F4E79; }
+.mono { font-family: "SF Mono", Consolas, monospace; font-size: 0.86em; }
+.ok { color: #1B5E20; font-weight: 600; } .bad { color: #C00000; font-weight: 600; }
+.tiny { font-size: 0.85em; color: #666; }
+.scroll { overflow-x: auto; }
+.tokrow { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.tok { border: 1px solid #E0E5EB; border-radius: 6px; padding: 6px 10px; background: #fff;
+       text-align: center; font-size: 0.85em; min-width: 62px; }
+.tok .w { font-family: "SF Mono", Consolas, monospace; }
+.tok .t { font-size: 0.82em; color: #1F4E79; font-weight: 600; margin-top: 3px; }
+.tok .n { font-size: 0.72em; color: #777; margin-top: 2px; }
+.tok.amb { border-color: #F9A825; background: #FFF8E1; }
+.tok.unk { border-color: #C00000; background: #FBE9E7; }
+.diff { display: inline-block; font-size: 0.72em; padding: 2px 9px; border-radius: 12px;
+        background: #E0E5EB; color: #555; margin-left: 8px; text-transform: uppercase;
+        letter-spacing: 0.04em; }
+.diff.d2 { background: #FFF8E1; color: #8A5A00; }
+.diff.d3 { background: #FBE9E7; color: #6E1414; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="brand">Exercises · ~ 90 min</div>
+<h1>Topic 6 — Part-of-Speech Tagging</h1>
+<p class="subtitle">Fourteen problems in increasing order of difficulty: build a lookup table by hand, score it, compute macro-F1 with a pen, predict what two widgets will do before you run them, write the three functions that matter, and argue for your baseline.</p>
+
+<div class="callout">
+  <strong>How to use this.</strong> Do the arithmetic before you open the solution — every by-hand exercise here takes under ten minutes and the whole point is the friction. Solutions are complete, not sketches, so you can check every intermediate number. The companion notes are <a href="Lecture_Notes_Topic_6_Part_of_Speech_Tagging.html">Lecture_Notes_Topic_6_Part_of_Speech_Tagging.html</a>.
+</div>
+
+<div class="toc">
+  <h3>Exercises</h3>
+  <ol>
+    <li><a href="#e1">Build a lookup table</a></li>
+    <li><a href="#e2">Tag with it, count the errors</a></li>
+    <li><a href="#e3">Add the fallback rules</a></li>
+    <li><a href="#e4">Split accuracy known / unknown</a></li>
+    <li><a href="#e5">The ambiguity ceiling</a></li>
+    <li><a href="#e6">Trace the rule cascade</a></li>
+    <li><a href="#e7">Macro-F1 from a confusion matrix</a></li>
+    <li><a href="#e8">97.2% accuracy, 71.4% macro-F1</a></li>
+    <li><a href="#e9">Predict, then check: the tagger</a></li>
+    <li><a href="#e10">Predict, then check: alignment</a></li>
+    <li><a href="#e11">Code: build_lookup</a></li>
+    <li><a href="#e12">Code: align_labels_with_tokens</a></li>
+    <li><a href="#e13">Code: compute_metrics</a></li>
+    <li><a href="#e14">Defend your baseline</a></li>
+  </ol>
+</div>
+
+<div class="callout">
+  <strong>The reference corpus.</strong> Exercises 1–4 all use this four-sentence tagged corpus. Universal POS tags. 20 tokens.
+  <pre>A1  The/DET dogs/NOUN bark/VERB ./PUNCT
+A2  I/PRON heard/VERB a/DET bark/NOUN ./PUNCT
+A3  They/PRON bark/VERB at/ADP the/DET cars/NOUN ./PUNCT
+A4  The/DET park/NOUN was/AUX quiet/ADJ ./PUNCT</pre>
+  And this fallback cascade, applied in order to any word not in the table:
+  <pre>1. token is entirely non-alphanumeric      -> PUNCT
+2. token contains a digit                  -> NUM
+3. token is capitalised, not sentence-first-> PROPN
+4. token ends in -ly                       -> ADV
+5. token ends in -ing or -ed               -> VERB
+6. token ends in -est                      -> ADJ
+7. token ends in -ous/-ive/-al/-ful        -> ADJ
+8. token ends in -tion/-ment/-ness/-ity    -> NOUN
+9. token ends in -s                        -> NOUN
+10. otherwise                              -> NOUN</pre>
+  Words are lowercased before the table lookup. Ties are broken by tag name in ascending alphabetical order.
+</div>
+
+<!-- ===================== E1 ===================== -->
+<div class="exercise" id="e1">
+  <div class="qtype">By hand · counting</div>
+  <h3>Exercise 1 — Build a lookup table <span class="diff">warm-up</span></h3>
+  <div class="stem">
+    <p>Build the most-frequent-tag lookup table from the four-sentence corpus above. For each word type give the tag counts and the resulting most-frequent tag. Then answer:</p>
+    <ol>
+      <li>How many tokens and how many word types are there?</li>
+      <li>Which word types are ambiguous (more than one tag observed)?</li>
+      <li>What is the ceiling — the best possible accuracy of any context-free tagger — on each ambiguous type, measured on this corpus?</li>
+    </ol>
+  </div>
+  <details><summary>Show solution</summary>
+    <table class="mini">
+      <tr><th>word</th><th>tag counts</th><th>most-frequent tag</th></tr>
+      <tr><td class="mono">the</td><td>DET 3</td><td>DET</td></tr>
+      <tr><td class="mono">dogs</td><td>NOUN 1</td><td>NOUN</td></tr>
+      <tr><td class="mono">bark</td><td>VERB 2, NOUN 1</td><td><strong>VERB</strong></td></tr>
+      <tr><td class="mono">.</td><td>PUNCT 4</td><td>PUNCT</td></tr>
+      <tr><td class="mono">i</td><td>PRON 1</td><td>PRON</td></tr>
+      <tr><td class="mono">heard</td><td>VERB 1</td><td>VERB</td></tr>
+      <tr><td class="mono">a</td><td>DET 1</td><td>DET</td></tr>
+      <tr><td class="mono">they</td><td>PRON 1</td><td>PRON</td></tr>
+      <tr><td class="mono">at</td><td>ADP 1</td><td>ADP</td></tr>
+      <tr><td class="mono">cars</td><td>NOUN 1</td><td>NOUN</td></tr>
+      <tr><td class="mono">park</td><td>NOUN 1</td><td>NOUN</td></tr>
+      <tr><td class="mono">was</td><td>AUX 1</td><td>AUX</td></tr>
+      <tr><td class="mono">quiet</td><td>ADJ 1</td><td>ADJ</td></tr>
+    </table>
+    <p><strong>1.</strong> Sentence lengths are 4 + 5 + 6 + 5 = <strong>20 tokens</strong>. Check against the table: 3+1+3+4+1+1+1+1+1+1+1+1+1 = 20. There are <strong>13 word types</strong>. Note that <code>The</code> and <code>the</code> collapse to one entry because we lowercase.</p>
+    <p><strong>2.</strong> Only <code>bark</code>. It appears as VERB in A1 and A3, as NOUN in A2.</p>
+    <p><strong>3.</strong> ceiling(<code>bark</code>) = max count / total count = 2 / 3 = <strong>66.7%</strong>. Every other type has a single observed tag, so its ceiling on this corpus is 100% — which says nothing about English, only about this corpus. <code>park</code>, for example, is a perfectly good verb; the corpus has simply never seen it as one.</p>
+  </details>
+</div>
+
+<!-- ===================== E2 ===================== -->
+<div class="exercise" id="e2">
+  <div class="qtype">By hand · inference and scoring</div>
+  <h3>Exercise 2 — Tag with it, count the errors <span class="diff">warm-up</span></h3>
+  <div class="stem">
+    <p>Use your table from Exercise 1 to tag this sentence. Gold tags are given.</p>
+    <pre>The/DET   bark/NOUN   was/AUX   quiet/ADJ   ./PUNCT</pre>
+    <p>Report the prediction for each token, the token accuracy, and for every error say which of the three categories it belongs to: <em>ambiguity</em> (the word is in the table and the gold tag is not the most frequent one), <em>rule</em> (unknown word, a suffix rule fired and was wrong), or <em>coverage</em> (unknown word, nothing fired, took the default).</p>
+  </div>
+  <details><summary>Show solution</summary>
+    <table class="mini">
+      <tr><th>token</th><th>route</th><th>predicted</th><th>gold</th><th></th></tr>
+      <tr><td class="mono">The</td><td>lookup: the → DET 3</td><td>DET</td><td>DET</td><td class="ok">correct</td></tr>
+      <tr><td class="mono">bark</td><td>lookup: VERB 2 &gt; NOUN 1</td><td>VERB</td><td>NOUN</td><td class="bad">wrong — ambiguity</td></tr>
+      <tr><td class="mono">was</td><td>lookup: AUX 1</td><td>AUX</td><td>AUX</td><td class="ok">correct</td></tr>
+      <tr><td class="mono">quiet</td><td>lookup: ADJ 1</td><td>ADJ</td><td>ADJ</td><td class="ok">correct</td></tr>
+      <tr><td class="mono">.</td><td>lookup: PUNCT 4</td><td>PUNCT</td><td>PUNCT</td><td class="ok">correct</td></tr>
+    </table>
+    <p>Token accuracy = 4 / 5 = <strong>80.0%</strong>. One error, on <code>bark</code>, and it is an <strong>ambiguity error</strong>.</p>
+    <p>The important observation: this error is not fixable by collecting more data of the same kind. If you double the corpus and <code>bark</code> stays 2:1 in favour of VERB, the table becomes <em>more</em> confident in the answer that is wrong here. The only thing that fixes it is looking at <code>The</code> immediately to the left — that is, using context. That single token is the entire argument for the transformer.</p>
+  </details>
+</div>
+
+<!-- ===================== E3 ===================== -->
+<div class="exercise" id="e3">
+  <div class="qtype">By hand · fallback rules</div>
+  <h3>Exercise 3 — Add the fallback rules <span class="diff">warm-up</span></h3>
+  <div class="stem">
+    <p>Same table, same cascade. Tag this sentence, which contains six word types the corpus has never seen:</p>
+    <pre>A/DET  young/ADJ  dog/NOUN  barked/VERB  loudly/ADV  during/ADP  morning/NOUN  training/NOUN  ./PUNCT</pre>
+    <p>For each token, state whether it was routed to the table or the cascade, which rule number fired, and whether the prediction is right. Then give the token accuracy.</p>
+  </div>
+  <details><summary>Show solution</summary>
+    <table class="mini">
+      <tr><th>#</th><th>token</th><th>route</th><th>predicted</th><th>gold</th><th></th></tr>
+      <tr><td>1</td><td class="mono">A</td><td>table: a → DET</td><td>DET</td><td>DET</td><td class="ok">correct</td></tr>
+      <tr><td>2</td><td class="mono">young</td><td>cascade: no rule fires → rule 10</td><td>NOUN</td><td>ADJ</td><td class="bad">wrong — coverage</td></tr>
+      <tr><td>3</td><td class="mono">dog</td><td>cascade: no rule fires → rule 10</td><td>NOUN</td><td>NOUN</td><td class="ok">correct</td></tr>
+      <tr><td>4</td><td class="mono">barked</td><td>cascade: rule 5 (-ed)</td><td>VERB</td><td>VERB</td><td class="ok">correct</td></tr>
+      <tr><td>5</td><td class="mono">loudly</td><td>cascade: rule 4 (-ly)</td><td>ADV</td><td>ADV</td><td class="ok">correct</td></tr>
+      <tr><td>6</td><td class="mono">during</td><td>cascade: rule 5 (-ing)</td><td>VERB</td><td>ADP</td><td class="bad">wrong — rule</td></tr>
+      <tr><td>7</td><td class="mono">morning</td><td>cascade: rule 5 (-ing)</td><td>VERB</td><td>NOUN</td><td class="bad">wrong — rule</td></tr>
+      <tr><td>8</td><td class="mono">training</td><td>cascade: rule 5 (-ing)</td><td>VERB</td><td>NOUN</td><td class="bad">wrong — rule</td></tr>
+      <tr><td>9</td><td class="mono">.</td><td>table: . → PUNCT</td><td>PUNCT</td><td>PUNCT</td><td class="ok">correct</td></tr>
+    </table>
+    <p>Token accuracy = 5 / 9 = <strong>55.6%</strong>.</p>
+    <p>Three of the four errors come from one rule. The <code>-ing → VERB</code> rule fires on a preposition (<code>during</code>) and on two nouns (<code>morning</code>, <code>training</code>) and is right about none of them in this sentence. That is what a suffix rule is: a bet on a correlation, not a fact about the language. If you deleted rule 5 entirely, all three would fall through to the NOUN default and you would score 7/9 = 77.8% on this sentence — but you would lose <code>barked</code>, so 6/9 = 66.7%. Either way, better than 55.6%. The lesson is that a rule's value must be measured on held-out unknown words, not assumed.</p>
+    <p>The <code>young</code> error is different in kind: nothing fired, the default took over, and the default is a prior about new vocabulary that happens not to hold for a common adjective. Coverage errors like this shrink automatically as the training corpus grows.</p>
+  </details>
+</div>
+
+<!-- ===================== E4 ===================== -->
+<div class="exercise" id="e4">
+  <div class="qtype">By hand · evaluation</div>
+  <h3>Exercise 4 — Split accuracy known / unknown <span class="diff">warm-up</span></h3>
+  <div class="stem">
+    <p>Using your results from Exercise 3, report three numbers: overall token accuracy, accuracy on tokens the table knew, and accuracy on tokens routed to the cascade. Also give the unknown-token rate. Then explain, in two sentences, why the overall number alone would be a misleading thing to put in a report.</p>
+  </div>
+  <details><summary>Show solution</summary>
+    <p>Known tokens (in the table): <code>A</code>, <code>.</code> — that is 2 tokens, both correct.<br>
+       Unknown tokens (routed to the cascade): <code>young</code>, <code>dog</code>, <code>barked</code>, <code>loudly</code>, <code>during</code>, <code>morning</code>, <code>training</code> — 7 tokens, 3 correct.</p>
+    <p class="eq-block">
+      overall accuracy = 5 / 9 = 55.6%<br>
+      known-token accuracy = 2 / 2 = 100.0%<br>
+      unknown-token accuracy = 3 / 7 = 42.9%<br>
+      unknown-token rate = 7 / 9 = 77.8%
+    </p>
+    <p><strong>Why the overall number misleads.</strong> It is a weighted average of two completely different regimes, and the weight is set by the unknown-token rate — which is a property of your corpus size and domain match, not of your tagger. Two taggers with identical rules can report wildly different overall accuracies purely because one was evaluated on text closer to its training data, so without the split nobody can tell whether you improved the model or changed the test set.</p>
+    <p>On a real treebank the weighting flips: the unknown rate is a few percent, so overall accuracy is dominated by known tokens and lands near 90%. The unknown-token accuracy stays around this bad, which is exactly why almost all of the baseline's remaining error lives in unknown words.</p>
+  </details>
+</div>
+
+<!-- ===================== E5 ===================== -->
+<div class="exercise" id="e5">
+  <div class="qtype">By hand · arithmetic of ambiguity</div>
+  <h3>Exercise 5 — The ambiguity ceiling <span class="diff d2">medium</span></h3>
+  <div class="stem">
+    <p>A training corpus gives these counts for the word <code>that</code>:</p>
+    <pre>that -> {SCONJ: 120, DET: 70, PRON: 55}</pre>
+    <ol>
+      <li>What tag does the lookup emit for <code>that</code>?</li>
+      <li>What is the ceiling for any context-free tagger on this word?</li>
+      <li>The test set contains 245 occurrences of <code>that</code> with the same tag proportions. How many of them does the lookup get wrong?</li>
+      <li>The test set has 10,000 tokens in total. How many percentage points of overall accuracy does this one word type cost you?</li>
+      <li>You are allowed to add exactly one feature to the tagger — the identity of the immediately preceding token. Sketch how that would help, and estimate whether it could plausibly close most of the gap.</li>
+    </ol>
+  </div>
+  <details><summary>Show solution</summary>
+    <p><strong>1.</strong> SCONJ, because 120 &gt; 70 &gt; 55. It emits SCONJ for <em>every</em> occurrence — that is what "context-free" means.</p>
+    <p><strong>2.</strong> ceiling = 120 / (120 + 70 + 55) = 120 / 245 = <strong>0.4898 = 49.0%</strong>. Slightly worse than a coin flip between two options, because there are three.</p>
+    <p><strong>3.</strong> The lookup is right on the 120 SCONJ occurrences and wrong on the rest: 245 − 120 = <strong>125 errors</strong>.</p>
+    <p><strong>4.</strong> 125 / 10,000 = 0.0125 = <strong>1.25 percentage points</strong>. One spelling, out of thousands of word types, costs more than a point of accuracy on its own. This is the concrete reason the last few points of POS tagging accuracy are so expensive: they are concentrated in a handful of high-frequency ambiguous function words.</p>
+    <p><strong>5.</strong> Key the lookup on the pair (previous token, word) instead of the word alone, falling back to the word-only table when the pair is unseen. The previous token is highly diagnostic here:</p>
+    <ul>
+      <li>preceded by a verb of speech or thought (<code>said</code>, <code>knew</code>, <code>thought</code>) → SCONJ</li>
+      <li>preceded by a verb like <code>like</code>, <code>saw</code>, <code>bought</code> and followed by a noun → DET</li>
+      <li>preceded by a noun → PRON (relative clause: <em>the book that I read</em>)</li>
+    </ul>
+    <p>Could it close most of the gap? Plausibly a good part of it, since the three uses have quite different left contexts. But it trades one problem for another: the number of (previous token, word) pairs is enormous, so most pairs are unseen at test time and you fall back to the word-only answer constantly. That data-sparsity wall is precisely what a contextual encoder gets around — it does not need to have seen <em>this</em> preceding word, only words whose representations are similar.</p>
+  </details>
+</div>
+
+<!-- ===================== E6 ===================== -->
+<div class="exercise" id="e6">
+  <div class="qtype">By hand · rule tracing</div>
+  <h3>Exercise 6 — Trace the rule cascade <span class="diff d2">medium</span></h3>
+  <div class="stem">
+    <p>Apply the ten-rule cascade, in order, to these eight unknown words. All are mid-sentence (so rule 3 can fire). Give the rule that fires, the prediction, and whether it matches the gold tag. Then give the accuracy, and say which single rule you would delete and why.</p>
+    <pre>Helsinki/PROPN   3.5/NUM   quietly/ADV    during/ADP
+sadness/NOUN     creative/ADJ  reply/NOUN     GPUs/NOUN</pre>
+  </div>
+  <details><summary>Show solution</summary>
+    <table class="mini">
+      <tr><th>word</th><th>first rule that fires</th><th>predicted</th><th>gold</th><th></th></tr>
+      <tr><td class="mono">Helsinki</td><td>3 — capitalised, not sentence-first</td><td>PROPN</td><td>PROPN</td><td class="ok">correct</td></tr>
+      <tr><td class="mono">3.5</td><td>2 — contains a digit</td><td>NUM</td><td>NUM</td><td class="ok">correct</td></tr>
+      <tr><td class="mono">quietly</td><td>4 — ends in -ly</td><td>ADV</td><td>ADV</td><td class="ok">correct</td></tr>
+      <tr><td class="mono">during</td><td>5 — ends in -ing</td><td>VERB</td><td>ADP</td><td class="bad">wrong</td></tr>
+      <tr><td class="mono">sadness</td><td>8 — ends in -ness</td><td>NOUN</td><td>NOUN</td><td class="ok">correct</td></tr>
+      <tr><td class="mono">creative</td><td>7 — ends in -ive</td><td>ADJ</td><td>ADJ</td><td class="ok">correct</td></tr>
+      <tr><td class="mono">reply</td><td>4 — ends in -ly</td><td>ADV</td><td>NOUN</td><td class="bad">wrong</td></tr>
+      <tr><td class="mono">GPUs</td><td>3 — capitalised, not sentence-first</td><td>PROPN</td><td>NOUN</td><td class="bad">wrong</td></tr>
+    </table>
+    <p>Accuracy = 5 / 8 = <strong>62.5%</strong>.</p>
+    <p>Three points worth extracting:</p>
+    <ul>
+      <li><strong>Ordering is part of the model.</strong> <code>sadness</code> matches both rule 8 (<code>-ness</code>) and rule 9 (<code>-s</code>); both say NOUN so it does not matter here. <code>GPUs</code> matches rule 3 and rule 9, which say different things, and rule 3 wins because it is earlier. Swap those two and <code>GPUs</code> becomes correct — and <code>Helsinki</code> stays correct because it does not end in <code>s</code>. Ordering changes answers.</li>
+      <li><strong>Rule 8 is dead weight.</strong> Every word it fires on would reach NOUN anyway through rule 9 or rule 10. It cannot change a single prediction while the default is NOUN. Delete it: it costs nothing and removes a rule you would otherwise have to reason about every time you touch the cascade.</li>
+      <li><strong>Which rule to delete for accuracy?</strong> On this set, rule 5 (<code>-ing/-ed</code>) is the only one that is strictly harmful — it fires once, on <code>during</code>, and is wrong. But this set contains no <code>-ing</code> or <code>-ed</code> verbs, so deleting rule 5 on this evidence would be over-fitting to eight words. The honest answer: delete rule 8 (provably useless), and decide about rule 5 on a held-out set of a few hundred unknown words.</li>
+    </ul>
+  </details>
+</div>
+
+<!-- ===================== E7 ===================== -->
+<div class="exercise" id="e7">
+  <div class="qtype">By hand · metrics</div>
+  <h3>Exercise 7 — Macro-F1 from a confusion matrix <span class="diff d2">medium</span></h3>
+  <div class="stem">
+    <p>A tagger is evaluated on a corpus with three tags. Rows are gold, columns are predicted.</p>
+    <table class="mini">
+      <tr><th></th><th>pred NOUN</th><th>pred VERB</th><th>pred ADJ</th></tr>
+      <tr><th>gold NOUN</th><td>80</td><td>15</td><td>5</td></tr>
+      <tr><th>gold VERB</th><td>10</td><td>88</td><td>2</td></tr>
+      <tr><th>gold ADJ</th><td>6</td><td>2</td><td>2</td></tr>
+    </table>
+    <p>Compute, showing your work: total tokens, token accuracy, per-tag precision, recall and F1, and macro-F1. Round to three decimals. Then say in one sentence what the gap between accuracy and macro-F1 is telling you.</p>
+  </div>
+  <details><summary>Show solution</summary>
+    <p><strong>Row sums (support):</strong> NOUN 80+15+5 = 100, VERB 10+88+2 = 100, ADJ 6+2+2 = 10. Total = <strong>210 tokens</strong>.</p>
+    <p><strong>Column sums (times predicted):</strong> NOUN 80+10+6 = 96, VERB 15+88+2 = 105, ADJ 5+2+2 = 9.</p>
+    <p><strong>Accuracy</strong> = diagonal / total = (80 + 88 + 2) / 210 = 170 / 210 = <strong>0.810</strong>.</p>
+    <table class="mini">
+      <tr><th>tag</th><th>precision = M[t][t]/col</th><th>recall = M[t][t]/row</th><th>F1 = 2PR/(P+R)</th><th>support</th></tr>
+      <tr><td>NOUN</td><td>80/96 = 0.833</td><td>80/100 = 0.800</td><td>2(0.833)(0.800)/1.633 = <strong>0.816</strong></td><td>100</td></tr>
+      <tr><td>VERB</td><td>88/105 = 0.838</td><td>88/100 = 0.880</td><td>2(0.838)(0.880)/1.718 = <strong>0.859</strong></td><td>100</td></tr>
+      <tr><td>ADJ</td><td>2/9 = 0.222</td><td>2/10 = 0.200</td><td>2(0.222)(0.200)/0.422 = <strong>0.211</strong></td><td>10</td></tr>
+    </table>
+    <p class="eq-block">macro-F1 = (0.816 + 0.859 + 0.211) / 3 = 1.886 / 3 = <strong>0.629</strong></p>
+    <p><strong>What the gap says.</strong> Accuracy 0.810 versus macro-F1 0.629: the model is competent on the two tags that carry 95% of the tokens and has essentially failed on ADJ, which has 10 tokens and therefore almost no influence on accuracy but a full one-third share of macro-F1.</p>
+    <p>Two details worth noticing. First, ADJ's precision (0.222) is even worse than it looks — the model predicts ADJ nine times and is right twice, so it over-predicts a tag it cannot recognise. Second, with a support of 10 this F1 is extremely unstable: one more correct ADJ token moves recall from 0.200 to 0.300 and macro-F1 by roughly three points. Always print the support column so a reader can discount rows like this.</p>
+  </details>
+</div>
+
+<!-- ===================== E8 ===================== -->
+<div class="exercise" id="e8">
+  <div class="qtype">Explain why · diagnosis</div>
+  <h3>Exercise 8 — 97.2% accuracy, 71.4% macro-F1 <span class="diff d2">medium</span></h3>
+  <div class="stem">
+    <p>You fine-tune a transformer on an English treebank with the 17 universal tags and get <strong>97.2% token accuracy</strong> and <strong>71.4% macro-F1</strong>. Your lookup baseline gets <strong>91.0% accuracy</strong> and <strong>78.5% macro-F1</strong>.</p>
+    <p>Explain what is most likely going on, what you would look at first to confirm it, and whether you should describe the transformer as better than the baseline. Note that 71.4% is suspiciously close to a round fraction of 17.</p>
+  </div>
+  <details><summary>Show solution</summary>
+    <p><strong>What is going on.</strong> 71.4% ≈ 12/17 = 0.7059, and more tellingly 5/17 = 0.294, so a macro-F1 near 0.71 with 17 tags is consistent with roughly five tags scoring close to zero and the rest close to one. The transformer has almost certainly stopped predicting several rare tags entirely — candidates are X, SYM, INTJ, and possibly PART and SCONJ. A tag that is never predicted has precision 0 (under <code>zero_division=0</code>) and recall 0, so F1 = 0, and each such tag costs 1/17 ≈ 5.9 macro-F1 points while costing almost no accuracy because it has almost no tokens.</p>
+    <p>The baseline does <em>not</em> have this problem, and that is not luck. The lookup emits whatever tag it counted, so if the training corpus ever tagged a word SYM the table will happily emit SYM. It has no majority-class pressure. That is exactly why its macro-F1 (78.5%) beats the transformer's despite 6 points worse accuracy.</p>
+    <p><strong>What to look at first.</strong></p>
+    <ol>
+      <li>The per-tag table: precision, recall, F1 <em>and support</em> for all 17 tags, for both models. The story should be immediately visible as a set of rows with F1 = 0.000.</li>
+      <li>The column sums of the transformer's confusion matrix. A column that sums to zero means the model never predicts that tag at all.</li>
+      <li>The tag distribution of the training split. If a tag has fewer than a few dozen training tokens, cross-entropy on a heavily imbalanced set will rationally trade it away.</li>
+      <li>Whether <code>num_labels</code> exceeds the number of tags actually present in your data. A label id that never occurs in training will score F1 = 0 forever and drag macro-F1 down for no reason at all — check this before you conclude anything about the model.</li>
+    </ol>
+    <p><strong>Is the transformer better?</strong> Say both numbers and let them stand. The defensible statement is: "the transformer reduces token-level error by (0.972 − 0.910) / (1 − 0.910) = 69% relative to the baseline, but its macro-F1 is 7 points worse because it has collapsed on N rare tags, which the baseline still predicts." Whether that trade is acceptable depends on the consumer — a parser cares about the frequent tags and will prefer the transformer; a pipeline that keys on SYM or X will not. Reporting only accuracy here would hide a real regression, and reporting only macro-F1 would hide a real improvement.</p>
+    <p><strong>What to do.</strong> Class weighting or oversampling the rare tags, and re-checking <code>num_labels</code>. Then re-report both numbers.</p>
+  </details>
+</div>
+
+<!-- ===================== E9 ===================== -->
+<div class="exercise" id="e9">
+  <div class="qtype">Predict, then check · widget</div>
+  <h3>Exercise 9 — Predict, then check: the tagger <span class="diff d2">medium</span></h3>
+  <div class="stem">
+    <p>The widget below is the exact lookup table from Exercise 1 (the four-sentence corpus) plus the ten-rule cascade. <strong>Write your answers down before you touch it.</strong></p>
+    <ol>
+      <li>Predict the tag for <code>bark</code> in <em>"The bark was quiet ."</em> and in <em>"They bark at the cars ."</em>. Will the two differ?</li>
+      <li>Predict the tag for every token of <em>"Quiet dogs heard a loud morning noise ."</em> and the resulting accuracy against the gold tags <code>ADJ NOUN VERB DET ADJ NOUN NOUN PUNCT</code>.</li>
+      <li>Predict what happens to <code>Quiet</code>, and explain why the sentence-initial position matters.</li>
+    </ol>
+    <div class="demo">
+      <h3>Widget · lookup tagger over the four-sentence corpus</h3>
+      <div class="controls" style="align-items:stretch">
+        <div class="control" style="flex:1; min-width:400px">
+          <label for="ex-in">sentence</label>
+          <input type="text" id="ex-in" value="Quiet dogs heard a loud morning noise ."
+                 style="padding:8px 10px; border:1px solid #CFD7DF; border-radius:4px; font-family:inherit; font-size:0.95em;">
+        </div>
+        <button id="ex-go">Tag it</button>
+      </div>
+      <div class="controls">
+        <button class="secondary" data-ex="The bark was quiet .">The bark was quiet .</button>
+        <button class="secondary" data-ex="They bark at the cars .">They bark at the cars .</button>
+        <button class="secondary" data-ex="A young dog barked loudly during morning training .">Exercise 3 sentence</button>
+      </div>
+      <div id="ex-out" class="tokrow"></div>
+      <div class="readout" id="ex-read" style="min-width:100%"></div>
+      <p class="tiny">White = known, unambiguous. Amber = known, ambiguous (the note gives the counts and the ceiling). Red = unknown, handled by the cascade; the note names the rule.</p>
+    </div>
+  </div>
+  <details><summary>Show solution</summary>
+    <p><strong>1.</strong> Both give <strong>VERB</strong>, and no, they do not differ — that is the whole point. The table maps the string <code>bark</code> to VERB and has no mechanism to behave differently in the two sentences. In <em>"The bark was quiet ."</em> that is wrong; in <em>"They bark at the cars ."</em> it is right. The widget shows the amber badge with <code>VERB 2/NOUN 1 → ceiling 66.7%</code> in both cases.</p>
+    <p><strong>2.</strong> Token by token:</p>
+    <table class="mini">
+      <tr><th>token</th><th>route</th><th>pred</th><th>gold</th><th></th></tr>
+      <tr><td class="mono">Quiet</td><td>table: quiet → ADJ</td><td>ADJ</td><td>ADJ</td><td class="ok">correct</td></tr>
+      <tr><td class="mono">dogs</td><td>table: dogs → NOUN</td><td>NOUN</td><td>NOUN</td><td class="ok">correct</td></tr>
+      <tr><td class="mono">heard</td><td>table: heard → VERB</td><td>VERB</td><td>VERB</td><td class="ok">correct</td></tr>
+      <tr><td class="mono">a</td><td>table: a → DET</td><td>DET</td><td>DET</td><td class="ok">correct</td></tr>
+      <tr><td class="mono">loud</td><td>cascade: rule 10 default</td><td>NOUN</td><td>ADJ</td><td class="bad">wrong — coverage</td></tr>
+      <tr><td class="mono">morning</td><td>cascade: rule 5 (-ing)</td><td>VERB</td><td>NOUN</td><td class="bad">wrong — rule</td></tr>
+      <tr><td class="mono">noise</td><td>cascade: rule 10 default</td><td>NOUN</td><td>NOUN</td><td class="ok">correct</td></tr>
+      <tr><td class="mono">.</td><td>table: . → PUNCT</td><td>PUNCT</td><td>PUNCT</td><td class="ok">correct</td></tr>
+    </table>
+    <p>Accuracy = 6 / 8 = <strong>75.0%</strong>. Known 5/5 = 100%, unknown 1/3 = 33.3%, unknown rate 3/8 = 37.5%. Notice again that all the error is in the unknown words.</p>
+    <p><strong>3.</strong> <code>Quiet</code> is lowercased to <code>quiet</code> before the lookup, so it is <em>found in the table</em> and never reaches the cascade — the capitalisation rule is irrelevant here. But suppose the word had been unknown: rule 3 explicitly excludes sentence-initial tokens, because in English the first word of every sentence is capitalised regardless of its tag. Without that exclusion, every sentence would begin with a predicted PROPN. The exclusion is a small piece of linguistic knowledge hard-coded into the model, and it is the reason a cased transformer checkpoint matters too: capitalisation is informative <em>except</em> in the one position where it is automatic.</p>
+  </details>
+</div>
+
+<!-- ===================== E10 ===================== -->
+<div class="exercise" id="e10">
+  <div class="qtype">Predict, then check · widget</div>
+  <h3>Exercise 10 — Predict, then check: alignment <span class="diff d3">hard</span></h3>
+  <div class="stem">
+    <p>A tokenizer splits a 7-word sentence into 11 subwords:</p>
+    <pre>words    : The  subword     tokenizer     misaligned          every  label  .
+tags     : DET  NOUN        NOUN          VERB                DET    NOUN   PUNCT
+subwords : The  sub ##word  token ##izer  mis ##align ##ed    every  label  .</pre>
+    <p><strong>Before opening the widget</strong>, work out on paper, for the buggy <code>zip(subwords, tags)</code> strategy:</p>
+    <ol>
+      <li>Which label ends up on each of the 11 subword positions?</li>
+      <li>Reading each word's tag off its <em>first</em> subword, what tag does each of the 7 words receive?</li>
+      <li>What is the resulting word-level accuracy?</li>
+      <li>Would the training loss look abnormal?</li>
+    </ol>
+    <p>Then check with the widget, and also predict the accuracy for the "last subword only" strategy when inference still reads the first subword.</p>
+    <div class="demo">
+      <h3>Widget · subword label alignment</h3>
+      <div class="controls">
+        <div class="control"><label for="ea-mode">alignment strategy</label>
+          <select id="ea-mode">
+            <option value="first">first subword only, rest = −100 (correct)</option>
+            <option value="all">label every subword</option>
+            <option value="zip">zip(subwords, tags) — the bug</option>
+            <option value="last">last subword only, rest = −100</option>
+          </select></div>
+        <div class="readout" id="ea-read" style="min-width:100%"></div>
+      </div>
+      <canvas id="ea-canvas" width="880" height="250"></canvas>
+    </div>
+  </div>
+  <details><summary>Show solution</summary>
+    <p><strong>1.</strong> <code>zip</code> pairs subword position <em>i</em> with tag <em>i</em>, ignoring word boundaries. There are 7 tags and 11 subwords, so positions 8–11 get nothing at all:</p>
+    <table class="mini">
+      <tr><th>pos</th><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td></tr>
+      <tr><th>subword</th><td class="mono">The</td><td class="mono">sub</td><td class="mono">##word</td><td class="mono">token</td><td class="mono">##izer</td><td class="mono">mis</td><td class="mono">##align</td><td class="mono">##ed</td><td class="mono">every</td><td class="mono">label</td><td class="mono">.</td></tr>
+      <tr><th>label</th><td>DET</td><td>NOUN</td><td>NOUN</td><td>VERB</td><td>DET</td><td>NOUN</td><td>PUNCT</td><td>−100</td><td>−100</td><td>−100</td><td>−100</td></tr>
+    </table>
+    <p><strong>2.</strong> First subwords are at positions 1 (<code>The</code>), 2 (<code>sub</code>), 4 (<code>token</code>), 6 (<code>mis</code>), 9 (<code>every</code>), 10 (<code>label</code>), 11 (<code>.</code>):</p>
+    <table class="mini">
+      <tr><th>word</th><th>read from</th><th>tag received</th><th>gold</th><th></th></tr>
+      <tr><td class="mono">The</td><td>pos 1</td><td>DET</td><td>DET</td><td class="ok">correct</td></tr>
+      <tr><td class="mono">subword</td><td>pos 2</td><td>NOUN</td><td>NOUN</td><td class="ok">correct</td></tr>
+      <tr><td class="mono">tokenizer</td><td>pos 4</td><td>VERB</td><td>NOUN</td><td class="bad">wrong</td></tr>
+      <tr><td class="mono">misaligned</td><td>pos 6</td><td>NOUN</td><td>VERB</td><td class="bad">wrong</td></tr>
+      <tr><td class="mono">every</td><td>pos 9</td><td>none (−100)</td><td>DET</td><td class="bad">wrong</td></tr>
+      <tr><td class="mono">label</td><td>pos 10</td><td>none (−100)</td><td>NOUN</td><td class="bad">wrong</td></tr>
+      <tr><td class="mono">.</td><td>pos 11</td><td>none (−100)</td><td>PUNCT</td><td class="bad">wrong</td></tr>
+    </table>
+    <p><strong>3.</strong> 2 / 7 = <strong>28.6%</strong>. And note <em>where</em> the two correct ones are: at the very start, before the first multi-subword word. Everything from the first split onward slides.</p>
+    <p><strong>4. No.</strong> This is the reason the bug is dangerous. The loss is computed over 7 supervised positions with perfectly valid label ids; the model learns a consistent (wrong) function mapping those positions to those labels, and the loss curve descends smoothly. Nothing is NaN, nothing warns, no shape assertion fails. You only find out from evaluation — and if your evaluation shares the same broken preprocessing, you may not find out at all until you tag a real sentence and read the output.</p>
+    <p><strong>Last-subword strategy, read from the first subword:</strong> labels land on positions 1, 3, 5, 8, 9, 10, 11. First subwords are 1, 2, 4, 6, 9, 10, 11. The intersection is {1, 9, 10, 11}, so <code>The</code>, <code>every</code>, <code>label</code> and <code>.</code> get their correct tags and the three multi-subword words get −100. Accuracy = <strong>4 / 7 = 57.1%</strong>. The lesson: "last subword only" is not wrong in itself, it is wrong <em>in combination with</em> reading the first subword at inference. Train-time and inference-time conventions must be the same one.</p>
+    <p><strong>The 30-second check</strong> that catches all of this, run once before training:</p>
+    <pre>enc = align(words, tags, tokenizer)
+pairs = [(t, l) for t, l in zip(tokenizer.convert_ids_to_tokens(enc["input_ids"]),
+                                enc["labels"]) if l != -100]
+print(pairs)
+# every pair must be (first subword of a word, that word's tag)</pre>
+  </details>
+</div>
+
+<!-- ===================== E11 ===================== -->
+<div class="exercise" id="e11">
+  <div class="qtype">Code · lookup construction</div>
+  <h3>Exercise 11 — Code: build_lookup <span class="diff d3">hard</span></h3>
+  <div class="stem">
+    <p>Write <code>build_lookup(corpus)</code>. The input is a list of sentences, each a list of <code>(word, tag)</code> pairs. It must lowercase words, count <code>(word, tag)</code> pairs, and return a dict mapping each lowercased word to its most-frequent tag, breaking ties by tag name in ascending alphabetical order. Also return the raw counts so a caller can compute ceilings.</p>
+    <p>Your function must produce exactly this output on the Exercise 1 corpus:</p>
+    <pre>lookup["bark"]  == "VERB"
+counts["bark"]  == {"VERB": 2, "NOUN": 1}
+lookup["the"]   == "DET"
+len(lookup)     == 13
+# and for the tie-breaking test:
+build_lookup([[("saw","NOUN")],[("saw","VERB")]])[0]["saw"] == "NOUN"</pre>
+  </div>
+  <details><summary>Show solution</summary>
+<pre>from collections import defaultdict, Counter
+
+def build_lookup(corpus):
+    """corpus: list of sentences, each a list of (word, tag) pairs.
+    Returns (lookup, counts).
+      lookup: {lowercased word -> most frequent tag}
+      counts: {lowercased word -> Counter({tag: n})}
+    Ties are broken by tag name ascending, so the result is reproducible."""
+    counts = defaultdict(Counter)
+    for sentence in corpus:
+        for word, tag in sentence:
+            counts[word.lower()][tag] += 1
+
+    lookup = {}
+    for word, dist in counts.items():
+        # sort by (-count, tag): highest count first, then alphabetical
+        lookup[word] = sorted(dist.items(), key=lambda kv: (-kv[1], kv[0]))[0][0]
+    return lookup, dict(counts)
+
+
+def ceiling(counts, word):
+    """Best possible accuracy of any context-free tagger on this word type."""
+    dist = counts[word.lower()]
+    return max(dist.values()) / sum(dist.values())</pre>
+    <p>Verification on the Exercise 1 corpus:</p>
+<pre>corpus = [
+    [("The","DET"),("dogs","NOUN"),("bark","VERB"),(".","PUNCT")],
+    [("I","PRON"),("heard","VERB"),("a","DET"),("bark","NOUN"),(".","PUNCT")],
+    [("They","PRON"),("bark","VERB"),("at","ADP"),("the","DET"),("cars","NOUN"),(".","PUNCT")],
+    [("The","DET"),("park","NOUN"),("was","AUX"),("quiet","ADJ"),(".","PUNCT")],
+]
+lookup, counts = build_lookup(corpus)
+
+print(lookup["bark"])          # VERB
+print(dict(counts["bark"]))    # {'VERB': 2, 'NOUN': 1}
+print(lookup["the"])           # DET
+print(len(lookup))             # 13
+print(round(ceiling(counts, "bark"), 3))   # 0.667
+
+# tie-breaking: NOUN and VERB both have count 1, NOUN sorts first
+print(build_lookup([[("saw","NOUN")],[("saw","VERB")]])[0]["saw"])   # NOUN</pre>
+    <p><strong>Why the tie-break is not a detail.</strong> <code>Counter.most_common()</code> resolves ties by insertion order, which depends on the order your corpus reader happened to walk the files. Two runs over the same data with the files in a different order would then produce different lookup tables and different accuracy numbers — a reproducibility bug that is very hard to trace because nothing about it looks like a bug. Sorting on <code>(-count, tag)</code> costs nothing and removes the whole class of problem.</p>
+    <p><strong>Why return the counts.</strong> The dict of most-frequent tags is all you need for inference, but the counts are what let you compute ceilings, split errors into ambiguity versus coverage, and report how much of your test set is ambiguous. Throwing them away means recomputing the whole table when you get to the error analysis.</p>
+  </details>
+</div>
+
+<!-- ===================== E12 ===================== -->
+<div class="exercise" id="e12">
+  <div class="qtype">Code · subword alignment</div>
+  <h3>Exercise 12 — Code: align_labels_with_tokens <span class="diff d3">hard</span></h3>
+  <div class="stem">
+    <p>Write <code>align_labels(word_ids, tags, label2id)</code>. It takes the <code>word_ids()</code> list from a fast tokenizer, the list of word-level tags, and the label map, and returns the per-subword label list: the tag id on the first subword of each word, and <code>-100</code> everywhere else (special tokens and continuation subwords).</p>
+    <p>Stated expected output, using the 7-word / 11-subword example from Exercise 10 with <code>[CLS]</code> and <code>[SEP]</code> added:</p>
+<pre>word_ids = [None, 0, 1, 1, 2, 2, 3, 3, 3, 4, 5, 6, None]
+tags     = ["DET","NOUN","NOUN","VERB","DET","NOUN","PUNCT"]
+label2id = {"ADJ":0,"ADP":1,"ADV":2,"AUX":3,"CCONJ":4,"DET":5,"INTJ":6,"NOUN":7,
+            "NUM":8,"PART":9,"PRON":10,"PROPN":11,"PUNCT":12,"SCONJ":13,
+            "SYM":14,"VERB":15,"X":16}
+
+align_labels(word_ids, tags, label2id)
+# -> [-100, 5, 7, -100, 7, -100, 15, -100, -100, 5, 7, 12, -100]</pre>
+    <p>Then write the inverse, <code>read_back(word_ids, pred_ids, id2label)</code>, which turns per-subword predictions into one tag per word.</p>
+  </div>
+  <details><summary>Show solution</summary>
+<pre>def align_labels(word_ids, tags, label2id):
+    """Assign each word's tag to the FIRST subword of that word.
+    Continuation subwords and special tokens get -100, which
+    torch.nn.CrossEntropyLoss ignores by default."""
+    labels, prev = [], None
+    for wid in word_ids:
+        if wid is None:            # [CLS], [SEP], padding
+            labels.append(-100)
+        elif wid != prev:          # first subword of a new word
+            labels.append(label2id[tags[wid]])
+        else:                      # continuation subword
+            labels.append(-100)
+        prev = wid
+    return labels
+
+
+def read_back(word_ids, pred_ids, id2label):
+    """Inverse of align_labels: one predicted tag per original word,
+    taken from the first subword of that word."""
+    out, prev = [], None
+    for wid, pid in zip(word_ids, pred_ids):
+        if wid is not None and wid != prev:
+            out.append(id2label[pid])
+        prev = wid
+    return out</pre>
+    <p>Check against the stated output:</p>
+<pre>word_ids = [None, 0, 1, 1, 2, 2, 3, 3, 3, 4, 5, 6, None]
+tags     = ["DET","NOUN","NOUN","VERB","DET","NOUN","PUNCT"]
+labels = align_labels(word_ids, tags, label2id)
+print(labels)
+# [-100, 5, 7, -100, 7, -100, 15, -100, -100, 5, 7, 12, -100]
+
+assert sum(1 for l in labels if l != -100) == len(tags)   # one label per word
+
+id2label = {v: k for k, v in label2id.items()}
+# a perfect model would predict the label it was trained on at every position;
+# use the aligned labels themselves, with a filler where they are -100
+preds = [l if l != -100 else 0 for l in labels]
+print(read_back(word_ids, preds, id2label))
+# ['DET', 'NOUN', 'NOUN', 'VERB', 'DET', 'NOUN', 'PUNCT']</pre>
+    <p>Three things this code gets right that hand-rolled versions usually get wrong:</p>
+    <ul>
+      <li><strong>The <code>prev</code> variable, not a set.</strong> Tracking "words already seen" in a set works for a single sentence but breaks the moment you use overflowing/striding windows, where the same word id can legitimately reappear in a later window. Comparing with the previous position is the version that survives.</li>
+      <li><strong>The <code>assert</code>.</strong> One non-<code>-100</code> label per word, always. This single line would have caught every bug in Exercise 10. Put it in your dataset-building function, not in a notebook cell you will delete.</li>
+      <li><strong>The same <code>word_ids</code> drives both directions.</strong> Training and inference use one function each, both keyed on <code>word_ids()</code>, so the conventions cannot drift apart.</li>
+    </ul>
+    <p>One thing to watch: if the tokenizer truncates, <code>word_ids</code> is shorter than the full sentence and <code>read_back</code> returns fewer tags than you have words. Compare lengths before scoring, or you will silently misalign your evaluation instead of your training.</p>
+  </details>
+</div>
+
+<!-- ===================== E13 ===================== -->
+<div class="exercise" id="e13">
+  <div class="qtype">Code · evaluation</div>
+  <h3>Exercise 13 — Code: compute_metrics <span class="diff d3">hard</span></h3>
+  <div class="stem">
+    <p>Write <code>compute_metrics(logits, labels, id2label)</code> returning token accuracy, macro-F1, and the list of the five largest off-diagonal confusion cells as <code>(gold, predicted, count)</code>. It must ignore every position whose label is <code>-100</code>. Do not use scikit-learn for the confusion matrix — build it yourself so you know what is in it.</p>
+    <p>Stated expected output for this tiny case (3 tags, 2 sequences of length 4):</p>
+<pre>id2label = {0: "NOUN", 1: "VERB", 2: "ADJ"}
+labels = [[-100, 0, 1, -100],
+          [-100, 0, 2, -100]]
+preds  = [[   1, 0, 0,    1],       # positions with label -100 must be ignored
+          [   2, 1, 2,    0]]
+
+# tokens actually scored: (0,0) (1,0) (0,1) (2,2)
+# accuracy = 2/4 = 0.5
+# per-tag F1: NOUN P=1/2 R=1/2 F1=0.5 ; VERB P=0 R=0 F1=0 ; ADJ P=1/1 R=1/1 F1=1.0
+# macro-F1 = (0.5 + 0.0 + 1.0)/3 = 0.5
+# top confusions: [("NOUN","VERB",1), ("VERB","NOUN",1)]</pre>
+  </div>
+  <details><summary>Show solution</summary>
+<pre>import numpy as np
+
+def compute_metrics(preds, labels, id2label):
+    preds  = np.asarray(preds)
+    labels = np.asarray(labels)
+
+    mask   = labels != -100          # THE line that matters
+    y_true = labels[mask]
+    y_pred = preds[mask]
+
+    n = len(id2label)
+    M = np.zeros((n, n), dtype=int)
+    for g, p in zip(y_true, y_pred):
+        M[g, p] += 1
+
+    total    = M.sum()
+    accuracy = np.trace(M) / total if total else 0.0
+
+    f1s = []
+    for t in range(n):
+        tp = M[t, t]
+        col = M[:, t].sum()          # times tag t was predicted
+        row = M[t, :].sum()          # times tag t was the gold answer
+        prec = tp / col if col else 0.0
+        rec  = tp / row if row else 0.0
+        f1   = 2 * prec * rec / (prec + rec) if (prec + rec) else 0.0
+        if row > 0:                  # only tags present in the gold data
+            f1s.append(f1)
+    macro_f1 = float(np.mean(f1s)) if f1s else 0.0
+
+    cells = [(id2label[g], id2label[p], int(M[g, p]))
+             for g in range(n) for p in range(n)
+             if g != p and M[g, p] > 0]
+    cells.sort(key=lambda c: (-c[2], c[0], c[1]))
+
+    return {"accuracy": float(accuracy),
+            "macro_f1": macro_f1,
+            "top_confusions": cells[:5]}</pre>
+    <p>Running the stated case:</p>
+<pre>id2label = {0: "NOUN", 1: "VERB", 2: "ADJ"}
+labels = [[-100, 0, 1, -100], [-100, 0, 2, -100]]
+preds  = [[   1, 0, 0,    1], [   2, 1, 2,    0]]
+print(compute_metrics(preds, labels, id2label))
+# {'accuracy': 0.5, 'macro_f1': 0.5,
+#  'top_confusions': [('NOUN', 'VERB', 1), ('VERB', 'NOUN', 1)]}</pre>
+    <p>Work it through by hand to confirm. The mask keeps four positions: gold NOUN/pred NOUN, gold VERB/pred NOUN, gold NOUN/pred VERB, gold ADJ/pred ADJ. So</p>
+    <pre>          pred NOUN  pred VERB  pred ADJ
+gold NOUN     1          1          0
+gold VERB     1          0          0
+gold ADJ      0          0          1</pre>
+    <p>Accuracy = (1 + 0 + 1) / 4 = 0.5. NOUN: P = 1/2, R = 1/2, F1 = 0.5. VERB: P = 0/1 = 0, R = 0/1 = 0, F1 = 0. ADJ: P = 1/1, R = 1/1, F1 = 1.0. macro-F1 = 1.5/3 = 0.5.</p>
+    <p>Three decisions in that code that change the numbers:</p>
+    <ul>
+      <li><strong><code>mask = labels != -100</code>.</strong> Omit it and you score the special tokens and continuation subwords too. Because <code>-100</code> is not a valid class index, what happens next depends on your array library — best case you crash, worst case you index from the end and quietly score garbage.</li>
+      <li><strong><code>if row &gt; 0</code> when averaging.</strong> Only tags that actually occur in the gold data enter the macro average. Include a tag with zero support and you add a guaranteed 0.0 term for a tag nobody was ever asked to predict — the same trap as setting <code>num_labels</code> too high.</li>
+      <li><strong>Zero-division returns 0, not skip.</strong> A tag the model never predicts gets precision 0, and therefore F1 0, and therefore drags macro-F1 down. That is the honest behaviour: failing to ever predict a tag is a failure, not a missing value. It matches <code>sklearn.metrics.f1_score(..., average="macro", zero_division=0)</code>.</li>
+    </ul>
+    <p>For the Trainer API, wrap it: <code>compute_metrics</code> receives an <code>EvalPrediction</code> whose first element is logits, so start with <code>preds = np.argmax(logits, axis=-1)</code> and pass that in.</p>
+  </details>
+</div>
+
+<!-- ===================== E14 ===================== -->
+<div class="exercise" id="e14">
+  <div class="qtype">Explain why · argument</div>
+  <h3>Exercise 14 — Defend your baseline <span class="diff d3">hard</span></h3>
+  <div class="stem">
+    <p>A reviewer of your project report writes: <em>"Comparing a transformer to a dictionary lookup is not a meaningful evaluation. The lookup is not a model. You should compare against something modern."</em></p>
+    <p>Write a response of roughly 250 words. It must (a) state what a baseline is for, (b) give the specific property of the lookup that a stronger baseline would not have, (c) show one concrete error analysis that only the lookup makes possible, and (d) concede the one thing the reviewer is right about.</p>
+  </div>
+  <details><summary>Show solution</summary>
+    <p><strong>(a) What a baseline is for.</strong> A baseline exists to decompose a score. Any accuracy figure mixes two contributions: how easy the task is, and how good the model is. The most-frequent-tag lookup measures exactly the part of POS tagging that is solvable from word identity alone. Whatever the transformer scores above it is, by construction, the contribution of context — which is the only thing this project claims the transformer is for. A "more modern" baseline would blur that decomposition rather than sharpen it, because it too would use context, and the difference between the two models would no longer isolate anything.</p>
+    <p><strong>(b) The property a stronger baseline lacks.</strong> The lookup is completely inspectable: the model <em>is</em> a table of counts, so every prediction reduces to one printable line, and the model has no random seed, no initialisation, and no training procedure that could have gone wrong. When it is wrong, the cause is visible rather than inferred. No trained model has that property, which is why swapping it for something stronger costs more than it buys.</p>
+    <p><strong>(c) The error analysis it makes possible.</strong> Take the sentence <em>"The bark was quiet ."</em> The lookup predicts VERB for <code>bark</code>. Its entry is <code>{VERB: 2, NOUN: 1}</code>, so the ceiling for any context-free tagger on this word is 2/3 = 66.7%, and this token is in the losing third. That single line establishes three things at once: the error is caused by lexical ambiguity, it is not fixable by more training data of the same kind, and the determiner immediately to the left is the evidence a contextual model must use. Because the baseline partitions all of its errors into ambiguity, rule, and coverage, I can state what fraction of the remaining error a contextual model could even in principle remove — before training one.</p>
+    <p><strong>(d) Where the reviewer is right.</strong> The lookup is not a competitive tagger and should never be presented as one; beating it is necessary, not sufficient. If the report's only claim were "we beat the lookup", that would be a weak claim. The lookup is a floor and a diagnostic instrument, not a rival. A published state-of-the-art number for the same treebank and tag set belongs in the report as well — as a ceiling — so the reader can see both how much of the task the transformer captured and how much room is left.</p>
+    <div class="callout">
+      <strong>Marking note.</strong> A good answer names the decomposition argument (a) explicitly, and gives a concrete worked error (c) with actual counts rather than a description of one. An answer that omits the concession (d) has argued for the wrong thing: the claim is not that the lookup is a good tagger, it is that it is a good <em>instrument</em>.
+    </div>
+  </details>
+</div>
+
+<div class="callout">
+  <strong>If you finished all fourteen.</strong> Do the same three-way error partition (ambiguity / rule / coverage) on your own baseline over a real English treebank from <a href="https://universaldependencies.org/#english-treebanks">universaldependencies.org</a>, then predict — before training — how much your transformer can improve. Write the prediction down. Comparing it with what actually happens is the most informative single thing you can do in this topic.
+</div>
+
+<div class="nav">
+  <a href="Lecture_Notes_Topic_6_Part_of_Speech_Tagging.html">← Lecture notes</a>
+  <span>Topic 6 — Part-of-Speech Tagging</span>
+</div>
+
+</div>
+
+<script>
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function pct(x){ return (100*x).toFixed(1) + '%'; }
+function sumVals(o){ var s=0; for (var k in o) s += o[k]; return s; }
+function mftOf(d){
+  return Object.keys(d).sort(function(a,b){
+    if (d[b] !== d[a]) return d[b] - d[a];
+    return a < b ? -1 : 1;
+  })[0];
+}
+
+/* ---------- Exercise 9 widget: lookup tagger over the 4-sentence corpus ---------- */
+(function(){
+  var CORPUS = [
+    [["The","DET"],["dogs","NOUN"],["bark","VERB"],[".","PUNCT"]],
+    [["I","PRON"],["heard","VERB"],["a","DET"],["bark","NOUN"],[".","PUNCT"]],
+    [["They","PRON"],["bark","VERB"],["at","ADP"],["the","DET"],["cars","NOUN"],[".","PUNCT"]],
+    [["The","DET"],["park","NOUN"],["was","AUX"],["quiet","ADJ"],[".","PUNCT"]]
+  ];
+  var counts = {};
+  CORPUS.forEach(function(s){ s.forEach(function(p){
+    var w = p[0].toLowerCase();
+    if (!counts[w]) counts[w] = {};
+    counts[w][p[1]] = (counts[w][p[1]] || 0) + 1;
+  }); });
+
+  var RULES = [
+    {label:'rule 1: non-alphanumeric → PUNCT', tag:'PUNCT',
+     test:function(w){ return /^[^A-Za-z0-9]+$/.test(w); }},
+    {label:'rule 2: contains a digit → NUM', tag:'NUM',
+     test:function(w){ return /[0-9]/.test(w); }},
+    {label:'rule 3: capitalised, not sentence-first → PROPN', tag:'PROPN',
+     test:function(w, first){ return !first && /^[A-Z]/.test(w); }},
+    {label:'rule 4: ends in -ly → ADV', tag:'ADV',
+     test:function(w){ return /ly$/.test(w.toLowerCase()); }},
+    {label:'rule 5: ends in -ing or -ed → VERB', tag:'VERB',
+     test:function(w){ return /(ing|ed)$/.test(w.toLowerCase()); }},
+    {label:'rule 6: ends in -est → ADJ', tag:'ADJ',
+     test:function(w){ return /est$/.test(w.toLowerCase()); }},
+    {label:'rule 7: ends in -ous/-ive/-al/-ful → ADJ', tag:'ADJ',
+     test:function(w){ return /(ous|ive|al|ful)$/.test(w.toLowerCase()); }},
+    {label:'rule 8: ends in -tion/-ment/-ness/-ity → NOUN', tag:'NOUN',
+     test:function(w){ return /(tion|ment|ness|ity)$/.test(w.toLowerCase()); }},
+    {label:'rule 9: ends in -s → NOUN', tag:'NOUN',
+     test:function(w){ return /s$/.test(w.toLowerCase()); }}
+  ];
+  function cascade(word, isFirst){
+    for (var i=0;i<RULES.length;i++)
+      if (RULES[i].test(word, isFirst)) return {tag:RULES[i].tag, why:RULES[i].label};
+    return {tag:'NOUN', why:'rule 10: default → NOUN'};
+  }
+  function tokenize(s){
+    var raw = s.trim().split(/\s+/).filter(function(x){ return x.length; });
+    var out = [];
+    raw.forEach(function(t){
+      var m = t.match(/^([A-Za-z0-9'.-]*?)([.,;:!?]+)$/);
+      if (m && m[1].length){ out.push(m[1]); out.push(m[2]); } else out.push(t);
+    });
+    return out;
+  }
+
+  var input = document.getElementById('ex-in');
+  var out = document.getElementById('ex-out');
+  var read = document.getElementById('ex-read');
+
+  function render(){
+    var toks = tokenize(input.value);
+    var html = '', known = 0, amb = 0, unk = 0;
+    toks.forEach(function(t, i){
+      var d = counts[t.toLowerCase()];
+      if (d){
+        known++;
+        var best = mftOf(d), tot = sumVals(d);
+        var keys = Object.keys(d).sort(function(a,b){ return d[b]-d[a] || (a<b?-1:1); });
+        var isAmb = keys.length > 1;
+        if (isAmb) amb++;
+        var note = isAmb
+          ? keys.map(function(k){ return k + ' ' + d[k]; }).join('/') + ' → ceiling ' + pct(d[keys[0]]/tot)
+          : 'unambiguous (' + tot + ')';
+        html += '<div class="tok' + (isAmb ? ' amb' : '') + '"><div class="w">' + esc(t) +
+                '</div><div class="t">' + best + '</div><div class="n">' + esc(note) + '</div></div>';
+      } else {
+        unk++;
+        var r = cascade(t, i === 0);
+        html += '<div class="tok unk"><div class="w">' + esc(t) + '</div><div class="t">' +
+                r.tag + '</div><div class="n">' + esc(r.why) + '</div></div>';
+      }
+    });
+    out.innerHTML = html;
+    read.innerHTML = toks.length + ' tokens · ' + known + ' known (' + amb +
+      ' ambiguous) · ' + unk + ' unknown → cascade · unknown rate ' +
+      (toks.length ? pct(unk/toks.length) : '0.0%');
+  }
+  document.getElementById('ex-go').onclick = render;
+  input.addEventListener('input', render);
+  Array.prototype.forEach.call(document.querySelectorAll('[data-ex]'), function(b){
+    b.onclick = function(){ input.value = b.dataset.ex; render(); };
+  });
+  render();
+})();
+
+/* ---------- Exercise 10 widget: subword alignment ---------- */
+(function(){
+  var WORDS  = ["The","subword","tokenizer","misaligned","every","label","."];
+  var TAGS   = ["DET","NOUN","NOUN","VERB","DET","NOUN","PUNCT"];
+  var PIECES = [["The"],["sub","##word"],["token","##izer"],
+                ["mis","##align","##ed"],["every"],["label"],["."]];
+  var sub = [], wordId = [], firstOf = [], lastOf = [];
+  PIECES.forEach(function(ps, wi){
+    firstOf[wi] = sub.length;
+    ps.forEach(function(p){ sub.push(p); wordId.push(wi); });
+    lastOf[wi] = sub.length - 1;
+  });
+
+  var sel = document.getElementById('ea-mode');
+  var read = document.getElementById('ea-read');
+  var c = document.getElementById('ea-canvas'), ctx = c.getContext('2d');
+
+  function labelsFor(mode){
+    var L = new Array(sub.length).fill(null);
+    if (mode === 'first')      for (var a=0;a<WORDS.length;a++) L[firstOf[a]] = TAGS[a];
+    else if (mode === 'last')  for (var b=0;b<WORDS.length;b++) L[lastOf[b]]  = TAGS[b];
+    else if (mode === 'all')   for (var i=0;i<sub.length;i++)   L[i] = TAGS[wordId[i]];
+    else if (mode === 'zip')   for (var j=0;j<Math.min(sub.length, TAGS.length);j++) L[j] = TAGS[j];
+    return L;
+  }
+
+  function render(){
+    var mode = sel.value, L = labelsFor(mode);
+    var pred = WORDS.map(function(_, w){ return L[firstOf[w]]; });
+    var right = 0; pred.forEach(function(p, i){ if (p === TAGS[i]) right++; });
+    var supervised = L.filter(function(x){ return x !== null; }).length;
+    var notes = {
+      first:'Correct: one label per word, on the first subword.',
+      all:  'Read-back is right, but long words now dominate the loss and any subword-level accuracy is inflated.',
+      zip:  'The bug: labels slide left from the first multi-subword word onward, and the tail gets no supervision.',
+      last: 'Only consistent if inference also reads the last subword. Here inference reads the first.'
+    };
+    read.innerHTML = '<strong>' + supervised + '</strong> of ' + sub.length +
+      ' subword positions supervised · word-level read-back = <strong>' + right + '/' + WORDS.length +
+      ' = ' + pct(right/WORDS.length) + '</strong><br>' + esc(notes[mode]);
+
+    var W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    var x0 = 20, y0 = 30, cw = (W - 40)/sub.length;
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 11px sans-serif';
+    ctx.fillText('subword positions and their assigned labels', x0, 18);
+    for (var i=0;i<sub.length;i++){
+      var isFirst = (firstOf[wordId[i]] === i);
+      ctx.fillStyle = isFirst ? '#EAF1F8' : '#F7F9FC';
+      ctx.strokeStyle = isFirst ? '#1F4E79' : '#CFD7DF';
+      ctx.fillRect(x0 + i*cw + 1, y0, cw - 2, 32);
+      ctx.strokeRect(x0 + i*cw + 1, y0, cw - 2, 32);
+      ctx.fillStyle='#1A1A1A'; ctx.font='10px monospace';
+      ctx.fillText(sub[i], x0 + i*cw + 5, y0 + 20);
+      var lab = L[i];
+      ctx.fillStyle = (lab === null) ? '#F2F4F7' : '#E1F0EA';
+      ctx.strokeStyle = (lab === null) ? '#CFD7DF' : '#1B5E20';
+      ctx.fillRect(x0 + i*cw + 1, y0 + 38, cw - 2, 26);
+      ctx.strokeRect(x0 + i*cw + 1, y0 + 38, cw - 2, 26);
+      ctx.fillStyle = (lab === null) ? '#999' : '#1B5E20';
+      ctx.font='10px monospace';
+      ctx.fillText(lab === null ? '-100' : lab, x0 + i*cw + 5, y0 + 55);
+    }
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 11px sans-serif';
+    ctx.fillText('word-level read-back (tag from the first subword of each word)', x0, y0 + 98);
+    var ww = (W - 40)/WORDS.length;
+    for (var w=0; w<WORDS.length; w++){
+      var ok = (pred[w] === TAGS[w]);
+      ctx.fillStyle='#FFF'; ctx.strokeStyle='#CFD7DF';
+      ctx.fillRect(x0 + w*ww + 2, y0 + 110, ww - 4, 62);
+      ctx.strokeRect(x0 + w*ww + 2, y0 + 110, ww - 4, 62);
+      ctx.fillStyle='#1A1A1A'; ctx.font='10px monospace';
+      ctx.fillText(WORDS[w], x0 + w*ww + 8, y0 + 126);
+      ctx.fillStyle = ok ? '#1B5E20' : '#C00000'; ctx.font='bold 10px monospace';
+      ctx.fillText(pred[w] === null ? '(none)' : pred[w], x0 + w*ww + 8, y0 + 144);
+      ctx.fillStyle='#777'; ctx.font='9px monospace';
+      ctx.fillText('gold ' + TAGS[w], x0 + w*ww + 8, y0 + 160);
+      ctx.fillStyle = ok ? '#1B5E20' : '#C00000';
+      ctx.fillRect(x0 + w*ww + 2, y0 + 168, ww - 4, 4);
+    }
+  }
+  sel.onchange = render;
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+.env
+ui/.streamlit/secrets.toml
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+.DS_Store
+
+# Trained artifacts and caches. A fine-tuned DistilBERT checkpoint is a few
+# hundred megabytes; GitHub will refuse it and your clone will be miserable.
+# Push the checkpoint to the Hugging Face Hub or Supabase Storage and fetch it at
+# build time instead. A small baseline pickle is the one thing here you may
+# reasonably decide to commit — if you do, add an exception and say why.
+artifacts/
+*.pt
+*.bin
+*.safetensors
+.cache/
+runs/
+outputs/
+checkpoint-*/
+wandb/
+
+# Corpus files. Do not commit someone else's dataset into a public fork; cite it
+# in the README and let the loader download or read it locally.
+data/
+*.csv
+*.jsonl

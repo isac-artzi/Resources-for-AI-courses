@@ -1,0 +1,76 @@
+# Default configuration for GenText.
+# The API accepts decoding settings per request; this file records the defaults
+# and the training configuration so a run can be reproduced from the repository
+# alone. Nothing reads it automatically — it is documentation with a schema,
+# and it is what you copy into your report.
+
+model:
+  # Start with the base model. Replace with your own checkpoint id once you have
+  # fine-tuned and pushed one, and set MODEL_NAME on Render to match.
+  base_model: gpt2
+  # Stamped on every generation row; joins to training_runs.model_version.
+  model_version: gentext-v1
+
+# ---------------------------------------------------------------------------
+# Decoding. These are the Generate tab's starting positions.
+# ---------------------------------------------------------------------------
+generation:
+  strategy: top_p          # greedy | beam | temperature | top_k | top_p
+  max_new_tokens: 80
+  temperature: 0.9
+  top_k: 50
+  top_p: 0.95
+  num_beams: 4
+  repetition_penalty: 1.0
+  seed: null               # set an integer when you need a repeatable demo
+
+# The five presets the Compare Decoding tab runs. Keep them meaningfully
+# different — two nucleus settings 0.02 apart compare nothing.
+compare_presets:
+  - strategy: greedy
+  - strategy: beam
+    num_beams: 5
+  - strategy: temperature
+    temperature: 1.2
+  - strategy: top_k
+    top_k: 40
+  - strategy: top_p
+    top_p: 0.92
+
+# ---------------------------------------------------------------------------
+# Fine-tuning. Run OFFLINE (see api/nlp.fine_tune), never on the web service.
+# ---------------------------------------------------------------------------
+fine_tune:
+  method: full             # full | lora | prefix | frozen
+  epochs: 1
+  learning_rate: 5.0e-5
+  batch_size: 8
+  block_size: 256
+  held_out_fraction: 0.05  # split BEFORE training, and never look at it again
+
+corpus:
+  path: data/corpus.txt
+  # Fill both in. "a dataset from the internet" is not a source.
+  source: ""
+  domain: ""
+  min_sentences: 20000     # the assignment's floor, counted AFTER filtering
+  filters:
+    - drop_empty_lines
+    - drop_exact_duplicates
+    - drop_shorter_than_5_tokens
+    - drop_longer_than_200_tokens
+
+evaluation:
+  automatic:
+    - distinct_1
+    - distinct_2
+    - perplexity_on_held_out_split
+  human:
+    # At least 20 outputs, each scored independently by two people.
+    outputs_to_rate: 20
+    raters: 2
+    scale: 1-5
+    dimensions:
+      - coherence
+      - fluency
+      - relevance

@@ -1,0 +1,9 @@
+# UI tier — installed by Streamlit Community Cloud.
+# No transformers, no torch, no sklearn-crfsuite: the UI is a thin client on
+# purpose. If you find yourself needing a model library here, the logic belongs
+# in the API instead — and the review write path belongs there twice over,
+# because the browser only holds the anon key.
+streamlit==1.38.0
+requests==2.32.3
+pandas==2.2.2
+supabase==2.7.4

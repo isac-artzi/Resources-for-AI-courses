@@ -1,0 +1,11 @@
+# Local development and the test suite, from the repository root:
+#   pip install -r requirements-dev.txt && pytest
+#
+# This pulls torch (about a gigabyte). If you only want to run the
+# infrastructure and schema tests while you read the code, this is enough:
+#   pip install fastapi uvicorn pydantic supabase pytest httpx
+# and then:  pytest -m "not contract"
+-r api/requirements.txt
+-r ui/requirements.txt
+pytest==8.3.3
+httpx==0.27.2

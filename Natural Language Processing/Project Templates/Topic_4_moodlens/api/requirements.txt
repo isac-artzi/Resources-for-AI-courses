@@ -1,0 +1,32 @@
+# API tier — installed by Render.com (see render.yaml buildCommand).
+#
+# This list is much heavier than Topic 1's, and the weight is the point: torch
+# plus transformers is most of a gigabyte, which on the free plan means a slow
+# build and a slow cold start. Two consequences:
+#   * Train somewhere else. Nothing here is for training on Render.
+#   * If the deploy runs out of memory, the answer is a smaller checkpoint, not
+#     a bigger plan.
+# Everything model-shaped belongs in THIS file only. The UI tier never imports
+# torch, transformers or scikit-learn.
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic==2.9.2
+
+# Inference. Install the CPU build to avoid pulling CUDA onto a machine that has
+# no GPU:  pip install torch --index-url https://download.pytorch.org/whl/cpu
+torch==2.4.1
+transformers==4.44.2
+tokenizers==0.19.1
+
+# TF-IDF baseline, and the metric functions you check your own against.
+scikit-learn==1.5.2
+numpy==1.26.4
+
+# Corpus loading for the training script.
+datasets==2.21.0
+
+# Reads api/configs/default.yaml.
+pyyaml==6.0.2
+
+supabase==2.7.4
+python-dotenv==1.0.1

@@ -1,0 +1,35 @@
+# Render.com blueprint for the API tier (Cloud #2).
+# Dashboard -> New -> Blueprint -> point at your fork.
+# After the first deploy, set SUPABASE_URL and SUPABASE_SERVICE_KEY as secret
+# environment variables in the service settings (sync: false means Render will
+# not read them from this file).
+#
+# The free plan sleeps after inactivity and has a small memory allowance. This
+# service installs torch and loads two models, so expect a slow first deploy and
+# a slow first request after idle. If the service restarts silently under load,
+# it was killed for memory: use a smaller generator or move generation to a
+# hosted inference API and keep only the embedding model in-process.
+services:
+  - type: web
+    name: askmydocs-api
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r api/requirements.txt"
+    startCommand: "uvicorn api.main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: MODEL_VERSION
+        value: "askmydocs-v1"
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      # Keeps the Hugging Face cache on the writable disk rather than in a home
+      # directory the process may not own. Without it, the first model download
+      # can fail on a read-only filesystem error that does not mention caching.
+      - key: HF_HOME
+        value: "/tmp/hf"

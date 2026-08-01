@@ -1,0 +1,10 @@
+# Local development and the test suite, from the repository root:
+#   pip install -r requirements-dev.txt && pytest
+#
+# Heads up: this pulls torch, which is a large download the first time. If you
+# only want to work on the data and metric layers today, install the UI and test
+# tools plus scikit-learn and run `pytest -m "contract and not model"`.
+-r api/requirements.txt
+-r ui/requirements.txt
+pytest==8.3.3
+httpx==0.27.2

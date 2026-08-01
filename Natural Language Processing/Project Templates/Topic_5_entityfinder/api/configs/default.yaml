@@ -1,0 +1,59 @@
+# Default configuration for both extractors.
+# The API reads its threshold and model paths from the environment; this file
+# records the defaults so a run can be reproduced from the repository alone.
+# When you change something here, change model_version too — otherwise two rows
+# in the runs table claim the same version and mean different things.
+
+dataset:
+  name: conll2003
+  # Count these yourself in profile_dataset() and write the real numbers into
+  # your report. Do not copy a number out of a paper: you need the counts for
+  # the copy of the data you actually trained on.
+  splits: [train, validation, test]
+  entity_types: [PER, ORG, LOC, MISC]
+
+crf:
+  algorithm: lbfgs
+  c1: 0.1                 # L1 penalty — pushes feature weights to zero
+  c2: 0.1                 # L2 penalty
+  max_iterations: 100
+  all_possible_transitions: true
+  # Record the feature set here as well as in the runs table. These names are
+  # your model's entire vocabulary; a run you cannot reproduce the features for
+  # is a run you cannot reproduce.
+  features:
+    - lower
+    - prefix2
+    - prefix3
+    - suffix2
+    - suffix3
+    - is_title
+    - is_upper
+    - has_digit
+    - has_hyphen
+    - pos
+    - pos2            # coarse POS, first two characters
+    - window: [-1, +1]  # the same features for the neighbours, plus BOS/EOS
+
+transformer:
+  # Any token-classification-capable encoder checkpoint works. A cased model is
+  # the sensible starting point: capitalisation is one of the strongest signals
+  # there is for names, and an uncased model throws it away before training.
+  base_checkpoint: bert-base-cased
+  max_length: 256
+  learning_rate: 5.0e-5
+  batch_size: 16
+  epochs: 3
+  seed: 42
+  # -100 is the label id the loss ignores. Every subword piece after the first
+  # piece of a word gets it. See train_transformer() for why this matters.
+  ignore_label_id: -100
+
+serving:
+  default_model: transformer
+  # Predictions below this go in front of a human. Not a constant of nature.
+  confidence_threshold: 0.85
+  # Store a snippet of surrounding text with each entity so reviewers have
+  # context? Default false: it puts raw document text back in the database.
+  # If you turn it on, keep the window small and document the tradeoff.
+  store_entity_context: false

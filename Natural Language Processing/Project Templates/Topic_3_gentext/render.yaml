@@ -1,0 +1,36 @@
+# Render.com blueprint for the API tier (Cloud #2).
+# Dashboard -> New -> Blueprint -> point at your fork.
+# After the first deploy, set SUPABASE_URL and SUPABASE_SERVICE_KEY as secret
+# environment variables in the service settings (sync: false means Render will
+# not read them from this file).
+#
+# This service GENERATES. It does not train. Fine-tuning a decoder does not fit
+# in the free instance's memory or its request timeout — train offline, publish
+# the checkpoint to the Hugging Face Hub, and set MODEL_NAME to it here.
+services:
+  - type: web
+    name: gentext-api
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r api/requirements.txt"
+    # One worker. A second worker means a second copy of the weights in memory,
+    # and the free instance does not have room for it.
+    startCommand: "uvicorn api.main:app --host 0.0.0.0 --port $PORT --workers 1"
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: MODEL_NAME
+        value: "gpt2"
+      - key: MODEL_VERSION
+        value: "gentext-v1"
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      # Keep tokenizer threading modest: on a shared CPU instance the parallel
+      # version is slower than the serial one and prints a warning on every fork.
+      - key: TOKENIZERS_PARALLELISM
+        value: "false"

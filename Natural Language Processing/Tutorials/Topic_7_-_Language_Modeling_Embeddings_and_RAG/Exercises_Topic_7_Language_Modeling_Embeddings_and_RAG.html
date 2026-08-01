@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 7 Exercises — Language Modeling, Embeddings and Retrieval-Augmented Generation</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+       margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6; }
+.container { max-width: 980px; margin: 24px auto 48px; background: white;
+             padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.35em; margin-top: 40px;
+     border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+h4 { color: #555; font-size: 1.0em; margin-top: 18px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 6px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7;
+       padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px; overflow-x: auto;
+      border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79;
+           padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px;
+        margin: 14px 0; border-radius: 4px; font-size: 0.93em; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+        padding: 22px; margin: 22px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.controls { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 180px; }
+.control input[type="number"] { width: 80px; padding: 4px 8px;
+            border: 1px solid #CFD7DF; border-radius: 4px; font-family: inherit; }
+.control select { padding: 5px 8px; border: 1px solid #CFD7DF; border-radius: 4px;
+                  font-family: inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px;
+           border-radius: 6px; font-family: "SF Mono", Consolas, monospace;
+           font-size: 0.88em; min-width: 220px; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 16px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.93em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+      background: #F2F4F7; padding: 4px 8px; border-radius: 4px; }
+.eq-block { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+            background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+            text-align: center; margin: 14px 0; display: block; }
+.nav { display: flex; justify-content: space-between; margin-top: 40px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+       padding: 16px 22px; margin-bottom: 28px; font-size: 0.92em; }
+.toc h3 { margin: 0 0 8px; color: #1F4E79; font-size: 1.0em; }
+.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 24px; }
+.toc a { color: #1F4E79; text-decoration: none; } .toc a:hover { text-decoration: underline; }
+.tag { display: inline-block; padding: 2px 8px; background: #E0E5EB;
+       border-radius: 12px; font-size: 0.75em; color: #555;
+       text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px; }
+.tag.interactive { background: #E1F0EA; color: #1B5E20; }
+.tag.code { background: #F2F4F7; color: #555; }
+.tag.math { background: #FCE8EE; color: #6E1414; }
+table.cmp { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 0.92em; }
+table.cmp th, table.cmp td { border: 1px solid #E0E5EB; padding: 8px 12px; text-align: left; }
+table.cmp th { background: #F2F4F7; color: #1F4E79; }
+.archetype { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
+.arc-card { border: 1px solid #D0D8E0; border-radius: 8px; padding: 14px;
+            background: white; font-size: 0.9em; }
+.arc-card .name { color: #1F4E79; font-weight: 600; }
+.arc-card .role { color: #555; margin-top: 6px; }
+/* --- appended: exercise-specific rules --- */
+.exercise { border: 1px solid #E0E5EB; border-left: 4px solid #1F4E79; border-radius: 8px;
+            padding: 18px 22px; margin: 22px 0; background: white; }
+.exercise h3 { margin-top: 0; color: #1F4E79; }
+.qtype { font-size: 0.76em; text-transform: uppercase; letter-spacing: 0.06em;
+         color: #888; margin-bottom: 4px; }
+.stem { margin: 10px 0; }
+.given { background: #F2F4F7; border-radius: 6px; padding: 10px 14px; margin: 10px 0;
+         font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.88em; }
+details { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 6px;
+          padding: 10px 16px; margin: 14px 0 2px; }
+details summary { cursor: pointer; color: #1F4E79; font-weight: 600; font-size: 0.93em;
+                  list-style: none; }
+details summary::-webkit-details-marker { display: none; }
+details summary::before { content: "▸ "; }
+details[open] summary::before { content: "▾ "; }
+details[open] summary { margin-bottom: 10px; border-bottom: 1px solid #E0E5EB; padding-bottom: 6px; }
+.checkbox { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+            padding: 14px 18px; margin: 14px 0; }
+.checkbox .lbl { font-size: 0.78em; text-transform: uppercase; letter-spacing: 0.05em;
+                 color: #888; margin-bottom: 8px; }
+.checkbox input[type="text"] { padding: 5px 9px; border: 1px solid #CFD7DF; border-radius: 4px;
+                               font-family: "SF Mono", Consolas, monospace; font-size: 0.88em; }
+.checkbox input[type="number"] { width: 92px; padding: 5px 9px; border: 1px solid #CFD7DF;
+                                 border-radius: 4px; font-family: inherit; }
+.diff { display: inline-block; font-size: 0.72em; padding: 2px 8px; border-radius: 12px;
+        margin-left: 8px; text-transform: uppercase; letter-spacing: 0.04em; }
+.diff.d1 { background: #E8F5E9; color: #1B5E20; }
+.diff.d2 { background: #FFF8E1; color: #8A6100; }
+.diff.d3 { background: #FDECEA; color: #6E1414; }
+</style>
+</head>
+<body>
+<div class="container" id="top">
+
+<div class="brand">Exercises</div>
+<h1>Topic 7 — Language Modeling, Embeddings and Retrieval-Augmented Generation</h1>
+<p class="subtitle">Fourteen problems: perplexity and cosine similarity computed on paper, chunk boundaries traced by hand, three short functions to write, and four questions whose answer is an argument rather than a number.</p>
+
+<div class="callout">
+  <strong>How to use these.</strong> Do the arithmetic before you open a solution — every by-hand problem here is small enough to finish on one line of paper, and the numbers were chosen so the answers come out clean. Where an exercise has a calculator attached, <em>write down your prediction first</em>, then type your numbers in and see whether the machine agrees. An exercise you check before you attempt teaches you nothing. Difficulty rises from Exercise 1 to Exercise 14.
+</div>
+
+<div class="toc">
+  <h3>The exercises</h3>
+  <ol>
+    <li><a href="#e1">Perplexity of a three-token sequence</a></li>
+    <li><a href="#e2">Loss, perplexity, bits per character</a></li>
+    <li><a href="#e3">One surprising token</a></li>
+    <li><a href="#e4">Cosine versus Euclidean, 3-D</a></li>
+    <li><a href="#e5">Normalisation and the L2 identity</a></li>
+    <li><a href="#e6">What an inner product ranks</a></li>
+    <li><a href="#e7">Chunk boundaries and a split answer</a></li>
+    <li><a href="#e8">Choosing k from a rank table</a></li>
+    <li><a href="#e9">Write <code>chunk_tokens</code></a></li>
+    <li><a href="#e10">Write <code>normalise</code> and <code>cosine</code></a></li>
+    <li><a href="#e11">Write <code>top_k</code></a></li>
+    <li><a href="#e12">The overlapping corpora</a></li>
+    <li><a href="#e13">Diagnose a wrong answer</a></li>
+    <li><a href="#e14">Recall fell off a cliff</a></li>
+  </ol>
+</div>
+
+<!-- ============ 1 ============ -->
+<div class="exercise" id="e1">
+  <div class="qtype">By hand · perplexity <span class="diff d1">warm-up</span></div>
+  <h3>Exercise 1 — Perplexity of a three-token sequence</h3>
+  <div class="stem">A language model reads the sequence <code>rain is likely</code> and reports the following probabilities for the tokens that actually occurred.</div>
+  <div class="given">P(rain)              = 1/4<br>P(is | rain)         = 1/2<br>P(likely | rain is)  = 1/8</div>
+  <div class="stem">Compute, without a calculator: (a) the surprisal of each token in bits; (b) the joint probability of the sequence; (c) the perplexity. Then state in one sentence what the perplexity number means.</div>
+  <div class="checkbox">
+    <div class="lbl">check your arithmetic — enter probabilities, comma separated</div>
+    <input type="text" id="c1-in" value="0.25, 0.5, 0.125" size="34">
+    <button id="c1-go">Compute</button>
+    <pre id="c1-out" style="margin-top:10px"></pre>
+  </div>
+  <details><summary>Show solution</summary>
+    <p><strong>(a) Surprisals.</strong> −log₂(1/4) = 2 bits. −log₂(1/2) = 1 bit. −log₂(1/8) = 3 bits. Total = 6 bits over 3 tokens, so the mean surprisal is 2 bits per token.</p>
+    <p><strong>(b) Joint probability.</strong> (1/4)(1/2)(1/8) = 1/64.</p>
+    <p><strong>(c) Perplexity.</strong> Two routes, same answer.</p>
+    <p class="eq-block">PPL = 2<sup>mean bits</sup> = 2² = 4<br>PPL = (1/64)<sup>−1/3</sup> = 64<sup>1/3</sup> = 4</p>
+    <p>In natural logs: Σ ln P = ln(0.25) + ln(0.5) + ln(0.125) = −1.3863 − 0.6931 − 2.0794 = −4.1589; the mean is L = 1.3863 nats; exp(1.3863) = 4.00.</p>
+    <p><strong>Meaning.</strong> Across these three positions the model was on average as uncertain as someone choosing uniformly among 4 equally likely tokens. Perplexity has the units of an effective number of choices per position: 1 is a perfect model, and the ceiling is the vocabulary size.</p>
+  </details>
+</div>
+
+<!-- ============ 2 ============ -->
+<div class="exercise" id="e2">
+  <div class="qtype">By hand · loss, perplexity, bits per character <span class="diff d1">warm-up</span></div>
+  <h3>Exercise 2 — Loss, perplexity, bits per character</h3>
+  <div class="stem">
+    <ol>
+      <li>Your evaluation loop prints <code>eval_loss = 2.3026</code>. What is the perplexity?</li>
+      <li>A colleague reports a perplexity of 45 and no loss. What loss value produced it?</li>
+      <li>A second model scores a total of 30 bits of surprisal on a 12-token, 60-character passage. Give its per-token perplexity and its bits per character.</li>
+      <li>The two models use different tokenizers. Which of the two numbers in part 3 can be compared across them, and why?</li>
+    </ol>
+  </div>
+  <details><summary>Show solution</summary>
+    <p><strong>1.</strong> Hugging Face reports the mean cross-entropy in nats, so PPL = exp(2.3026) = <strong>10.0</strong>. (2.3026 is ln 10.)</p>
+    <p><strong>2.</strong> Invert it: L = ln(45) = <strong>3.8067 nats</strong>.</p>
+    <p><strong>3.</strong> Mean surprisal = 30 bits / 12 tokens = 2.5 bits per token, so PPL = 2<sup>2.5</sup> = 2² · 2<sup>0.5</sup> = 4 · 1.4142 = <strong>5.657</strong>. Bits per character = 30 bits / 60 characters = <strong>0.5</strong>.</p>
+    <p><strong>4.</strong> Only <strong>bits per character</strong>. Perplexity is defined per token, and a token is whatever the tokenizer decided it was. A model with a larger vocabulary covers the same text in fewer, more informative tokens, which raises its per-token perplexity even when it predicts the text just as well. Characters are a unit both models agree on, so dividing the same total surprisal by the character count removes the tokenizer from the comparison. Note that the <em>total</em> surprisal in bits is itself tokenizer-independent for a fixed text — it is the log-probability the model assigns to that text — which is precisely why normalising it by characters is legitimate and normalising it by tokens is not.</p>
+  </details>
+</div>
+
+<!-- ============ 3 ============ -->
+<div class="exercise" id="e3">
+  <div class="qtype">By hand · sensitivity <span class="diff d1">warm-up</span></div>
+  <h3>Exercise 3 — One surprising token</h3>
+  <div class="stem">Take Exercise 1 again, but the model now assigns P(likely | rain is) = 1/1024 instead of 1/8. The first two probabilities are unchanged.</div>
+  <div class="stem">(a) Recompute the perplexity. (b) The third token's probability fell by a factor of 128. By what factor did the perplexity rise? (c) What happens to the perplexity of a corpus if the model assigns probability exactly 0 to a single token that actually occurred, and what does that imply about any model you intend to evaluate this way?</div>
+  <details><summary>Show solution</summary>
+    <p><strong>(a)</strong> Surprisals are now 2, 1, and −log₂(1/1024) = 10 bits. Total = 13 bits over 3 tokens, mean = 13/3 = 4.3333 bits. PPL = 2<sup>4.3333</sup> = 2⁴ · 2<sup>0.3333</sup> = 16 · 1.2599 = <strong>20.16</strong>.</p>
+    <p><strong>(b)</strong> From 4 to 20.16, a factor of <strong>5.04</strong>. The general rule falls out of the algebra: dividing one token's probability by a factor <em>f</em> multiplies the perplexity by <em>f</em><sup>1/N</sup>. Here 128<sup>1/3</sup> = 5.04. Perplexity is a geometric mean, so one bad prediction is spread over the sequence rather than averaged away — and on a short sequence it dominates.</p>
+    <p><strong>(c)</strong> log 0 = −∞, so the mean negative log-likelihood is infinite and the perplexity of the whole corpus is infinite, no matter how good every other prediction was. Any model evaluated with perplexity must therefore assign non-zero probability to every token in the vocabulary at every position. A softmax over the vocabulary does this automatically; count-based models needed explicit smoothing for exactly this reason. Practically, it also means you must never post-process a distribution by hard-zeroing tokens before computing perplexity.</p>
+  </details>
+</div>
+
+<!-- ============ 4 ============ -->
+<div class="exercise" id="e4">
+  <div class="qtype">By hand · cosine and Euclidean <span class="diff d2">core</span></div>
+  <h3>Exercise 4 — Cosine versus Euclidean in three dimensions</h3>
+  <div class="stem">A query embedding and two candidate chunk embeddings, none of them normalised:</div>
+  <div class="given">q = (1, 2, 2)<br>a = (2, 4, 4)<br>b = (2, 2, 1)</div>
+  <div class="stem">Compute ‖q‖, ‖a‖, ‖b‖, then cos(q, a), cos(q, b), ‖q − a‖ and ‖q − b‖. Which candidate does cosine rank first? Which does Euclidean distance rank first? Explain the disagreement in one sentence.</div>
+  <div class="checkbox">
+    <div class="lbl">check your arithmetic — comma-separated coordinates</div>
+    q <input type="text" id="c4-q" value="1,2,2" size="14">
+    a <input type="text" id="c4-a" value="2,4,4" size="14">
+    b <input type="text" id="c4-b" value="2,2,1" size="14">
+    <button id="c4-go">Compute</button>
+    <pre id="c4-out" style="margin-top:10px"></pre>
+  </div>
+  <details><summary>Show solution</summary>
+    <p><strong>Lengths.</strong> ‖q‖ = √(1 + 4 + 4) = √9 = 3. ‖a‖ = √(4 + 16 + 16) = √36 = 6. ‖b‖ = √(4 + 4 + 1) = √9 = 3.</p>
+    <p><strong>Cosines.</strong> q · a = 2 + 8 + 8 = 18, so cos(q, a) = 18 / (3 · 6) = 18/18 = <strong>1.000</strong>. q · b = 2 + 4 + 2 = 8, so cos(q, b) = 8 / (3 · 3) = 8/9 = <strong>0.8889</strong>.</p>
+    <p><strong>Distances.</strong> q − a = (−1, −2, −2), so ‖q − a‖ = √9 = <strong>3.000</strong>. q − b = (−1, 0, 1), so ‖q − b‖ = √2 = <strong>1.414</strong>.</p>
+    <p><strong>Rankings.</strong> Cosine ranks <em>a</em> first (1.000 &gt; 0.8889). Euclidean distance ranks <em>b</em> first (1.414 &lt; 3.000). They disagree.</p>
+    <p><strong>Why.</strong> <em>a</em> is exactly q scaled by 2 — the same direction, so the angle is zero and the cosine is 1 — but scaling moves it a long way in space, so its Euclidean distance is large. Cosine measures direction only; Euclidean distance measures direction and magnitude together. On un-normalised embeddings the two metrics are answering different questions, so choosing between them is a decision you have to make on purpose, not a detail.</p>
+  </details>
+</div>
+
+<!-- ============ 5 ============ -->
+<div class="exercise" id="e5">
+  <div class="qtype">By hand · normalisation <span class="diff d2">core</span></div>
+  <h3>Exercise 5 — Normalisation and the L2 identity</h3>
+  <div class="stem">Work in two dimensions. Let a = (3, 4), b = (6, 8), c = (0, 5).</div>
+  <div class="stem">
+    <ol>
+      <li>Normalise all three to unit length.</li>
+      <li>Compute the inner product of the normalised â with b̂, and of â with ĉ. Compare each with the cosine similarity of the original un-normalised pair.</li>
+      <li>Verify the identity ‖â − ĉ‖² = 2 − 2·cos(a, c) numerically.</li>
+      <li>State what that identity buys you when your vector index only supports L2 distance but your semantics are cosine.</li>
+    </ol>
+  </div>
+  <details><summary>Show solution</summary>
+    <p><strong>1.</strong> ‖a‖ = √(9+16) = 5, so â = (0.6, 0.8). ‖b‖ = √(36+64) = 10, so b̂ = (0.6, 0.8). ‖c‖ = 5, so ĉ = (0, 1).</p>
+    <p><strong>2.</strong> â · b̂ = 0.36 + 0.64 = <strong>1.000</strong>. The un-normalised cosine: a · b = 18 + 32 = 50, ‖a‖‖b‖ = 5 · 10 = 50, cos = 1.000. Identical, as it must be — a and b point the same way. â · ĉ = 0·0.6 + 1·0.8 = <strong>0.800</strong>; un-normalised, a · c = 0 + 20 = 20 over 5 · 5 = 25, giving 0.800. Identical again. <em>On unit vectors the inner product is the cosine, with no division left to do.</em></p>
+    <p><strong>3.</strong> â − ĉ = (0.6, −0.2), so ‖â − ĉ‖² = 0.36 + 0.04 = <strong>0.40</strong>. And 2 − 2·cos = 2 − 2(0.8) = <strong>0.40</strong>. They match, because ‖â − ĉ‖² = ‖â‖² + ‖ĉ‖² − 2(â · ĉ) = 1 + 1 − 2 cos.</p>
+    <p><strong>4.</strong> Squared L2 distance is a strictly decreasing function of cosine similarity on unit vectors, so sorting ascending by L2 distance produces exactly the same order as sorting descending by cosine similarity. If every stored vector and every query vector is normalised, an L2 index gives you cosine ranking for free, and you never have to choose between the index you have and the metric you want. (The distance <em>values</em> differ, so if you display scores, convert: cos = 1 − d²/2.)</p>
+  </details>
+</div>
+
+<!-- ============ 6 ============ -->
+<div class="exercise" id="e6">
+  <div class="qtype">By hand + explain · the un-normalised trap <span class="diff d2">core</span></div>
+  <h3>Exercise 6 — What an inner product actually ranks</h3>
+  <div class="stem">A retrieval service computes <code>score = numpy.dot(q, chunk_vec)</code> and the variable is called <code>cosine_similarity</code>. Nothing is normalised anywhere. With</div>
+  <div class="given">q = (1, 0)<br>u = (0.9, 0.1)      # a short chunk, almost the same direction as q<br>v = (3, 3)          # a long chunk, 45° away from q</div>
+  <div class="stem">(a) Compute the two scores this service produces, and the two true cosine similarities. (b) Which chunk does the service return first, and which one should it return? (c) Write the general expression for what ranking by inner product actually sorts on, and say in one sentence why this bug is hard to notice in production.</div>
+  <details><summary>Show solution</summary>
+    <p><strong>(a)</strong> The service computes q · u = 0.9 and q · v = 3.0. The true cosines: ‖u‖ = √(0.81 + 0.01) = √0.82 = 0.9055, so cos(q, u) = 0.9 / (1 · 0.9055) = <strong>0.9939</strong>; ‖v‖ = √18 = 4.2426, so cos(q, v) = 3 / (1 · 4.2426) = <strong>0.7071</strong> (which is cos 45°, as it should be).</p>
+    <p><strong>(b)</strong> The service returns <em>v</em> first, with a score more than three times <em>u</em>'s. By direction — which is what the embedding actually encodes — <em>u</em> is the far better match and should come first.</p>
+    <p><strong>(c)</strong> Since a · b = ‖a‖‖b‖cos(a, b) and the query length is a constant shared by every candidate, ranking by inner product ranks by</p>
+    <p class="eq-block">‖candidate‖ · cos(query, candidate)</p>
+    <p>— similarity multiplied by the candidate's own vector length. Check it: 4.2426 × 0.7071 = 3.0, and 0.9055 × 0.9939 = 0.9. So the service is systematically biased towards long vectors, which in a document index correlates loosely with long or generic chunks.</p>
+    <p><strong>Why it hides.</strong> It never raises an error, it returns plausible, on-topic passages, and the scores it prints look like similarities. Every individual result is defensible; only the aggregate ranking is wrong, and only against an evaluation with labelled gold chunks would it show up — as a few points of recall that nobody can account for. The fix is one line: normalise on write and on query, or use a genuine cosine operator such as pgvector's <code>&lt;=&gt;</code>.</p>
+  </details>
+</div>
+
+<!-- ============ 7 ============ -->
+<div class="exercise" id="e7">
+  <div class="qtype">By hand · chunk boundaries <span class="diff d2">core</span></div>
+  <h3>Exercise 7 — Chunk boundaries and a split answer</h3>
+  <div class="stem">A document is <strong>N = 1000</strong> tokens. Chunking uses fixed windows: the first chunk starts at token 0, each subsequent chunk starts one stride later, and the last chunk is clipped at the end of the document.</div>
+  <div class="stem">
+    <ol>
+      <li>With size <strong>S = 400</strong> and overlap <strong>V = 80</strong>: list every chunk as a half-open token interval, and check your count against 1 + ⌈(N − S)/(S − V)⌉.</li>
+      <li>The sentence that answers the question occupies tokens 700–740. Which chunk or chunks contain it whole?</li>
+      <li>Now set <strong>V = 0</strong> and put the answer at tokens 380–420 instead. What happens, and what will the retrieval log show?</li>
+      <li>Keeping S = 400 and the answer at 380–420, what is the <em>smallest</em> overlap that puts the whole answer inside a single chunk? Show the reasoning, not just the number.</li>
+    </ol>
+  </div>
+  <div class="checkbox">
+    <div class="lbl">check your intervals</div>
+    N <input type="number" id="c7-n" value="1000">
+    S <input type="number" id="c7-s" value="400">
+    V <input type="number" id="c7-v" value="80">
+    answer from <input type="number" id="c7-a" value="700">
+    to <input type="number" id="c7-b" value="740">
+    <button id="c7-go">Chunk it</button>
+    <pre id="c7-out" style="margin-top:10px"></pre>
+  </div>
+  <details><summary>Show solution</summary>
+    <p><strong>1.</strong> Stride = S − V = 320. Starts are 0, 320, 640; the chunk starting at 640 reaches 1040 ≥ 1000, so it is clipped and it is the last one.</p>
+    <div class="given">chunk 1 = [0, 400)<br>chunk 2 = [320, 720)<br>chunk 3 = [640, 1000)</div>
+    <p>Formula: 1 + ⌈(1000 − 400)/320⌉ = 1 + ⌈1.875⌉ = 1 + 2 = <strong>3 chunks</strong>. Agreed.</p>
+    <p><strong>2.</strong> Tokens 700–740. Chunk 2 ends at 719, so it holds 700–719 and cuts the rest. Chunk 3 covers 640–999, which contains 700–740 whole. So exactly <strong>chunk 3</strong> — and the overlap is what created it: without the overlap the third chunk would have started at 800.</p>
+    <p><strong>3.</strong> With V = 0 the stride is 400 and the chunks are [0, 400), [400, 800), [800, 1000). The answer at 380–420 straddles the boundary at 400: chunk 1 holds tokens 380–399 and chunk 2 holds 400–420. <strong>No single chunk contains the answer.</strong> The retrieval log will look healthy — the query is highly similar to chunk 1 (and to chunk 2), so a passage comes back with a good score, is passed to the generator, and the generator produces either a refusal or a fabricated completion of a sentence it can only see half of. Nothing in the log says "boundary"; you only find it by reading the retrieved text.</p>
+    <p><strong>4.</strong> We need a chunk [s, s + 400) with s ≤ 380 and s + 400 &gt; 420, i.e. 20 &lt; s ≤ 380. Chunk starts are multiples of the stride 400 − V, and the first non-zero start is the stride itself, so it is enough that 20 &lt; 400 − V ≤ 380, which gives <strong>V ≥ 20</strong>. Check V = 20: stride 380, starts 0, 380, 760; chunk 2 = [380, 780) contains 380–420 whole. And V = 19 gives stride 381, chunk 2 = [381, 781), which misses token 380 — one token short. So the answer is <strong>V = 20</strong>, exactly the length of the answer span minus one stride step of slack. The general rule worth remembering: <em>an answer span shorter than the overlap is always contained whole in some chunk; an answer longer than the overlap has no such guarantee.</em></p>
+  </details>
+</div>
+
+<!-- ============ 8 ============ -->
+<div class="exercise" id="e8">
+  <div class="qtype">By hand · retrieval metrics <span class="diff d2">core</span></div>
+  <h3>Exercise 8 — Choosing k from a rank table</h3>
+  <div class="stem">One question has been run against the index. Two chunks in the collection are relevant; the retriever returned these ten:</div>
+  <div class="given">rank :  1    2    3    4*   5    6    7*   8    9   10<br>score: .61  .58  .55  .54  .49  .47  .44  .41  .38  .35<br>       (* marks a relevant chunk; rank 4 is the one that states the answer)</div>
+  <div class="stem">Compute recall@k, precision@k and the reciprocal rank for k = 3, k = 5 and k = 10. Then say which k you would ship, and what you would need before you could defend that choice.</div>
+  <details><summary>Show solution</summary>
+    <table class="cmp">
+      <tr><th>k</th><th>relevant inside k</th><th>recall@k</th><th>precision@k</th><th>reciprocal rank</th></tr>
+      <tr><td>3</td><td>0</td><td>0 / 2 = 0.00</td><td>0 / 3 = 0.00</td><td>0 (nothing relevant inside k)</td></tr>
+      <tr><td>5</td><td>1 (rank 4)</td><td>1 / 2 = 0.50</td><td>1 / 5 = 0.20</td><td>1/4 = 0.25</td></tr>
+      <tr><td>10</td><td>2 (ranks 4, 7)</td><td>2 / 2 = 1.00</td><td>2 / 10 = 0.20</td><td>1/4 = 0.25</td></tr>
+    </table>
+    <p>Two things to read off the table. First, at k = 3 the generator <em>cannot</em> answer this question correctly no matter how good the prompt is: the answer is not in front of it. Recall@k is the ceiling on end-to-end accuracy, which is why it is the first thing to measure. Second, the reciprocal rank stops improving after k = 4 because it only depends on where the <em>first</em> relevant chunk landed; raising k past that buys recall, not rank quality.</p>
+    <p><strong>Which k.</strong> On this evidence k = 5 is the smallest value that lets the question be answered, and the scores are still gently sloping at rank 5, so nothing is obviously junk. But one question is not evidence. Before defending a choice you need a labelled set — several dozen questions, each with its gold chunk identified — so you can plot recall@k against k over the whole set and find where the curve flattens. Ship the smallest k at the flattening point, because every extra passage costs context, latency, money, and a little grounding accuracy. Also record the score distribution: if the gold chunk routinely scores below 0.3, the problem is the embedding model or the chunking, and no value of k will rescue it.</p>
+  </details>
+</div>
+
+<!-- ============ 9 ============ -->
+<div class="exercise" id="e9">
+  <div class="qtype">Code · chunking <span class="diff d2">core</span></div>
+  <h3>Exercise 9 — Write <code>chunk_tokens</code></h3>
+  <div class="stem">Write a function that splits a list of tokens into overlapping windows. It must stop as soon as a window reaches the end of the list (no trailing fragment beyond the end), clip the final window, and reject an overlap that is not smaller than the size.</div>
+  <div class="given">chunk_tokens(list(range(10)), size=4, overlap=1)<br><br>expected output:<br>[[0, 1, 2, 3], [3, 4, 5, 6], [6, 7, 8, 9]]<br><br>chunk_tokens(list(range(10)), size=4, overlap=0)<br>[[0, 1, 2, 3], [4, 5, 6, 7], [8, 9]]<br><br>chunk_tokens(list(range(3)), size=4, overlap=1)<br>[[0, 1, 2]]</div>
+  <details><summary>Show solution</summary>
+<pre>def chunk_tokens(tokens, size, overlap):
+    if size &lt;= 0:
+        raise ValueError("size must be positive")
+    if overlap &gt;= size:
+        raise ValueError("overlap must be smaller than size, else the stride is not positive")
+    stride = size - overlap
+    chunks = []
+    start = 0
+    n = len(tokens)
+    while start &lt; n:
+        chunks.append(tokens[start:start + size])
+        if start + size &gt;= n:          # this window already reached the end
+            break
+        start += stride
+    return chunks</pre>
+    <p><strong>Trace of the first case</strong> (n = 10, size = 4, overlap = 1, stride = 3): start = 0 gives [0,1,2,3]; 0 + 4 = 4 &lt; 10, so continue. start = 3 gives [3,4,5,6]; 3 + 4 = 7 &lt; 10, continue. start = 6 gives [6,7,8,9]; 6 + 4 = 10 ≥ 10, break. Three chunks, matching 1 + ⌈(10 − 4)/3⌉ = 1 + 2 = 3.</p>
+    <p><strong>Why the break matters.</strong> Without it, the loop continues to start = 9 and emits a one-token chunk [9] that duplicates content already covered and pollutes the index with a vector too short to mean anything. The <code>overlap &gt;= size</code> guard matters just as much: with overlap = size the stride is 0 and the loop never terminates.</p>
+    <p><strong>What to record alongside the output.</strong> The size, the overlap, and the tokenizer used to produce <code>tokens</code>. A chunk length in "tokens" is meaningless without naming the tokenizer, and the next person to touch the pipeline will need it to reproduce your chunk ids.</p>
+  </details>
+</div>
+
+<!-- ============ 10 ============ -->
+<div class="exercise" id="e10">
+  <div class="qtype">Code · vectors <span class="diff d2">core</span></div>
+  <h3>Exercise 10 — Write <code>normalise</code> and <code>cosine</code></h3>
+  <div class="stem">Write both functions in plain Python (no NumPy), with no shared state. <code>normalise</code> must handle a zero vector without raising. <code>cosine</code> must raise if the two vectors have different lengths — this is the dimension guard from the notes, in eight characters.</div>
+  <div class="given">normalise([3, 4])              -> [0.6, 0.8]<br>normalise([0, 0])              -> [0.0, 0.0]<br>cosine([1, 2, 2], [2, 4, 4])   -> 1.0<br>cosine([1, 2, 2], [2, 2, 1])   -> 0.8888888888888888<br>cosine([1, 2], [1, 2, 3])      -> ValueError</div>
+  <details><summary>Show solution</summary>
+<pre>import math
+
+def normalise(v):
+    n = math.sqrt(sum(x * x for x in v))
+    if n == 0.0:
+        return [0.0 for _ in v]      # a zero vector has no direction; do not divide
+    return [x / n for x in v]
+
+def cosine(a, b):
+    if len(a) != len(b):
+        raise ValueError(f"dimension mismatch: {len(a)} vs {len(b)}")
+    dot = sum(x * y for x, y in zip(a, b))
+    na  = math.sqrt(sum(x * x for x in a))
+    nb  = math.sqrt(sum(y * y for y in b))
+    if na == 0.0 or nb == 0.0:
+        return 0.0
+    return dot / (na * nb)</pre>
+    <p><strong>Checks.</strong> <code>cosine([1,2,2],[2,4,4])</code>: dot = 2 + 8 + 8 = 18, norms 3 and 6, 18/18 = 1.0. <code>cosine([1,2,2],[2,2,1])</code>: dot = 2 + 4 + 2 = 8, norms 3 and 3, 8/9 = 0.888…</p>
+    <p><strong>On the guard.</strong> <code>zip</code> stops at the shorter sequence, so without the length check <code>cosine([1,2], [1,2,3])</code> returns a number — a perfectly plausible 0.9636 computed from a silently truncated vector. That is the bug from Section 8 of the notes reproduced in two lines of library-free Python: it does not crash, it does not warn, and it returns something that looks like a similarity. Raise instead.</p>
+    <p><strong>On the zero vector.</strong> Returning zeros rather than raising is a judgement call, and it should be logged. A zero embedding usually means an empty or whitespace-only chunk reached the embedder, which is itself a chunking defect worth fixing upstream.</p>
+  </details>
+</div>
+
+<!-- ============ 11 ============ -->
+<div class="exercise" id="e11">
+  <div class="qtype">Code · retrieval <span class="diff d3">stretch</span></div>
+  <h3>Exercise 11 — Write <code>top_k</code></h3>
+  <div class="stem">Using your <code>cosine</code> from Exercise 10, write a function that scores a query against a list of stored vectors and returns the best <em>k</em> as <code>(index, score)</code> pairs, highest score first, with ties broken by the lower index so the output is deterministic. Add an optional similarity floor that drops weak hits even if that returns fewer than <em>k</em> results.</div>
+  <div class="given">store = [[1.0, 0.0], [0.6, 0.8], [0.8, 0.6], [0.0, 1.0]]<br>query = [1.0, 0.0]<br><br>top_k(query, store, k=2)              -> [(0, 1.0), (2, 0.8)]<br>top_k(query, store, k=4)              -> [(0, 1.0), (2, 0.8), (1, 0.6), (3, 0.0)]<br>top_k(query, store, k=4, floor=0.5)   -> [(0, 1.0), (2, 0.8), (1, 0.6)]</div>
+  <details><summary>Show solution</summary>
+<pre>def top_k(query, store, k=5, floor=0.0):
+    scored = []
+    for i, vec in enumerate(store):
+        s = cosine(query, vec)          # raises on any dimension mismatch
+        if s &gt;= floor:
+            scored.append((i, s))
+    # sort by score descending, then by index ascending for determinism
+    scored.sort(key=lambda pair: (-pair[1], pair[0]))
+    return scored[:k]</pre>
+    <p><strong>Check against the expected output.</strong> The cosines are 1.0, 0.6, 0.8 and 0.0 (the query is the first basis vector, so each cosine is just the first coordinate of the already-unit-length stored vector). Sorted descending: index 0 at 1.0, index 2 at 0.8, index 1 at 0.6, index 3 at 0.0. With <code>floor=0.5</code>, index 3 is dropped before the sort and only three results come back — which is the intended behaviour, not an error.</p>
+    <p><strong>Three things this toy leaves out, and where they go in the real service.</strong></p>
+    <ul>
+      <li><em>Scanning everything.</em> Fine at four vectors and fine at fifty thousand; at millions it becomes the ANN index, and at that point you must also measure recall@k against this exact function as the reference.</li>
+      <li><em>Returning content.</em> A real <code>top_k</code> returns chunk ids and text alongside the scores, because both the prompt and the citation need them.</li>
+      <li><em>The log.</em> The returned ids and scores are exactly what has to be written to the query log before the generator is called — not after, so that a crash in generation still leaves a diagnosable trace.</li>
+    </ul>
+    <p><strong>On the tie-break.</strong> Sorting on <code>(-score, index)</code> makes the output reproducible when two chunks score identically, which happens more often than you would expect with near-duplicate chunks created by overlap. Without it, evaluation runs become subtly non-reproducible and you will lose an afternoon to it.</p>
+  </details>
+</div>
+
+<!-- ============ 12 ============ -->
+<div class="exercise" id="e12">
+  <div class="qtype">Explain why · experimental design <span class="diff d3">stretch</span></div>
+  <h3>Exercise 12 — The overlapping corpora</h3>
+  <div class="stem">A team fine-tunes a causal language model on their document collection, then builds a retriever over <em>the same</em> collection. They run 20 questions with and without retrieval. The generator answers 16 of the 20 correctly from memory alone; retrieval returns the correct chunk for 18 of the 20 (it fails on questions 7 and 14, both of which happen to be among the memorised 16).</div>
+  <div class="stem">
+    <ol>
+      <li>Compute accuracy without retrieval, accuracy with retrieval, and the measured gain.</li>
+      <li>Compute the same three numbers for a team whose fine-tuning corpus was disjoint from the collection, so that nothing is memorised, with the same retrieval behaviour.</li>
+      <li>Explain what goes wrong when the two corpora overlap: what is the reported number actually measuring, why is the error nearly undetectable, and what would you have to do to the experiment to make the comparison mean what the team thinks it means?</li>
+    </ol>
+  </div>
+  <div class="checkbox">
+    <div class="lbl">check your arithmetic</div>
+    questions <input type="number" id="c12-n" value="20">
+    memorised <input type="number" id="c12-m" value="16">
+    retrieval fails on (ranks, comma separated) <input type="text" id="c12-f" value="7,14" size="12">
+    <button id="c12-go">Compute</button>
+    <pre id="c12-out" style="margin-top:10px"></pre>
+  </div>
+  <details><summary>Show solution</summary>
+    <p><strong>1. Overlapping corpora.</strong> Without retrieval the model gets the 16 it memorised: 16/20 = <strong>0.80</strong>. With retrieval it gets everything it memorised plus everything retrieval found — the union. Retrieval covers 18 questions, and the two it misses are both inside the memorised 16, so the union is all 20: <strong>1.00</strong>. Measured gain = 1.00 − 0.80 = <strong>0.20</strong>.</p>
+    <p><strong>2. Disjoint corpora.</strong> Nothing is memorised, so without retrieval the model gets 0/20 = <strong>0.00</strong>. With retrieval it gets the 18 retrieval found: 18/20 = <strong>0.90</strong>. Measured gain = <strong>0.90</strong>.</p>
+    <p>The retriever is identical in both scenarios. The reported benefit of retrieval fell from 0.90 to 0.20 without one line of the retrieval code changing.</p>
+    <p><strong>3. What goes wrong.</strong></p>
+    <ul>
+      <li><em>What the number measures.</em> The "gain from retrieval" is not a property of the retriever at all — it is one minus the memorisation rate, scaled. The <em>without</em> condition was supposed to be a control in which the model has no access to the facts; because the model was trained on the very documents it now retrieves, the control has the answers baked into its weights. The experiment measures the overlap between the two corpora and reports it as a statement about retrieval. Push the overlap to 100 percent and the measured gain goes to exactly zero while retrieval works perfectly.</li>
+      <li><em>Why it is nearly undetectable.</em> The failure produces a believable result. "Retrieval gave us a modest improvement" is exactly what a sceptical reader expects to hear, so nobody interrogates it; whereas an implausible number would have been investigated. It also fails silently in the safe-sounding direction — it understates a real benefit rather than inventing one — which makes it feel conservative rather than broken. And there is no error, no warning, and nothing in any log that distinguishes "the model read the retrieved passage" from "the model recited the same sentence from memory", because both produce a correct, fluent, correctly-cited answer.</li>
+      <li><em>How to fix the experiment.</em> Make the two corpora disjoint at the document level and prove it. Assign stable document identifiers before anything else; deduplicate first, because near-duplicates that differ by a header will otherwise land on both sides and reintroduce the leak; split by document identifier, never by sampled paragraph; record both manifests; and assert the empty intersection in a test that fails the build rather than in a sentence in the report. Keep the perplexity split inside the fine-tuning side. Make sure the evaluation questions themselves were not drawn from the fine-tuning corpus, and that their gold chunk labels point into the retrieval collection. Re-run the comparison only after all of that holds.</li>
+    </ul>
+    <p><strong>The one-sentence version.</strong> A generator that has already memorised what it retrieves appears to gain nothing from retrieval, so the with/without comparison stops measuring the retriever and starts measuring your data hygiene.</p>
+  </details>
+</div>
+
+<!-- ============ 13 ============ -->
+<div class="exercise" id="e13">
+  <div class="qtype">Explain why · diagnosis <span class="diff d3">stretch</span></div>
+  <h3>Exercise 13 — Diagnose a wrong answer</h3>
+  <div class="stem">A user asks "what is the retention period for archived tickets?" and the assistant answers "Archived tickets are retained for 30 days." The correct answer, stated in one document in the collection, is ninety days. The log row for this query reads:</div>
+  <div class="given">question      : what is the retention period for archived tickets?<br>k             : 5<br>retrieved_ids : {4187, 1102, 4188, 903, 2255}<br>scores        : {0.71, 0.63, 0.61, 0.55, 0.52}<br>context_text  : "...Archived tickets remain searchable for ninety days after the final invoice is issued..."  (chunk 4187)<br>answer        : "Archived tickets are retained for 30 days."<br>cited_ids     : {4187}<br>refused       : false</div>
+  <div class="stem">(a) Which of the three failure modes is this, and how do you know from the log alone? (b) Name two changes you would try, in order. (c) Describe exactly what the log row would have looked like for each of the other two failure modes, so that a colleague could triage the next one without you.</div>
+  <details><summary>Show solution</summary>
+    <p><strong>(a) A grounding failure.</strong> The chunk containing the answer, 4187, is present in <code>retrieved_ids</code>, it is ranked first with the highest score, and <code>context_text</code> shows the sentence with "ninety days" in it was placed in the prompt. The model had the fact in front of it and produced a different number, and then cited the very chunk that contradicts it. Retrieval did its job; the generator did not use what it was given. Note the second, independent defect the log exposes: the citation was emitted but never validated against the passage's content, so an answer that contradicts its own source was returned as though it were sourced.</p>
+    <p><strong>(b) Two changes, in order.</strong></p>
+    <ol>
+      <li><strong>The prompt first</strong>, because it is free and reversible. Make the scope instruction explicit ("answer only from the numbered sources; if they disagree with what you expect, follow the sources"), add the fixed refusal string, put the question after the sources, and reduce the number of passages so the relevant one is not buried mid-prompt — material in the middle of a long context is used less reliably than material at either end. Re-run the same question set and compare.</li>
+      <li><strong>The generator second.</strong> If a well-formed prompt still produces contradictions, the model is too weak for grounded generation at this context length, and the fix is a stronger generator or a smaller <em>k</em> with re-ranking so the single best passage dominates. In parallel — and regardless of the outcome — add an automated post-check that extracts the specifics from the answer and verifies each one appears in <code>context_text</code>, flagging the answer when it does not. That check would have caught this row before the user saw it.</li>
+    </ol>
+    <p>Note what is <em>not</em> on the list: changing the chunk size, the overlap, the embedding model or <em>k</em>. All of those are retrieval controls, and retrieval was not the problem. Reaching for them here would have made the system worse in an uncontrolled way while the real defect stayed put.</p>
+    <p><strong>(c) The other two rows.</strong></p>
+    <ul>
+      <li><strong>Retrieval failure.</strong> <code>retrieved_ids</code> would not contain 4187 at all — five other ids, possibly with respectable scores, and a <code>context_text</code> that talks about tickets or archives without stating a period. The tell is that the gold chunk is absent while a chunk on the same subject is present. Causes to check in order: a chunk boundary that split the sentence (read the actual text of the neighbouring chunks), <em>k</em> too small (is 4187 at rank 6?), an ANN index with poor recall (re-run the query with an exact scan and compare), or a query the embedding model reads differently from the passage.</li>
+      <li><strong>Collection failure.</strong> No chunk anywhere in the collection states a retention period. The row would show low scores across the board — everything at, say, 0.2 or below, because nothing is really about the question — and the correct value of <code>refused</code> would be <code>true</code> with an empty <code>cited_ids</code>. If instead <code>refused</code> is <code>false</code> and a number appears in the answer, you have two problems: the document is missing <em>and</em> the escape hatch is not working. The way to keep this diagnosis cheap is a similarity floor: when the best score is below it, retrieve nothing and let the refusal path handle it.</li>
+    </ul>
+    <p>The general point: all three failures look identical to the user and are distinguishable in seconds from the log. That is what the log is for, and it is why <code>context_text</code> has to be stored verbatim — chunk id 4187 will not mean the same thing after the next re-chunking, but the text will.</p>
+  </details>
+</div>
+
+<!-- ============ 14 ============ -->
+<div class="exercise" id="e14">
+  <div class="qtype">Explain why · operations <span class="diff d3">stretch</span></div>
+  <h3>Exercise 14 — Recall fell off a cliff</h3>
+  <div class="stem">A retrieval service has been running for two months with recall@5 measured at 0.88 on a labelled question set. After a routine deploy, recall@5 on the same question set is 0.31. No exception was raised anywhere; latency is unchanged; the collection was not edited; every query returns five results with scores between 0.2 and 0.4 where they used to run between 0.5 and 0.8.</div>
+  <div class="stem">List the causes consistent with that evidence, say which single field in the log would identify the culprit fastest, and explain why every one of these failures is silent rather than loud.</div>
+  <details><summary>Show solution</summary>
+    <p><strong>Causes consistent with the evidence.</strong> Scores collapsing uniformly while nothing errors points at the query and the stored vectors having drifted into different coordinate systems.</p>
+    <ol>
+      <li><strong>The embedding checkpoint changed on the query side only.</strong> A pinned version was loosened, or a model name resolved to a newer revision at deploy. Query vectors now come from a different model than the stored ones. If the dimension happens to match, nothing errors, and every similarity becomes approximately the similarity of two unrelated vectors — small, positive, and uninformative. This is the most likely cause by a wide margin.</li>
+      <li><strong>Normalisation was dropped or added on one side.</strong> If stored vectors are unit length and query vectors are not, a cosine operator still returns correct values, but a plain inner product does not, and the ranking becomes length-weighted. A change of database operator (<code>&lt;=&gt;</code> to <code>&lt;#&gt;</code>) has the same effect.</li>
+      <li><strong>Pooling changed.</strong> Same checkpoint, but the batch path now pads without applying the attention mask in the mean pool, so short queries are diluted towards the pad embedding. Vectors are still the right size and still look reasonable.</li>
+      <li><strong>The index was rebuilt with the wrong operator class, or <em>nprobe</em> collapsed to 1.</strong> This one degrades recall without moving scores much, so it fits the evidence less well — but it is cheap to rule out by re-running a sample with an exact scan.</li>
+      <li><strong>A partial re-embed.</strong> Half the collection was re-embedded with a new model and the job did not finish. Recall would fall towards the fraction still matching the query model — and this one is testable by checking whether the failures cluster by document.</li>
+    </ol>
+    <p><strong>The field that identifies it fastest: <code>embed_model</code></strong> — the exact checkpoint identifier, recorded per query and stored per chunk row. Compare the value on today's log rows against the value stored with the chunks. If they differ, you have the cause in one query and the fix is to pin the checkpoint and re-embed. This is why the notes insist on storing the checkpoint identifier in both places rather than a family name: "MiniLM" would not have distinguished the two revisions, and neither would the dimension, since both are 384.</p>
+    <p><strong>Why all of these are silent.</strong> Every one produces a well-formed float of the right dimension. Cosine similarity is defined for any two vectors of equal length; it has no way to know the two came from different models, different pooling, or different normalisation conventions. The type system is satisfied, the database constraint is satisfied, the API contract is satisfied, and the only thing that changed is the meaning — which nothing in the stack checks. That is precisely the argument for the discipline in the notes: store the checkpoint identifier next to every vector, refuse at the API boundary any query whose identifier does not match the collection's, and keep a labelled question set you can re-run on every deploy. A recall number you compute automatically after each deploy turns a two-month silent regression into a failed deploy.</p>
+  </details>
+</div>
+
+<div class="callout">
+  <strong>If you want one more.</strong> Take the last wrong answer your own assistant produced and write the three-row table from Exercise 13 for it: what the log said, which failure it was, and what you changed. If you cannot fill in the first column, the log is the thing to fix before anything else.
+</div>
+
+<div class="nav">
+  <a href="Lecture_Notes_Topic_7_Language_Modeling_Embeddings_and_RAG.html">← Lecture notes</a>
+  <a href="#top">↑ Back to the top</a>
+</div>
+
+</div>
+
+<script>
+function fmt(x,n){ return (Math.round(x*Math.pow(10,n))/Math.pow(10,n)).toFixed(n); }
+function nums(s){
+  const out=[];
+  String(s).split(/[,\s]+/).forEach(function(t){
+    if(t===''){ return; }
+    const v=parseFloat(t);
+    if(isFinite(v)) out.push(v);
+  });
+  return out;
+}
+
+/* ---- checker 1 · perplexity ---- */
+(function(){
+  const inp=document.getElementById('c1-in'), out=document.getElementById('c1-out');
+  function go(){
+    const ps=nums(inp.value).filter(function(p){ return p>0 && p<=1; });
+    if(!ps.length){ out.textContent='Enter probabilities in (0, 1], comma separated.'; return; }
+    const bits=ps.map(function(p){ return -Math.log(p)/Math.LN2; });
+    const sum=bits.reduce(function(a,b){ return a+b; },0);
+    const mean=sum/ps.length;
+    let lines='token :  P        -log2 P\n';
+    ps.forEach(function(p,i){
+      lines += '  '+(i+1)+'   : '+fmt(p,6)+'  '+fmt(bits[i],4)+'\n';
+    });
+    let joint=1; ps.forEach(function(p){ joint*=p; });
+    out.textContent = lines+
+      '\nN                = '+ps.length+
+      '\njoint P          = '+joint.toExponential(4)+
+      '\nsum of surprisal = '+fmt(sum,4)+' bits'+
+      '\nmean surprisal   = '+fmt(mean,4)+' bits/token'+
+      '\nmean loss L      = '+fmt(mean*Math.LN2,4)+' nats/token'+
+      '\nPERPLEXITY       = 2^'+fmt(mean,4)+' = '+fmt(Math.pow(2,mean),4)+
+      '\n                 = exp('+fmt(mean*Math.LN2,4)+') = '+fmt(Math.exp(mean*Math.LN2),4);
+  }
+  document.getElementById('c1-go').addEventListener('click', go);
+  inp.addEventListener('input', go);
+  go();
+})();
+
+/* ---- checker 4 · cosine vs euclidean ---- */
+(function(){
+  const qs=document.getElementById('c4-q'), as=document.getElementById('c4-a'), bs=document.getElementById('c4-b');
+  const out=document.getElementById('c4-out');
+  function len(v){ let s=0; v.forEach(function(x){ s+=x*x; }); return Math.sqrt(s); }
+  function dot(u,v){ let s=0; for(let i=0;i<u.length;i++) s+=u[i]*v[i]; return s; }
+  function dist(u,v){ let s=0; for(let i=0;i<u.length;i++) s+=(u[i]-v[i])*(u[i]-v[i]); return Math.sqrt(s); }
+  function go(){
+    const q=nums(qs.value), a=nums(as.value), b=nums(bs.value);
+    if(q.length!==a.length || q.length!==b.length || !q.length){
+      out.textContent='Dimension mismatch: '+q.length+', '+a.length+', '+b.length+
+        '\nThis is the guard from Exercise 10 — three vectors of different lengths\n'+
+        'have no cosine similarity, and a function that returns one anyway is broken.';
+      return;
+    }
+    const ca=dot(q,a)/(len(q)*len(a)), cb=dot(q,b)/(len(q)*len(b));
+    const da=dist(q,a), db=dist(q,b);
+    const cosWin = ca>cb ? 'a' : (cb>ca ? 'b' : 'tie');
+    const eucWin = da<db ? 'a' : (db<da ? 'b' : 'tie');
+    out.textContent =
+      '||q|| = '+fmt(len(q),4)+'   ||a|| = '+fmt(len(a),4)+'   ||b|| = '+fmt(len(b),4)+'\n\n'+
+      'q . a = '+fmt(dot(q,a),4)+'      cos(q,a) = '+fmt(ca,4)+'      ||q-a|| = '+fmt(da,4)+'\n'+
+      'q . b = '+fmt(dot(q,b),4)+'      cos(q,b) = '+fmt(cb,4)+'      ||q-b|| = '+fmt(db,4)+'\n\n'+
+      'cosine ranks    : '+cosWin+' first\n'+
+      'euclidean ranks : '+eucWin+' first\n'+
+      (cosWin===eucWin ? 'the two metrics agree here.'
+                       : '>>> the two metrics DISAGREE. Direction and magnitude are\n'+
+                         '    telling you different things about the same pair.');
+  }
+  document.getElementById('c4-go').addEventListener('click', go);
+  [qs,as,bs].forEach(function(el){ el.addEventListener('input', go); });
+  go();
+})();
+
+/* ---- checker 7 · chunk boundaries ---- */
+(function(){
+  const N=document.getElementById('c7-n'), S=document.getElementById('c7-s'), V=document.getElementById('c7-v');
+  const A=document.getElementById('c7-a'), B=document.getElementById('c7-b');
+  const out=document.getElementById('c7-out');
+  function chunks(n,size,ov){
+    const stride=size-ov, res=[];
+    if(stride<=0) return null;
+    for(let s=0; s<n; s+=stride){
+      res.push([s, Math.min(n, s+size)]);
+      if(s+size>=n) break;
+    }
+    return res;
+  }
+  function go(){
+    const n=+N.value, size=+S.value, ov=+V.value, aS=+A.value, aE=+B.value;
+    if(!(n>0 && size>0)){ out.textContent='N and S must be positive.'; return; }
+    const cs=chunks(n,size,ov);
+    if(!cs){ out.textContent='overlap must be smaller than size, or the stride is not positive\n'+
+      'and the chunker never terminates.'; return; }
+    let lines='stride = S - V = '+(size-ov)+'\n';
+    let holder=[], cutter=[];
+    cs.forEach(function(c,i){
+      const whole=(c[0]<=aS && c[1]>aE);
+      const cut=!whole && (c[1]>aS && c[0]<=aE);
+      if(whole) holder.push(i+1);
+      if(cut) cutter.push(i+1);
+      lines += 'chunk '+(i+1)+' = ['+c[0]+', '+c[1]+')'+(whole?'   <- contains the answer whole':(cut?'   <- cuts the answer':''))+'\n';
+    });
+    const formula = n>size ? (1+Math.ceil((n-size)/(size-ov))) : 1;
+    lines += '\nchunks counted   = '+cs.length+'\nchunks by formula= '+formula+'\n';
+    lines += 'answer span      = ['+aS+', '+aE+']  ('+(aE-aS+1)+' tokens)\n';
+    if(holder.length) lines += 'ANSWER INTACT in chunk '+holder.join(', ');
+    else{
+      lines += 'ANSWER SPLIT across chunk '+cutter.join(' and ')+' — no chunk contains it.\n';
+      let best=-1;
+      for(let v=0; v<size; v++){
+        const t=chunks(n,size,v);
+        if(t && t.some(function(c){ return c[0]<=aS && c[1]>aE; })){ best=v; break; }
+      }
+      lines += (best>=0 ? 'smallest overlap that saves it, at this size = '+best
+                        : 'no overlap saves it at this size; the answer is longer than the chunk.');
+    }
+    out.textContent=lines;
+  }
+  [N,S,V,A,B].forEach(function(el){ el.addEventListener('input', go); });
+  document.getElementById('c7-go').addEventListener('click', go);
+  go();
+})();
+
+/* ---- checker 12 · with/without retrieval ---- */
+(function(){
+  const NQ=document.getElementById('c12-n'), M=document.getElementById('c12-m'), F=document.getElementById('c12-f');
+  const out=document.getElementById('c12-out');
+  function go(){
+    const n=Math.max(1, +NQ.value|0);
+    const m=Math.min(n, Math.max(0, +M.value|0));
+    const fails=nums(F.value).map(function(x){ return Math.round(x); })
+                             .filter(function(x){ return x>=1 && x<=n; });
+    let memOnly=0, retOnly=0, both=0, neither=0;
+    let rows='q  : memorised  retrieved  correct-without  correct-with\n';
+    for(let i=1;i<=n;i++){
+      const mem=i<=m, ret=fails.indexOf(i)<0;
+      if(mem&&ret) both++; else if(mem) memOnly++; else if(ret) retOnly++; else neither++;
+      if(n<=24){
+        rows += (i<10?' ':'')+i+' :     '+(mem?'y':'n')+'          '+(ret?'y':'n')+
+                '            '+(mem?'y':'n')+'               '+((mem||ret)?'y':'n')+'\n';
+      }
+    }
+    const without=m/n;
+    const withR=(both+memOnly+retOnly)/n;
+    out.textContent = rows+'\n'+
+      'accuracy WITHOUT retrieval = '+m+'/'+n+' = '+fmt(without,3)+'\n'+
+      'accuracy WITH retrieval    = '+(both+memOnly+retOnly)+'/'+n+' = '+fmt(withR,3)+'\n'+
+      'measured gain              = '+fmt(withR-without,3)+'\n'+
+      'questions where retrieval added nothing (already memorised) = '+both+'\n\n'+
+      (m===0
+        ? 'Nothing memorised: the without-condition is a real control and the gain\n'+
+          'is a measurement of the retriever.'
+        : 'With '+m+' of '+n+' answers already in the weights, the without-condition is not\n'+
+          'a control. Set memorised to 0 to see what this same retriever is worth\n'+
+          'when the two corpora are disjoint.');
+  }
+  [NQ,M,F].forEach(function(el){ el.addEventListener('input', go); });
+  document.getElementById('c12-go').addEventListener('click', go);
+  go();
+})();
+</script>
+</body>
+</html>

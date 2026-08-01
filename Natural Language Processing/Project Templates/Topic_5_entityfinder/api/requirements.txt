@@ -1,0 +1,35 @@
+# API tier — installed by Render.com (see render.yaml buildCommand).
+# Keep this list minimal: every megabyte is cold-start time on the free plan.
+#
+# This is also the ONLY place torch, transformers, and sklearn-crfsuite belong.
+# The UI tier is a thin client; if you find yourself adding a model library to
+# ui/requirements.txt, the logic you are about to write goes in the API instead.
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic==2.9.2
+
+# --- the transformer side -------------------------------------------------
+# torch is by far the largest thing in this file — an order of magnitude bigger
+# than everything else combined. The CPU-only wheel index below keeps the CUDA
+# libraries out of the image, which you do not want on a machine with no GPU.
+# If the free plan's build still will not finish, the honest fallbacks are a
+# smaller distilled checkpoint or serving the CRF alone while you sort it out.
+# Measure the build before you start optimising it.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.4.1
+transformers==4.44.2
+tokenizers==0.19.1
+
+# --- the CRF side ---------------------------------------------------------
+# sklearn-crfsuite is a thin wrapper over CRFsuite; scikit-learn comes with it
+# for the metrics and the model-selection helpers. nltk is here for POS tags,
+# which the assignment requires as a CRF feature — remember that this makes your
+# baseline depend on a tagger you did not train and cannot inspect. Say so in
+# the MODEL_CARD, and run nltk.download() for the tagger in your build or at
+# start-up rather than assuming the data is on the box.
+sklearn-crfsuite==0.5.0
+scikit-learn==1.5.2
+nltk==3.9.1
+
+supabase==2.7.4
+python-dotenv==1.0.1

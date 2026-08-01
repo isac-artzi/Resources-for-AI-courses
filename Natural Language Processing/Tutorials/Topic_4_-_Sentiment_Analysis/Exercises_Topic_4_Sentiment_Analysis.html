@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 4 Exercises — Sentiment Analysis and Aspect-Based Sentiment</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+       margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6; }
+.container { max-width: 980px; margin: 24px auto 48px; background: white;
+             padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.35em; margin-top: 40px;
+     border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+h4 { color: #555; font-size: 1.0em; margin-top: 18px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 6px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7;
+       padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px; overflow-x: auto;
+      border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79;
+           padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px;
+        margin: 14px 0; border-radius: 4px; font-size: 0.93em; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+        padding: 22px; margin: 22px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.controls { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 180px; }
+.control input[type="number"] { width: 80px; padding: 4px 8px;
+            border: 1px solid #CFD7DF; border-radius: 4px; font-family: inherit; }
+.control select { padding: 5px 8px; border: 1px solid #CFD7DF; border-radius: 4px;
+                  font-family: inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px;
+           border-radius: 6px; font-family: "SF Mono", Consolas, monospace;
+           font-size: 0.88em; min-width: 220px; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 16px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.93em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+      background: #F2F4F7; padding: 4px 8px; border-radius: 4px; }
+.eq-block { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+            background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+            text-align: center; margin: 14px 0; display: block; }
+.nav { display: flex; justify-content: space-between; margin-top: 40px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+       padding: 16px 22px; margin-bottom: 28px; font-size: 0.92em; }
+.toc h3 { margin: 0 0 8px; color: #1F4E79; font-size: 1.0em; }
+.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 24px; }
+.toc a { color: #1F4E79; text-decoration: none; } .toc a:hover { text-decoration: underline; }
+.tag { display: inline-block; padding: 2px 8px; background: #E0E5EB;
+       border-radius: 12px; font-size: 0.75em; color: #555;
+       text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px; }
+.tag.interactive { background: #E1F0EA; color: #1B5E20; }
+.tag.code { background: #F2F4F7; color: #555; }
+.tag.math { background: #FCE8EE; color: #6E1414; }
+table.cmp { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 0.92em; }
+table.cmp th, table.cmp td { border: 1px solid #E0E5EB; padding: 8px 12px; text-align: left; }
+table.cmp th { background: #F2F4F7; color: #1F4E79; }
+.archetype { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
+.arc-card { border: 1px solid #D0D8E0; border-radius: 8px; padding: 14px;
+            background: white; font-size: 0.9em; }
+.arc-card .name { color: #1F4E79; font-weight: 600; }
+.arc-card .role { color: #555; margin-top: 6px; }
+textarea { width: 100%; padding: 10px 12px; border: 1px solid #CFD7DF; border-radius: 6px;
+           font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em;
+           line-height: 1.5; resize: vertical; }
+.chk { display: flex; gap: 18px; flex-wrap: wrap; margin: 10px 0; font-size: 0.9em; color: #333; }
+.chk label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
+details { background: #F4F8FB; border: 1px solid #D5E2EC; border-radius: 8px;
+          padding: 10px 16px; margin: 16px 0; }
+details[open] { background: #FAFCFE; }
+details summary { cursor: pointer; color: #1F4E79; font-weight: 600; font-size: 0.95em;
+                  outline: none; }
+details summary:hover { text-decoration: underline; }
+details > *:not(summary) { font-size: 0.96em; }
+.qtype { color: #888; font-size: 0.8em; text-transform: uppercase;
+         letter-spacing: 0.05em; margin: -6px 0 10px; }
+.cellin { width: 74px; padding: 4px 8px; border: 1px solid #CFD7DF;
+          border-radius: 4px; font-family: inherit; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="brand">Exercises · ~ 90 min</div>
+<h1>Topic 4 — Sentiment Analysis and Aspect-Based Sentiment</h1>
+<p class="subtitle">Fourteen problems, increasing in difficulty: hand computation, prediction-then-check against live widgets, short code-writing tasks with stated expected output, and open questions that ask you to turn a measured failure into a written use limitation.</p>
+
+<div class="callout">
+  <strong>How to use these.</strong> Work each problem before opening the solution — the value is in the gap between your answer and the correct one, and that gap disappears if you read first. Problems 1, 2, 5, 6, and 7 are pure arithmetic and should be done on paper; the widgets exist so you can check yourself, not so you can skip the work. Problems 8 to 10 ask for code with a stated expected output, so you can verify by running it. Problems 11 to 14 have no single right answer, but they do have wrong ones, and the model solution shows what a complete answer contains.
+</div>
+
+<div class="toc">
+  <h3>The problems</h3>
+  <ol>
+    <li><a href="#e1">Precision, recall, F1 by hand</a></li>
+    <li><a href="#e2">Lexicon score with negation and an intensifier</a></li>
+    <li><a href="#e3">Contrast: predict, then check</a></li>
+    <li><a href="#e4">Build a bag-of-words collision</a></li>
+    <li><a href="#e5">Metrics at two thresholds</a></li>
+    <li><a href="#e6">AUC by counting pairs</a></li>
+    <li><a href="#e7">Expected calibration error by hand</a></li>
+    <li><a href="#e8">Code: sliced evaluation report</a></li>
+    <li><a href="#e9">Code: negation-aware lexicon scorer</a></li>
+    <li><a href="#e10">Code: aspect attribution</a></li>
+    <li><a href="#e11">Use limitation from a slice failure</a></li>
+    <li><a href="#e12">Use limitation from a calibration failure</a></li>
+    <li><a href="#e13">Defending an aspect inventory</a></li>
+    <li><a href="#e14">Sarcasm: diagnosis, fix, trade-off</a></li>
+  </ol>
+</div>
+
+<!-- ===================== E1 ===================== -->
+<h2 id="e1">1 · Precision, recall, F1 by hand <span class="tag math">math</span></h2>
+<p class="qtype">By-hand computation</p>
+<p>A sentiment classifier is evaluated on 200 held-out reviews. You are detecting <strong>negative</strong> reviews, so "negative" is the positive class. At the shipped threshold the model produces this confusion matrix:</p>
+<pre>                 predicted NEG    predicted POS
+actually NEG          30               20
+actually POS          10              140</pre>
+<p>Compute precision, recall, F1, and accuracy. Then answer: which single number would you put in a status report, and which one would you put in the model card?</p>
+
+<details>
+<summary>Show solution</summary>
+<p>Read off the four counts: <code>TP = 30</code> (actually negative, predicted negative), <code>FN = 20</code>, <code>FP = 10</code>, <code>TN = 140</code>.</p>
+<pre>precision = TP / (TP + FP) = 30 / (30 + 10) = 30 / 40  = 0.750
+recall    = TP / (TP + FN) = 30 / (30 + 20) = 30 / 50  = 0.600
+
+F1 = 2 · P · R / (P + R)
+   = 2 · 0.750 · 0.600 / (0.750 + 0.600)
+   = 0.900 / 1.350
+   = 0.6667
+
+  check with the shortcut form:
+F1 = 2·TP / (2·TP + FP + FN) = 60 / (60 + 10 + 20) = 60 / 90 = 0.6667   ✓
+
+accuracy = (TP + TN) / N = (30 + 140) / 200 = 170 / 200 = 0.850</pre>
+<p>Neither number alone is honest. Accuracy is 0.850 and is the most flattering, but only 50 of the 200 reviews are actually negative, so a model that always predicted "positive" would score 0.750 accuracy while catching nothing. The model card should carry all four numbers plus the threshold that produced them, because precision and recall are both functions of that threshold and the pair (0.750, 0.600) is the operating point the product actually experiences: <em>four out of five flagged reviews really are negative, and two out of five negative reviews are missed.</em></p>
+</details>
+
+<!-- ===================== E2 ===================== -->
+<h2 id="e2">2 · Lexicon score with negation and an intensifier <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p class="qtype">By-hand computation, then check</p>
+<p>Use the scoring rules from the notes: base polarities <code>good = +2</code>, intensifier <code>very = ×1.5</code> when it appears in the two tokens before the polarity word, negation <code>×(−0.75)</code> when a negator appears in the three tokens before it. Intensifiers are applied first, then negation.</p>
+<p>Compute the total score of:</p>
+<pre>"The service was not very good."</pre>
+<p>Then predict what happens to the score if you switch the negation rule off, and check both with the widget.</p>
+
+<div class="demo">
+  <h3>Widget · Lexicon scorer</h3>
+  <textarea id="lx-text" rows="2">The service was not very good.</textarea>
+  <div class="chk">
+    <label><input type="checkbox" id="lx-neg" checked> negation window (±3)</label>
+    <label><input type="checkbox" id="lx-int" checked> intensifiers</label>
+    <label><input type="checkbox" id="lx-con"> contrast reweighting</label>
+  </div>
+  <div class="controls" style="margin-top:0;">
+    <button class="secondary" data-lx="The service was not very good.">problem 2</button>
+    <button class="secondary" data-lx="The food was great but the service ruined it.">problem 3</button>
+    <button class="secondary" data-lx="This is not, by any stretch, a bad phone.">long-distance negation</button>
+  </div>
+  <div class="readout" id="lx-readout" style="min-width:100%;"></div>
+  <pre id="lx-detail" style="margin-top:10px;"></pre>
+</div>
+
+<details>
+<summary>Show solution</summary>
+<p>Tokenize: <code>the · service · was · not · very · good</code>. Only <code>good</code> is in the lexicon, with base <code>+2</code>.</p>
+<pre>base                                  = +2.00
+intensifier: "very" is 1 token before → ×1.5   = +3.00
+negation:    "not"  is 2 tokens before → ×-0.75 = -2.25
+
+total = -2.25   ->   NEGATIVE</pre>
+<p>With the negation rule switched off the score is <code>+3.00</code>, i.e. <em>more</em> positive than the plain word "good" on its own, because the intensifier still fires and amplifies a polarity that has been inverted by a word the scorer is now ignoring. That is the worst kind of error: the rule that was supposed to add precision has multiplied a sign error.</p>
+<p>Note the order matters. If you applied negation first and then the intensifier you would get <code>2 × (−0.75) × 1.5 = −2.25</code> — the same, because multiplication commutes. It stops commuting the moment a rule is additive or clipped, which is why real rule systems specify the order explicitly.</p>
+</details>
+
+<!-- ===================== E3 ===================== -->
+<h2 id="e3">3 · Contrast: predict, then check <span class="tag interactive">interactive</span></h2>
+<p class="qtype">Prediction-then-check</p>
+<p>Consider the sentence:</p>
+<pre>"The food was great but the service ruined it."</pre>
+<p><strong>Before touching the widget</strong>, write down three numbers: (a) the raw sum with every rule switched off, (b) the score with negation and intensifiers on but contrast off, (c) the score with contrast on, given the rule "polarity words before the marker are multiplied by 0.4, words after it by 1.6". Base polarities: <code>great = +3</code>, <code>ruined = −3</code>. Then check with the widget above and explain, in one sentence, why answer (b) is the dangerous one.</p>
+
+<details>
+<summary>Show solution</summary>
+<pre>(a) raw sum:          +3 + (-3)                    = 0.00
+(b) negation + intens: no negator, no intensifier
+                       so nothing changes           = 0.00
+(c) contrast on:      0.4 × (+3)  +  1.6 × (-3)
+                    = +1.20 + (-4.80)               = -3.60</pre>
+<p>(b) is the dangerous answer because it is <em>not obviously broken</em>. A score of exactly 0.00 on a review whose plain-English verdict is negative will be reported as "neutral" or, if your threshold is <code>score &gt; 0 → positive</code> versus <code>≤ 0 → negative</code>, as a coin flip decided by a floating-point tie. Add one more mildly positive word anywhere in the sentence and the same review flips to positive. A system that fails at exactly zero fails silently, and the dashboard downstream will read a stream of these as "customers are neutral about us" rather than "our service is losing customers who like the food".</p>
+<p>The wider lesson: the contrast rule recovers this case only because English convention puts the verdict after <em>but</em>. It is a convention, not a grammar rule, and §3 of the notes shows a fronted concessive that defeats it.</p>
+</details>
+
+<!-- ===================== E4 ===================== -->
+<h2 id="e4">4 · Build a bag-of-words collision <span class="tag interactive">interactive</span></h2>
+<p class="qtype">Construction, then check</p>
+<p>Write two sentences that (i) have <strong>identical unigram count vectors</strong> and (ii) a competent human reader would label with <strong>opposite</strong> overall sentiment. Do not reuse the food/service pair from the notes. Check your pair with the widget: the L1 distance must read exactly 0.</p>
+<p>Then answer: does adding bigrams to the representation fix <em>your</em> pair? Does it fix the general problem?</p>
+
+<div class="demo">
+  <h3>Widget · Bag-of-words collision checker</h3>
+  <textarea id="bw-a" rows="2">the screen is gorgeous but the battery is terrible</textarea>
+  <textarea id="bw-b" rows="2" style="margin-top:8px;">the battery is terrible but the screen is gorgeous</textarea>
+  <canvas id="bw-canvas" width="780" height="230" style="margin-top:12px;"></canvas>
+  <div class="readout" id="bw-readout" style="margin-top:12px; min-width:100%;"></div>
+</div>
+
+<details>
+<summary>Show solution</summary>
+<p>Any pair built by swapping the two clauses of a contrast works, because swapping reorders tokens without adding or removing any. The default pair in the widget is one:</p>
+<pre>A: "the screen is gorgeous but the battery is terrible"   -> negative overall
+B: "the battery is terrible but the screen is gorgeous"   -> positive overall
+
+shared multiset: the×2, is×2, screen, battery, gorgeous, terrible, but
+L1 distance between count vectors = 0</pre>
+<p>Other constructions that work: comparatives with the arguments swapped ("the new one is better than the old one" / "the old one is better than the new one"), and attributions swapped between two entities.</p>
+<p><strong>Do bigrams fix it?</strong> For this pair, yes. A counts the bigrams <code>gorgeous_but</code> and <code>but_the</code>, B counts <code>terrible_but</code> and <code>but_the</code>, so the vectors differ and a bigram model <em>can</em> separate them. That is exactly why <code>ngram_range=(1,2)</code> is the standard setting for a TF-IDF baseline.</p>
+<p><strong>Does it fix the general problem?</strong> No. For any fixed n you can build a pair that agrees on every n-gram and differs in label — push the distinguishing material further apart than n tokens ("the screen, which I looked at for a long time before deciding, is gorgeous ..."). Meanwhile the feature space grows roughly as vocabulary<sup>n</sup>, so you run out of training data long before you run out of counterexamples. Order-blindness is a property of the representation, and only a representation that reads order (a sequence model) removes it.</p>
+</details>
+
+<!-- ===================== E5 ===================== -->
+<h2 id="e5">5 · Metrics at two thresholds <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p class="qtype">By-hand computation, then check</p>
+<p>Eight held-out documents, each with the model's score for the positive class and its true label:</p>
+<pre>score   0.95  0.88  0.72  0.65  0.58  0.44  0.31  0.12
+label     P     P     N     P     N     P     N     N</pre>
+<p>Predict positive when <code>score ≥ t</code>. Compute TP, FP, FN, TN, precision, recall, and F1 at <code>t = 0.60</code> and at <code>t = 0.40</code>. State in one sentence what moving the threshold from 0.60 to 0.40 bought and what it cost.</p>
+
+<div class="demo">
+  <h3>Widget · Threshold explorer over these eight documents</h3>
+  <div class="controls">
+    <div class="control"><label for="th-t">threshold t</label>
+      <input type="range" id="th-t" min="0.05" max="1.00" step="0.01" value="0.60"></div>
+    <div class="readout" id="th-readout"></div>
+  </div>
+  <canvas id="th-canvas" width="780" height="180"></canvas>
+  <pre id="th-detail" style="margin-top:10px;"></pre>
+</div>
+
+<details>
+<summary>Show solution</summary>
+<p>There are 4 positives (0.95, 0.88, 0.65, 0.44) and 4 negatives (0.72, 0.58, 0.31, 0.12).</p>
+<pre>t = 0.60 -> predicted positive: 0.95(P) 0.88(P) 0.72(N) 0.65(P)
+   TP = 3   FP = 1   FN = 1   TN = 3
+   precision = 3/(3+1) = 0.750
+   recall    = 3/(3+1) = 0.750
+   F1        = 2·0.75·0.75/(0.75+0.75) = 0.750
+
+t = 0.40 -> predicted positive: the above plus 0.58(N) 0.44(P)
+   TP = 4   FP = 2   FN = 0   TN = 2
+   precision = 4/(4+2) = 0.6667
+   recall    = 4/(4+0) = 1.000
+   F1        = 2·0.6667·1.0/(0.6667+1.0) = 1.3333/1.6667 = 0.800</pre>
+<p>Lowering the threshold bought the last positive document — recall went from 0.750 to 1.000, nothing is missed any more — and cost one extra false positive, dropping precision from 0.750 to 0.6667. F1 rose from 0.750 to 0.800, so <em>by that summary</em> the lower threshold is better; but F1 weights the two errors equally, and whether that matches your product is a decision you have to make explicitly rather than inherit from a metric.</p>
+</details>
+
+<!-- ===================== E6 ===================== -->
+<h2 id="e6">6 · AUC by counting pairs <span class="tag math">math</span></h2>
+<p class="qtype">By-hand computation</p>
+<p>Using the same eight documents from problem 5, compute the AUC directly from its definition: <em>the probability that a randomly chosen positive scores higher than a randomly chosen negative</em>. Count the pairs; do not integrate anything. Then explain why the AUC does not change if you apply the transformation <code>s' = s²</code> to every score.</p>
+
+<details>
+<summary>Show solution</summary>
+<p>Positives: 0.95, 0.88, 0.65, 0.44. Negatives: 0.72, 0.58, 0.31, 0.12. There are 4 × 4 = 16 pairs. Count the ones where the positive scores higher:</p>
+<pre>0.95  >  0.72, 0.58, 0.31, 0.12   ->  4
+0.88  >  0.72, 0.58, 0.31, 0.12   ->  4
+0.65  >        0.58, 0.31, 0.12   ->  3   (loses to 0.72)
+0.44  >              0.31, 0.12   ->  2   (loses to 0.72 and 0.58)
+                                     ----
+                            total    13
+
+AUC = 13 / 16 = 0.8125</pre>
+<p>(If any positive tied a negative it would count as 0.5 of a pair. There are no ties here.)</p>
+<p><strong>Why <code>s' = s²</code> changes nothing:</strong> squaring is strictly increasing on <code>[0,1]</code>, so <code>s<sub>i</sub> &gt; s<sub>j</sub> ⟺ s<sub>i</sub>² &gt; s<sub>j</sub>²</code>. Every one of the 16 pairwise comparisons has the same outcome, so the count is the same, so the AUC is the same. AUC is a property of the <em>ranking</em> only. This is exactly the property exploited in §12 of the notes: a model can be squashed or stretched into arbitrary overconfidence without its AUC moving by a thousandth, which is why a ranking metric can never detect a calibration failure.</p>
+</details>
+
+<!-- ===================== E7 ===================== -->
+<h2 id="e7">7 · Expected calibration error by hand <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p class="qtype">By-hand computation, then check</p>
+<p>A model's 100 test predictions fall into three confidence bins:</p>
+<table class="cmp" style="width:auto;">
+  <tr><th>bin</th><th>n</th><th>mean confidence</th><th>observed accuracy</th></tr>
+  <tr><td>high</td><td>20</td><td>0.95</td><td>0.70</td></tr>
+  <tr><td>mid</td><td>30</td><td>0.75</td><td>0.60</td></tr>
+  <tr><td>low</td><td>50</td><td>0.55</td><td>0.52</td></tr>
+</table>
+<p>Compute the expected calibration error. Then state what this model is doing wrong in one sentence, and name the cheapest fix.</p>
+
+<div class="demo">
+  <h3>Widget · ECE calculator</h3>
+  <table class="cmp" style="width:auto;">
+    <tr><th>bin</th><th>n</th><th>mean confidence</th><th>observed accuracy</th></tr>
+    <tr><td>high</td>
+      <td><input class="cellin" type="number" id="ec-n0" value="20" min="0"></td>
+      <td><input class="cellin" type="number" id="ec-c0" value="0.95" step="0.01"></td>
+      <td><input class="cellin" type="number" id="ec-a0" value="0.70" step="0.01"></td></tr>
+    <tr><td>mid</td>
+      <td><input class="cellin" type="number" id="ec-n1" value="30" min="0"></td>
+      <td><input class="cellin" type="number" id="ec-c1" value="0.75" step="0.01"></td>
+      <td><input class="cellin" type="number" id="ec-a1" value="0.60" step="0.01"></td></tr>
+    <tr><td>low</td>
+      <td><input class="cellin" type="number" id="ec-n2" value="50" min="0"></td>
+      <td><input class="cellin" type="number" id="ec-c2" value="0.55" step="0.01"></td>
+      <td><input class="cellin" type="number" id="ec-a2" value="0.52" step="0.01"></td></tr>
+  </table>
+  <canvas id="ec-canvas" width="360" height="330"></canvas>
+  <pre id="ec-out" style="margin-top:10px;"></pre>
+</div>
+
+<details>
+<summary>Show solution</summary>
+<pre>ECE = Σ_b (n_b / N) · | acc(b) − conf(b) |
+
+high: (20/100) · |0.70 − 0.95| = 0.20 · 0.25 = 0.0500
+mid : (30/100) · |0.60 − 0.75| = 0.30 · 0.15 = 0.0450
+low : (50/100) · |0.52 − 0.55| = 0.50 · 0.03 = 0.0150
+                                              ------
+                                        ECE = 0.1100</pre>
+<p>Every bin sits below the diagonal, and the gap grows with confidence: the model is <strong>overconfident, and worst exactly where it is loudest</strong>. When it says 0.95 it is right 0.70 of the time, so a production rule of the form "auto-resolve when confidence &gt; 0.9" would be wrong on nearly a third of the cases it silently closes.</p>
+<p>The cheapest fix is temperature scaling: fit a single scalar <code>T</code> on a held-out validation split by minimizing cross-entropy on <code>logits / T</code>. It cannot change any predicted label (dividing all logits by a positive constant preserves the argmax), so accuracy and AUC are untouched; it only rescales confidence. A fitted <code>T &gt; 1</code> is the numerical confirmation that the model was overconfident. Re-fit it whenever the model or the input distribution changes.</p>
+</details>
+
+<!-- ===================== E8 ===================== -->
+<h2 id="e8">8 · Code: sliced evaluation report <span class="tag code">code</span><span class="tag interactive">interactive</span></h2>
+<p class="qtype">Code writing with stated expected output</p>
+<p>Write a function <code>slice_report(y_true, y_pred, groups)</code> that returns a dict mapping each group name to <code>{"n": &lt;count&gt;, "acc": &lt;accuracy&gt;}</code>, plus a key <code>"OVERALL"</code> with the same two fields over all examples. For this input:</p>
+<pre>y_true = [1, 1, 0, 0, 1, 0, 1, 0]
+y_pred = [1, 1, 0, 0, 0, 1, 1, 0]
+groups = ["A","A","A","A","B","B","B","B"]</pre>
+<p>your function must produce exactly:</p>
+<pre>{'A': {'n': 4, 'acc': 1.0},
+ 'B': {'n': 4, 'acc': 0.5},
+ 'OVERALL': {'n': 8, 'acc': 0.75}}</pre>
+<p>Then use the widget to answer: if slice B were only 2% of the evaluation set instead of 50%, what would the overall accuracy be, and would you notice the failure?</p>
+
+<div class="demo">
+  <h3>Widget · Slice arithmetic</h3>
+  <div class="controls">
+    <div class="control"><label>slice A: n</label><input type="number" id="sr-na" value="4" min="1"></div>
+    <div class="control"><label>slice A: correct</label><input type="number" id="sr-ca" value="4" min="0"></div>
+    <div class="control"><label>slice B: n</label><input type="number" id="sr-nb" value="4" min="1"></div>
+    <div class="control"><label>slice B: correct</label><input type="number" id="sr-cb" value="2" min="0"></div>
+  </div>
+  <pre id="sr-out"></pre>
+</div>
+
+<details>
+<summary>Show solution</summary>
+<pre>def slice_report(y_true, y_pred, groups):
+    """Accuracy and support per slice, plus the overall number."""
+    assert len(y_true) == len(y_pred) == len(groups)
+    rows = {}
+    for g in sorted(set(groups)):
+        idx = [i for i, gg in enumerate(groups) if gg == g]
+        correct = sum(1 for i in idx if y_true[i] == y_pred[i])
+        rows[g] = {"n": len(idx), "acc": correct / len(idx)}
+    total = sum(1 for i in range(len(y_true)) if y_true[i] == y_pred[i])
+    rows["OVERALL"] = {"n": len(y_true), "acc": total / len(y_true)}
+    return rows</pre>
+<p>Checking by hand: slice A is indices 0–3, where predictions are <code>1,1,0,0</code> against truths <code>1,1,0,0</code> — 4 of 4 correct, accuracy 1.0. Slice B is indices 4–7, where <code>0,1,1,0</code> meets <code>1,0,1,0</code> — 2 of 4 correct, accuracy 0.5. Overall 6 of 8 = 0.75.</p>
+<p><strong>The 2% question.</strong> Set the widget to slice A: n = 980, correct = 980, and slice B: n = 20, correct = 10. Overall accuracy is 990/1000 = 0.990. A model with no gap at all would score 1.000. <em>The slice is failing half the time and the headline number moved by one point.</em> One point is inside the range you would attribute to a different random seed, so no, you would not notice — not from the average. You only notice by computing the metric per slice, which is why a bias audit is a reporting discipline rather than an algorithm.</p>
+<p>Two things to add before this function is fit for an audit: the count per slice (already there — a 20-document slice cannot support a confident claim either way) and a confidence interval, since with n = 20 the 95% interval on an accuracy of 0.5 is roughly ±0.22.</p>
+</details>
+
+<!-- ===================== E9 ===================== -->
+<h2 id="e9">9 · Code: negation-aware lexicon scorer <span class="tag code">code</span></h2>
+<p class="qtype">Code writing with stated expected output</p>
+<p>Implement <code>score(text)</code> with this specification:</p>
+<ul>
+  <li>Lowercase the text, strip punctuation, split on whitespace.</li>
+  <li>Lexicon: <code>{"fast": 2, "good": 2, "slow": -2, "bad": -2}</code>.</li>
+  <li>Negators: <code>{"not", "never", "no"}</code>. If a negator occurs within the three tokens before a polarity word, multiply that word's contribution by <code>-0.75</code> (apply at most one negator, the nearest).</li>
+  <li>Return the sum of contributions as a float.</li>
+</ul>
+<p>Expected output:</p>
+<pre>score("The delivery was fast.")            ->  2.0
+score("The delivery was not fast.")        -> -1.5
+score("The delivery was not fast and the support was bad.")  -> -3.5
+score("Nothing here is in the lexicon.")   ->  0.0</pre>
+
+<details>
+<summary>Show solution</summary>
+<pre>import re
+
+LEX = {"fast": 2, "good": 2, "slow": -2, "bad": -2}
+NEGATORS = {"not", "never", "no"}
+WINDOW = 3
+NEG_FACTOR = -0.75
+
+def tokenize(text):
+    return re.sub(r"[^a-z0-9'\s]", " ", text.lower()).split()
+
+def score(text):
+    toks = tokenize(text)
+    total = 0.0
+    for i, tok in enumerate(toks):
+        base = LEX.get(tok)
+        if base is None:
+            continue
+        factor = 1.0
+        for j in range(i - 1, max(-1, i - 1 - WINDOW), -1):   # nearest first
+            if toks[j] in NEGATORS:
+                factor = NEG_FACTOR
+                break
+        total += base * factor
+    return total</pre>
+<p>Walking the third case: tokens are <code>the delivery was not fast and the support was bad</code>. <code>fast</code> (index 4) has <code>not</code> at index 3, one token back, so it contributes <code>2 × −0.75 = −1.5</code>. <code>bad</code> (index 9) has <code>was</code>, <code>support</code>, <code>the</code> in its window — no negator — so it contributes <code>−2.0</code>. Total <code>−3.5</code>. ✓</p>
+<p>Three properties worth noticing about your own implementation. It scans <em>backwards</em> from the polarity word so the nearest negator wins, which matters for "not really no good". It applies at most one negator, so double negation is not handled — "not never bad" is scored as if it had one negator, and if you want that case you need a parity rule. And it silently returns 0.0 for text containing no lexicon entry, which is indistinguishable from a genuinely neutral document; a production scorer should return the coverage count as well, so a caller can tell "neutral" from "I have nothing to say about this".</p>
+</details>
+
+<!-- ===================== E10 ===================== -->
+<h2 id="e10">10 · Code: aspect attribution <span class="tag code">code</span></h2>
+<p class="qtype">Code writing with stated expected output</p>
+<p>Implement <code>aspect_scores(text)</code> that segments a review into clauses, assigns each clause to every aspect whose terms it mentions, and returns a dict of aspect to summed clause score.</p>
+<ul>
+  <li>Segment on <code>. , ; ! ?</code> and on the words <code>but</code>, <code>however</code>, <code>though</code>.</li>
+  <li>Aspect dictionary: <code>{"display": ["screen", "display"], "battery": ["battery", "charge"], "price": ["price", "cost"]}</code>.</li>
+  <li>Clause polarity: sum of <code>{"gorgeous": 3, "terrible": -3, "reasonable": 2}</code> over the clause's tokens.</li>
+  <li>Aspects with no mention must be absent from the returned dict — <strong>not</strong> present with value 0.</li>
+</ul>
+<p>Expected output:</p>
+<pre>aspect_scores("The screen is gorgeous but the battery is terrible.")
+  ->  {'display': 3.0, 'battery': -3.0}
+
+aspect_scores("The price is reasonable.")
+  ->  {'price': 2.0}
+
+aspect_scores("It arrived on Tuesday.")
+  ->  {}</pre>
+<p>Then answer in one or two sentences: why does the specification insist that an unmentioned aspect be absent rather than zero?</p>
+
+<details>
+<summary>Show solution</summary>
+<pre>import re
+
+ASPECTS = {"display": ["screen", "display"],
+           "battery": ["battery", "charge"],
+           "price":   ["price", "cost"]}
+TERM = {t: a for a, terms in ASPECTS.items() for t in terms}
+LEX = {"gorgeous": 3, "terrible": -3, "reasonable": 2}
+
+SPLIT = re.compile(r"[.,;!?]|\bbut\b|\bhowever\b|\bthough\b", re.I)
+
+def tokenize(text):
+    return re.sub(r"[^a-z0-9'\s]", " ", text.lower()).split()
+
+def aspect_scores(text):
+    out = {}
+    for clause in SPLIT.split(text):
+        toks = tokenize(clause)
+        if not toks:
+            continue
+        polarity = float(sum(LEX.get(t, 0) for t in toks))
+        found = {TERM[t] for t in toks if t in TERM}
+        for a in found:
+            out[a] = out.get(a, 0.0) + polarity
+    return out</pre>
+<p>Trace of the first case: splitting on <code>but</code> and the final period gives the clauses "The screen is gorgeous" and "the battery is terrible". The first has polarity +3 and mentions <code>screen</code> → <code>display</code>; the second has polarity −3 and mentions <code>battery</code>. Result <code>{'display': 3.0, 'battery': -3.0}</code>. The third case has no aspect terms and no polarity terms, so the loop adds nothing and the dict stays empty. ✓</p>
+<p><strong>Why absent, not zero.</strong> Zero means "mentioned and neutral"; absence means "not discussed". If you conflate them, every average over an aspect is dragged toward zero by documents that had no opinion about it, so the reported aspect sentiment becomes a function of <em>how often the aspect was mentioned</em> rather than what was said about it. A product that never gets mentioned would appear to have neutral sentiment instead of no data, and the dashboard would quietly report a fact that nobody stated. Report the aspect score and the mention count together, always.</p>
+</details>
+
+<!-- ===================== E11 ===================== -->
+<h2 id="e11">11 · Use limitation from a slice failure <span class="tag math">math</span></h2>
+<p class="qtype">Explain why — measured failure to written limitation</p>
+<p>You run a sliced evaluation of a deployed review classifier and get this table:</p>
+<pre>slice                          n       accuracy    macro-F1
+  reviews  &lt; 20 tokens       3,140       0.913        0.905
+  reviews  &gt;= 20 tokens      6,860       0.926        0.921
+  contains a negator         1,470       0.781        0.762
+  no negator                 8,530       0.945        0.939
+  OVERALL                   10,000       0.922        0.916</pre>
+<p>(a) Name the mechanism behind the negator gap. (b) Write a use limitation that follows from it — a rule specific enough that an engineer could implement it and an auditor could check it. (c) State one thing this table does <em>not</em> tell you that you would need before you could call the audit complete.</p>
+
+<details>
+<summary>Show solution</summary>
+<p><strong>(a) Mechanism.</strong> Documents containing a negator score 16.4 accuracy points below documents without one (0.781 vs 0.945), and the gap is larger in macro-F1 than in accuracy, which means the errors are concentrated in the smaller class rather than spread evenly. The mechanism is compositional: negation inverts the polarity of a span, the scope of that inversion is syntactic, and both a bag-of-words baseline and a truncated encoder approximate scope by proximity. Whenever the negator is far from the word it scopes over — "this is not, by any stretch, a bad phone" — the inversion is missed and the model returns the polarity of the un-negated word, which is exactly the wrong sign rather than an uncertain answer. The length slices show a gap of only 1.3 points, which is small enough that it may well be noise at these sample sizes; the negator slice is the real finding.</p>
+<p><strong>(b) Use limitation.</strong> Something an engineer can implement and an auditor can check, for example:</p>
+<div class="callout">"Documents matched by the negation detector are excluded from automated resolution. Any such document routed as negative must clear a calibrated confidence floor of 0.90 <em>and</em> be reviewed by a human before any customer-visible action is taken. The service's published accuracy figure must be accompanied by the per-slice table, and the negator slice figure must be quoted in any material that states an accuracy number. This restriction is reviewed whenever the model version changes."</div>
+<p>Note what makes it enforceable: it names the trigger (a detector that already exists — it is the same regular expression that built the slice), it names the action (exclude from auto-resolution, require review), it names the threshold, and it names the review condition. "The model should be used with caution on negation" is not a limitation; it is a mood.</p>
+<p><strong>(c) What is missing.</strong> Several candidates, any one of which is a complete answer:</p>
+<ul>
+  <li><strong>Confidence intervals.</strong> With n = 1,470 the interval on 0.781 is roughly ±0.02, so this gap is real — but the length gap of 1.3 points is not obviously outside noise, and the table gives no basis to distinguish the two.</li>
+  <li><strong>Overlap between slices.</strong> Short reviews may contain proportionally more negators, in which case the two rows are measuring one phenomenon twice. A cross-tabulation would settle it, and the fix differs depending on the answer.</li>
+  <li><strong>Error direction.</strong> Accuracy does not say whether negated documents fail toward false positives or false negatives, and the appropriate limitation differs: missing angry customers and libelling calm ones are different harms.</li>
+  <li><strong>Confidence on the failing slice.</strong> If the model is <em>also</em> confident when wrong on this slice, a confidence floor will not catch the errors and part (b)'s limitation is ineffective.</li>
+</ul>
+</details>
+
+<!-- ===================== E12 ===================== -->
+<h2 id="e12">12 · Use limitation from a calibration failure <span class="tag math">math</span></h2>
+<p class="qtype">Explain why — measured failure to written limitation</p>
+<p>A team reports these numbers for their fine-tuned sentiment model on a held-out split:</p>
+<pre>accuracy 0.906    macro-F1 0.899    ROC-AUC 0.961    ECE 0.147
+predictions with confidence >= 0.95:  38% of the test set
+observed accuracy within that group:  0.84</pre>
+<p>The product routes any prediction with confidence ≥ 0.95 straight into an automated action with no human in the loop. (a) Explain precisely why the excellent AUC is not evidence that this routing rule is safe. (b) Write the use limitation. (c) The team proposes "raise the confidence bar to 0.99". Say whether that fixes it and why.</p>
+
+<details>
+<summary>Show solution</summary>
+<p><strong>(a) Why AUC does not help.</strong> AUC measures ranking only: it is the probability that a randomly chosen positive is scored above a randomly chosen negative. It is invariant under every strictly increasing transformation of the scores, so a model can have AUC 0.961 while reporting confidences that are arbitrarily wrong in magnitude. The routing rule does not use the ranking — it uses the number, as though it were a probability. The relevant measurement is the one they also reported and did not act on: within the group the model calls 0.95-or-better, it is right 0.84 of the time. That is roughly one wrong automated action in every six, taken silently, in exactly the population the rule was designed to fast-track. ECE of 0.147 says the same thing as a single scalar.</p>
+<p><strong>(b) Use limitation.</strong></p>
+<div class="callout">"Raw model confidence may not be used as a probability by any downstream rule. Automated action gated on confidence is permitted only after temperature scaling fitted on a held-out validation split, and only at a threshold whose <em>observed</em> accuracy on that split has been measured and recorded. The calibrated threshold and its measured accuracy are published in the model card, re-fitted on every model version, and re-checked on fresh samples on a fixed schedule, because temperature is a property of the model and of the input distribution together. Until that is done, every prediction, at any confidence, is advisory and requires human confirmation before an irreversible action."</div>
+<p><strong>(c) Does raising the bar to 0.99 fix it?</strong> No, and the reason matters. Raising the bar shrinks the automated population — fewer documents clear 0.99 than 0.95 — so the total number of bad automated actions falls, which will look like an improvement. But the model is overconfident, which means the mapping from reported confidence to observed accuracy is unknown and non-linear; there is no reason to believe the group above 0.99 is right 99% of the time, and with an ECE of 0.147 concentrated at the top of the range it may be barely better than the 0.95 group. Picking a number without measuring the accuracy at that number is the same mistake at a different value. The fix is to calibrate first, then choose the threshold from a measured reliability table, then re-measure. If after calibration the top bin still under-performs the product's requirement, the correct conclusion is that this decision cannot be automated at all.</p>
+</details>
+
+<!-- ===================== E13 ===================== -->
+<h2 id="e13">13 · Defending an aspect inventory <span class="tag math">math</span></h2>
+<p class="qtype">Explain why — modelling decision</p>
+<p>Your team ships an aspect-based sentiment service for a food-delivery product with the inventory <code>{food_quality, delivery_speed, price, app_experience}</code>. Six months later, support is drowning in complaints about couriers entering buildings when nobody is home, and none of it appears anywhere in the aspect dashboards.</p>
+<p>(a) Explain, mechanically, why the dashboard shows nothing. (b) Name two decisions in the original inventory design that produced this outcome. (c) Describe the process change that would have caught it, and state the cost of that change.</p>
+
+<details>
+<summary>Show solution</summary>
+<p><strong>(a) Mechanically.</strong> The aspect inventory is a closed list, and the attribution step assigns a clause to an aspect only when it matches that aspect's terms. Courier-conduct complaints match none of the four categories, so every such clause is dropped — either into an "other" bucket that nobody charts, or out of the pipeline entirely. The dashboards then report exactly what they were built to report, with no indicator anywhere that a growing share of input is falling outside the schema. This is the failure discussed in §9 of the notes: <strong>a category that does not exist produces no evidence, and no evidence is read by everyone downstream as no problem.</strong> The system is not wrong; it is answering a question nobody updated.</p>
+<p><strong>(b) Two design decisions.</strong> Any two of:</p>
+<ul>
+  <li><strong>Closed inventory with no review schedule.</strong> Closed is a defensible choice — it gives comparable time series — but it is only safe when paired with a scheduled review that re-derives categories from recent data.</li>
+  <li><strong>No coverage metric.</strong> Nothing measured the share of clauses that matched no aspect. That single number, charted over time, would have risen visibly months before support noticed. Coverage is the smoke alarm for a closed schema.</li>
+  <li><strong>The inventory was derived from what the team already tracked</strong> (the four things the product roadmap cared about) rather than from a sample of real customer text, so it could only ever surface complaints the team had already thought of.</li>
+  <li><strong>The inventory conflated the aspect with the metric</strong>: <code>delivery_speed</code> describes a timing attribute, so courier <em>conduct</em> has no home even though it is plainly about delivery.</li>
+</ul>
+<p><strong>(c) Process change and its cost.</strong> Add two things. First, a coverage metric: report, on every run, the fraction of clauses assigned to no aspect, and alert when it drifts upward. Second, a scheduled open-vocabulary pass — quarterly, cluster the unassigned clauses (embeddings plus a clustering step, or simply read a random sample of two hundred of them) and ask whether any cluster deserves a category.</p>
+<p>The costs are real and should be stated rather than waved away. Adding a category breaks comparability: the time series before and after the change are not the same measurement, and every chart needs a version marker. Aspect-level metrics for a new category start with no labelled evaluation data, so its precision and recall are unknown until you annotate a sample, and reporting an aspect whose accuracy you have not measured is how a dashboard becomes confidently wrong. And a quarterly human read of unassigned text is recurring labour that has to be owned by a named person or it will not happen. That is the honest trade-off of a closed inventory: stable numbers, bought with a standing obligation to look at what the schema is throwing away.</p>
+</details>
+
+<!-- ===================== E14 ===================== -->
+<h2 id="e14">14 · Sarcasm: diagnosis, fix, trade-off <span class="tag math">math</span></h2>
+<p class="qtype">Open — design reasoning</p>
+<p>Pick a domain you could plausibly build for (product reviews, support tickets, app-store feedback, internal survey text). Then:</p>
+<ol>
+  <li>Give one realistic sarcastic or context-dependent example from that domain.</li>
+  <li>Explain why a fine-tuned transformer classifier — not just a lexicon — is likely to misclassify it.</li>
+  <li>Propose one specific improvement.</li>
+  <li>State one concrete trade-off your improvement introduces.</li>
+  <li>State the use limitation you would keep in place <em>even after</em> the improvement ships.</li>
+</ol>
+
+<details>
+<summary>Show solution</summary>
+<p>A complete answer has all five parts and is specific at every one. Here is one worked version; yours should differ in domain and detail.</p>
+<p><strong>1. Domain and example.</strong> App-store feedback for a note-taking app: <em>"Love the new sync feature. Only took three tries and a support ticket to get my notes back."</em> The human verdict is clearly negative.</p>
+<p><strong>2. Why a fine-tuned transformer still fails.</strong> The classifier learns the mapping from surface text to labels that its training data exhibits, and "love the new X" appears in that data overwhelmingly in genuinely positive reviews. Attention lets the model condition on the second sentence, but the second sentence contains no polarity vocabulary either — its negativity is an inference from a fact about the world (recovering your own notes should not take three tries and a ticket). Nothing in the training distribution teaches that inference unless sarcastic examples were labelled and present in quantity, and they are rare and expensive to label because annotators disagree about them. Worse, the failure is confident: cross-entropy training pushes the model toward extreme probabilities, so the wrong label arrives with a high number attached and sails through any confidence gate. That combination — rare in training, confident when wrong — is what makes sarcasm a deployment problem rather than an accuracy problem.</p>
+<p><strong>3. Improvement.</strong> Continue fine-tuning on a targeted set: mine candidates with cheap high-recall heuristics (a positive polarity word within one sentence of an explicit failure or effort term — "only took", "finally", "yet again", a numeral followed by "tries" or "hours"), have a human label a few thousand of them, and add them to training with class weighting so they are not swamped. Ship it with an "ironic" flag from the same detector, exposed in the API response.</p>
+<p><strong>4. Trade-off.</strong> The heuristic mining is high-recall and low-precision, so the human labelling budget is largely spent on non-sarcastic text — the cost is annotator time, and annotator agreement on irony is low enough that a share of the labels you buy will be noise. Upweighting a rare class also raises the false-positive rate on ordinary enthusiastic reviews: a genuinely happy customer who writes "Love it. Only took a minute to set up" starts getting flagged. You are trading precision on the majority of your traffic for recall on a small, high-harm slice. Whether that is worth it depends on the cost of the two errors, and you should measure both before and after rather than reporting only the improvement.</p>
+<p><strong>5. The limitation that survives the fix.</strong> The improvement moves an accuracy number; it does not change the nature of the failure, because irony is defined by a mismatch between what is said and what the reader knows, and no fixed training set covers what readers know. So the limitation stays:</p>
+<div class="callout">"No consequential action affecting an individual customer, account, or employee may be taken on the basis of a single document's sentiment label. Documents flagged as ironic are routed to human review regardless of confidence. Model output is used for aggregate trends and for prioritizing human attention; it is never used as evidence about a person's intent, motives, or character, because the model measures the polarity of text under one annotation scheme and observes none of those things."</div>
+<p>The general shape to reproduce, whatever domain you chose: a measured failure, the mechanism that causes it, a fix scoped to that mechanism, an honest account of what the fix costs, and a limitation that holds because the mechanism has not gone away.</p>
+</details>
+
+<div class="nav">
+  <a href="Lecture_Notes_Topic_4_Sentiment_Analysis.html">← Topic 4 lecture notes</a>
+  <a href="#e1">↑ Back to problem 1</a>
+</div>
+
+</div>
+
+<script>
+/* ---------------- shared scoring machinery (same rules as the lecture notes) ---------------- */
+var LEX = {
+  great:3, excellent:3, amazing:3, superb:3, love:3, loved:3, delicious:3, perfect:3,
+  wonderful:3, fantastic:3, gorgeous:3, brilliant:3,
+  good:2, nice:2, fresh:2, friendly:2, helpful:2, clean:2, fast:2, tasty:2, generous:2,
+  recommend:2, enjoyed:2, worth:2, comfortable:2, reliable:2, smooth:2, reasonable:2,
+  solid:1, decent:1, fine:1, okay:1, ok:1, adequate:1, acceptable:1,
+  terrible:-3, awful:-3, horrible:-3, disgusting:-3, hate:-3, hated:-3, worst:-3,
+  ruined:-3, rude:-3, useless:-3, garbage:-3,
+  bad:-2, slow:-2, cold:-2, dirty:-2, overpriced:-2, stale:-2, bland:-2, broken:-2,
+  disappointing:-2, disappointed:-2, unreliable:-2, clumsy:-2,
+  mediocre:-1, meh:-1, pricey:-1, cramped:-1, noisy:-1, dull:-1
+};
+var NEGATORS = new Set(["not","never","no","nothing","without","cannot","nor","neither",
+  "hardly","barely","isn't","wasn't","aren't","weren't","didn't","don't","doesn't",
+  "can't","won't","wouldn't","couldn't"]);
+var INTENS = { very:1.5, extremely:1.8, incredibly:1.8, really:1.4, absolutely:1.7,
+  totally:1.5, so:1.3, quite:1.2, utterly:1.7, slightly:0.6, somewhat:0.7, marginally:0.6 };
+var CONTRAST = new Set(["but","however","yet"]);
+
+function toks(s){
+  return String(s).toLowerCase().replace(/[^a-z0-9'\s]/g, " ").trim().split(/\s+/).filter(Boolean);
+}
+function analyze(text, opt){
+  opt = opt || {};
+  var ts = toks(text);
+  var contrib = ts.map(function(){ return 0; });
+  var note = ts.map(function(){ return ""; });
+  var ci = -1, i, j;
+  if (opt.contrast) { for (i = 0; i < ts.length; i++) { if (CONTRAST.has(ts[i])) { ci = i; break; } } }
+  for (i = 0; i < ts.length; i++) {
+    var base = LEX[ts[i]];
+    if (base === undefined) continue;
+    var m = 1, parts = [];
+    if (opt.intens) {
+      for (j = i - 1; j >= Math.max(0, i - 2); j--) {
+        if (INTENS[ts[j]] !== undefined) { m *= INTENS[ts[j]];
+          parts.push('intensified by "' + ts[j] + '" x' + INTENS[ts[j]]); break; }
+      }
+    }
+    if (opt.neg) {
+      for (j = i - 1; j >= Math.max(0, i - 3); j--) {
+        if (NEGATORS.has(ts[j])) { m *= -0.75;
+          parts.push('negated by "' + ts[j] + '" x-0.75'); break; }
+      }
+    }
+    if (opt.contrast && ci >= 0 && i !== ci) {
+      var w = i < ci ? 0.4 : 1.6; m *= w;
+      parts.push((i < ci ? "before" : "after") + ' "' + ts[ci] + '" x' + w);
+    }
+    contrib[i] = base * m;
+    note[i] = parts.join("; ");
+  }
+  return { ts: ts, contrib: contrib, note: note,
+           total: contrib.reduce(function(a, b){ return a + b; }, 0), ci: ci };
+}
+function verdict(v){ return v > 0.25 ? "POSITIVE" : (v < -0.25 ? "NEGATIVE" : "NEUTRAL / UNDECIDED"); }
+
+/* ---------------- widget for problems 2 and 3 ---------------- */
+(function(){
+  var ta = document.getElementById("lx-text");
+  var out = document.getElementById("lx-readout"), det = document.getElementById("lx-detail");
+  var cn = document.getElementById("lx-neg"), ci = document.getElementById("lx-int"),
+      cc = document.getElementById("lx-con");
+  function draw(){
+    var opt = { neg: cn.checked, intens: ci.checked, contrast: cc.checked };
+    var r = analyze(ta.value, opt);
+    var rules = [];
+    if (opt.neg) rules.push("negation");
+    if (opt.intens) rules.push("intensifiers");
+    if (opt.contrast) rules.push("contrast");
+    out.textContent = "total = " + r.total.toFixed(2) + "   ->   " + verdict(r.total) +
+      "    |  rules on: " + (rules.length ? rules.join(", ") : "none (raw sum)");
+    var lines = [], k;
+    for (k = 0; k < r.ts.length; k++) {
+      if (LEX[r.ts[k]] !== undefined) {
+        lines.push("  " + r.ts[k].padEnd(14) + "base " + String(LEX[r.ts[k]]).padStart(3) +
+          "   ->  " + r.contrib[k].toFixed(2).padStart(7) +
+          (r.note[k] ? "   [" + r.note[k] + "]" : ""));
+      }
+    }
+    det.textContent = lines.length
+      ? "token         base       contribution\n" + lines.join("\n") +
+        "\n" + "-".repeat(46) + "\n  TOTAL" + r.total.toFixed(2).padStart(28)
+      : "No token in this sentence is in the lexicon, so the total is 0.00.";
+  }
+  ta.addEventListener("input", draw);
+  cn.addEventListener("change", draw); ci.addEventListener("change", draw);
+  cc.addEventListener("change", draw);
+  var pres = document.querySelectorAll("[data-lx]");
+  for (var p = 0; p < pres.length; p++) {
+    (function(btn){ btn.addEventListener("click", function(){
+      ta.value = btn.getAttribute("data-lx"); draw(); }); })(pres[p]);
+  }
+  draw();
+})();
+
+/* ---------------- widget for problem 4 ---------------- */
+(function(){
+  var a = document.getElementById("bw-a"), b = document.getElementById("bw-b");
+  var cv = document.getElementById("bw-canvas"), ctx = cv.getContext("2d");
+  var out = document.getElementById("bw-readout");
+  function counts(t){ var m = {}; toks(t).forEach(function(w){ m[w] = (m[w] || 0) + 1; }); return m; }
+  function draw(){
+    var ca = counts(a.value), cb = counts(b.value);
+    var vocab = Object.keys(ca).concat(Object.keys(cb))
+      .filter(function(v, i, s){ return s.indexOf(v) === i; }).sort();
+    var W = cv.width, H = cv.height; ctx.clearRect(0, 0, W, H);
+    var left = 36, right = W - 18, base = H - 50;
+    var n = Math.max(1, vocab.length), bw = (right - left) / n, mx = 1, i;
+    for (i = 0; i < vocab.length; i++) mx = Math.max(mx, ca[vocab[i]] || 0, cb[vocab[i]] || 0);
+    var sc = (base - 38) / mx, l1 = 0;
+    ctx.strokeStyle = "#CFD7DF"; ctx.beginPath();
+    ctx.moveTo(left, base); ctx.lineTo(right, base); ctx.stroke();
+    for (i = 0; i < vocab.length; i++) {
+      var va = ca[vocab[i]] || 0, vb = cb[vocab[i]] || 0, x = left + i * bw;
+      l1 += Math.abs(va - vb);
+      ctx.fillStyle = "#1F4E79"; ctx.fillRect(x + bw * 0.12, base - va * sc, bw * 0.34, va * sc);
+      ctx.fillStyle = "#F9A825"; ctx.fillRect(x + bw * 0.52, base - vb * sc, bw * 0.34, vb * sc);
+      ctx.fillStyle = "#555"; ctx.font = (bw < 46 ? "9px" : "11px") + " monospace";
+      ctx.save(); ctx.translate(x + bw * 0.5, base + 14); ctx.rotate(-Math.PI / 6);
+      ctx.fillText(vocab[i], 0, 0); ctx.restore();
+      if (va !== vb) { ctx.strokeStyle = "#C00000"; ctx.lineWidth = 2;
+        ctx.strokeRect(x + bw * 0.06, 22, bw * 0.88, base - 22); ctx.lineWidth = 1; }
+    }
+    ctx.font = "bold 11px sans-serif";
+    ctx.fillStyle = "#1F4E79"; ctx.fillText("sentence A", left + 2, 15);
+    ctx.fillStyle = "#F9A825"; ctx.fillText("sentence B", left + 92, 15);
+    out.textContent = "|vocabulary| = " + vocab.length +
+      "   L1 distance = " + l1 +
+      (l1 === 0 ? "   ->  COLLISION: identical count vectors. No bag-of-words model can separate them."
+                : "   ->  not a collision: the vectors differ, so a bag-of-words model could tell them apart.");
+  }
+  a.addEventListener("input", draw); b.addEventListener("input", draw);
+  draw();
+})();
+
+/* ---------------- widget for problems 5 and 6 ---------------- */
+(function(){
+  var DATA = [
+    { s: 0.95, y: 1 }, { s: 0.88, y: 1 }, { s: 0.72, y: 0 }, { s: 0.65, y: 1 },
+    { s: 0.58, y: 0 }, { s: 0.44, y: 1 }, { s: 0.31, y: 0 }, { s: 0.12, y: 0 }
+  ];
+  var sl = document.getElementById("th-t");
+  var cv = document.getElementById("th-canvas"), ctx = cv.getContext("2d");
+  var out = document.getElementById("th-readout"), det = document.getElementById("th-detail");
+  function auc(){
+    var P = DATA.filter(function(d){ return d.y === 1; });
+    var N = DATA.filter(function(d){ return d.y === 0; });
+    var c = 0;
+    P.forEach(function(p){ N.forEach(function(q){
+      c += p.s > q.s ? 1 : (p.s === q.s ? 0.5 : 0); }); });
+    return { a: c / (P.length * N.length), c: c, n: P.length * N.length };
+  }
+  var A = auc();
+  function draw(){
+    var t = +sl.value, TP = 0, FP = 0, FN = 0, TN = 0, i;
+    for (i = 0; i < DATA.length; i++) {
+      var p = DATA[i].s >= t ? 1 : 0;
+      if (DATA[i].y === 1) { if (p) TP++; else FN++; } else { if (p) FP++; else TN++; }
+    }
+    var P = TP + FP > 0 ? TP / (TP + FP) : 0;
+    var R = TP + FN > 0 ? TP / (TP + FN) : 0;
+    var F = P + R > 0 ? 2 * P * R / (P + R) : 0;
+    var W = cv.width, H = cv.height; ctx.clearRect(0, 0, W, H);
+    var left = 40, right = W - 40, y0 = 92;
+    ctx.strokeStyle = "#CFD7DF"; ctx.beginPath();
+    ctx.moveTo(left, y0); ctx.lineTo(right, y0); ctx.stroke();
+    for (i = 0; i <= 10; i++) {
+      var gx = left + (right - left) * i / 10;
+      ctx.strokeStyle = "#E8ECF1"; ctx.beginPath();
+      ctx.moveTo(gx, y0 - 6); ctx.lineTo(gx, y0 + 6); ctx.stroke();
+      ctx.fillStyle = "#888"; ctx.font = "9px monospace";
+      ctx.fillText((i / 10).toFixed(1), gx - 8, y0 + 20);
+    }
+    DATA.forEach(function(d){
+      var x = left + (right - left) * d.s;
+      var pos = d.y === 1;
+      ctx.fillStyle = pos ? "#2E7D32" : "#1F4E79";
+      ctx.beginPath(); ctx.arc(x, pos ? y0 - 26 : y0 + 34, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#FFF"; ctx.font = "bold 9px monospace";
+      ctx.fillText(pos ? "P" : "N", x - 3, (pos ? y0 - 26 : y0 + 34) + 3);
+      ctx.fillStyle = "#555"; ctx.font = "9px monospace";
+      ctx.fillText(d.s.toFixed(2), x - 10, pos ? y0 - 40 : y0 + 56);
+    });
+    ctx.strokeStyle = "#C00000"; ctx.lineWidth = 2;
+    var tx = left + (right - left) * t;
+    ctx.beginPath(); ctx.moveTo(tx, 14); ctx.lineTo(tx, H - 12); ctx.stroke(); ctx.lineWidth = 1;
+    ctx.fillStyle = "#C00000"; ctx.font = "bold 11px sans-serif";
+    ctx.fillText("t = " + t.toFixed(2), tx + 4, 14);
+    ctx.fillStyle = "#555"; ctx.font = "10px sans-serif";
+    ctx.fillText("predicted NEGATIVE", left + 4, H - 2);
+    ctx.fillText("predicted POSITIVE", right - 110, H - 2);
+    out.textContent = "t = " + t.toFixed(2) + "   P = " + P.toFixed(4) +
+      "   R = " + R.toFixed(4) + "   F1 = " + F.toFixed(4);
+    det.textContent =
+      "TP = " + TP + "   FP = " + FP + "   FN = " + FN + "   TN = " + TN + "\n" +
+      "precision = " + TP + "/" + (TP + FP) + " = " + P.toFixed(4) + "\n" +
+      "recall    = " + TP + "/" + (TP + FN) + " = " + R.toFixed(4) + "\n" +
+      "F1        = 2TP/(2TP+FP+FN) = " + (2 * TP) + "/" + (2 * TP + FP + FN) + " = " + F.toFixed(4) + "\n\n" +
+      "AUC (threshold-free) = concordant pairs / all pairs = " +
+      A.c + "/" + A.n + " = " + A.a.toFixed(4);
+  }
+  sl.addEventListener("input", draw);
+  draw();
+})();
+
+/* ---------------- widget for problem 7 ---------------- */
+(function(){
+  var ids = ["ec-n0","ec-c0","ec-a0","ec-n1","ec-c1","ec-a1","ec-n2","ec-c2","ec-a2"];
+  var cv = document.getElementById("ec-canvas"), ctx = cv.getContext("2d");
+  var out = document.getElementById("ec-out");
+  function val(id){ var v = parseFloat(document.getElementById(id).value); return isNaN(v) ? 0 : v; }
+  function up(){
+    var rows = [], i, N = 0;
+    for (i = 0; i < 3; i++) {
+      var r = { n: val("ec-n" + i), conf: val("ec-c" + i), acc: val("ec-a" + i) };
+      N += r.n; rows.push(r);
+    }
+    var W = cv.width, H = cv.height; ctx.clearRect(0, 0, W, H);
+    var pad = 46, size = Math.min(W, H) - pad - 30;
+    var X = function(x){ return pad + x * size; }, Y = function(y){ return pad + size - y * size; };
+    ctx.strokeStyle = "#CFD7DF"; ctx.strokeRect(X(0), Y(1), size, size);
+    for (i = 1; i < 5; i++) {
+      ctx.strokeStyle = "#EEF1F5";
+      ctx.beginPath(); ctx.moveTo(X(i / 5), Y(0)); ctx.lineTo(X(i / 5), Y(1)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(X(0), Y(i / 5)); ctx.lineTo(X(1), Y(i / 5)); ctx.stroke();
+    }
+    ctx.strokeStyle = "#888"; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(1), Y(1)); ctx.stroke(); ctx.setLineDash([]);
+    var ece = 0, lines = ["bin      n    conf     acc      gap      weight   contribution"];
+    var order = rows.map(function(r, k){ return { r: r, k: k }; })
+      .sort(function(p, q){ return p.r.conf - q.r.conf; });
+    ctx.strokeStyle = "#C00000"; ctx.lineWidth = 2; ctx.beginPath();
+    order.forEach(function(o, k){
+      if (k === 0) ctx.moveTo(X(o.r.conf), Y(o.r.acc)); else ctx.lineTo(X(o.r.conf), Y(o.r.acc));
+    });
+    ctx.stroke(); ctx.lineWidth = 1;
+    var names = ["high", "mid", "low"];
+    for (i = 0; i < 3; i++) {
+      var r = rows[i], w = N > 0 ? r.n / N : 0, gap = Math.abs(r.acc - r.conf), c = w * gap;
+      ece += c;
+      var rad = 4 + 9 * Math.sqrt(w);
+      ctx.fillStyle = "rgba(192,0,0,0.75)";
+      ctx.beginPath(); ctx.arc(X(r.conf), Y(r.acc), rad, 0, Math.PI * 2); ctx.fill();
+      lines.push("  " + names[i].padEnd(7) + String(r.n).padStart(4) +
+        r.conf.toFixed(2).padStart(8) + r.acc.toFixed(2).padStart(9) +
+        (r.acc - r.conf).toFixed(2).padStart(9) + w.toFixed(3).padStart(10) +
+        c.toFixed(4).padStart(14));
+    }
+    ctx.fillStyle = "#555"; ctx.font = "10px sans-serif";
+    ctx.fillText("mean confidence", X(0.20), Y(0) + 26);
+    ctx.save(); ctx.translate(14, Y(0.16)); ctx.rotate(-Math.PI / 2);
+    ctx.fillText("observed accuracy", 0, 0); ctx.restore();
+    ctx.fillStyle = "#888"; ctx.font = "bold 10px sans-serif";
+    ctx.fillText("perfect calibration", X(0.34), Y(0.55));
+    out.textContent = lines.join("\n") + "\n" + "-".repeat(62) +
+      "\n  N = " + N + "      ECE = sum of contributions = " + ece.toFixed(4) +
+      (ece > 0.05
+        ? "\n\n  ECE above about 0.05 means the reported confidences cannot be\n" +
+          "  used as probabilities by any downstream rule without recalibration."
+        : "\n\n  Low ECE: reported confidences track observed accuracy closely.");
+  }
+  ids.forEach(function(id){ document.getElementById(id).addEventListener("input", up); });
+  up();
+})();
+
+/* ---------------- widget for problem 8 ---------------- */
+(function(){
+  var ids = ["sr-na","sr-ca","sr-nb","sr-cb"];
+  var out = document.getElementById("sr-out");
+  function val(id){ var v = parseInt(document.getElementById(id).value, 10); return isNaN(v) || v < 0 ? 0 : v; }
+  function up(){
+    var na = val("sr-na"), ca = Math.min(val("sr-ca"), na);
+    var nb = val("sr-nb"), cb = Math.min(val("sr-cb"), nb);
+    var N = na + nb;
+    if (N === 0) { out.textContent = "Both slices are empty."; return; }
+    var accA = na ? ca / na : 0, accB = nb ? cb / nb : 0, ov = (ca + cb) / N;
+    var best = (na ? ca / na : 0);
+    var noGap = (Math.round(nb * best) + ca) / N;
+    out.textContent =
+      "slice        n      correct    accuracy\n" +
+      "  A" + String(na).padStart(10) + String(ca).padStart(11) + accA.toFixed(4).padStart(12) + "\n" +
+      "  B" + String(nb).padStart(10) + String(cb).padStart(11) + accB.toFixed(4).padStart(12) + "\n" +
+      "  OVERALL" + String(N).padStart(4) + String(ca + cb).padStart(11) + ov.toFixed(4).padStart(12) + "\n\n" +
+      "slice gap (A - B)          = " + ((accA - accB) * 100).toFixed(1) + " points\n" +
+      "B's share of the set       = " + ((nb / N) * 100).toFixed(1) + "%\n" +
+      "overall if B matched A     = " + noGap.toFixed(4) + "\n" +
+      "visible cost in the average= " + ((noGap - ov) * 100).toFixed(2) + " points\n" +
+      (accA - accB > 0.05 && (noGap - ov) < 0.02
+        ? "\nThe gap is large and the average barely moves. This is precisely\n" +
+          "the case a headline metric is guaranteed to miss."
+        : "");
+  }
+  ids.forEach(function(id){ document.getElementById(id).addEventListener("input", up); });
+  up();
+})();
+</script>
+</body>
+</html>

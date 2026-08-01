@@ -1,0 +1,12 @@
+# Local development and the test suite, from the repository root:
+#   pip install -r requirements-dev.txt && pytest
+#
+# This pulls in torch through api/requirements.txt, which is a large download.
+# If you only want to work on the schema and the infrastructure tests, install
+# fastapi, pydantic, streamlit, pytest and httpx by hand instead — nothing in
+# api/nlp.py imports torch at module level, so the suite imports fine without it
+# as long as you deselect the network and train markers.
+-r api/requirements.txt
+-r ui/requirements.txt
+pytest==8.3.3
+httpx==0.27.2

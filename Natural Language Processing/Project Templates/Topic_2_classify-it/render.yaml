@@ -1,0 +1,48 @@
+# Render.com blueprint for the API tier (Cloud #2).
+# Dashboard -> New -> Blueprint -> point at your fork.
+# After the first deploy, set SUPABASE_URL and SUPABASE_SERVICE_KEY as secret
+# environment variables in the service settings (sync: false means Render will
+# not read them from this file).
+#
+# THIS SERVICE SERVES. IT DOES NOT TRAIN.
+# The free plan has a few hundred megabytes of RAM. A DistilBERT fine-tune wants
+# gigabytes and will be killed mid-epoch by the OOM reaper, which shows up in the
+# logs as a deploy that simply stops. Fine-tune locally or in Colab, save the
+# artifact, and give this service nothing to do but load it and answer.
+#
+# Getting the artifact onto the service, in increasing order of effort:
+#   1. Commit it to the repo (fine for a baseline pickle, a few MB).
+#   2. Push it to the Hugging Face Hub and pull it in the build command.
+#   3. Put it in Supabase Storage and download it at startup.
+# Whichever you pick, say which in your README so a grader can reproduce it.
+services:
+  - type: web
+    name: classify-it-api
+    runtime: python
+    plan: free
+    # torch is a large wheel. The CPU-only index keeps the build inside the free
+    # plan's disk and time budget; the CUDA build is several gigabytes and there
+    # is no GPU here to use it with.
+    buildCommand: "pip install --extra-index-url https://download.pytorch.org/whl/cpu -r api/requirements.txt"
+    startCommand: "uvicorn api.main:app --host 0.0.0.0 --port $PORT --workers 1"
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: MODEL_VERSION
+        value: "classify-it-v1"
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      # One worker, on purpose: each worker loads its own copy of the model into
+      # its own process. Two workers is two copies of DistilBERT in a container
+      # that cannot hold one and a half.
+      - key: WEB_CONCURRENCY
+        value: "1"
+      # Keep the Hugging Face cache on disk rather than re-downloading the
+      # tokenizer on every cold start.
+      - key: HF_HOME
+        value: "/opt/render/project/.cache/huggingface"

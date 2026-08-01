@@ -1,0 +1,7 @@
+# UI tier — installed by Streamlit Community Cloud.
+# No transformers, no torch: the UI is a thin client on purpose. If you find
+# yourself needing a model library here, the logic belongs in the API instead.
+streamlit==1.38.0
+requests==2.32.3
+pandas==2.2.2
+supabase==2.7.4

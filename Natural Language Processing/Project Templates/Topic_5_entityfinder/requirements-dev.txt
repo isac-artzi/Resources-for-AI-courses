@@ -1,0 +1,14 @@
+# Local development and the test suite, from the repository root:
+#   pip install -r requirements-dev.txt && pytest
+-r api/requirements.txt
+-r ui/requirements.txt
+pytest==8.3.3
+httpx==0.27.2
+
+# Training-only dependencies. They are here rather than in api/requirements.txt
+# on purpose: you fine-tune on a machine with a GPU, not inside the web service,
+# and Render should not spend its build minutes installing a dataset library it
+# will never import.
+datasets==2.21.0
+accelerate==0.34.2
+seqeval==1.2.2

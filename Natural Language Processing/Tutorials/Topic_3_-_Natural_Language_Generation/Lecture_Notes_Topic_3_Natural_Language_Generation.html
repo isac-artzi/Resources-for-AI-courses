@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 3 Lecture Notes — Controllable Natural Language Generation</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+       margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6; }
+.container { max-width: 980px; margin: 24px auto 48px; background: white;
+             padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.35em; margin-top: 40px;
+     border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+h4 { color: #555; font-size: 1.0em; margin-top: 18px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 6px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7;
+       padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px; overflow-x: auto;
+      border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79;
+           padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px;
+        margin: 14px 0; border-radius: 4px; font-size: 0.93em; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+        padding: 22px; margin: 22px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.controls { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 180px; }
+.control input[type="number"] { width: 80px; padding: 4px 8px;
+            border: 1px solid #CFD7DF; border-radius: 4px; font-family: inherit; }
+.control select { padding: 5px 8px; border: 1px solid #CFD7DF; border-radius: 4px;
+                  font-family: inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px;
+           border-radius: 6px; font-family: "SF Mono", Consolas, monospace;
+           font-size: 0.88em; min-width: 220px; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 16px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.93em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+      background: #F2F4F7; padding: 4px 8px; border-radius: 4px; }
+.eq-block { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+            background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+            text-align: center; margin: 14px 0; display: block; }
+.nav { display: flex; justify-content: space-between; margin-top: 40px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+       padding: 16px 22px; margin-bottom: 28px; font-size: 0.92em; }
+.toc h3 { margin: 0 0 8px; color: #1F4E79; font-size: 1.0em; }
+.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 24px; }
+.toc a { color: #1F4E79; text-decoration: none; } .toc a:hover { text-decoration: underline; }
+.tag { display: inline-block; padding: 2px 8px; background: #E0E5EB;
+       border-radius: 12px; font-size: 0.75em; color: #555;
+       text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px; }
+.tag.interactive { background: #E1F0EA; color: #1B5E20; }
+.tag.code { background: #F2F4F7; color: #555; }
+.tag.math { background: #FCE8EE; color: #6E1414; }
+table.cmp { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 0.92em; }
+table.cmp th, table.cmp td { border: 1px solid #E0E5EB; padding: 8px 12px; text-align: left; }
+table.cmp th { background: #F2F4F7; color: #1F4E79; }
+.archetype { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
+.arc-card { border: 1px solid #D0D8E0; border-radius: 8px; padding: 14px;
+            background: white; font-size: 0.9em; }
+.arc-card .name { color: #1F4E79; font-weight: 600; }
+.arc-card .role { color: #555; margin-top: 6px; }
+</style><style>
+/* Append-only additions for this topic. Nothing above this line is modified. */
+.tokrow { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0; }
+.tok { display:inline-block; padding:4px 9px; border-radius:5px; background:#EAF1F8;
+       border:1px solid #C7D8EA; font-family:"SF Mono",Consolas,Monaco,monospace;
+       font-size:0.88em; color:#1F4E79; }
+.tok.new { background:#FFF3CD; border-color:#F9A825; color:#6E4E00; }
+.tok.dead { background:#F2F4F7; border-color:#E0E5EB; color:#999; }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+@media (max-width:760px){ .grid2 { grid-template-columns:1fr; } .toc ol { columns:1; } }
+.small { font-size:0.88em; color:#555; }
+.rater-table { border-collapse:collapse; font-size:0.88em; margin:10px 0; }
+.rater-table th, .rater-table td { border:1px solid #E0E5EB; padding:4px 8px; text-align:center; }
+.rater-table th { background:#F2F4F7; color:#1F4E79; }
+.rater-table input { width:52px; padding:3px 5px; border:1px solid #CFD7DF;
+                     border-radius:4px; font-family:inherit; text-align:center; }
+textarea { width:100%; min-height:90px; padding:10px 12px; border:1px solid #CFD7DF;
+           border-radius:6px; font-family:"SF Mono",Consolas,Monaco,monospace;
+           font-size:0.88em; line-height:1.5; }
+.logit-inputs { display:flex; gap:10px; flex-wrap:wrap; margin:10px 0; }
+.logit-inputs .li { display:flex; flex-direction:column; gap:3px; font-size:0.8em; color:#555; }
+.logit-inputs .li input { width:74px; padding:4px 6px; border:1px solid #CFD7DF;
+                          border-radius:4px; font-family:inherit; text-align:center; }
+.badge { display:inline-block; padding:1px 7px; border-radius:10px; font-size:0.78em;
+         background:#E1F0EA; color:#1B5E20; margin-left:6px; }
+.badge.bad { background:#FDECEA; color:#6E1414; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="brand">Lecture notes · ~ 75 min read</div>
+<h1>Topic 3 — Controllable Natural Language Generation with a Decoder Transformer</h1>
+<p class="subtitle">How a decoder-only model turns a prompt into text one token at a time, what every decoding knob actually does to the probability distribution, and how to tell whether the output is any good.</p>
+
+<div class="callout">
+  <strong>What you should walk away with.</strong> (1) You can explain autoregressive generation and why the causal mask is what makes it possible. (2) You can turn a logit vector into probabilities by hand, and predict what temperature, top-k, and top-p will do to that vector before you run the code. (3) You can say precisely why greedy decoding produces flat, looping text and why beam search produces safe, interchangeable text. (4) You can compute perplexity from a list of token probabilities and state what it does not tell you. (5) You can design a human-rating protocol where disagreement between raters is information you keep, not noise you average away. (6) You can name four generation failure modes on sight and match each to a decoding fix.
+</div>
+
+<div class="toc">
+  <h3>What's in these notes</h3>
+  <ol>
+    <li><a href="#s1">The decoder stack and the causal mask</a></li>
+    <li><a href="#s2">From hidden state to a next-token distribution</a></li>
+    <li><a href="#s3">Autoregressive generation, one token at a time</a></li>
+    <li><a href="#s4">Greedy decoding and the loop it falls into</a></li>
+    <li><a href="#s5">Beam search: better likelihood, worse writing</a></li>
+    <li><a href="#s6">Pure sampling: the opposite failure</a></li>
+    <li><a href="#s7">Temperature as a reshaping of the distribution</a></li>
+    <li><a href="#s8">Top-k truncation</a></li>
+    <li><a href="#s9">Top-p (nucleus) truncation, and how it differs</a></li>
+    <li><a href="#s10">Repetition penalties and n-gram blocking</a></li>
+    <li><a href="#s11">The coherence–diversity trade-off</a></li>
+    <li><a href="#s12">Perplexity: what it measures</a></li>
+    <li><a href="#s13">Diversity metrics: distinct-n</a></li>
+    <li><a href="#s14">Human rating, and disagreement as data</a></li>
+    <li><a href="#s15">Failure modes you will actually see</a></li>
+    <li><a href="#s16">A decoding recipe for the GenText service</a></li>
+  </ol>
+</div>
+
+<!-- ================= 1 ================= -->
+<h2 id="s1">1 · The decoder stack and the causal mask <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+
+<p>A decoder-only transformer (the GPT family) is a stack of identical blocks. Each block does causal self-attention followed by a position-wise MLP, both wrapped in residual connections. The only structural difference from an encoder block is one line in the attention computation: before the softmax, every score that would let a position look at a <em>later</em> position is set to negative infinity.</p>
+
+<pre>scores = Q @ K.T / sqrt(d_k)          # (T, T)
+scores = scores + causal_mask         # 0 on and below the diagonal, -inf above
+attn   = softmax(scores, dim=-1)      # rows sum to 1; future columns get exactly 0
+out    = attn @ V</pre>
+
+<p>Why <code>-inf</code> and not, say, zero? Because the mask is applied <em>before</em> the softmax. <code>exp(-inf) = 0</code>, so the masked entries contribute nothing to the row's normalizing sum and the surviving entries renormalize among themselves. If you instead zeroed the attention weights after the softmax, the rows would no longer sum to 1 and the output would silently shrink toward zero at early positions.</p>
+
+<p>The mask has one consequence that governs everything else in these notes: <strong>the hidden state at position <code>t</code> is a function of tokens <code>0 … t</code> only.</strong> That means a single forward pass over a sequence of length <code>T</code> produces <code>T</code> next-token predictions at once — position 0 predicting token 1, position 1 predicting token 2, and so on — and none of them cheated by looking ahead. This is why decoder-only models can be trained on raw text with no labels: every position is simultaneously an input and a target.</p>
+
+<div class="callout">
+  <strong>Training and generation are the same computation, run differently.</strong> During training you feed the whole true sequence in one pass and score all <code>T</code> predictions in parallel (teacher forcing). During generation you have no true sequence, so you feed what you have, take the prediction at the <em>last</em> position, append it, and feed the result back. Same weights, same mask, same math — only the loop is different.
+</div>
+
+<div class="demo">
+  <h3>Widget 1 · The causal mask, and the row that produces the next token</h3>
+  <p class="small">Move the sequence length and click any query row. The heatmap shows post-softmax attention weights over a synthetic score matrix; grey cells are the masked future. Notice that the bottom row — the only one used at generation time — is the only row that can see the whole prefix.</p>
+  <div class="controls">
+    <div class="control"><label for="cm-T">sequence length T</label>
+      <input type="range" id="cm-T" min="3" max="12" step="1" value="8"></div>
+    <div class="control"><label for="cm-row">query row t</label>
+      <input type="range" id="cm-row" min="0" max="7" step="1" value="7"></div>
+    <div class="readout" id="cm-readout"></div>
+  </div>
+  <canvas id="cm-canvas" width="880" height="380"></canvas>
+</div>
+
+<p>Two practical notes. First, the mask is fixed and data-independent, so it is built once and reused. Second, because position <code>t</code>'s keys and values never change when you append token <code>t+1</code>, they can be cached: this is the KV cache, and it is the difference between generation costing <code>O(T&sup2;)</code> and <code>O(T&sup3;)</code> in total. Nothing in these notes depends on the cache, but every real serving stack uses it.</p>
+
+<!-- ================= 2 ================= -->
+<h2 id="s2">2 · From hidden state to a next-token distribution <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+
+<p>The last block emits a hidden vector <code>h_t</code> of size <code>d_model</code> for each position. A single linear layer — the language-modelling head, usually tied to the input embedding matrix — projects it to one score per vocabulary entry:</p>
+
+<p class="eq-block">z = h<sub>t</sub> W<sub>LM</sub><sup>&#8868;</sup> &nbsp;&nbsp;&isin;&nbsp; &#8477;<sup>V</sup></p>
+
+<p>Those <code>V</code> numbers are the <strong>logits</strong>. They are unnormalized, unbounded, and can be negative. On their own they mean nothing absolute; only their <em>differences</em> matter. Softmax turns them into a probability distribution:</p>
+
+<p class="eq-block">p<sub>i</sub> = exp(z<sub>i</sub>) / &Sigma;<sub>j</sub> exp(z<sub>j</sub>)</p>
+
+<p>Three properties you should internalize, because every decoding strategy exploits one of them:</p>
+
+<ul>
+  <li><strong>Shift invariance.</strong> Adding a constant <code>c</code> to every logit leaves <code>p</code> unchanged, since <code>exp(z_i + c)</code> cancels top and bottom. This is why implementations subtract <code>max(z)</code> before exponentiating: it prevents overflow and changes nothing.</li>
+  <li><strong>Differences, exponentiated.</strong> The ratio <code>p_i / p_j = exp(z_i - z_j)</code>. A logit gap of 1 means a probability ratio of <code>e &asymp; 2.72</code>; a gap of 5 means a ratio of about 148. Small-looking logit gaps are large probability gaps.</li>
+  <li><strong>Scaling is not shifting.</strong> Multiplying all logits by a constant <em>does</em> change <code>p</code> — it stretches or compresses those gaps. That single fact is all that temperature is (&sect;7).</li>
+</ul>
+
+<p>Practical consequence: a real vocabulary has roughly 30,000–100,000 entries, so the distribution at any step has a very long tail. Even after a confident prediction takes 50 % of the mass, the remaining 50 % is spread across tens of thousands of tokens, most of which would be nonsense in context. The tail is where sampling goes wrong, and truncation (&sect;8, &sect;9) exists to cut it off.</p>
+
+<div class="demo">
+  <h3>Widget 2 · Logits to probabilities, with the arithmetic shown</h3>
+  <p class="small">Edit the logits and watch the intermediate quantities. The "shift all" button adds a constant to every logit — the probabilities do not move.</p>
+  <div class="logit-inputs" id="lp-inputs"></div>
+  <div class="controls">
+    <button id="lp-shift">Shift all logits by +3</button>
+    <button id="lp-scale" class="secondary">Multiply all logits by 2</button>
+    <button id="lp-reset" class="secondary">Reset</button>
+  </div>
+  <canvas id="lp-canvas" width="880" height="200"></canvas>
+  <pre id="lp-out"></pre>
+</div>
+
+<!-- ================= 3 ================= -->
+<h2 id="s3">3 · Autoregressive generation, one token at a time <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+
+<p>Generation factorizes the probability of a whole sequence into a product of conditionals — this is just the chain rule of probability, with the causal mask guaranteeing the model respects it:</p>
+
+<p class="eq-block">P(w<sub>1</sub> &hellip; w<sub>n</sub>) = &prod;<sub>t=1</sub><sup>n</sup> P(w<sub>t</sub> | w<sub>&lt;t</sub>)</p>
+
+<p>The loop is short enough to write out completely:</p>
+
+<pre>tokens = tokenizer.encode(prompt)
+for step in range(max_new_tokens):
+    logits = model(tokens).logits[-1]        # scores for the NEXT token only
+    logits = apply_repetition_penalty(logits, tokens)
+    logits = logits / temperature
+    logits = truncate_top_k_top_p(logits, k, p)
+    probs  = softmax(logits)
+    next_id = choose(probs)                  # argmax, or a sample
+    if next_id == eos_id: break
+    tokens.append(next_id)</pre>
+
+<p>Everything this topic is about lives in the four lines between the forward pass and <code>choose</code>. The model weights are fixed; those four lines are what a user of your GenText service is actually adjusting when they move a slider.</p>
+
+<p>Note the order, because it matters and is easy to get wrong. Repetition penalty acts on raw logits. Temperature divides logits. Truncation happens on the <em>temperature-scaled</em> distribution, so raising temperature widens the nucleus that top-p keeps. Finally the surviving mass is renormalized to sum to 1. Change the order and you change the output distribution — for example, applying top-p before temperature would let temperature reintroduce relative weight that top-p was supposed to have already fixed.</p>
+
+<div class="warn">
+  <strong>Trap.</strong> The model is not "choosing" anything. It emits a distribution; your decoding code chooses. Two runs with identical weights and identical prompts can produce wildly different text purely because of the sampler. When a stakeholder says "the model said X", the honest answer is "the model assigned X some probability and our sampler drew it".
+</div>
+
+<div class="demo">
+  <h3>Widget 3 · Step through a real autoregressive loop</h3>
+  <p class="small">This runs a small hand-built next-token table — a toy language model over a coffee-review vocabulary. It is genuinely computing softmax, truncation, and sampling at every step; nothing is scripted. Step once to see the distribution the model is looking at, or run to completion and re-roll with a new seed.</p>
+  <div class="controls">
+    <div class="control"><label for="ar-strategy">strategy</label>
+      <select id="ar-strategy">
+        <option value="greedy">greedy (argmax)</option>
+        <option value="sample" selected>pure sampling</option>
+        <option value="topk">top-k sampling</option>
+        <option value="topp">top-p sampling</option>
+      </select></div>
+    <div class="control"><label for="ar-T">temperature <span id="ar-Tv">1.00</span></label>
+      <input type="range" id="ar-T" min="0.05" max="2.5" step="0.05" value="1.0"></div>
+    <div class="control"><label for="ar-k">top-k <span id="ar-kv">3</span></label>
+      <input type="range" id="ar-k" min="1" max="6" step="1" value="3"></div>
+    <div class="control"><label for="ar-p">top-p <span id="ar-pv">0.90</span></label>
+      <input type="range" id="ar-p" min="0.1" max="1.0" step="0.05" value="0.9"></div>
+    <div class="control"><label for="ar-seed">seed</label>
+      <input type="number" id="ar-seed" value="7" min="0" step="1"></div>
+  </div>
+  <div class="controls">
+    <button id="ar-step">Step one token</button>
+    <button id="ar-run">Run to end</button>
+    <button id="ar-reroll" class="secondary">Re-roll (new seed)</button>
+    <button id="ar-reset" class="secondary">Reset</button>
+  </div>
+  <div class="tokrow" id="ar-tokens"></div>
+  <canvas id="ar-canvas" width="880" height="240"></canvas>
+  <pre id="ar-out"></pre>
+</div>
+
+<!-- ================= 4 ================= -->
+<h2 id="s4">4 · Greedy decoding and the loop it falls into <span class="tag interactive">interactive</span></h2>
+
+<p>Greedy decoding takes the argmax at every step:</p>
+
+<p class="eq-block">w<sub>t</sub> = argmax<sub>i</sub> P(i | w<sub>&lt;t</sub>)</p>
+
+<p>It is deterministic, it is the cheapest possible decoder, and it is the right default for tasks where there is essentially one correct output — extracting a date, classifying with a generative model, emitting a JSON field. For open-ended text it fails in a specific and predictable way.</p>
+
+<p>The failure is structural, not a bug in any particular model. Greedy decoding is a deterministic function from state to next token. In an n-gram-like conditioning window, the state is effectively the recent context. If the argmax path ever returns to a context it has already visited, it will make the same choice again, and the sequence enters a cycle from which it can never escape. The only thing that stops it is the length cap.</p>
+
+<p>Watch it happen on the toy model from &sect;3. Its greedy path is:</p>
+
+<pre>&lt;bos&gt; -> the -> coffee -> is -> rich -> and -> smooth -> and -> smooth -> and -> smooth -> ...</pre>
+
+<p>The cycle is <code>and &rarr; smooth &rarr; and</code>. Look at the two distributions that create it:</p>
+
+<pre>P(. | and)     -> smooth 0.309  rich 0.253  bitter 0.207  very 0.139  a 0.093
+P(. | smooth)  -> and    0.441  .    0.361  but    0.198</pre>
+
+<p>Neither distribution is degenerate. After "and", the top choice holds only 31 % of the mass; after "smooth", ending the sentence is a perfectly respectable 36 %. Greedy throws away all of that. It takes 0.441 over 0.361 — a gap of eight percentage points — and by doing so it commits to never ending the sentence.</p>
+
+<p>The same phenomenon in a real model is worse, because real models have a well-documented tendency for the probability of a repeated span to <em>increase</em> each time it repeats: the context now contains evidence that this text is the kind of text that repeats. The loop is self-reinforcing.</p>
+
+<div class="demo">
+  <h3>Widget 4 · The greedy repetition loop, detected live</h3>
+  <p class="small">Runs greedy decoding on the toy model and marks the exact step at which the sequence re-enters a state it has already visited. Then apply a repetition penalty and watch the cycle break — or not, if the penalty is too small.</p>
+  <div class="controls">
+    <div class="control"><label for="rl-pen">repetition penalty <span id="rl-penv">1.00</span></label>
+      <input type="range" id="rl-pen" min="1.0" max="2.5" step="0.05" value="1.0"></div>
+    <div class="control"><label for="rl-max">max tokens <span id="rl-maxv">22</span></label>
+      <input type="range" id="rl-max" min="6" max="30" step="1" value="22"></div>
+    <div class="readout" id="rl-readout"></div>
+  </div>
+  <div class="tokrow" id="rl-tokens"></div>
+  <canvas id="rl-canvas" width="880" height="230"></canvas>
+</div>
+
+<!-- ================= 5 ================= -->
+<h2 id="s5">5 · Beam search: better likelihood, worse writing <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+
+<p>Greedy is myopic: a token that looks best now may lead into a region of low-probability continuations. Beam search fixes the myopia by keeping the <code>B</code> highest-scoring partial sequences at every step, expanding all of them, and re-pruning to <code>B</code>. The score is a sum of log-probabilities, because probabilities of long sequences underflow:</p>
+
+<p class="eq-block">score(w<sub>1</sub> &hellip; w<sub>t</sub>) = &Sigma;<sub>i=1</sub><sup>t</sup> log P(w<sub>i</sub> | w<sub>&lt;i</sub>)</p>
+
+<p>Because every term is negative, longer sequences score worse simply for being longer. Implementations therefore divide by <code>t<sup>&alpha;</sup></code> for some length penalty <code>&alpha;</code> (often 0.6–1.0). Without it, beam search has a strong bias toward emitting the end-of-sequence token early — a real cause of the "abrupt truncation" failure mode in &sect;15.</p>
+
+<p>Beam search reliably finds sequences with higher total log-probability than greedy. That is exactly the problem. The highest-probability sequence under a language model trained on human text is <em>not</em> the most human-like sequence. Human text is surprising in a fairly consistent way; the mode of the distribution is bland. Push the beam width up and the surviving hypotheses converge on the same safe prefix, differing only in the last token or two. That is diversity collapse: you get <code>B</code> outputs that are variations on one sentence, not <code>B</code> alternatives.</p>
+
+<div class="demo">
+  <h3>Widget 5 · Beam search over an explicit probability tree</h3>
+  <p class="small">A depth-3 tree with hand-set branch probabilities. Change the beam width and watch which paths survive each pruning step, and what the final best sequence is. Width 1 is greedy.</p>
+  <div class="controls">
+    <div class="control"><label for="bm-w">beam width B <span id="bm-wv">1</span></label>
+      <input type="range" id="bm-w" min="1" max="4" step="1" value="1"></div>
+    <div class="readout" id="bm-readout"></div>
+  </div>
+  <canvas id="bm-canvas" width="880" height="400"></canvas>
+  <pre id="bm-out"></pre>
+</div>
+
+<p>Read the widget's output carefully at <code>B = 1</code> and <code>B = 2</code>. Greedy commits to "the" because 0.60 &gt; 0.40, then must live inside a subtree whose best completion has probability 0.12. Beam 2 keeps "that" alive, discovers that "that the" leads to a 0.95 continuation, and returns a sequence with probability 0.342 — nearly three times better. Now set <code>B = 4</code> and look at the four survivors: three of them are near-duplicates of each other. More beams bought likelihood, not variety.</p>
+
+<div class="callout">
+  <strong>When to use beam search anyway.</strong> Constrained generation with a single acceptable answer: translation, grammatical error correction, structured summarization, code completion against a spec. Anything where you would be happy for two different users to get identical output. For a creative or conversational product, beam search is the wrong tool and no amount of tuning fixes it.
+</div>
+
+<!-- ================= 6 ================= -->
+<h2 id="s6">6 · Pure sampling: the opposite failure <span class="tag math">math</span></h2>
+
+<p>Pure (ancestral) sampling draws the next token from the full distribution, in proportion to its probability:</p>
+
+<p class="eq-block">w<sub>t</sub> &sim; P(&middot; | w<sub>&lt;t</sub>)</p>
+
+<p>This is the only strategy that is statistically true to the model. If you sampled infinitely many sequences this way, their frequencies would match the model's own beliefs exactly. Greedy, beam, top-k and top-p all sample from a distorted distribution on purpose.</p>
+
+<p>So why is pure sampling almost never used for a product? Because of the tail. Suppose a step has 50,000 candidate tokens and the top 40 hold 95 % of the mass. The remaining 5 % is spread across 49,960 tokens, and essentially all of them are contextually wrong: a token from a different language, a rare proper noun, a stray punctuation mark. Each individual bad token has probability around 0.000001, which sounds negligible. But you get one draw per step, and the aggregate tail probability is 5 %.</p>
+
+<p>Do the arithmetic. If the tail carries 5 % of the mass at every step, the probability of surviving a 200-token generation without a single tail draw is</p>
+
+<p class="eq-block">(1 &minus; 0.05)<sup>200</sup> = 0.95<sup>200</sup> &asymp; 0.000035</p>
+
+<p>Roughly one generation in 28,000 stays clean. And a single tail token is not a local blemish: it enters the context, and every subsequent token is conditioned on a prefix that now contains something incoherent. The model does its best to continue a broken sentence, and the output degrades from there. This compounding is the whole argument for truncation. You are not trying to remove <em>unlikely</em> tokens because they are unlikely; you are removing them because one draw from the tail poisons everything downstream.</p>
+
+<table class="cmp">
+  <tr><th>Strategy</th><th>Distribution it samples from</th><th>Characteristic output</th></tr>
+  <tr><td>Greedy</td><td>A point mass on the argmax</td><td>Flat, safe, loops</td></tr>
+  <tr><td>Beam search (B)</td><td>Approximate mode of the sequence distribution</td><td>Fluent, generic, near-duplicate hypotheses</td></tr>
+  <tr><td>Pure sampling</td><td>The model's true distribution</td><td>Varied, occasionally derails and never recovers</td></tr>
+  <tr><td>Truncated sampling</td><td>The model's distribution with the tail removed and mass renormalized</td><td>Varied and usually coherent — the practical default</td></tr>
+</table>
+
+<!-- ================= 7 ================= -->
+<h2 id="s7">7 · Temperature as a reshaping of the distribution <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+
+<p>Temperature divides the logits before the softmax:</p>
+
+<p class="eq-block">p<sub>i</sub>(T) = exp(z<sub>i</sub> / T) / &Sigma;<sub>j</sub> exp(z<sub>j</sub> / T)</p>
+
+<p>Recall from &sect;2 that only logit <em>differences</em> matter. Dividing by <code>T</code> multiplies every difference by <code>1/T</code>. So temperature is a single global control on how far apart the candidates are:</p>
+
+<ul>
+  <li><strong><code>T &lt; 1</code> sharpens.</strong> Gaps widen, the leader takes more mass, the tail shrinks toward zero.</li>
+  <li><strong><code>T = 1</code> is the model's own distribution.</strong> No distortion.</li>
+  <li><strong><code>T &gt; 1</code> flattens.</strong> Gaps compress, the tail rises, unlikely tokens become reachable.</li>
+</ul>
+
+<p>The two limits are worth knowing exactly, because they connect temperature to the other strategies:</p>
+
+<ul>
+  <li><strong><code>T &rarr; 0<sup>+</sup></code>.</strong> The ratio <code>p_i/p_j = exp((z_i - z_j)/T)</code> blows up for any positive gap, so all mass concentrates on the argmax. <em>Temperature zero is exactly greedy decoding.</em> (Libraries usually special-case <code>T = 0</code> to argmax rather than dividing by zero.)</li>
+  <li><strong><code>T &rarr; &infin;</code>.</strong> Every <code>z_i/T &rarr; 0</code>, so every <code>exp</code> term goes to 1 and <code>p_i &rarr; 1/V</code>. <em>Infinite temperature is uniform random token choice</em> — the model contributes nothing.</li>
+</ul>
+
+<p>Worked example. Take three logits <code>z = [2.0, 1.0, 0.0]</code>.</p>
+
+<pre>T = 1.0 :  exp(2.0)=7.389  exp(1.0)=2.718  exp(0.0)=1.000   sum=11.107
+           p = [0.665, 0.245, 0.090]
+
+T = 0.5 :  z/T = [4, 2, 0]
+           exp = [54.598, 7.389, 1.000]                      sum=62.987
+           p = [0.867, 0.117, 0.016]
+
+T = 2.0 :  z/T = [1.0, 0.5, 0.0]
+           exp = [2.718, 1.649, 1.000]                       sum=5.367
+           p = [0.507, 0.307, 0.186]</pre>
+
+<p>The leader moved from 0.665 to 0.867 by halving the temperature, and down to 0.507 by doubling it. Note that temperature never reorders the candidates — the ranking is invariant — and it never assigns exactly zero to anything. That is the job of truncation, and it is why temperature and top-p are complementary rather than redundant knobs.</p>
+
+<div class="demo">
+  <h3>Widget 6 · Temperature reshaping a fixed logit vector</h3>
+  <p class="small">The logits are fixed. Only <code>T</code> moves. The dashed outline shows the <code>T = 1</code> reference distribution so you can see the reshaping directly. The two limit buttons jump to the greedy and uniform endpoints.</p>
+  <div class="controls">
+    <div class="control"><label for="tp-T">temperature T = <span id="tp-Tv">1.00</span></label>
+      <input type="range" id="tp-T" min="0.05" max="3.0" step="0.05" value="1.0"></div>
+    <button id="tp-cold" class="secondary">T &rarr; 0 (greedy)</button>
+    <button id="tp-hot" class="secondary">T &rarr; &infin; (uniform)</button>
+    <button id="tp-one" class="secondary">T = 1</button>
+  </div>
+  <canvas id="tp-canvas" width="880" height="280"></canvas>
+  <div class="readout" id="tp-readout" style="margin-top:10px;"></div>
+</div>
+
+<p>One measurement to keep in mind while you move the slider: the <strong>entropy</strong> of the distribution, <code>H = -&Sigma; p log p</code>, reported by the widget in bits. Entropy is a clean scalar summary of "how many options is the model really considering". <code>2<sup>H</sup></code> is the effective number of choices. At <code>T = 0</code> the entropy is 0 bits (one choice); at <code>T &rarr; &infin;</code> with 8 candidates it approaches <code>log&#8322;8 = 3</code> bits (eight equally live choices).</p>
+
+<!-- ================= 8 ================= -->
+<h2 id="s8">8 · Top-k truncation <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+
+<p>Top-k sampling keeps the <code>k</code> highest-probability tokens, discards everything else, renormalizes, and samples:</p>
+
+<p class="eq-block">V<sub>k</sub> = top-k(p) &nbsp;&nbsp;&nbsp; p&#770;<sub>i</sub> = p<sub>i</sub> / &Sigma;<sub>j&isin;V<sub>k</sub></sub> p<sub>j</sub> &nbsp; for i &isin; V<sub>k</sub>, &nbsp; 0 otherwise</p>
+
+<p>It is simple, cheap, and it does what it says: the tail cannot be drawn. In implementation terms it is a partial sort — you do not need to sort all 50,000 logits, only find the k-th largest and mask below it.</p>
+
+<p>Its weakness is that <code>k</code> is a constant while the model's confidence is not. Two situations, same <code>k = 40</code>:</p>
+
+<ul>
+  <li><strong>A sharp step.</strong> The context is "The capital of France is". The model puts 0.98 on one token. Top-k with <code>k = 40</code> still admits 39 alternatives holding a combined 0.02, and renormalization <em>inflates</em> their share slightly. You have manufactured a small chance of writing something false in a context where the model was certain.</li>
+  <li><strong>A flat step.</strong> The context is "She opened the door and". Hundreds of continuations are genuinely plausible and no single token exceeds 0.05. Top-k with <code>k = 40</code> throws away a large amount of legitimate probability mass and makes the output narrower than the model believes it should be.</li>
+</ul>
+
+<p>So a fixed <code>k</code> is simultaneously too permissive when the model is confident and too restrictive when it is not. That observation is precisely what motivates top-p.</p>
+
+<!-- ================= 9 ================= -->
+<h2 id="s9">9 · Top-p (nucleus) truncation, and how it differs <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+
+<p>Top-p sampling keeps the <strong>smallest</strong> set of tokens, taken in descending probability order, whose cumulative probability reaches at least <code>p</code>. Then renormalize and sample. Formally, sort so that <code>p_(1) &ge; p_(2) &ge; &hellip;</code> and take the nucleus</p>
+
+<p class="eq-block">V<sub>p</sub> = { first m tokens } where m = min { m : &Sigma;<sub>i=1</sub><sup>m</sup> p<sub>(i)</sub> &ge; p }</p>
+
+<p>The size of <code>V_p</code> is not fixed — it adapts to the shape of the distribution at that step. On the confident "capital of France" step the nucleus at <code>p = 0.9</code> might contain a single token. On the wide-open "she opened the door and" step it might contain 300. That is the entire point: top-p asks "how much probability mass do I trust?" rather than "how many tokens do I trust?".</p>
+
+<h3>A worked truncation, by hand</h3>
+
+<p>Suppose a step yields these seven candidate probabilities, already sorted:</p>
+
+<pre>token   p       cumulative
+A       0.40    0.40
+B       0.25    0.65
+C       0.15    0.80
+D       0.10    0.90   &lt;- cumulative first reaches 0.90 here
+E       0.05    0.95
+F       0.03    0.98
+G       0.02    1.00</pre>
+
+<p>At <code>p = 0.9</code> the nucleus is <code>{A, B, C, D}</code> — four tokens. The convention that matters: the token that <em>crosses</em> the threshold is included, so the kept mass is <code>&ge; p</code>, never less. Renormalizing by 0.90:</p>
+
+<pre>A: 0.40 / 0.90 = 0.4444
+B: 0.25 / 0.90 = 0.2778
+C: 0.15 / 0.90 = 0.1667
+D: 0.10 / 0.90 = 0.1111
+                 ------
+                 1.0000</pre>
+
+<p>Compare with <code>p = 0.8</code>: cumulative reaches 0.80 at C, so the nucleus is <code>{A, B, C}</code> and renormalization divides by 0.80 giving <code>[0.500, 0.3125, 0.1875]</code>. Dropping <code>p</code> by 0.1 removed one token and pushed the leader from 0.444 to 0.500.</p>
+
+<div class="warn">
+  <strong>Trap.</strong> Top-p is not "keep tokens with probability above p". A threshold on individual probabilities is a different, worse filter — it keeps nothing at all on a flat step where every token is below the threshold. Top-p thresholds the <em>cumulative</em> mass, which is why the nucleus is never empty.
+</div>
+
+<p>Top-k and top-p are usually applied together, and the intersection is taken: <code>k</code> acts as a hard ceiling on how wide the nucleus can get on a very flat step, while <code>p</code> does the adaptive work. A common production setting is <code>k = 50, p = 0.92, T = 0.9</code> — but treat any such triple as a starting point to be tuned against your own outputs, not a fact.</p>
+
+<div class="demo">
+  <h3>Widget 7 · Top-k and top-p truncation on the same distribution</h3>
+  <p class="small">Blue bars survive both filters and are renormalized (the renormalized height is drawn as the lighter overlay). Amber bars are removed by exactly one filter; grey bars by both. Change the distribution shape to see how a fixed <code>k</code> behaves on sharp versus flat steps while the nucleus adapts.</p>
+  <div class="controls">
+    <div class="control"><label for="tk-shape">distribution shape</label>
+      <select id="tk-shape">
+        <option value="sharp">sharp (confident step)</option>
+        <option value="medium" selected>medium</option>
+        <option value="flat">flat (wide-open step)</option>
+        <option value="bimodal">bimodal (two good options)</option>
+      </select></div>
+    <div class="control"><label for="tk-k">top-k = <span id="tk-kv">6</span></label>
+      <input type="range" id="tk-k" min="1" max="16" step="1" value="6"></div>
+    <div class="control"><label for="tk-p">top-p = <span id="tk-pv">0.90</span></label>
+      <input type="range" id="tk-p" min="0.05" max="1.0" step="0.01" value="0.90"></div>
+    <div class="control"><label for="tk-T">temperature = <span id="tk-Tv">1.00</span></label>
+      <input type="range" id="tk-T" min="0.2" max="2.0" step="0.05" value="1.0"></div>
+  </div>
+  <canvas id="tk-canvas" width="880" height="300"></canvas>
+  <pre id="tk-out"></pre>
+</div>
+
+<table class="cmp">
+  <tr><th></th><th>Top-k</th><th>Top-p (nucleus)</th></tr>
+  <tr><td>What is held fixed</td><td>the number of surviving tokens</td><td>the surviving probability mass</td></tr>
+  <tr><td>On a confident step</td><td>keeps k tokens, most of them junk</td><td>keeps very few tokens, sometimes one</td></tr>
+  <tr><td>On a flat step</td><td>keeps k tokens, discarding real options</td><td>widens automatically</td></tr>
+  <tr><td>Cost</td><td>partial sort for the k-th largest</td><td>full sort plus a cumulative sum</td></tr>
+  <tr><td>Sensible default range</td><td>20–100</td><td>0.85–0.95</td></tr>
+</table>
+
+<!-- ================= 10 ================= -->
+<h2 id="s10">10 · Repetition penalties and n-gram blocking <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+
+<p>Truncation controls <em>which</em> tokens are reachable but says nothing about tokens the model has already used. Two mechanisms attack repetition directly.</p>
+
+<h3>Repetition penalty (multiplicative on logits)</h3>
+
+<p>The standard formulation divides the logit of any already-generated token when the logit is positive, and multiplies when it is negative — so that in both cases the token is pushed <em>down</em> the ranking:</p>
+
+<p class="eq-block">z&#770;<sub>i</sub> = z<sub>i</sub> / &rho; &nbsp; if z<sub>i</sub> &gt; 0 &nbsp;&nbsp;&nbsp;&nbsp; z&#770;<sub>i</sub> = z<sub>i</sub> &middot; &rho; &nbsp; if z<sub>i</sub> &le; 0</p>
+
+<p>with <code>&rho; &ge; 1</code>; <code>&rho; = 1</code> disables it. The sign split exists because a plain division would <em>raise</em> a negative logit toward zero, boosting the very token you meant to suppress. That asymmetry is the part people get wrong when reimplementing it.</p>
+
+<p>Worked example with logits <code>z = [3.0, 1.5, 0.5, -0.5, -2.0]</code>, where tokens 0 and 3 have already appeared, at <code>&rho; = 1.5</code>:</p>
+
+<pre>z0 =  3.0 &gt; 0  ->  3.0 / 1.5 =  2.00
+z3 = -0.5 &le; 0  -> -0.5 * 1.5 = -0.75
+others unchanged            ->  [2.00, 1.5, 0.5, -0.75, -2.0]
+
+before:  p = [0.745, 0.166, 0.061, 0.023, 0.005]
+after :  p = [0.523, 0.317, 0.117, 0.033, 0.010]</pre>
+
+<p>The repeated leader dropped from 0.745 to 0.523 and the runner-up nearly doubled. Push <code>&rho;</code> to 2.0 and the first two tokens tie at 0.403 each. Push it much further and you start suppressing tokens that legitimately need to recur — articles, prepositions, the subject of the sentence — and the output becomes strained and thesaurus-like. Values above about 1.3 are aggressive; treat 1.05–1.2 as the working range and verify by reading outputs.</p>
+
+<h3>No-repeat n-gram blocking (hard constraint)</h3>
+
+<p>Set the probability of any token that would complete an n-gram already present in the generated text to exactly zero. With <code>n = 3</code>, if the text already contains "the coffee is", then after generating "the coffee" the token "is" is banned outright.</p>
+
+<p>This is a blunt instrument. It guarantees no repeated trigram, which also means a legitimately repeated phrase — a name, a technical term, a refrain, a repeated table header — becomes impossible. For summarization of documents with recurring entity names it can do real damage. Use it when the repetition is pathological and a soft penalty has failed, and prefer larger <code>n</code>.</p>
+
+<div class="demo">
+  <h3>Widget 8 · Repetition penalty applied to a logit vector</h3>
+  <p class="small">Toggle which tokens count as "already generated", move the penalty, and watch both the logits and the resulting probabilities. The sign-split rule is applied exactly as written above.</p>
+  <div class="controls">
+    <div class="control"><label for="rp-rho">penalty &rho; = <span id="rp-rhov">1.00</span></label>
+      <input type="range" id="rp-rho" min="1.0" max="2.5" step="0.05" value="1.0"></div>
+    <div class="readout" id="rp-readout"></div>
+  </div>
+  <div class="tokrow" id="rp-toggles"></div>
+  <canvas id="rp-canvas" width="880" height="250"></canvas>
+  <pre id="rp-out"></pre>
+</div>
+
+<!-- ================= 11 ================= -->
+<h2 id="s11">11 · The coherence–diversity trade-off <span class="tag math">math</span></h2>
+
+<p>Every knob in &sect;7–&sect;10 moves the output along one axis. It helps to name the two ends.</p>
+
+<table class="cmp">
+  <tr><th>Setting</th><th>Moves toward coherence</th><th>Moves toward diversity</th></tr>
+  <tr><td>Temperature</td><td>lower T</td><td>higher T</td></tr>
+  <tr><td>Top-k</td><td>smaller k</td><td>larger k</td></tr>
+  <tr><td>Top-p</td><td>smaller p</td><td>larger p</td></tr>
+  <tr><td>Beam width</td><td>larger B</td><td>(none — B does not add diversity)</td></tr>
+  <tr><td>Repetition penalty</td><td>(none — &rho; trades fluency for variety)</td><td>larger &rho;</td></tr>
+</table>
+
+<p>The trade-off is real and it is not a tuning failure you can engineer away. Concretely:</p>
+
+<ul>
+  <li>Turn everything toward coherence and you converge on greedy: safe, repetitive, and identical for every user. High measured fluency, near-zero information content.</li>
+  <li>Turn everything toward diversity and you converge on pure sampling: novel, occasionally brilliant, and derailing once every few hundred tokens.</li>
+</ul>
+
+<p>The right operating point is a <em>product</em> decision, not a technical one, and it depends on the cost asymmetry of the two error types:</p>
+
+<ul>
+  <li><strong>A customer-support reply.</strong> A wrong or invented sentence costs far more than a dull one. Sit near the coherent end: <code>T &asymp; 0.3</code>, <code>p &asymp; 0.8</code>, short max length, and ideally retrieval-grounded so the model is copying rather than composing.</li>
+  <li><strong>A brainstorming or creative-drafting tool.</strong> A dull suggestion is worthless; a strange one is at least a prompt for the human. Sit near the diverse end: <code>T &asymp; 1.0–1.2</code>, <code>p &asymp; 0.95</code>, and generate several candidates so the user can discard the bad ones.</li>
+  <li><strong>A summarizer.</strong> Coherent end, but for a different reason: any token that is not supported by the source is a hallucination, and diversity is exactly the mechanism that produces unsupported tokens.</li>
+</ul>
+
+<div class="callout">
+  <strong>What to record.</strong> This is why the GenText service persists the decoding parameters alongside every generation. Without the settings, a rating of "this output was bad" is not actionable — you cannot tell whether the operating point was wrong or the model was. With the settings, the ratings become a labelled dataset over the parameter space, and you can find your own operating point instead of copying someone else's defaults.
+</div>
+
+<!-- ================= 12 ================= -->
+<h2 id="s12">12 · Perplexity: what it measures <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+
+<p>Perplexity is the exponentiated average negative log-likelihood per token. For a sequence of <code>N</code> tokens where the model assigned probability <code>p_t</code> to the token that actually occurred:</p>
+
+<p class="eq-block">PPL = exp( &minus;(1/N) &Sigma;<sub>t=1</sub><sup>N</sup> ln p<sub>t</sub> )</p>
+
+<p>Equivalently, using base 2 and the cross-entropy <code>H</code> in bits per token, <code>PPL = 2<sup>H</sup></code>. Both forms give the same number; only the logarithm base differs.</p>
+
+<p>The interpretation worth memorizing: <strong>perplexity is the effective branching factor.</strong> A perplexity of 20 means the model was, on average, as uncertain as if it had been choosing uniformly among 20 equally likely tokens at every step. Perplexity 1 means perfect prediction. Perplexity equal to the vocabulary size means the model learned nothing.</p>
+
+<h3>A worked perplexity, by hand</h3>
+
+<p>Suppose the reference sentence is <code>the cat sat on the mat</code> and the model assigned these probabilities to those six tokens, each conditioned on everything before it:</p>
+
+<pre>t   token   p_t     ln p_t
+1   the     0.50    -0.693147
+2   cat     0.25    -1.386294
+3   sat     0.20    -1.609438
+4   on      0.40    -0.916291
+5   the     0.50    -0.693147
+6   mat     0.10    -2.302585
+                    ----------
+            sum  =  -7.600902</pre>
+
+<p>Average: <code>-7.600902 / 6 = -1.266817</code>. Negate and exponentiate:</p>
+
+<p class="eq-block">PPL = e<sup>1.266817</sup> &asymp; 3.55</p>
+
+<p>Sanity-check that against the geometric mean of the probabilities. The geometric mean is <code>(0.50 &times; 0.25 &times; 0.20 &times; 0.40 &times; 0.50 &times; 0.10)<sup>1/6</sup> = (0.0005)<sup>1/6</sup> &asymp; 0.2817</code>, and <code>1 / 0.2817 &asymp; 3.55</code>. Perplexity is exactly the reciprocal of the geometric mean per-token probability — that is the whole definition, restated without logarithms.</p>
+
+<p>Now change one number. Make the model's probability for "mat" 0.001 instead of 0.10. Then <code>ln 0.001 = -6.907755</code>, the sum becomes <code>-12.206072</code>, the average <code>-2.034345</code>, and <code>PPL = e<sup>2.034345</sup> &asymp; 7.65</code>. One badly predicted token out of six more than doubled the perplexity. Perplexity is dominated by the tokens the model got most wrong, because <code>-ln p</code> grows without bound as <code>p &rarr; 0</code>. A single token with <code>p = 10<sup>-9</sup></code> contributes <code>+20.7</code> to the sum on its own.</p>
+
+<div class="demo">
+  <h3>Widget 9 · Perplexity calculator</h3>
+  <p class="small">Edit any probability and every downstream quantity updates. The bar chart shows each token's contribution <code>-ln p_t</code> to the sum, so you can see which token is driving the score.</p>
+  <div id="pp-inputs" class="logit-inputs"></div>
+  <div class="controls">
+    <button id="pp-reset" class="secondary">Reset to worked example</button>
+    <button id="pp-break" class="secondary">Set "mat" to 0.001</button>
+    <div class="readout" id="pp-readout"></div>
+  </div>
+  <canvas id="pp-canvas" width="880" height="230"></canvas>
+  <pre id="pp-out"></pre>
+</div>
+
+<h3>What perplexity does not measure</h3>
+
+<p>This is the part that matters for your evaluation section, and it is the part that gets skipped.</p>
+
+<ul>
+  <li><strong>It is not comparable across tokenizers.</strong> Perplexity is per <em>token</em>. A model with a bigger vocabulary uses fewer tokens for the same text and will report a different perplexity for identical predictive quality. Two perplexity numbers from two tokenizers are not comparable, full stop. (Per-character or per-word normalization fixes this; report which you used.)</li>
+  <li><strong>It is not comparable across corpora.</strong> Perplexity on formulaic text is low because formulaic text is predictable. A model scoring 12 on product listings is not better than one scoring 40 on novels.</li>
+  <li><strong>It says nothing about generated text.</strong> Perplexity scores a model against a <em>reference</em> corpus it did not write. It is a measure of predictive fit, not of output quality. You cannot compare decoding strategies with it in any meaningful way.</li>
+  <li><strong>Low perplexity on your own output is a warning sign, not a success.</strong> If you compute the perplexity of a generation under the model that produced it, greedy decoding will always score lowest — it selected the highest-probability token at every step by construction. That is a tautology, not evidence of quality, and it is the single most common evaluation mistake in this topic.</li>
+  <li><strong>It is blind to truth, safety, and relevance.</strong> A fluent, confident, entirely fabricated biography has excellent perplexity.</li>
+</ul>
+
+<div class="warn">
+  <strong>Trap.</strong> "We tuned our decoding settings by minimizing perplexity" is a self-defeating experiment. It will select <code>T &rarr; 0</code> every time, because that maximizes the likelihood of exactly the tokens you chose to emit. Use perplexity to compare <em>models</em> or <em>fine-tuning runs</em> on a fixed held-out reference set. Use human ratings and diversity metrics to compare <em>decoding settings</em>.
+</div>
+
+<!-- ================= 13 ================= -->
+<h2 id="s13">13 · Automatic diversity metrics: distinct-n <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+
+<p>Perplexity cannot see repetition. Diversity metrics can, and they are cheap. The workhorse is <strong>distinct-n</strong>: the number of unique n-grams divided by the total number of n-grams.</p>
+
+<p class="eq-block">distinct-n = |unique n-grams| / |total n-grams|</p>
+
+<p>Compute it for the greedy output from &sect;4, <code>the coffee is rich and smooth and smooth and smooth</code> (10 tokens):</p>
+
+<pre>distinct-1 : unique unigrams {the, coffee, is, rich, and, smooth} = 6, total 10  -> 0.600
+distinct-2 : unique bigrams {the coffee, coffee is, is rich, rich and,
+                             and smooth, smooth and}             = 6, total  9  -> 0.667
+distinct-3 : unique trigrams                                     = 6, total  8  -> 0.750</pre>
+
+<p>Contrast a sampled output of similar length, <code>the coffee tastes smooth and rich but not too bitter</code>: every unigram is unique, so distinct-1 = 1.000. The gap between 0.600 and 1.000 is the loop, detected without a human reading anything.</p>
+
+<p>Three things to be careful about:</p>
+
+<ul>
+  <li><strong>Distinct-n is length-dependent.</strong> Longer texts reuse function words, so distinct-n falls mechanically as length grows. Only compare distinct-n across generations of comparable length, or report it alongside length.</li>
+  <li><strong>High distinct-n is not good writing.</strong> Random tokens score 1.000 on every order. Distinct-n is a repetition detector, not a quality metric. It belongs next to a coherence signal, never alone.</li>
+  <li><strong>Corpus-level diversity is a separate question.</strong> Distinct-n within one output does not detect the beam-search failure where <em>different prompts</em> produce near-identical outputs. For that, measure across generations: how many of your 20 outputs share a 4-gram with another output? That is where beam search's diversity collapse becomes visible.</li>
+</ul>
+
+<div class="demo">
+  <h3>Widget 10 · Distinct-n and repeated-span detector</h3>
+  <p class="small">Paste or edit any text. Whitespace tokenization, lowercased. The repeated-span readout lists n-grams appearing more than once, which is usually the fastest way to spot a degenerate loop.</p>
+  <textarea id="dn-text">the coffee is rich and smooth and smooth and smooth</textarea>
+  <div class="controls" style="margin-top:12px;">
+    <button id="dn-ex1" class="secondary">Load: greedy output</button>
+    <button id="dn-ex2" class="secondary">Load: sampled output</button>
+    <button id="dn-ex3" class="secondary">Load: four beam hypotheses</button>
+  </div>
+  <canvas id="dn-canvas" width="880" height="200"></canvas>
+  <pre id="dn-out"></pre>
+</div>
+
+<p>Other automatic signals worth knowing by name: <em>self-BLEU</em> (BLEU of each generation against all the others — high self-BLEU means your outputs are copies of each other), <em>type-token ratio</em> (distinct-1 under another name), and <em>mean segmented type-token ratio</em>, which fixes the length dependence by averaging TTR over fixed-length windows. All of them measure surface variety. None measures whether the text is correct.</p>
+
+<!-- ================= 14 ================= -->
+<h2 id="s14">14 · Human rating, and disagreement as data <span class="tag interactive">interactive</span></h2>
+
+<p>Automatic metrics can tell you that text is repetitive. They cannot tell you that it is wrong, off-tone, unhelpful, or subtly offensive. That is why the topic project requires human ratings, and why the requirement is two independent raters per output rather than one.</p>
+
+<h3>Design the rubric before you generate</h3>
+
+<p>A rubric written after you have read the outputs will be shaped by them. Fix the dimensions first. A workable set for a generation service, each on a 1–5 scale, each with anchor descriptions for at least points 1, 3, and 5:</p>
+
+<ul>
+  <li><strong>Fluency</strong> — is it grammatical and readable, ignoring content? (Rate this without judging truth; separating fluency from correctness is the point.)</li>
+  <li><strong>Coherence</strong> — does it stay on one topic and hold together across sentences?</li>
+  <li><strong>Relevance</strong> — does it answer the prompt, rather than a nearby question?</li>
+  <li><strong>Factual support</strong> — are the specifics it asserts supported, or invented? Mark "not applicable" for purely creative prompts rather than guessing.</li>
+  <li><strong>Would you ship it</strong> — a single binary. This is the most useful column and the one most often left out.</li>
+</ul>
+
+<p>Rate blind: the rater should not see the decoding parameters, and outputs from different settings should be shuffled together. If a rater knows an output came from <code>T = 1.4</code>, they will find it wilder.</p>
+
+<h3>Disagreement is a measurement, not a nuisance</h3>
+
+<p>The instinct is to average the two raters and move on. Do not — or at least, not before you have looked at where they differed. Disagreement carries information that agreement does not:</p>
+
+<ul>
+  <li><strong>A whole dimension with low agreement</strong> means the rubric is underspecified. If your two raters agree on fluency and disagree constantly on coherence, the coherence anchors are vague. Fix the rubric and re-rate; do not report a mean over a dimension your raters could not apply consistently.</li>
+  <li><strong>A handful of items with large disagreement</strong> is usually the most interesting subset in the whole study. Those are the genuinely ambiguous outputs — plausible but unverifiable, fluent but off-tone. Read them; they are where the failure modes live.</li>
+  <li><strong>Systematic offset</strong> — one rater consistently one point above the other on everything — is a calibration problem, not a disagreement about content. It disappears if you compare rankings instead of absolute scores, and it is a reason to prefer pairwise A/B comparisons over absolute scales when you can afford them.</li>
+</ul>
+
+<h3>Reporting agreement</h3>
+
+<p>Report at least three numbers, not one:</p>
+
+<ul>
+  <li><strong>Exact agreement</strong> — the fraction of items where the two scores are identical.</li>
+  <li><strong>Adjacent agreement</strong> — the fraction within one point. On a 1–5 ordinal scale this is often the more honest number.</li>
+  <li><strong>Cohen's &kappa;</strong> — agreement corrected for what chance alone would produce: <code>&kappa; = (p_o - p_e) / (1 - p_e)</code>, where <code>p_o</code> is observed agreement and <code>p_e</code> is the agreement expected from the two raters' marginal score distributions.</li>
+</ul>
+
+<p>Unweighted &kappa; treats a 4-vs-5 disagreement as exactly as bad as a 1-vs-5 disagreement, which is wrong for an ordinal scale. Use a weighted &kappa; — quadratic weights are standard for rating scales — and say which you used. The widget computes all of them so you can see how far apart they can be on the same data.</p>
+
+<div class="demo">
+  <h3>Widget 11 · Inter-rater agreement calculator</h3>
+  <p class="small">Ten outputs, two raters, 1–5 scale. Edit any score. The point to notice: this dataset has 100 % adjacent agreement and only 40 % exact agreement, and unweighted &kappa; calls it poor while quadratic-weighted &kappa; calls it strong. Both are computed from the same ten pairs.</p>
+  <div id="ir-table"></div>
+  <div class="controls">
+    <button id="ir-agree" class="secondary">Make raters identical</button>
+    <button id="ir-offset" class="secondary">Give rater B a +1 offset</button>
+    <button id="ir-reset" class="secondary">Reset</button>
+  </div>
+  <canvas id="ir-canvas" width="880" height="220"></canvas>
+  <pre id="ir-out"></pre>
+</div>
+
+<div class="callout">
+  <strong>How many ratings do you need?</strong> The project asks for at least 20 outputs scored independently by two people. That is enough to detect a large difference between two decoding settings and to surface failure modes. It is not enough to claim a small difference is real. If your two settings score 3.4 and 3.6 on twenty items, the honest conclusion is "we could not distinguish them", and that is a perfectly good result to report.
+</div>
+
+<!-- ================= 15 ================= -->
+<h2 id="s15">15 · Failure modes you will actually see</h2>
+
+<p>Four failure modes account for most of what goes wrong in an undergraduate generation project. Learn to name them on sight, because "the output was bad" is not a report and "the output echoed the prompt and then truncated mid-clause" is.</p>
+
+<h3>Degenerate repetition</h3>
+<p><strong>Looks like:</strong> a word, phrase, or sentence repeating until the length cap. <code>...and smooth and smooth and smooth</code>.</p>
+<p><strong>Cause:</strong> a deterministic or near-deterministic decoder re-entering a state it has visited (&sect;4), amplified by the model's own tendency to raise the probability of a span each time it recurs.</p>
+<p><strong>Fix:</strong> stop using greedy or narrow beams for open-ended text; add sampling; add a repetition penalty around 1.1–1.2; as a last resort, block repeated 4-grams. Detect it automatically with distinct-2 (&sect;13) — a value under about 0.7 on a short output is a strong signal.</p>
+
+<h3>Hallucinated specifics</h3>
+<p><strong>Looks like:</strong> fluent text containing a precise, checkable, false detail — a date, a statistic, a citation, a version number, a person's title.</p>
+<p><strong>Cause:</strong> the model has no mechanism for distinguishing "I know this" from "this is the shape of a sentence that usually appears here". Specific-looking tokens are high-probability continuations of specific-looking contexts. Raising temperature makes it worse by giving low-probability specifics a real chance of being drawn.</p>
+<p><strong>Fix:</strong> lower temperature and tighten <code>p</code>; ground the generation in retrieved source text so the model is copying rather than composing; and — the only reliable one — verify specifics outside the model. Note carefully that no decoding setting eliminates this. Truncation removes the tail, and hallucinations frequently come from the head of the distribution.</p>
+
+<h3>Prompt echo</h3>
+<p><strong>Looks like:</strong> the output restates the prompt, sometimes verbatim, before saying anything new — or says nothing new at all.</p>
+<p><strong>Cause:</strong> two different things that look identical, and you must distinguish them. (1) A plumbing bug: many generation APIs return the prompt concatenated with the continuation, and you forgot to slice it off. Check <code>output[len(input_ids):]</code> before diagnosing anything else. (2) A genuine modelling issue: for a base (non-instruction-tuned) model, continuing the prompt's own phrasing really is a high-probability continuation, especially at low temperature.</p>
+<p><strong>Fix:</strong> slice the prompt off the output; if it is genuine, restructure the prompt so that continuing it verbatim is not natural (end mid-sentence, or use an instruction-tuned checkpoint), and raise temperature slightly.</p>
+
+<h3>Abrupt truncation</h3>
+<p><strong>Looks like:</strong> the output stops mid-sentence or mid-clause.</p>
+<p><strong>Cause:</strong> almost always <code>max_new_tokens</code> being hit. Two subtler causes: beam search without a length penalty is biased toward emitting the end-of-sequence token early (&sect;5); and an early end-of-sequence draw from an under-truncated distribution can end the generation at any moment.</p>
+<p><strong>Fix:</strong> raise the length cap and confirm the output now ends on punctuation; set a length penalty if you are using beams; if you must cut, truncate at the last sentence boundary rather than mid-clause, and record that you did so.</p>
+
+<table class="cmp">
+  <tr><th>Failure mode</th><th>Automatic signal that catches it</th><th>First knob to try</th></tr>
+  <tr><td>Degenerate repetition</td><td>distinct-2 low; repeated n-gram list non-empty</td><td>sampling on; &rho; = 1.15</td></tr>
+  <tr><td>Hallucinated specifics</td><td>none reliable — needs a human or a source check</td><td>lower T; ground in retrieved text</td></tr>
+  <tr><td>Prompt echo</td><td>n-gram overlap between prompt and output</td><td>slice the prompt off; check the API contract</td></tr>
+  <tr><td>Abrupt truncation</td><td>output does not end in terminal punctuation</td><td>raise max_new_tokens; add length penalty</td></tr>
+</table>
+
+<div class="warn">
+  <strong>Report the example, not the adjective.</strong> When the project asks you to discuss two failure modes with a generated example of each, it means a verbatim output, the exact decoding settings that produced it, and one sentence naming the mechanism. "Sometimes the output was repetitive" is not that.
+</div>
+
+<!-- ================= 16 ================= -->
+<h2 id="s16">16 · A decoding recipe for the GenText service <span class="tag code">code</span></h2>
+
+<p>Putting the topic together as something you can implement. The service exposes decoding controls to a non-expert, so the controls need sane defaults, safe ranges, and an explanation attached to each.</p>
+
+<pre>from dataclasses import dataclass
+
+@dataclass
+class DecodeConfig:
+    strategy: str = "sample"      # "greedy" | "beam" | "sample"
+    temperature: float = 0.9      # ignored when strategy != "sample"
+    top_k: int = 50               # 0 disables
+    top_p: float = 0.92           # 1.0 disables
+    repetition_penalty: float = 1.1
+    max_new_tokens: int = 120
+    num_beams: int = 1            # &gt; 1 only when strategy == "beam"
+    seed: int | None = None       # record it, or you cannot reproduce anything
+
+    def validate(self) -&gt; None:
+        assert 0.0 &lt; self.temperature &lt;= 2.0
+        assert 0.0 &lt; self.top_p &lt;= 1.0
+        assert self.top_k &gt;= 0
+        assert 1.0 &lt;= self.repetition_penalty &lt;= 2.0
+        assert 1 &lt;= self.max_new_tokens &lt;= 512
+        if self.strategy == "beam":
+            assert self.num_beams &gt; 1</pre>
+
+<p>Three service-level points that are easy to skip and expensive to add later.</p>
+
+<h4>Record the seed</h4>
+<p>Sampling is stochastic. If you do not store the random seed with the generation, you cannot reproduce an output a rater flagged, and you cannot demonstrate that a settings change caused a difference rather than luck. Store it as a first-class column next to the decoding parameters.</p>
+
+<h4>Store parameters with every row, not per session</h4>
+<p>The history view is only useful if each row is self-describing: prompt (hashed), every decoding parameter, the model version, the output, the timestamp, and the rating once it exists. If the parameters live in a session config instead, a change to that config silently rewrites the meaning of every historical row.</p>
+
+<h4>Make the comparison view fix the seed</h4>
+<p>A "compare decoding strategies" tab that samples independently for each setting is comparing settings <em>and</em> noise. Use the same seed across the strategies being compared so the difference you show the user is attributable to the parameters. Say so in the UI, because it is a real caveat: one seed is one sample, and a single side-by-side is an illustration, not evidence.</p>
+
+<div class="callout">
+  <strong>Order of operations, once more.</strong> repetition penalty on raw logits &rarr; divide by temperature &rarr; top-k mask &rarr; top-p mask &rarr; renormalize &rarr; sample. If your outputs do not respond to a knob the way these notes say they should, check this order first. It is the most common source of "temperature does nothing" bug reports.
+</div>
+
+<h3>Where to read further</h3>
+<ul>
+  <li>Jurafsky and Martin, <em>Speech and Language Processing</em> (3rd edition draft), Chapter 10 — <a href="https://web.stanford.edu/~jurafsky/slp3/10.pdf">https://web.stanford.edu/~jurafsky/slp3/10.pdf</a></li>
+  <li>Hugging Face, generation strategies documentation — <a href="https://huggingface.co/docs/transformers/main/en/generation_strategies">https://huggingface.co/docs/transformers/main/en/generation_strategies</a></li>
+  <li>Alammar, "The Illustrated GPT-2" — <a href="https://jalammar.github.io/illustrated-gpt2/">https://jalammar.github.io/illustrated-gpt2/</a></li>
+  <li>Holtzman, Buys, Du, Forbes and Choi, "The Curious Case of Neural Text Degeneration" (2019), which introduced nucleus sampling — <a href="https://arxiv.org/abs/1904.09751">https://arxiv.org/abs/1904.09751</a></li>
+</ul>
+
+<div class="nav">
+  <a href="Lecture_Notes_Topic_3_Natural_Language_Generation.html">&#8593; Top of notes</a>
+  <a href="Exercises_Topic_3_Natural_Language_Generation.html">Practice exercises &rarr;</a>
+</div>
+
+</div>
+
+<script>
+/* ============ shared helpers ============ */
+function softmax(a){ const m=Math.max.apply(null,a); const e=a.map(v=>Math.exp(v-m));
+  const s=e.reduce((x,y)=>x+y,0); return e.map(v=>v/s); }
+function entropyBits(p){ let h=0; for(const v of p) if(v>1e-12) h-=v*Math.log2(v); return h; }
+function mulberry32(seed){ let s=seed>>>0; return function(){ s|=0; s=s+0x6D2B79F5|0;
+  let t=Math.imul(s^s>>>15,1|s); t=t+Math.imul(t^t>>>7,61|t)^t;
+  return ((t^t>>>14)>>>0)/4294967296; }; }
+function fmt(x,n){ return (Math.round(x*Math.pow(10,n))/Math.pow(10,n)).toFixed(n); }
+function padR(s,n){ s=String(s); while(s.length<n) s+=' '; return s; }
+function padL(s,n){ s=String(s); while(s.length<n) s=' '+s; return s; }
+const C_BLUE='#1F4E79', C_LIGHT='#8FB4D4', C_AMBER='#F9A825', C_GREY='#CFD7DF',
+      C_RED='#C00000', C_GREEN='#1B5E20', C_TXT='#555';
+
+function barChart(ctx,W,H,vals,labels,colors,opts){
+  opts=opts||{}; ctx.clearRect(0,0,W,H);
+  const top=opts.top||26, bot=opts.bot||42, left=opts.left||38;
+  const n=vals.length; const bw=(W-left-16)/n;
+  const mx=opts.max || Math.max(1e-9, Math.max.apply(null,vals));
+  ctx.strokeStyle=C_GREY; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(left-6,H-bot+0.5); ctx.lineTo(W-8,H-bot+0.5); ctx.stroke();
+  for(let i=0;i<n;i++){
+    const h=Math.max(0, vals[i]/mx*(H-top-bot));
+    const x=left+i*bw;
+    ctx.fillStyle=colors[i]||C_BLUE;
+    ctx.fillRect(x+2, H-bot-h, Math.max(2,bw-5), h);
+    ctx.fillStyle=C_TXT; ctx.font='10px monospace';
+    const lab=labels[i]==null?'':String(labels[i]);
+    ctx.save(); ctx.translate(x+bw/2, H-bot+13); 
+    const wdt=ctx.measureText(lab).width;
+    if(wdt>bw-2){ ctx.rotate(-Math.PI/4); ctx.textAlign='right'; ctx.fillText(lab,0,0); }
+    else { ctx.textAlign='center'; ctx.fillText(lab,0,0); }
+    ctx.restore();
+    if(opts.showVals!==false && bw>26){
+      ctx.fillStyle='#333'; ctx.font='9px monospace'; ctx.textAlign='center';
+      ctx.fillText(fmt(vals[i],opts.dp==null?3:opts.dp), x+bw/2, H-bot-h-3);
+      ctx.textAlign='left';
+    }
+  }
+  if(opts.title){ ctx.fillStyle=C_BLUE; ctx.font='bold 12px sans-serif'; ctx.textAlign='left';
+                  ctx.fillText(opts.title, left, 16); }
+  return {left:left, bw:bw, top:top, bot:bot, mx:mx};
+}
+
+/* ============ Widget 1 · causal mask ============ */
+(function(){
+  const c=document.getElementById('cm-canvas'); if(!c) return;
+  const ctx=c.getContext('2d');
+  const TIn=document.getElementById('cm-T'), RIn=document.getElementById('cm-row');
+  const ro=document.getElementById('cm-readout');
+  const words=['&lt;bos&gt;','the','coffee','tastes','rich','and','a','little','bitter','today','after','lunch'];
+  const plain=['<bos>','the','coffee','tastes','rich','and','a','little','bitter','today','after','lunch'];
+  // fixed pseudo-random score matrix so the picture is stable
+  const R=mulberry32(20240115);
+  const RAW=[]; for(let i=0;i<12;i++){ const r=[]; for(let j=0;j<12;j++) r.push(R()*2.4-0.4); RAW.push(r); }
+  function draw(){
+    const T=+TIn.value; RIn.max=String(T-1);
+    let row=Math.min(+RIn.value, T-1); RIn.value=String(row);
+    const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    const cell=Math.min(26, Math.floor((H-90)/T));
+    const ox=120, oy=52;
+    // compute masked softmax rows
+    const rows=[];
+    for(let i=0;i<T;i++){
+      const sc=[]; for(let j=0;j<T;j++) sc.push(j<=i?RAW[i][j]:-Infinity);
+      const fin=sc.filter(v=>isFinite(v));
+      const p=softmax(fin); const full=[]; let z=0;
+      for(let j=0;j<T;j++) full.push(j<=i?p[z++]:0);
+      rows.push(full);
+    }
+    // column labels
+    ctx.font='9px monospace'; ctx.fillStyle=C_TXT;
+    for(let j=0;j<T;j++){ ctx.save(); ctx.translate(ox+j*cell+cell/2, oy-6);
+      ctx.rotate(-Math.PI/4); ctx.textAlign='left'; ctx.fillText(plain[j],0,0); ctx.restore(); }
+    for(let i=0;i<T;i++){
+      ctx.textAlign='right'; ctx.fillStyle=(i===row)?C_RED:C_TXT;
+      ctx.font=(i===row)?'bold 10px monospace':'9px monospace';
+      ctx.fillText(plain[i], ox-8, oy+i*cell+cell/2+3);
+    }
+    ctx.textAlign='left';
+    for(let i=0;i<T;i++) for(let j=0;j<T;j++){
+      const x=ox+j*cell, y=oy+i*cell;
+      if(j>i){ ctx.fillStyle='#EFF1F4'; ctx.fillRect(x,y,cell-1,cell-1);
+               ctx.strokeStyle='#E0E5EB'; ctx.strokeRect(x+0.5,y+0.5,cell-2,cell-2); }
+      else { const v=rows[i][j]; const a=Math.min(1, 0.12+v*2.0);
+             ctx.fillStyle='rgba(31,78,121,'+a.toFixed(3)+')'; ctx.fillRect(x,y,cell-1,cell-1); }
+      if(i===row){ ctx.strokeStyle=C_RED; ctx.lineWidth=1.4; ctx.strokeRect(x+0.5,y+0.5,cell-2,cell-2); }
+    }
+    // legend + selected row detail
+    const by=oy+T*cell+26;
+    ctx.fillStyle=C_BLUE; ctx.font='bold 11px sans-serif';
+    ctx.fillText('attention weights of query row t = '+row, ox, by-8);
+    const dw=Math.min(46,(W-ox-20)/T);
+    for(let j=0;j<T;j++){
+      const v=rows[row][j]; const h=v*54;
+      ctx.fillStyle = j>row ? '#E0E5EB' : C_BLUE;
+      ctx.fillRect(ox+j*dw, by+56-h, dw-4, Math.max(1,h));
+      ctx.fillStyle=C_TXT; ctx.font='8px monospace';
+      ctx.fillText(j>row?'0':fmt(v,2), ox+j*dw, by+70);
+    }
+    ctx.fillStyle=C_BLUE; ctx.font='bold 11px sans-serif';
+    ctx.fillText('T = '+T+'   (grey = masked future)', 12, 18);
+    ctx.fillStyle=C_TXT; ctx.font='10px sans-serif';
+    ctx.fillText('rows = queries, columns = keys', 12, 34);
+    const vis=row+1;
+    ro.textContent='row t = '+row+' attends to '+vis+' of '+T+' positions · '+
+      'weights sum to '+fmt(rows[row].reduce((a,b)=>a+b,0),4)+
+      (row===T-1?' · this is the row generation uses':'');
+  }
+  TIn.oninput=draw; RIn.oninput=draw; draw();
+})();
+
+/* ============ Widget 2 · logits to probabilities ============ */
+(function(){
+  const host=document.getElementById('lp-inputs'); if(!host) return;
+  const c=document.getElementById('lp-canvas'), ctx=c.getContext('2d');
+  const out=document.getElementById('lp-out');
+  const labels=[' coffee','   tea','  water',' juice','  cake'];
+  const BASE=[3.0,1.8,0.9,0.2,-1.2];
+  let cur=BASE.slice();
+  labels.forEach((L,i)=>{
+    const d=document.createElement('div'); d.className='li';
+    d.innerHTML='<span>z['+i+'] = '+L.trim()+'</span>';
+    const inp=document.createElement('input'); inp.type='number'; inp.step='0.1';
+    inp.value=String(BASE[i]); inp.id='lp-i'+i;
+    inp.oninput=function(){ cur[i]=parseFloat(inp.value)||0; draw(); };
+    d.appendChild(inp); host.appendChild(d);
+  });
+  function sync(){ cur.forEach((v,i)=>{ document.getElementById('lp-i'+i).value=fmt(v,2); }); }
+  function draw(){
+    const z=cur.slice(); const mx=Math.max.apply(null,z);
+    const sh=z.map(v=>v-mx); const ex=sh.map(Math.exp);
+    const S=ex.reduce((a,b)=>a+b,0); const p=ex.map(v=>v/S);
+    const cols=p.map(()=>C_BLUE);
+    barChart(ctx,c.width,c.height,p,labels.map(s=>s.trim()),cols,
+             {title:'P(next token) after softmax', dp:4, max:1.0});
+    let s='';
+    s+='  token     z_i     z_i - max     exp(z_i - max)     p_i        ln p_i\n';
+    s+='  ------------------------------------------------------------------------\n';
+    for(let i=0;i<z.length;i++){
+      s+='  '+padR(labels[i].trim(),9)+padL(fmt(z[i],2),6)+padL(fmt(sh[i],2),13)+
+         padL(fmt(ex[i],6),19)+padL(fmt(p[i],6),11)+padL(fmt(Math.log(p[i]),4),14)+'\n';
+    }
+    s+='  ------------------------------------------------------------------------\n';
+    s+='  sum of exp = '+fmt(S,6)+'      sum of p = '+fmt(p.reduce((a,b)=>a+b,0),6)+'\n';
+    s+='  entropy    = '+fmt(entropyBits(p),4)+' bits  ->  effective choices 2^H = '+
+       fmt(Math.pow(2,entropyBits(p)),2)+'\n';
+    s+='  ratio p[0]/p[1] = exp(z0 - z1) = exp('+fmt(z[0]-z[1],2)+') = '+fmt(Math.exp(z[0]-z[1]),4);
+    out.textContent=s;
+  }
+  document.getElementById('lp-shift').onclick=function(){ cur=cur.map(v=>v+3); sync(); draw(); };
+  document.getElementById('lp-scale').onclick=function(){ cur=cur.map(v=>v*2); sync(); draw(); };
+  document.getElementById('lp-reset').onclick=function(){ cur=BASE.slice(); sync(); draw(); };
+  draw();
+})();
+
+/* ============ toy language model (shared by widgets 3 and 4) ============ */
+var TOYLM = {
+ '<bos>': {the:3.2, a:2.4, this:1.6, every:0.4},
+ 'the':   {coffee:3.4, cup:2.6, aroma:2.2, blend:1.8, finish:1.0},
+ 'a':     {cup:3.2, rich:2.4, bitter:1.8, smooth:1.6, little:0.8},
+ 'this':  {coffee:3.0, blend:2.4, cup:1.8, roast:1.2},
+ 'every': {cup:3.0, morning:2.2, sip:1.6},
+ 'coffee':{is:3.0, was:2.6, tastes:2.2, has:1.6, '.':0.6},
+ 'cup':   {of:3.4, is:2.4, was:2.0, tastes:1.4},
+ 'of':    {coffee:3.2, it:2.0, this:1.4, tea:1.2},
+ 'aroma': {is:3.2, was:2.6, fills:1.8},
+ 'blend': {is:3.0, was:2.4, tastes:2.0},
+ 'finish':{is:3.0, was:2.2, lingers:1.8},
+ 'roast': {is:2.8, was:2.4, tastes:1.6},
+ 'morning':{'.':2.6, is:2.0, tastes:1.0},
+ 'sip':   {is:2.6, was:2.2, tastes:1.6},
+ 'is':    {rich:2.8, smooth:2.4, bitter:2.0, very:1.8, too:1.2, really:1.0},
+ 'was':   {rich:2.6, smooth:2.4, bitter:2.2, very:1.6, too:1.4},
+ 'tastes':{bitter:2.6, rich:2.4, smooth:2.2, like:1.8},
+ 'has':   {a:3.0, notes:2.2},
+ 'notes': {of:3.2},
+ 'like':  {a:2.6, chocolate:2.2, coffee:1.8},
+ 'chocolate':{'.':2.4, and:2.0},
+ 'fills': {the:3.0},
+ 'lingers':{'.':2.6, and:1.8},
+ 'very':  {rich:2.6, smooth:2.4, bitter:2.2, strong:2.0},
+ 'too':   {bitter:2.8, strong:2.4, rich:1.6},
+ 'really':{rich:2.4, smooth:2.2, bitter:2.0},
+ 'rich':  {and:2.4, '.':2.2, but:1.8},
+ 'smooth':{and:2.4, '.':2.2, but:1.6},
+ 'bitter':{'.':2.4, and:2.2, but:2.0},
+ 'strong':{'.':2.6, and:1.8, but:1.6},
+ 'little':{bitter:2.4, strong:2.0},
+ 'and':   {smooth:2.4, rich:2.2, bitter:2.0, very:1.6, a:1.2},
+ 'but':   {smooth:2.4, not:2.0, very:1.8, a:1.6},
+ 'not':   {bitter:2.6, too:2.2},
+ 'it':    {is:3.0, was:2.4},
+ 'tea':   {is:2.6, '.':2.0},
+ 'drink': {it:2.6, coffee:2.2},
+ '.':     {'<eos>':4.0}
+};
+function toyRow(ctx){ return TOYLM[ctx] || TOYLM['.']; }
+
+/* ============ Widget 3 · autoregressive sampler ============ */
+(function(){
+  const cvs=document.getElementById('ar-canvas'); if(!cvs) return;
+  const ctx=cvs.getContext('2d');
+  const elStrat=document.getElementById('ar-strategy'),
+        elT=document.getElementById('ar-T'), elK=document.getElementById('ar-k'),
+        elP=document.getElementById('ar-p'), elSeed=document.getElementById('ar-seed'),
+        elToks=document.getElementById('ar-tokens'), elOut=document.getElementById('ar-out');
+  let seq, rnd, done, last, nsteps;
+  const MAXLEN=20;
+
+  function reset(){
+    seq=['<bos>']; rnd=mulberry32(parseInt(elSeed.value,10)||0); done=false; nsteps=0;
+    last=null; preview(); render();
+  }
+  function stepDist(context){
+    const row=toyRow(context);
+    const toks=Object.keys(row);
+    const lg=toks.map(t=>row[t]);
+    const T=Math.max(0.05, parseFloat(elT.value));
+    const strat=elStrat.value;
+    const ps = (strat==='greedy') ? softmax(lg) : softmax(lg.map(z=>z/T));
+    const ord=ps.map((p,i)=>({p:p,i:i})).sort((a,b)=>b.p-a.p);
+    let keep=new Set(ord.map(o=>o.i));
+    if(strat==='topk'){ keep=new Set(ord.slice(0, Math.min(+elK.value, ord.length)).map(o=>o.i)); }
+    if(strat==='topp'){ const thr=parseFloat(elP.value); let cum=0; const s=new Set();
+      for(const o of ord){ s.add(o.i); cum+=o.p; if(cum>=thr) break; } keep=s; }
+    let fin=ps.map((p,i)=>keep.has(i)?p:0);
+    const Z=fin.reduce((a,b)=>a+b,0);
+    fin=fin.map(v=>v/(Z||1));
+    return {toks:toks, lg:lg, ps:ps, fin:fin, keep:keep, kept:Z};
+  }
+  function preview(){
+    const d=stepDist(seq[seq.length-1]);
+    last={d:d, chosen:null, ctx:seq[seq.length-1], draw:null};
+  }
+  function step(){
+    if(done||nsteps>=MAXLEN) return;
+    const c=seq[seq.length-1];
+    const d=stepDist(c);
+    let idx, r=null;
+    if(elStrat.value==='greedy'){ idx=0; for(let i=1;i<d.fin.length;i++) if(d.fin[i]>d.fin[idx]) idx=i; }
+    else { r=rnd(); let acc=0; idx=d.fin.length-1;
+           for(let i=0;i<d.fin.length;i++){ acc+=d.fin[i]; if(r<acc){ idx=i; break; } } }
+    const tok=d.toks[idx];
+    last={d:d, chosen:idx, ctx:c, draw:r};
+    nsteps++;
+    if(tok==='<eos>'){ done=true; }
+    else { seq.push(tok); if(nsteps>=MAXLEN) done=true; }
+    render();
+  }
+  function runAll(){ let guard=0; while(!done && guard++<60) step(); render(); }
+  function render(){
+    // token chips
+    elToks.innerHTML='';
+    seq.forEach((t,i)=>{
+      const s=document.createElement('span');
+      s.className='tok'+(i===seq.length-1 && i>0 ?' new':'');
+      s.textContent=t; elToks.appendChild(s);
+    });
+    if(done){ const s=document.createElement('span'); s.className='tok dead';
+              s.textContent= last && last.chosen!=null && last.d.toks[last.chosen]==='<eos>' ? '<eos>' : '[length cap]';
+              elToks.appendChild(s); }
+    // chart
+    const d=last.d;
+    const cols=d.toks.map((t,i)=> (last.chosen===i) ? C_AMBER : (d.keep.has(i)?C_BLUE:C_GREY));
+    barChart(ctx,cvs.width,cvs.height,d.fin,d.toks,cols,
+      {title:'P(next | "'+last.ctx+'")  after temperature and truncation, renormalized', dp:3, max:1.0});
+    // text output
+    let s='';
+    s+='generated so far : '+seq.slice(1).join(' ')+(done?'  [stopped]':'')+'\n';
+    s+='context token    : "'+last.ctx+'"     step '+nsteps+' of at most '+MAXLEN+'\n\n';
+    s+='  token      logit    p (after T)   kept?    p (renormalized)\n';
+    s+='  ---------------------------------------------------------------\n';
+    const ord=d.toks.map((t,i)=>i).sort((a,b)=>d.ps[b]-d.ps[a]);
+    ord.forEach(i=>{
+      s+='  '+(last.chosen===i?'>':' ')+padR(d.toks[i],9)+padL(fmt(d.lg[i],2),7)+
+         padL(fmt(d.ps[i],4),14)+padL(d.keep.has(i)?'yes':'no',9)+
+         padL(fmt(d.fin[i],4),20)+'\n';
+    });
+    s+='  ---------------------------------------------------------------\n';
+    s+='  surviving mass before renormalization = '+fmt(d.kept,4)+
+       '   entropy = '+fmt(entropyBits(d.fin),3)+' bits\n';
+    if(last.draw!=null) s+='  uniform draw u = '+fmt(last.draw,6)+
+       '  ->  selected "'+d.toks[last.chosen]+'"';
+    else if(last.chosen!=null) s+='  argmax  ->  selected "'+d.toks[last.chosen]+'"';
+    else s+='  (press Step to draw a token)';
+    elOut.textContent=s;
+  }
+  document.getElementById('ar-step').onclick=step;
+  document.getElementById('ar-run').onclick=runAll;
+  document.getElementById('ar-reset').onclick=reset;
+  document.getElementById('ar-reroll').onclick=function(){
+    elSeed.value=String(Math.floor(Math.random()*100000)); reset(); runAll(); };
+  elT.oninput=function(){ document.getElementById('ar-Tv').textContent=fmt(+elT.value,2); reset(); };
+  elK.oninput=function(){ document.getElementById('ar-kv').textContent=elK.value; reset(); };
+  elP.oninput=function(){ document.getElementById('ar-pv').textContent=fmt(+elP.value,2); reset(); };
+  elStrat.onchange=reset; elSeed.oninput=reset;
+  reset();
+})();
+
+/* ============ Widget 4 · greedy repetition loop ============ */
+(function(){
+  const cvs=document.getElementById('rl-canvas'); if(!cvs) return;
+  const ctx=cvs.getContext('2d');
+  const pen=document.getElementById('rl-pen'), mx=document.getElementById('rl-max'),
+        ro=document.getElementById('rl-readout'), host=document.getElementById('rl-tokens');
+  function run(){
+    const rho=parseFloat(pen.value), N=+mx.value;
+    let c='<bos>'; const seq=[]; const seen={}; let loopAt=-1, loopTok=null;
+    const used=new Set();
+    for(let i=0;i<N;i++){
+      const row=toyRow(c); const toks=Object.keys(row);
+      let lg=toks.map(t=>row[t]);
+      if(rho>1) lg=lg.map((z,j)=> used.has(toks[j]) ? (z>0? z/rho : z*rho) : z);
+      let bi=0; for(let j=1;j<lg.length;j++) if(lg[j]>lg[bi]) bi=j;
+      const t=toks[bi];
+      if(t==='<eos>') break;
+      // state = (context token, penalty-free) -> a repeat of the same context means a cycle
+      if(rho===1 && seen[c]!==undefined && loopAt<0){ loopAt=i; loopTok=c; }
+      seen[c]=i;
+      seq.push(t); used.add(t); c=t;
+    }
+    return {seq:seq, loopAt:loopAt, loopTok:loopTok, rho:rho, N:N};
+  }
+  function draw(){
+    document.getElementById('rl-penv').textContent=fmt(+pen.value,2);
+    document.getElementById('rl-maxv').textContent=mx.value;
+    const r=run();
+    host.innerHTML='';
+    const counts={};
+    r.seq.forEach(t=>counts[t]=(counts[t]||0)+1);
+    r.seq.forEach((t,i)=>{
+      const s=document.createElement('span');
+      s.className='tok'+(counts[t]>1?' new':'');
+      s.textContent=t; host.appendChild(s);
+    });
+    // distinct-n on the produced sequence
+    function dist(n){ if(r.seq.length<n) return 0; const set={}; let tot=0;
+      for(let i=0;i+n<=r.seq.length;i++){ set[r.seq.slice(i,i+n).join(' ')]=1; tot++; }
+      return Object.keys(set).length/tot; }
+    const d1=dist(1), d2=dist(2);
+    ro.textContent = (r.rho===1
+      ? (r.loopAt>=0 ? 'cycle detected: context "'+r.loopTok+'" revisited at step '+r.loopAt
+                     : 'no cycle within the cap')
+      : 'penalty rho = '+fmt(r.rho,2)+' active')
+      + ' · length '+r.seq.length+' · distinct-1 '+fmt(d1,3)+' · distinct-2 '+fmt(d2,3);
+    // canvas: token frequency + the two distributions that create the cycle
+    const W=cvs.width,H=cvs.height; ctx.clearRect(0,0,W,H);
+    const keys=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);
+    const vals=keys.map(k=>counts[k]);
+    const cols=keys.map(k=>counts[k]>1?C_RED:C_BLUE);
+    barChart(ctx,W,H-96,vals,keys,cols,{title:'token frequency in the greedy output (red = repeated)',dp:0});
+    // the two cycle distributions
+    ctx.fillStyle=C_BLUE; ctx.font='bold 11px sans-serif';
+    ctx.fillText('the two distributions that create the loop:', 38, H-78);
+    ctx.font='10px monospace'; ctx.fillStyle='#333';
+    const rowA=toyRow('and'), rowB=toyRow('smooth');
+    const ta=Object.keys(rowA), pa=softmax(ta.map(t=>rowA[t]));
+    const tb=Object.keys(rowB), pb=softmax(tb.map(t=>rowB[t]));
+    ctx.fillText('P(. | and)    -> '+ta.map((t,i)=>t+' '+fmt(pa[i],3)).join('   '), 38, H-58);
+    ctx.fillText('P(. | smooth) -> '+tb.map((t,i)=>t+' '+fmt(pb[i],3)).join('   '), 38, H-42);
+    ctx.fillStyle=C_TXT;
+    ctx.fillText('greedy takes "and" (0.441) over "." (0.361) forever; sampling would end the sentence ~36% of the time', 38, H-20);
+  }
+  pen.oninput=draw; mx.oninput=draw; draw();
+})();
+
+/* ============ Widget 5 · beam search tree ============ */
+(function(){
+  const cvs=document.getElementById('bm-canvas'); if(!cvs) return;
+  const ctx=cvs.getContext('2d');
+  const wIn=document.getElementById('bm-w'), ro=document.getElementById('bm-readout'),
+        out=document.getElementById('bm-out');
+  const TREE={
+    '':            {the:0.60, that:0.40},
+    'the':         {results:0.40, team:0.35, data:0.25},
+    'that':        {the:0.90, we:0.10},
+    'the|results': {were:0.50, are:0.50},
+    'the|team':    {was:0.60, has:0.40},
+    'the|data':    {was:0.70, is:0.30},
+    'that|the':    {results:0.95, team:0.05},
+    'that|we':     {should:0.80, will:0.20}
+  };
+  const DEPTH=3;
+  function allNodes(){
+    const lv=[[[]]];
+    for(let d=0; d<DEPTH; d++){
+      const nxt=[];
+      lv[d].forEach(seq=>{ const row=TREE[seq.join('|')];
+        if(row) Object.keys(row).forEach(t=>nxt.push(seq.concat([t]))); });
+      lv.push(nxt);
+    }
+    return lv;
+  }
+  function beamRun(B){
+    let beams=[{seq:[], lp:0}]; const hist=[];
+    for(let d=0; d<DEPTH; d++){
+      const cand=[];
+      beams.forEach(b=>{ const row=TREE[b.seq.join('|')];
+        if(row) Object.keys(row).forEach(t=>cand.push({seq:b.seq.concat([t]), lp:b.lp+Math.log(row[t])})); });
+      cand.sort((a,b)=>b.lp-a.lp);
+      const kept=cand.slice(0,B);
+      hist.push({cand:cand, kept:kept});
+      beams=kept;
+    }
+    return {beams:beams, hist:hist};
+  }
+  function draw(){
+    const B=+wIn.value;
+    document.getElementById('bm-wv').textContent=String(B);
+    const r=beamRun(B), lv=allNodes();
+    const keptSets=r.hist.map(h=>new Set(h.kept.map(k=>k.seq.join('|'))));
+    const W=cvs.width,H=cvs.height; ctx.clearRect(0,0,W,H);
+    const colX=[30,215,440,690];
+    const pos={};
+    lv.forEach((nodes,d)=>{
+      const n=nodes.length; const gap=(H-56)/Math.max(1,n);
+      nodes.forEach((seq,i)=>{ pos[seq.join('|')]={x:colX[d], y:40+gap*(i+0.5)}; });
+    });
+    // edges
+    lv.forEach((nodes,d)=>{
+      if(d===0) return;
+      nodes.forEach(seq=>{
+        const key=seq.join('|'), par=seq.slice(0,-1).join('|');
+        const a=pos[par], b=pos[key];
+        const alive=keptSets[d-1].has(key);
+        ctx.strokeStyle=alive?C_BLUE:'#E0E5EB'; ctx.lineWidth=alive?2:1;
+        ctx.beginPath(); ctx.moveTo(a.x+66,a.y); ctx.bezierCurveTo(a.x+120,a.y,b.x-40,b.y,b.x-4,b.y); ctx.stroke();
+        const row=TREE[par]; const pv=row[seq[seq.length-1]];
+        ctx.fillStyle=alive?C_BLUE:'#AAB4BE'; ctx.font='9px monospace';
+        ctx.fillText(fmt(pv,2), (a.x+66+b.x)/2-6, (a.y+b.y)/2-4);
+      });
+    });
+    // nodes
+    lv.forEach((nodes,d)=>{
+      nodes.forEach(seq=>{
+        const key=seq.join('|'); const p=pos[key];
+        const alive = d===0 ? true : keptSets[d-1].has(key);
+        const label = d===0 ? '"The report says"' : seq[seq.length-1];
+        ctx.fillStyle= alive ? '#EAF1F8' : '#F7F9FC';
+        ctx.strokeStyle= alive ? C_BLUE : '#E0E5EB'; ctx.lineWidth=alive?1.6:1;
+        const w = d===0?128:62, h=20;
+        ctx.beginPath();
+        if(ctx.roundRect){ ctx.roundRect(p.x-4,p.y-h/2,w,h,5); } else { ctx.rect(p.x-4,p.y-h/2,w,h); }
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle= alive ? C_BLUE : '#AAB4BE'; ctx.font= d===0?'bold 10px monospace':'10px monospace';
+        ctx.fillText(label, p.x+2, p.y+4);
+        if(d===DEPTH){
+          const lp=r.hist[DEPTH-1].cand.filter(c=>c.seq.join('|')===key)[0];
+          if(lp){ ctx.fillStyle=alive?'#333':'#BBB'; ctx.font='9px monospace';
+                  ctx.fillText('p='+fmt(Math.exp(lp.lp),4), p.x+62, p.y+4); }
+        }
+      });
+    });
+    ctx.fillStyle=C_TXT; ctx.font='bold 10px sans-serif';
+    ['prompt','step 1','step 2','step 3'].forEach((s,i)=>ctx.fillText(s, colX[i], 22));
+    const best=r.beams[0];
+    ro.textContent='B = '+B+' · best sequence "'+best.seq.join(' ')+'" · p = '+
+      fmt(Math.exp(best.lp),4)+' · log p = '+fmt(best.lp,4);
+    let s='';
+    r.hist.forEach((h,d)=>{
+      s+='step '+(d+1)+':  '+h.cand.length+' candidates, keeping top '+Math.min(B,h.cand.length)+'\n';
+      h.cand.forEach((cd,i)=>{
+        const inb=i<B;
+        s+='   '+(inb?'KEEP ':'drop ')+padR('"'+cd.seq.join(' ')+'"',34)+
+           ' p='+fmt(Math.exp(cd.lp),5)+'  log p='+fmt(cd.lp,4)+'\n';
+      });
+      s+='\n';
+    });
+    s+='final beams:\n';
+    r.beams.forEach((b,i)=>{ s+='  '+(i+1)+'. "'+b.seq.join(' ')+'"   p='+fmt(Math.exp(b.lp),5)+'\n'; });
+    if(B>=3) s+='\nnotice: several surviving beams differ only in the final token.';
+    out.textContent=s;
+  }
+  wIn.oninput=draw; draw();
+})();
+
+/* ============ Widget 6 · temperature ============ */
+(function(){
+  const cvs=document.getElementById('tp-canvas'); if(!cvs) return;
+  const ctx=cvs.getContext('2d');
+  const TIn=document.getElementById('tp-T'), ro=document.getElementById('tp-readout');
+  const LOGITS=[4.0,3.2,2.5,2.0,1.0,0.2,-0.5,-1.4];
+  const LABELS=['the','a','coffee','it','she','quantum','&','xyz'];
+  const REF=softmax(LOGITS);
+  function draw(){
+    const T=Math.max(0.05, parseFloat(TIn.value));
+    document.getElementById('tp-Tv').textContent=fmt(T,2);
+    const p=softmax(LOGITS.map(z=>z/T));
+    const W=cvs.width,H=cvs.height; ctx.clearRect(0,0,W,H);
+    const geo=barChart(ctx,W,H,p,LABELS,p.map(()=>C_BLUE),
+      {title:'p_i(T) = softmax(z_i / T)   ·   dashed outline = the T = 1 distribution', dp:3, max:1.0});
+    // dashed T=1 reference
+    ctx.strokeStyle=C_RED; ctx.lineWidth=1.4; ctx.setLineDash([4,3]);
+    REF.forEach((v,i)=>{ const h=v/geo.mx*(H-geo.top-geo.bot);
+      const x=geo.left+i*geo.bw+2, w=Math.max(2,geo.bw-5);
+      ctx.strokeRect(x, H-geo.bot-h, w, h); });
+    ctx.setLineDash([]);
+    const Hb=entropyBits(p);
+    ro.textContent='T = '+fmt(T,2)+'  ·  top token p = '+fmt(Math.max.apply(null,p),4)+
+      '  ·  smallest p = '+fmt(Math.min.apply(null,p),6)+
+      '  ·  entropy = '+fmt(Hb,3)+' bits  ·  effective choices 2^H = '+fmt(Math.pow(2,Hb),2)+
+      ' of '+LOGITS.length;
+  }
+  TIn.oninput=draw;
+  document.getElementById('tp-cold').onclick=function(){ TIn.value='0.05'; draw(); };
+  document.getElementById('tp-hot').onclick=function(){ TIn.value='3'; draw(); };
+  document.getElementById('tp-one').onclick=function(){ TIn.value='1'; draw(); };
+  draw();
+})();
+
+/* ============ Widget 7 · top-k / top-p ============ */
+(function(){
+  const cvs=document.getElementById('tk-canvas'); if(!cvs) return;
+  const ctx=cvs.getContext('2d');
+  const shape=document.getElementById('tk-shape'), kIn=document.getElementById('tk-k'),
+        pIn=document.getElementById('tk-p'), TIn=document.getElementById('tk-T'),
+        out=document.getElementById('tk-out');
+  const N=16;
+  function logitsFor(kind){
+    const z=[];
+    for(let i=0;i<N;i++){
+      if(kind==='sharp')       z.push(6.0*Math.exp(-i*0.85));
+      else if(kind==='medium') z.push(4.0*Math.exp(-i*0.28));
+      else if(kind==='flat')   z.push(2.0 - i*0.06);
+      else                     z.push(i===0?3.4:(i===1?3.3:2.2*Math.exp(-(i-1)*0.30)));
+    }
+    return z;
+  }
+  function draw(){
+    document.getElementById('tk-kv').textContent=kIn.value;
+    document.getElementById('tk-pv').textContent=fmt(+pIn.value,2);
+    document.getElementById('tk-Tv').textContent=fmt(+TIn.value,2);
+    const T=Math.max(0.05,parseFloat(TIn.value));
+    const z=logitsFor(shape.value);
+    const p=softmax(z.map(v=>v/T));
+    const ord=p.map((v,i)=>({v:v,i:i})).sort((a,b)=>b.v-a.v);
+    const K=+kIn.value, P=parseFloat(pIn.value);
+    const kSet=new Set(ord.slice(0,K).map(o=>o.i));
+    const pSet=new Set(); let cum=0, nucCum=0;
+    for(const o of ord){ pSet.add(o.i); cum+=o.v; if(cum>=P){ nucCum=cum; break; } }
+    if(nucCum===0) nucCum=cum;
+    const keep=new Set(); kSet.forEach(i=>{ if(pSet.has(i)) keep.add(i); });
+    let mass=0; keep.forEach(i=>mass+=p[i]);
+    const renorm=p.map((v,i)=>keep.has(i)? v/mass : 0);
+    const W=cvs.width,H=cvs.height; ctx.clearRect(0,0,W,H);
+    const labels=[]; for(let i=0;i<N;i++) labels.push('t'+i);
+    const cols=p.map((v,i)=> keep.has(i)?C_BLUE : ((kSet.has(i)||pSet.has(i))?C_AMBER:C_GREY));
+    const geo=barChart(ctx,W,H,p,labels,cols,
+      {title:'blue = survives both filters   amber = cut by exactly one   grey = cut by both',dp:3});
+    // renormalized overlay
+    ctx.fillStyle='rgba(143,180,212,0.55)';
+    renorm.forEach((v,i)=>{ if(v<=0) return; const h=v/geo.mx*(H-geo.top-geo.bot);
+      ctx.fillRect(geo.left+i*geo.bw+2, H-geo.bot-h, Math.max(2,geo.bw-5), h); });
+    ctx.strokeStyle=C_LIGHT; ctx.lineWidth=1.2;
+    renorm.forEach((v,i)=>{ if(v<=0) return; const h=v/geo.mx*(H-geo.top-geo.bot);
+      ctx.strokeRect(geo.left+i*geo.bw+2, H-geo.bot-h, Math.max(2,geo.bw-5), h); });
+    let s='';
+    s+='shape = '+shape.value+'   T = '+fmt(T,2)+'   k = '+K+'   p = '+fmt(P,2)+'\n';
+    s+='top-k keeps '+kSet.size+' tokens   ·   nucleus (top-p) keeps '+pSet.size+
+       ' tokens holding '+fmt(nucCum,4)+' of the mass\n';
+    s+='intersection kept = '+keep.size+' tokens holding '+fmt(mass,4)+
+       ' before renormalization\n\n';
+    s+='  rank  token   p        cumulative   in top-k   in nucleus   renormalized\n';
+    s+='  ----------------------------------------------------------------------\n';
+    let cc=0;
+    ord.slice(0,10).forEach((o,r)=>{ cc+=o.v;
+      s+='  '+padL(r+1,4)+'  '+padR('t'+o.i,7)+padL(fmt(o.v,4),8)+padL(fmt(cc,4),13)+
+         padL(kSet.has(o.i)?'yes':'no',11)+padL(pSet.has(o.i)?'yes':'no',13)+
+         padL(renorm[o.i]>0?fmt(renorm[o.i],4):'-',15)+'\n'; });
+    if(ord.length>10) s+='  ...  ('+(ord.length-10)+' more, all ranked below)\n';
+    s+='\nentropy before truncation '+fmt(entropyBits(p),3)+
+       ' bits  ->  after '+fmt(entropyBits(renorm),3)+' bits';
+    out.textContent=s;
+  }
+  [shape,kIn,pIn,TIn].forEach(e=>{ e.oninput=draw; e.onchange=draw; });
+  draw();
+})();
+
+/* ============ Widget 8 · repetition penalty ============ */
+(function(){
+  const cvs=document.getElementById('rp-canvas'); if(!cvs) return;
+  const ctx=cvs.getContext('2d');
+  const rho=document.getElementById('rp-rho'), ro=document.getElementById('rp-readout'),
+        host=document.getElementById('rp-toggles'), out=document.getElementById('rp-out');
+  const LG=[3.0,1.5,0.5,-0.5,-2.0];
+  const TOK=['smooth','rich','bitter','and','xylophone'];
+  const used=new Set([0,3]);
+  function chips(){
+    host.innerHTML='';
+    const lab=document.createElement('span'); lab.className='small';
+    lab.textContent='already generated (click to toggle): '; lab.style.marginRight='6px';
+    host.appendChild(lab);
+    TOK.forEach((t,i)=>{
+      const s=document.createElement('span');
+      s.className='tok'+(used.has(i)?' new':' dead');
+      s.style.cursor='pointer'; s.textContent=t;
+      s.onclick=function(){ if(used.has(i)) used.delete(i); else used.add(i); chips(); draw(); };
+      host.appendChild(s);
+    });
+  }
+  function draw(){
+    const r=parseFloat(rho.value);
+    document.getElementById('rp-rhov').textContent=fmt(r,2);
+    const adj=LG.map((z,i)=> used.has(i) ? (z>0 ? z/r : z*r) : z);
+    const p0=softmax(LG), p1=softmax(adj);
+    const W=cvs.width,H=cvs.height; ctx.clearRect(0,0,W,H);
+    const geo=barChart(ctx,W,H,p1,TOK,p1.map((v,i)=>used.has(i)?C_RED:C_BLUE),
+      {title:'probabilities after the penalty (dashed = before)',dp:4,max:Math.max(1e-9,Math.max.apply(null,p0.concat(p1)))});
+    ctx.strokeStyle='#888'; ctx.lineWidth=1.3; ctx.setLineDash([4,3]);
+    p0.forEach((v,i)=>{ const h=v/geo.mx*(H-geo.top-geo.bot);
+      ctx.strokeRect(geo.left+i*geo.bw+2, H-geo.bot-h, Math.max(2,geo.bw-5), h); });
+    ctx.setLineDash([]);
+    const top0=p0.indexOf(Math.max.apply(null,p0)), top1=p1.indexOf(Math.max.apply(null,p1));
+    ro.textContent='rho = '+fmt(r,2)+' · argmax before: "'+TOK[top0]+'" · argmax after: "'+TOK[top1]+'"'+
+      (top0!==top1?' · the penalty changed the greedy choice':'');
+    let s='';
+    s+='  token        z      rule                 z_adjusted    p before    p after\n';
+    s+='  -----------------------------------------------------------------------------\n';
+    LG.forEach((z,i)=>{
+      const rule = !used.has(i) ? 'not repeated'
+                 : (z>0 ? 'z / rho  (z > 0)' : 'z * rho  (z <= 0)');
+      s+='  '+padR(TOK[i],11)+padL(fmt(z,2),6)+'   '+padR(rule,21)+
+         padL(fmt(adj[i],4),10)+padL(fmt(p0[i],5),12)+padL(fmt(p1[i],5),11)+'\n';
+    });
+    s+='  -----------------------------------------------------------------------------\n';
+    s+='  entropy before '+fmt(entropyBits(p0),3)+' bits   after '+fmt(entropyBits(p1),3)+' bits\n';
+    s+='  note the sign split: dividing a negative logit would RAISE it toward zero,\n';
+    s+='  boosting the token you meant to suppress. Hence multiply when z <= 0.';
+    out.textContent=s;
+  }
+  rho.oninput=draw; chips(); draw();
+})();
+
+/* ============ Widget 9 · perplexity ============ */
+(function(){
+  const cvs=document.getElementById('pp-canvas'); if(!cvs) return;
+  const ctx=cvs.getContext('2d');
+  const host=document.getElementById('pp-inputs'), ro=document.getElementById('pp-readout'),
+        out=document.getElementById('pp-out');
+  const TOK=['the','cat','sat','on','the','mat'];
+  const BASE=[0.50,0.25,0.20,0.40,0.50,0.10];
+  let cur=BASE.slice();
+  TOK.forEach((t,i)=>{
+    const d=document.createElement('div'); d.className='li';
+    d.innerHTML='<span>p('+t+')</span>';
+    const inp=document.createElement('input'); inp.type='number'; inp.step='0.01';
+    inp.min='0.000001'; inp.max='1'; inp.value=String(BASE[i]); inp.id='pp-i'+i;
+    inp.oninput=function(){ let v=parseFloat(inp.value); if(!(v>0)) v=1e-6; if(v>1) v=1;
+      cur[i]=v; draw(); };
+    d.appendChild(inp); host.appendChild(d);
+  });
+  function sync(){ cur.forEach((v,i)=>document.getElementById('pp-i'+i).value=String(v)); }
+  function draw(){
+    const lns=cur.map(Math.log);
+    const S=lns.reduce((a,b)=>a+b,0);
+    const N=cur.length; const avg=S/N; const ppl=Math.exp(-avg);
+    const nll=lns.map(v=>-v);
+    barChart(ctx,cvs.width,cvs.height,nll,TOK,nll.map(v=>v>2.5?C_RED:C_BLUE),
+      {title:'per-token surprisal  -ln p_t  (nats) — tall bars dominate perplexity',dp:3});
+    ro.textContent='PPL = '+fmt(ppl,4)+'  ·  cross-entropy = '+fmt(-avg/Math.LN2,4)+
+      ' bits/token  ·  N = '+N;
+    let s='';
+    s+='  t   token   p_t        ln p_t       -ln p_t (surprisal)\n';
+    s+='  --------------------------------------------------------\n';
+    cur.forEach((p,i)=>{ s+='  '+(i+1)+'   '+padR(TOK[i],7)+padL(fmt(p,6),9)+
+      padL(fmt(lns[i],6),13)+padL(fmt(-lns[i],6),21)+'\n'; });
+    s+='  --------------------------------------------------------\n';
+    s+='  sum ln p_t            = '+fmt(S,6)+'\n';
+    s+='  average               = '+fmt(S,6)+' / '+N+' = '+fmt(avg,6)+'\n';
+    s+='  PPL = exp(-average)   = exp('+fmt(-avg,6)+') = '+fmt(ppl,4)+'\n';
+    s+='  cross-entropy         = '+fmt(-avg/Math.LN2,6)+' bits/token,  2^H = '+
+       fmt(Math.pow(2,-avg/Math.LN2),4)+'\n';
+    const gm=Math.exp(avg);
+    s+='  geometric mean of p_t = '+fmt(gm,6)+'   and 1 / '+fmt(gm,6)+' = '+fmt(1/gm,4)+
+       '  (same number)\n';
+    s+='\n  reading: the model was as uncertain, on average, as if choosing uniformly\n';
+    s+='  among '+fmt(ppl,2)+' equally likely tokens at every step.';
+    out.textContent=s;
+  }
+  document.getElementById('pp-reset').onclick=function(){ cur=BASE.slice(); sync(); draw(); };
+  document.getElementById('pp-break').onclick=function(){ cur=BASE.slice(); cur[5]=0.001; sync(); draw(); };
+  draw();
+})();
+
+/* ============ Widget 10 · distinct-n ============ */
+(function(){
+  const cvs=document.getElementById('dn-canvas'); if(!cvs) return;
+  const ctx=cvs.getContext('2d');
+  const ta=document.getElementById('dn-text'), out=document.getElementById('dn-out');
+  const EX={
+    e1:'the coffee is rich and smooth and smooth and smooth',
+    e2:'the coffee tastes smooth and rich but not too bitter',
+    e3:'the results were positive overall . the results were positive overall for most users . '+
+       'the results were largely positive . the results were positive in most cases .'
+  };
+  function toks(){ return ta.value.toLowerCase().replace(/\s+/g,' ').trim().split(' ').filter(t=>t.length); }
+  function dn(t,n){ if(t.length<n) return {u:0,tot:0,r:0,rep:[]};
+    const m={}; let tot=0;
+    for(let i=0;i+n<=t.length;i++){ const g=t.slice(i,i+n).join(' '); m[g]=(m[g]||0)+1; tot++; }
+    const keys=Object.keys(m);
+    const rep=keys.filter(k=>m[k]>1).sort((a,b)=>m[b]-m[a]);
+    return {u:keys.length, tot:tot, r:keys.length/tot, rep:rep, counts:m};
+  }
+  function draw(){
+    const t=toks();
+    const rs=[1,2,3,4].map(n=>dn(t,n));
+    barChart(ctx,cvs.width,cvs.height,rs.map(r=>r.r),
+      ['distinct-1','distinct-2','distinct-3','distinct-4'],
+      rs.map(r=>r.r<0.7?C_RED:C_BLUE),
+      {title:'distinct-n = unique n-grams / total n-grams  (red = below 0.70)',dp:3,max:1.0});
+    let s='';
+    s+='tokens: '+t.length+'\n\n';
+    s+='  n    unique   total    distinct-n\n';
+    s+='  ------------------------------------\n';
+    rs.forEach((r,i)=>{ s+='  '+(i+1)+padL(r.u,9)+padL(r.tot,9)+padL(r.tot?fmt(r.r,4):'n/a',14)+'\n'; });
+    s+='\nrepeated n-grams (count > 1):\n';
+    let any=false;
+    rs.forEach((r,i)=>{
+      if(r.rep.length){ any=true;
+        s+='  '+(i+1)+'-grams: '+r.rep.slice(0,6).map(g=>'"'+g+'" x'+r.counts[g]).join(', ')+
+           (r.rep.length>6?', ...':'')+'\n'; }
+    });
+    if(!any) s+='  none\n';
+    s+='\nreminder: distinct-n detects repetition. It does not measure quality —\n';
+    s+='random tokens score 1.000 at every order.';
+    out.textContent=s;
+  }
+  ta.oninput=draw;
+  document.getElementById('dn-ex1').onclick=function(){ ta.value=EX.e1; draw(); };
+  document.getElementById('dn-ex2').onclick=function(){ ta.value=EX.e2; draw(); };
+  document.getElementById('dn-ex3').onclick=function(){ ta.value=EX.e3; draw(); };
+  draw();
+})();
+
+/* ============ Widget 11 · inter-rater agreement ============ */
+(function(){
+  const cvs=document.getElementById('ir-canvas'); if(!cvs) return;
+  const ctx=cvs.getContext('2d');
+  const host=document.getElementById('ir-table'), out=document.getElementById('ir-out');
+  const A0=[4,3,5,2,4,3,1,5,4,2], B0=[3,3,4,2,5,4,1,5,3,3];
+  let A=A0.slice(), B=B0.slice();
+  const K=5;
+  function build(){
+    let h='<table class="rater-table"><tr><th>output</th>';
+    for(let i=0;i<10;i++) h+='<th>'+(i+1)+'</th>';
+    h+='</tr><tr><th>rater A</th>';
+    for(let i=0;i<10;i++) h+='<td><input type="number" min="1" max="5" step="1" id="ir-a'+i+'"></td>';
+    h+='</tr><tr><th>rater B</th>';
+    for(let i=0;i<10;i++) h+='<td><input type="number" min="1" max="5" step="1" id="ir-b'+i+'"></td>';
+    h+='</tr></table>';
+    host.innerHTML=h;
+    for(let i=0;i<10;i++){
+      const ea=document.getElementById('ir-a'+i), eb=document.getElementById('ir-b'+i);
+      ea.value=String(A[i]); eb.value=String(B[i]);
+      ea.oninput=function(){ A[i]=clampScore(ea.value); draw(); };
+      eb.oninput=function(){ B[i]=clampScore(eb.value); draw(); };
+    }
+  }
+  function clampScore(v){ let x=parseInt(v,10); if(isNaN(x)) x=3; return Math.max(1,Math.min(K,x)); }
+  function sync(){ for(let i=0;i<10;i++){ document.getElementById('ir-a'+i).value=String(A[i]);
+                                          document.getElementById('ir-b'+i).value=String(B[i]); } }
+  function kappa(w){
+    const N=A.length;
+    const wf = w==='none' ? function(i,j){ return i===j?1:0; }
+             : w==='lin'  ? function(i,j){ return 1-Math.abs(i-j)/(K-1); }
+             :              function(i,j){ return 1-Math.pow((i-j)/(K-1),2); };
+    let po=0; for(let i=0;i<N;i++) po+=wf(A[i],B[i]); po/=N;
+    const ca=new Array(K+1).fill(0), cb=new Array(K+1).fill(0);
+    A.forEach(v=>ca[v]++); B.forEach(v=>cb[v]++);
+    let pe=0;
+    for(let i=1;i<=K;i++) for(let j=1;j<=K;j++) pe+=wf(i,j)*(ca[i]/N)*(cb[j]/N);
+    const k = (1-pe)===0 ? 1 : (po-pe)/(1-pe);
+    return {po:po, pe:pe, k:k};
+  }
+  function draw(){
+    const N=A.length;
+    let exact=0, adj=0, sumd=0;
+    for(let i=0;i<N;i++){ const d=A[i]-B[i]; if(d===0) exact++; if(Math.abs(d)<=1) adj++; sumd+=d; }
+    const kn=kappa('none'), kl=kappa('lin'), kq=kappa('quad');
+    const W=cvs.width,H=cvs.height; ctx.clearRect(0,0,W,H);
+    // difference histogram
+    const bins=[0,0,0,0,0,0,0,0,0]; // -4..+4
+    for(let i=0;i<N;i++) bins[(A[i]-B[i])+4]++;
+    const labs=['-4','-3','-2','-1','0','+1','+2','+3','+4'];
+    barChart(ctx,W,H,bins,labs,bins.map((v,i)=> i===4?C_GREEN : (Math.abs(i-4)<=1?C_BLUE:C_RED)),
+      {title:'distribution of (rater A - rater B) across the 10 items',dp:0});
+    let s='';
+    s+='  exact agreement    '+exact+' / '+N+' = '+fmt(exact/N,3)+'\n';
+    s+='  adjacent (within 1) '+adj+' / '+N+' = '+fmt(adj/N,3)+'\n';
+    s+='  mean signed difference (A - B) = '+fmt(sumd/N,3)+
+       (Math.abs(sumd/N)>=0.5?'   <- systematic offset, not disagreement about content':'')+'\n\n';
+    s+='  kappa variant       p_o       p_e       kappa\n';
+    s+='  ---------------------------------------------\n';
+    s+='  unweighted     '+padL(fmt(kn.po,4),9)+padL(fmt(kn.pe,4),10)+padL(fmt(kn.k,4),12)+'\n';
+    s+='  linear weight  '+padL(fmt(kl.po,4),9)+padL(fmt(kl.pe,4),10)+padL(fmt(kl.k,4),12)+'\n';
+    s+='  quadratic wt.  '+padL(fmt(kq.po,4),9)+padL(fmt(kq.pe,4),10)+padL(fmt(kq.k,4),12)+'\n\n';
+    s+='  kappa = (p_o - p_e) / (1 - p_e).  Unweighted kappa treats 4-vs-5 as badly as\n';
+    s+='  1-vs-5; on a 1-5 rating scale that is the wrong model of disagreement.\n';
+    const big=[];
+    for(let i=0;i<N;i++) if(Math.abs(A[i]-B[i])>=2) big.push(i+1);
+    s+='\n  items with disagreement of 2 or more: '+(big.length?big.join(', '):'none')+
+       '\n  those are the items to read, not to average away.';
+    out.textContent=s;
+  }
+  document.getElementById('ir-agree').onclick=function(){ B=A.slice(); sync(); draw(); };
+  document.getElementById('ir-offset').onclick=function(){
+    B=A.map(v=>Math.min(K,v+1)); sync(); draw(); };
+  document.getElementById('ir-reset').onclick=function(){ A=A0.slice(); B=B0.slice(); sync(); draw(); };
+  build(); draw();
+})();
+</script>
+</body>
+</html>

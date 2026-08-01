@@ -1,0 +1,26 @@
+# API tier — installed by Render.com (see render.yaml buildCommand).
+# Keep this list minimal: every megabyte is cold-start time on the free plan.
+#
+# This is the ONLY requirements file that may contain torch, transformers, or
+# scikit-learn. The UI tier is a thin HTTP client and must stay that way.
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic==2.9.2
+
+# Classical baseline: TF-IDF + logistic regression, plus the calibration wrappers.
+scikit-learn==1.5.2
+numpy==1.26.4
+scipy==1.14.1
+joblib==1.4.2
+
+# Transformer: DistilBERT fine-tuning and inference.
+# torch is by far the largest thing here. render.yaml installs it from the
+# CPU-only wheel index; the default CUDA build is several gigabytes and there is
+# no GPU on the free plan to use it with.
+transformers==4.44.2
+tokenizers==0.19.1
+torch==2.4.1
+
+supabase==2.7.4
+python-dotenv==1.0.1
+pyyaml==6.0.2

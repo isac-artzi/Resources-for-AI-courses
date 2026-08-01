@@ -1,0 +1,17 @@
+.env
+ui/.streamlit/secrets.toml
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+.DS_Store
+
+# Local vector store and cached model weights. Both are large and neither is
+# source. A committed .chroma/ directory is also a committed copy of your
+# document collection, which may not be yours to publish.
+.chroma/
+data/
+*.pt
+*.safetensors

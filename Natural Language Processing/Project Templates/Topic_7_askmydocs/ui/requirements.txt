@@ -1,0 +1,9 @@
+# UI tier — installed by Streamlit Community Cloud.
+# No transformers, no torch, no sentence-transformers, no chromadb: the UI is a
+# thin client on purpose. If you find yourself needing a model library here, the
+# logic belongs in the API instead — and the embedding model would then be loaded
+# once per browser session, which is not a thing you want to pay for.
+streamlit==1.38.0
+requests==2.32.3
+pandas==2.2.2
+supabase==2.7.4

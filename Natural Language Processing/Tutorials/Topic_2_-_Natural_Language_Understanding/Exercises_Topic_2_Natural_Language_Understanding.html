@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 2 Exercises — Natural Language Understanding</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+       margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6; }
+.container { max-width: 980px; margin: 24px auto 48px; background: white;
+             padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.35em; margin-top: 40px;
+     border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+h4 { color: #555; font-size: 1.0em; margin-top: 18px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 6px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7;
+       padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px; overflow-x: auto;
+      border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79;
+           padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px;
+        margin: 14px 0; border-radius: 4px; font-size: 0.93em; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+        padding: 22px; margin: 22px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.controls { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 180px; }
+.control input[type="number"] { width: 80px; padding: 4px 8px;
+            border: 1px solid #CFD7DF; border-radius: 4px; font-family: inherit; }
+.control select { padding: 5px 8px; border: 1px solid #CFD7DF; border-radius: 4px;
+                  font-family: inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px;
+           border-radius: 6px; font-family: "SF Mono", Consolas, monospace;
+           font-size: 0.88em; min-width: 220px; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 16px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.93em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+      background: #F2F4F7; padding: 4px 8px; border-radius: 4px; }
+.eq-block { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+            background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+            text-align: center; margin: 14px 0; display: block; }
+.nav { display: flex; justify-content: space-between; margin-top: 40px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+       padding: 16px 22px; margin-bottom: 28px; font-size: 0.92em; }
+.toc h3 { margin: 0 0 8px; color: #1F4E79; font-size: 1.0em; }
+.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 24px; }
+.toc a { color: #1F4E79; text-decoration: none; } .toc a:hover { text-decoration: underline; }
+.tag { display: inline-block; padding: 2px 8px; background: #E0E5EB;
+       border-radius: 12px; font-size: 0.75em; color: #555;
+       text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px; }
+.tag.interactive { background: #E1F0EA; color: #1B5E20; }
+.tag.code { background: #F2F4F7; color: #555; }
+.tag.math { background: #FCE8EE; color: #6E1414; }
+table.cmp { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 0.92em; }
+table.cmp th, table.cmp td { border: 1px solid #E0E5EB; padding: 8px 12px; text-align: left; }
+table.cmp th { background: #F2F4F7; color: #1F4E79; }
+.archetype { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
+.arc-card { border: 1px solid #D0D8E0; border-radius: 8px; padding: 14px;
+            background: white; font-size: 0.9em; }
+.arc-card .name { color: #1F4E79; font-weight: 600; }
+.arc-card .role { color: #555; margin-top: 6px; }
+/* --- additions for this topic (append-only) --- */
+.demo textarea { width: 100%; padding: 8px 10px; border: 1px solid #CFD7DF; border-radius: 4px;
+                 font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.86em;
+                 line-height: 1.5; resize: vertical; }
+.two-up { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+.scrollbox { max-height: 340px; overflow-y: auto; }
+table.cm { border-collapse: collapse; margin: 12px 0; font-size: 0.9em; }
+table.cm td, table.cm th { border: 1px solid #D0D8E0; padding: 10px 14px; text-align: center;
+                           font-family: "SF Mono", Consolas, monospace; }
+table.cm th { background: #F2F4F7; color: #1F4E79; font-family: inherit; font-size: 0.92em; }
+td.tp { background: #E1F0EA; } td.tn { background: #EAF1F8; }
+td.fp { background: #FFF8E1; } td.fn { background: #FBD9D6; }
+.mini { font-size: 0.85em; color: #666; margin-top: 8px; }
+canvas { max-width: 100%; height: auto; }
+.exercise { border: 1px solid #E0E5EB; border-radius: 8px; padding: 20px 24px;
+            margin: 22px 0; background: #FFFFFF; }
+.exercise h3 { margin-top: 0; color: #1F4E79; }
+.qtype { font-size: 0.76em; text-transform: uppercase; letter-spacing: 0.06em; color: #888; }
+.stem { margin: 10px 0; }
+details { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 6px;
+          padding: 10px 16px; margin-top: 16px; }
+summary { cursor: pointer; color: #1F4E79; font-weight: 600; }
+details > *:first-child + * { margin-top: 12px; }
+.diff { display: inline-block; padding: 2px 8px; border-radius: 12px;
+        font-size: 0.72em; letter-spacing: 0.04em; text-transform: uppercase; margin-left: 8px; }
+.diff.easy { background: #E1F0EA; color: #1B5E20; }
+.diff.mid  { background: #FFF8E1; color: #7A5600; }
+.diff.hard { background: #FCE8EE; color: #6E1414; }
+tr.hit td { background: #E1F0EA; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="brand">Exercises &middot; ~ 90 min</div>
+<h1>Topic 2 Exercises — Natural Language Understanding</h1>
+<p class="subtitle">Fourteen problems, in order of difficulty: arithmetic you should be able to do with a calculator, predictions you check against a live widget, code you write and run, and questions with no formula at all.</p>
+
+<div class="callout">
+  <strong>How to use these.</strong> Work each problem to a written answer <em>before</em> opening the solution. For the by-hand problems, keep four decimal places and do not round until the end. For the widget problems, write your prediction down first &mdash; the point is the comparison, and reading the answer off the screen teaches nothing. Everything here is single-label binary classification, matching the topic project.
+</div>
+
+<div class="toc">
+  <h3>The problems</h3>
+  <ol>
+    <li><a href="#e1">A bag-of-words vector by hand</a></li>
+    <li><a href="#e2">TF&ndash;IDF for a whole document</a></li>
+    <li><a href="#e3">Three definitions of idf</a></li>
+    <li><a href="#e4">A linear classifier's score by hand</a></li>
+    <li><a href="#e5">Metrics from a confusion matrix</a></li>
+    <li><a href="#e6">Imbalance and the crossover prevalence</a></li>
+    <li><a href="#e7">Threshold sweep: predict, then check</a></li>
+    <li><a href="#e8">Temperature scaling: predict, then check</a></li>
+    <li><a href="#e9">Code: TF&ndash;IDF in pure Python</a></li>
+    <li><a href="#e10">Code: metrics from four counts</a></li>
+    <li><a href="#e11">Code: freezing layers and counting parameters</a></li>
+    <li><a href="#e12">Explain: the metric a stakeholder should see</a></li>
+    <li><a href="#e13">Explain: 1,000 labels and no GPU</a></li>
+    <li><a href="#e14">Explain: what the score in the API response means</a></li>
+  </ol>
+</div>
+
+<!-- 1 -->
+<div class="exercise" id="e1">
+  <div class="qtype">By hand &middot; representation</div>
+  <h3>1 &middot; A bag-of-words vector by hand <span class="diff easy">warm-up</span></h3>
+  <div class="stem">
+    <p>Take these two documents, lowercased, punctuation stripped, no stop-word removal, no stemming:</p>
+    <pre>A: the refund was processed but the item was not returned
+B: the item was returned but the refund was not processed</pre>
+    <ol>
+      <li>Write the shared vocabulary in alphabetical order and give <span class="eq">|V|</span>.</li>
+      <li>Write the count vector for A and for B in that order.</li>
+      <li>Compute the cosine similarity between them.</li>
+      <li>These two sentences describe opposite situations, one of which entitles the customer to money. What does your answer to part 3 imply about any classifier built on this representation?</li>
+    </ol>
+  </div>
+  <details>
+    <summary>Show solution</summary>
+    <p><strong>1.</strong> Both documents contain exactly the same multiset of tokens. The vocabulary, alphabetically, is:</p>
+    <pre>but, item, not, processed, refund, returned, the, was      &rarr;  |V| = 8</pre>
+    <p><strong>2.</strong> Counting in that order, each document has 10 tokens:</p>
+    <pre>A = [1, 1, 1, 1, 1, 1, 2, 2]
+B = [1, 1, 1, 1, 1, 1, 2, 2]</pre>
+    <p><strong>3.</strong> The vectors are identical, so the cosine is exactly 1:</p>
+    <pre>dot(A, B) = 1+1+1+1+1+1+4+4 = 14
+|A| = |B| = sqrt(14)
+cos = 14 / (sqrt(14) * sqrt(14)) = 14/14 = 1.0000</pre>
+    <p><strong>4.</strong> Identical vectors means identical input to the classifier, which means identical output. No TF&ndash;IDF weighting, no regularization setting, no amount of extra training data can separate them: a function cannot return two different values for one input. The only fixes are representational &mdash; bigrams (<code>not returned</code> versus <code>not processed</code> become distinct features), a negation-marking preprocessing pass, or a model that reads word order, which is the argument for the encoder.</p>
+  </details>
+</div>
+
+<!-- 2 -->
+<div class="exercise" id="e2">
+  <div class="qtype">By hand &middot; TF&ndash;IDF</div>
+  <h3>2 &middot; TF&ndash;IDF for a whole document <span class="diff easy">warm-up</span></h3>
+  <div class="stem">
+    <p>A corpus of five app-store reviews, <span class="eq">N = 5</span>:</p>
+    <pre>d1: the app crashed on launch
+d2: the app crashed again after the update
+d3: great app, no issues at all
+d4: the update fixed my issues
+d5: launch day was smooth</pre>
+    <p>Using <span class="eq">tf(t, d) = count(t, d) / |d|</span> and <span class="eq">idf(t) = log<sub>10</sub>(N / df(t))</span>:</p>
+    <ol>
+      <li>Compute df for every term of <span class="eq">d1</span>.</li>
+      <li>Produce the full tf&ndash;idf table for <span class="eq">d1</span>, sorted from largest to smallest.</li>
+      <li>Which term scores highest? Is that the term you would want a complaint classifier to lean on? Explain what went wrong and name two fixes.</li>
+    </ol>
+  </div>
+  <details>
+    <summary>Show solution</summary>
+    <p><strong>1.</strong> <span class="eq">d1</span> has five tokens: <code>the, app, crashed, on, launch</code>, so <span class="eq">|d1| = 5</span> and every count is 1. Document frequencies over all five documents:</p>
+    <pre>the      &rarr; d1, d2, d4      &rarr; df = 3
+app      &rarr; d1, d2, d3      &rarr; df = 3
+crashed  &rarr; d1, d2          &rarr; df = 2
+on       &rarr; d1              &rarr; df = 1
+launch   &rarr; d1, d5          &rarr; df = 2</pre>
+    <p><strong>2.</strong> Every tf is <span class="eq">1/5 = 0.2000</span>, so the ranking is decided entirely by idf.</p>
+    <table class="cmp">
+      <tr><th>term</th><th>count</th><th>tf</th><th>df</th><th>idf = log<sub>10</sub>(5/df)</th><th>tf&ndash;idf</th></tr>
+      <tr><td><code>on</code></td><td>1</td><td>0.2000</td><td>1</td><td>0.6990</td><td><strong>0.1398</strong></td></tr>
+      <tr><td><code>crashed</code></td><td>1</td><td>0.2000</td><td>2</td><td>0.3979</td><td>0.0796</td></tr>
+      <tr><td><code>launch</code></td><td>1</td><td>0.2000</td><td>2</td><td>0.3979</td><td>0.0796</td></tr>
+      <tr><td><code>the</code></td><td>1</td><td>0.2000</td><td>3</td><td>0.2218</td><td>0.0444</td></tr>
+      <tr><td><code>app</code></td><td>1</td><td>0.2000</td><td>3</td><td>0.2218</td><td>0.0444</td></tr>
+    </table>
+    <p>Worked arithmetic for the top row: <span class="eq">idf(on) = log<sub>10</sub>(5/1) = log<sub>10</sub>(5) = 0.6990</span>, and <span class="eq">0.2000 &times; 0.6990 = 0.1398</span>.</p>
+    <p><strong>3.</strong> The winner is <code>on</code>, a preposition with no bearing on whether the review is a complaint. TF&ndash;IDF measures <em>distinctiveness within this corpus</em>, not meaning, and <code>on</code> happens to occur in exactly one of five documents. This is a small-corpus artifact: with 5,000 reviews, <code>on</code> would appear in a large fraction of them and its idf would collapse toward zero, while <code>crashed</code> would stay comparatively rare. Two fixes: (a) use a corpus large enough for document frequencies to be stable &mdash; the reason the topic project sets a 5,000-row floor; (b) set <code>min_df</code> above 1 so hapax terms are dropped, or apply a stop-word list. A third option is to let the classifier handle it: logistic regression can learn a near-zero weight for <code>on</code>, provided it has enough examples to see that the term is uninformative.</p>
+  </details>
+</div>
+
+<!-- 3 -->
+<div class="exercise" id="e3">
+  <div class="qtype">By hand + widget &middot; TF&ndash;IDF</div>
+  <h3>3 &middot; Three definitions of idf <span class="diff easy">warm-up</span></h3>
+  <div class="stem">
+    <p>Still with <span class="eq">N = 5</span>. Fill in this table by hand for <span class="eq">df &isin; {1, 2, 3, 5}</span>, then check every cell against the widget below.</p>
+    <table class="cmp">
+      <tr><th>df</th><th>log<sub>10</sub>(N/df)</th><th>ln(N/df)</th><th>ln((1+N)/(1+df)) + 1 &nbsp;(scikit-learn)</th></tr>
+      <tr><td>1</td><td>?</td><td>?</td><td>?</td></tr>
+      <tr><td>2</td><td>?</td><td>?</td><td>?</td></tr>
+      <tr><td>3</td><td>?</td><td>?</td><td>?</td></tr>
+      <tr><td>5</td><td>?</td><td>?</td><td>?</td></tr>
+    </table>
+    <p>Then answer: what happens to a term that occurs in every document under each of the three definitions, and why did scikit-learn's authors choose a form that never reaches zero?</p>
+  </div>
+  <div class="demo">
+    <h3>Widget &middot; idf calculator</h3>
+    <div class="controls">
+      <div class="control"><label>N (documents)</label><input type="number" id="idf-N" value="5" min="1"></div>
+      <div class="control"><label>df (documents containing t)</label><input type="number" id="idf-df" value="1" min="1"></div>
+    </div>
+    <pre id="idf-out"></pre>
+  </div>
+  <details>
+    <summary>Show solution</summary>
+    <table class="cmp">
+      <tr><th>df</th><th>log<sub>10</sub>(5/df)</th><th>ln(5/df)</th><th>ln(6/(1+df)) + 1</th></tr>
+      <tr><td>1</td><td>0.6990</td><td>1.6094</td><td>2.0986</td></tr>
+      <tr><td>2</td><td>0.3979</td><td>0.9163</td><td>1.6931</td></tr>
+      <tr><td>3</td><td>0.2218</td><td>0.5108</td><td>1.4055</td></tr>
+      <tr><td>5</td><td>0.0000</td><td>0.0000</td><td>1.0000</td></tr>
+    </table>
+    <p>Sample arithmetic: <span class="eq">log<sub>10</sub>(5/3) = log<sub>10</sub>(1.6667) = 0.2218</span>; <span class="eq">ln(5/3) = 0.5108</span>; and <span class="eq">ln(6/4) + 1 = ln(1.5) + 1 = 0.4055 + 1 = 1.4055</span>.</p>
+    <p><strong>Term in every document (df = N).</strong> Under both textbook forms the idf is exactly 0, so the tf&ndash;idf of that term is 0 in every document and the feature is dead &mdash; idf acting as an automatic stop-word filter. Under the scikit-learn form the idf is exactly 1, so the feature survives with its raw tf.</p>
+    <p><strong>Why the smoothed form.</strong> Two reasons. First, robustness: the <code>+1</code> in the denominator behaves as if an extra document containing every term had been added, so a term unseen in the training corpus cannot produce a division by zero when the vectorizer is applied to new text. Second, keeping the value non-zero avoids silently discarding a column: a term present everywhere in <em>this</em> corpus may still be worth keeping, and after the L2 normalization that <code>TfidfVectorizer</code> applies by default it will contribute little to the direction of the vector anyway. Note the consequence for reproducibility &mdash; numbers computed by hand with the textbook formula will not match scikit-learn's output, and that is not a bug in either.</p>
+  </details>
+</div>
+
+<!-- 4 -->
+<div class="exercise" id="e4">
+  <div class="qtype">By hand &middot; linear model</div>
+  <h3>4 &middot; A linear classifier's score by hand <span class="diff mid">core</span></h3>
+  <div class="stem">
+    <p>A logistic-regression complaint detector (label 1 = complaint) has learned these weights, with bias <span class="eq">b = &minus;0.30</span>:</p>
+    <pre>w(refund) = +2.10    w(broken) = +1.60
+w(thanks) = -2.40    w(quick)  = -1.10</pre>
+    <p>An incoming message produces the TF&ndash;IDF features <code>refund = 0.50</code> and <code>thanks = 0.40</code>; every other coordinate is 0.</p>
+    <ol>
+      <li>Compute <span class="eq">z</span> and <span class="eq">p = &sigma;(z)</span> to four decimal places.</li>
+      <li>What label is predicted at a threshold of 0.5? At a threshold of 0.4?</li>
+      <li>What bias <span class="eq">b</span> would place this exact message on the decision boundary?</li>
+      <li>The vocabulary has 30,000 entries. How many multiplications did part 1 actually require, and why?</li>
+    </ol>
+  </div>
+  <details>
+    <summary>Show solution</summary>
+    <p><strong>1.</strong> Only the two non-zero coordinates contribute:</p>
+    <pre>z = (2.10)(0.50) + (-2.40)(0.40) + (-0.30)
+  = 1.05 - 0.96 - 0.30
+  = -0.2100
+
+p = 1 / (1 + e^0.21) = 1 / (1 + 1.2337) = 1 / 2.2337 = 0.4477</pre>
+    <p><strong>2.</strong> At threshold 0.5: <span class="eq">0.4477 &lt; 0.5</span>, so predict <strong>0</strong> (not a complaint). At threshold 0.4: <span class="eq">0.4477 &ge; 0.4</span>, so predict <strong>1</strong>. Same model, same input, opposite decision &mdash; which is why a reported recall without a stated threshold is meaningless.</p>
+    <p><strong>3.</strong> On the boundary <span class="eq">p = 0.5</span>, which is exactly <span class="eq">z = 0</span>:</p>
+    <pre>0 = 1.05 - 0.96 + b   &rarr;   b = -0.09</pre>
+    <p>Raising the bias from &minus;0.30 to &minus;0.09 tips this message to the boundary; anything above &minus;0.09 flags it. Shifting the bias and moving the threshold are the same operation viewed from two sides.</p>
+    <p><strong>4.</strong> Two. The dot product runs over the non-zero entries of a sparse vector, and this document has two. That is the whole reason the classical pipeline answers in microseconds regardless of vocabulary size: cost scales with document length, not with <span class="eq">|V|</span>.</p>
+  </details>
+</div>
+
+<!-- 5 -->
+<div class="exercise" id="e5">
+  <div class="qtype">By hand &middot; evaluation</div>
+  <h3>5 &middot; Metrics from a confusion matrix <span class="diff mid">core</span></h3>
+  <div class="stem">
+    <p>A complaint detector is evaluated on 1,200 held-out messages at threshold 0.5. Positive = complaint.</p>
+    <table class="cm">
+      <tr><th></th><th>predicted 1</th><th>predicted 0</th></tr>
+      <tr><th>actual 1</th><td class="tp">180</td><td class="fn">60</td></tr>
+      <tr><th>actual 0</th><td class="fp">120</td><td class="tn">840</td></tr>
+    </table>
+    <ol>
+      <li>Compute accuracy, precision, recall and F1 to four decimal places.</li>
+      <li>What is the positive-class prevalence, and what accuracy would a model that always predicts 0 achieve?</li>
+      <li>The team's report says "85% accurate". Write the one additional sentence that turns that into an honest summary.</li>
+      <li>Support staff complain that they are chasing too many non-complaints. Which metric are they describing, and which way should the threshold move?</li>
+    </ol>
+  </div>
+  <details>
+    <summary>Show solution</summary>
+    <p><strong>1.</strong> TP = 180, FN = 60, FP = 120, TN = 840, n = 1,200.</p>
+    <pre>accuracy  = (180 + 840) / 1200 = 1020/1200 = 0.8500
+precision = 180 / (180 + 120) = 180/300 = 0.6000
+recall    = 180 / (180 + 60)  = 180/240 = 0.7500
+F1        = 2 (0.6000)(0.7500) / (0.6000 + 0.7500)
+          = 0.9000 / 1.3500 = 0.6667</pre>
+    <p><strong>2.</strong> Prevalence = 240/1200 = <strong>20.0%</strong>. Always predicting 0 gets every negative right and every positive wrong: accuracy = 960/1200 = <strong>0.8000</strong>.</p>
+    <p><strong>3.</strong> Something equivalent to: "85% accurate against a do-nothing baseline of 80%; on the class we care about, precision is 0.60 and recall is 0.75, so two of every five flagged messages are false alarms and one in four real complaints is missed." The five points of accuracy over the baseline is the honest headline; 85% on its own is not.</p>
+    <p><strong>4.</strong> They are describing low <strong>precision</strong> &mdash; 120 of the 300 flagged messages were not complaints. <strong>Raise</strong> the threshold: fewer positive predictions, each backed by a higher score, so precision rises. The cost is recall, which will fall below 0.75, meaning more real complaints slip through. Pick the new threshold on the validation split, not on this test set.</p>
+  </details>
+</div>
+
+<!-- 6 -->
+<div class="exercise" id="e6">
+  <div class="qtype">By hand &middot; imbalance</div>
+  <h3>6 &middot; Imbalance and the crossover prevalence <span class="diff mid">core</span></h3>
+  <div class="stem">
+    <p>A safety-flag classifier runs on 5,000 held-out messages. The true prevalence of the positive class is 2%. Your detector has a true-positive rate (recall) of 0.80 and a false-positive rate of 0.04.</p>
+    <ol>
+      <li>How many messages are truly positive and truly negative?</li>
+      <li>Fill in the confusion matrix for the detector and compute accuracy, precision, recall and F1.</li>
+      <li>What accuracy does a model that always predicts 0 achieve on this data?</li>
+      <li>Above what prevalence would the detector beat the do-nothing model on accuracy? Derive it, then say what your answer means for using accuracy as the headline metric here.</li>
+    </ol>
+  </div>
+  <details>
+    <summary>Show solution</summary>
+    <p><strong>1.</strong> Positives = 0.02 &times; 5,000 = <strong>100</strong>; negatives = <strong>4,900</strong>.</p>
+    <p><strong>2.</strong> TP = 0.80 &times; 100 = 80, so FN = 20. FP = 0.04 &times; 4,900 = 196, so TN = 4,704.</p>
+    <table class="cm">
+      <tr><th></th><th>predicted 1</th><th>predicted 0</th></tr>
+      <tr><th>actual 1</th><td class="tp">80</td><td class="fn">20</td></tr>
+      <tr><th>actual 0</th><td class="fp">196</td><td class="tn">4704</td></tr>
+    </table>
+    <pre>accuracy  = (80 + 4704)/5000 = 4784/5000 = 0.9568
+precision = 80/(80 + 196) = 80/276          = 0.2899
+recall    = 80/(80 + 20)  = 80/100          = 0.8000
+F1        = 2(0.2899)(0.8000)/(0.2899 + 0.8000)
+          = 0.4638/1.0899                    = 0.4255</pre>
+    <p>Precision of 0.29 means roughly seven of every ten flags are false alarms &mdash; a direct consequence of the negative class being 49 times larger, not of the detector being poor.</p>
+    <p><strong>3.</strong> Always predicting 0 scores 4,900/5,000 = <strong>0.9800</strong>, which is <em>higher</em> than the detector's 0.9568.</p>
+    <p><strong>4.</strong> Write both accuracies as functions of prevalence <span class="eq">p</span>:</p>
+    <pre>accuracy(do-nothing) = 1 - p
+accuracy(detector)   = p·TPR + (1 - p)(1 - FPR)
+
+detector wins  ⟺  p·TPR + (1-p)(1-FPR) > 1 - p
+               ⟺  p·TPR > (1-p)·FPR
+               ⟺  p > FPR / (TPR + FPR) = 0.04 / 0.84 = 0.0476</pre>
+    <p>The crossover is <strong>4.76%</strong>. At the actual 2% prevalence the detector loses on accuracy to a function that reads none of its input, catches nothing, and could be written on one line. Accuracy is therefore the wrong headline here: report the confusion matrix, precision, recall and F1 on the positive class, and state the do-nothing baseline explicitly so the reader can see the floor.</p>
+  </details>
+</div>
+
+<!-- 7 -->
+<div class="exercise" id="e7">
+  <div class="qtype">Predict, then check &middot; threshold</div>
+  <h3>7 &middot; Threshold sweep: predict, then check <span class="diff mid">core</span></h3>
+  <div class="stem">
+    <p>Twelve held-out examples, with their true labels and the model's scores:</p>
+    <table class="cmp">
+      <tr><th>id</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th></tr>
+      <tr><th>true label</th><td>1</td><td>1</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td></tr>
+      <tr><th>score</th><td>0.95</td><td>0.88</td><td>0.82</td><td>0.71</td><td>0.66</td><td>0.58</td><td>0.49</td><td>0.44</td><td>0.35</td><td>0.22</td><td>0.18</td><td>0.07</td></tr>
+    </table>
+    <p>Before touching the widget, compute by hand the confusion matrix and all four metrics at thresholds <strong>0.50</strong>, <strong>0.70</strong> and <strong>0.40</strong>. Write down which threshold you expect to maximize F1, and what you expect accuracy to do across the three. Then check.</p>
+  </div>
+  <div class="demo">
+    <h3>Widget &middot; threshold sweep over the twelve examples</h3>
+    <div class="controls">
+      <div class="control"><label for="ex-th">threshold = <span id="ex-thv"></span></label>
+        <input type="range" id="ex-th" min="0.01" max="0.99" step="0.01" value="0.50"></div>
+    </div>
+    <div id="ex-th-table"></div>
+    <div class="two-up" style="margin-top:12px">
+      <div id="ex-th-grid"></div>
+      <div class="readout" id="ex-th-out" style="flex:1 1 340px"></div>
+    </div>
+  </div>
+  <details>
+    <summary>Show solution</summary>
+    <p>Sort by score (already sorted). A threshold <span class="eq">t</span> predicts 1 for every example with score <span class="eq">&ge; t</span>.</p>
+    <p><strong>t = 0.50</strong> &mdash; ids 1&ndash;6 predicted 1 (labels 1, 1, 0, 1, 0, 1), ids 7&ndash;12 predicted 0 (labels 0, 1, 0, 0, 1, 0):</p>
+    <pre>TP = 4, FP = 2, FN = 2, TN = 4
+accuracy  = 8/12  = 0.6667
+precision = 4/6   = 0.6667
+recall    = 4/6   = 0.6667
+F1        = 0.6667</pre>
+    <p><strong>t = 0.70</strong> &mdash; ids 1&ndash;4 predicted 1 (labels 1, 1, 0, 1):</p>
+    <pre>TP = 3, FP = 1, FN = 3, TN = 5
+accuracy  = 8/12   = 0.6667
+precision = 3/4    = 0.7500
+recall    = 3/6    = 0.5000
+F1        = 2(0.75)(0.5)/1.25 = 0.6000</pre>
+    <p><strong>t = 0.40</strong> &mdash; ids 1&ndash;8 predicted 1 (labels 1, 1, 0, 1, 0, 1, 0, 1):</p>
+    <pre>TP = 5, FP = 3, FN = 1, TN = 3
+accuracy  = 8/12   = 0.6667
+precision = 5/8    = 0.6250
+recall    = 5/6    = 0.8333
+F1        = 2(0.625)(0.8333)/1.4583 = 0.7143</pre>
+    <p><strong>What to notice.</strong> Accuracy is <em>identical</em> &mdash; 0.6667 &mdash; at all three thresholds, while precision moves from 0.75 down to 0.625 and recall moves from 0.50 up to 0.8333. Accuracy is completely blind to the trade-off you actually made. Of the three, F1 is maximized at t = 0.40 (0.7143). Sweeping the widget confirms that the best F1 over the whole range is 0.7143, held for any threshold in (0.35, 0.44].</p>
+    <p>Also confirm the two limits in the widget: at a very low threshold recall reaches 1.0000 and precision falls to 0.5000, the positive-class prevalence of this sample; at a very high threshold precision reaches 1.0000 and recall collapses.</p>
+  </details>
+</div>
+
+<!-- 8 -->
+<div class="exercise" id="e8">
+  <div class="qtype">Predict, then check &middot; calibration</div>
+  <h3>8 &middot; Temperature scaling: predict, then check <span class="diff mid">core</span></h3>
+  <div class="stem">
+    <p>A binary classification head produces the logits <span class="eq">z = [z<sub>0</sub>, z<sub>1</sub>] = [1.20, 3.00]</span>.</p>
+    <ol>
+      <li>Compute <span class="eq">p<sub>1</sub></span> at <span class="eq">T = 1</span> using the identity <span class="eq">p<sub>1</sub> = &sigma;(z<sub>1</sub> &minus; z<sub>0</sub>)</span>, to four decimals.</li>
+      <li>Predict, before computing, whether <span class="eq">T = 2</span> raises or lowers <span class="eq">p<sub>1</sub></span>, and whether it changes the predicted label. Then compute <span class="eq">p<sub>1</sub></span> at <span class="eq">T = 2</span> and at <span class="eq">T = 0.5</span>.</li>
+      <li>Add 5 to both logits and recompute at <span class="eq">T = 1</span>. Explain the result in one sentence.</li>
+      <li>If this model's held-out ECE is 0.11 with mean confidence above accuracy, would you fit <span class="eq">T &gt; 1</span> or <span class="eq">T &lt; 1</span>? What happens to F1 as a result?</li>
+    </ol>
+  </div>
+  <div class="demo">
+    <h3>Widget &middot; two logits, one temperature</h3>
+    <div class="controls">
+      <div class="control"><label for="ts-z0">z<sub>0</sub> = <span id="ts-z0v"></span></label>
+        <input type="range" id="ts-z0" min="-5" max="5" step="0.1" value="1.2"></div>
+      <div class="control"><label for="ts-z1">z<sub>1</sub> = <span id="ts-z1v"></span></label>
+        <input type="range" id="ts-z1" min="-5" max="5" step="0.1" value="3.0"></div>
+      <div class="control"><label for="ts-T">T = <span id="ts-Tv"></span></label>
+        <input type="range" id="ts-T" min="0.1" max="5" step="0.1" value="1.0"></div>
+      <button class="secondary" id="ts-shift">Add +5 to both logits</button>
+    </div>
+    <pre id="ts-out"></pre>
+  </div>
+  <details>
+    <summary>Show solution</summary>
+    <p><strong>1.</strong> <span class="eq">z<sub>1</sub> &minus; z<sub>0</sub> = 1.80</span>, so</p>
+    <pre>p1 = sigma(1.80) = 1/(1 + e^-1.80) = 1/(1 + 0.1653) = 0.8581</pre>
+    <p><strong>2.</strong> Dividing by <span class="eq">T = 2</span> halves the logit difference to 0.90, which pulls the distribution toward uniform, so <span class="eq">p<sub>1</sub></span> must <em>fall</em> &mdash; but it stays above 0.5, so the predicted label is unchanged. A temperature can never flip a binary prediction, because dividing by a positive number cannot change the sign of the difference.</p>
+    <pre>T = 2.0 :  p1 = sigma(1.80/2)   = sigma(0.90) = 0.7109
+T = 0.5 :  p1 = sigma(1.80/0.5) = sigma(3.60) = 0.9734</pre>
+    <p><strong>3.</strong> With <span class="eq">z = [6.20, 8.00]</span> the difference is still 1.80, so <span class="eq">p<sub>1</sub> = 0.8581</span>, exactly as before. A two-class softmax depends only on the difference of the logits; their absolute magnitudes carry no information, which is why you can never judge a model's confidence by looking at a raw logit.</p>
+    <p><strong>4.</strong> Mean confidence above accuracy means the model is overconfident, so you want to <em>soften</em> the distribution: fit <span class="eq">T &gt; 1</span>. F1 is <strong>unchanged</strong>. Dividing every logit by the same positive scalar preserves the ordering of scores and cannot move any prediction across the argmax, so the confusion matrix at the argmax decision is identical. (If you classify by comparing <span class="eq">p<sub>1</sub></span> to a fixed threshold other than 0.5, then rescaling does move examples across it, and you should re-select the threshold after calibrating.)</p>
+  </details>
+</div>
+
+<!-- 9 -->
+<div class="exercise" id="e9">
+  <div class="qtype">Code &middot; TF&ndash;IDF</div>
+  <h3>9 &middot; Code: TF&ndash;IDF in pure Python <span class="diff mid">core</span></h3>
+  <div class="stem">
+    <p>Write <code>tfidf_row(docs, i)</code> using only the standard library. It takes a list of raw document strings and an index, and returns a dict mapping every term of <code>docs[i]</code> to its tf&ndash;idf weight, where <span class="eq">tf = count / |d|</span> and <span class="eq">idf = log<sub>10</sub>(N / df)</span>. Lowercase the text and strip everything that is not a letter, digit, apostrophe or space.</p>
+    <p>Run it on the corpus below and print each term with its weight to four decimals, sorted from largest to smallest.</p>
+<pre>corpus = [
+    "the service was slow and the food was cold",
+    "the food was excellent and the service was fast",
+    "slow service ruined the meal",
+    "excellent meal and excellent service",
+]</pre>
+    <p><strong>Expected output</strong> (this is the same corpus computed by hand in section 4 of the notes, so your program is checkable against pencil and paper):</p>
+<pre>was        0.0669
+cold       0.0669
+slow       0.0334
+food       0.0334
+the        0.0278
+and        0.0139
+service    0.0000</pre>
+  </div>
+  <details>
+    <summary>Show solution</summary>
+<pre>import math, re
+from collections import Counter
+
+def tokenize(text):
+    return re.sub(r"[^a-z0-9' ]+", " ", text.lower()).split()
+
+def tfidf_row(docs, i):
+    toks = [tokenize(d) for d in docs]
+    N = len(toks)
+    df = Counter()
+    for t in toks:
+        df.update(set(t))          # set() first: df counts documents, not occurrences
+    counts = Counter(toks[i])
+    n = len(toks[i])
+    return {term: (c / n) * math.log10(N / df[term])
+            for term, c in counts.items()}
+
+corpus = [
+    "the service was slow and the food was cold",
+    "the food was excellent and the service was fast",
+    "slow service ruined the meal",
+    "excellent meal and excellent service",
+]
+
+for term, w in sorted(tfidf_row(corpus, 0).items(), key=lambda kv: -kv[1]):
+    print(f"{term:10s} {w:.4f}")</pre>
+    <p>Three places this goes wrong if you are not careful:</p>
+    <ul>
+      <li><strong><code>df.update(set(t))</code>, not <code>df.update(t)</code>.</strong> Document frequency counts documents containing the term, not occurrences. Without <code>set()</code>, <code>the</code> would get df = 5 in a four-document corpus &mdash; and <span class="eq">log<sub>10</sub>(4/5)</span> is negative, silently inverting the sign of the feature.</li>
+      <li><strong>Divide by the token count, not the distinct-term count.</strong> Here <span class="eq">|d1| = 9</span> tokens but only 7 distinct terms; using 7 changes every value.</li>
+      <li><strong><code>math.log10</code>, not <code>math.log</code>.</strong> Natural log gives values 2.303&times; larger. The ranking is identical, but the numbers will not match the hand computation.</li>
+    </ul>
+    <p>Confirm the two ties in the output: <code>was</code> scores 0.0669 with count 2 and df 2, while <code>cold</code> scores the same with count 1 and df 1 &mdash; half the term frequency, twice the idf. And <code>service</code> is exactly 0.0000 because it occurs in all four documents.</p>
+  </details>
+</div>
+
+<!-- 10 -->
+<div class="exercise" id="e10">
+  <div class="qtype">Code &middot; evaluation</div>
+  <h3>10 &middot; Code: metrics from four counts <span class="diff mid">core</span></h3>
+  <div class="stem">
+    <p>Write <code>report(tp, fn, fp, tn)</code> returning a dict with keys <code>n</code>, <code>accuracy</code>, <code>precision</code>, <code>recall</code>, <code>f1</code>, each rounded to four decimals, and returning <code>None</code> for precision or recall when the denominator is zero (F1 is 0.0 in that case). Do not import anything.</p>
+    <p>Then call it twice and print the results:</p>
+<pre>print(report(180, 60, 120, 840))
+print(report(0, 60, 0, 1940))</pre>
+    <p><strong>Expected output</strong>:</p>
+<pre>{'n': 1200, 'accuracy': 0.85, 'precision': 0.6, 'recall': 0.75, 'f1': 0.6667}
+{'n': 2000, 'accuracy': 0.97, 'precision': None, 'recall': 0.0, 'f1': 0.0}</pre>
+    <p>The second line is the do-nothing classifier from problem 6. Say in one sentence what a dashboard that renders <code>None</code> as <code>0.00</code> would hide from its reader.</p>
+  </div>
+  <details>
+    <summary>Show solution</summary>
+<pre>def report(tp, fn, fp, tn):
+    n = tp + fn + fp + tn
+    acc = (tp + tn) / n
+    prec = tp / (tp + fp) if (tp + fp) else None
+    rec  = tp / (tp + fn) if (tp + fn) else None
+    f1 = 2 * prec * rec / (prec + rec) if prec and rec else 0.0
+    return {
+        "n": n,
+        "accuracy": round(acc, 4),
+        "precision": None if prec is None else round(prec, 4),
+        "recall": None if rec is None else round(rec, 4),
+        "f1": round(f1, 4),
+    }</pre>
+    <p>Points to check in your version:</p>
+    <ul>
+      <li><code>if (tp + fp)</code> guards the zero denominator. A model that never predicts the positive class has undefined precision &mdash; there is no set of positive predictions to be right about.</li>
+      <li><code>if prec and rec</code> also handles the case where both are defined but one is 0.0, which would otherwise be a division by zero in the F1 formula.</li>
+      <li><code>round(0.6, 4)</code> prints as <code>0.6</code>, not <code>0.6000</code>. Python drops trailing zeros in the repr; that is cosmetic, and matching the expected output above means not adding formatting that changes the values.</li>
+    </ul>
+    <p><strong>The dashboard question.</strong> Rendering <code>None</code> as <code>0.00</code> makes "the model never fired at all" look identical to "the model fired and was always wrong". Those are different failures with different fixes &mdash; the first is a broken threshold or a collapsed model, the second is a genuinely bad classifier &mdash; and the display would have erased the distinction. Print the raw confusion matrix next to the metrics and the ambiguity disappears.</p>
+  </details>
+</div>
+
+<!-- 11 -->
+<div class="exercise" id="e11">
+  <div class="qtype">Code &middot; fine-tuning</div>
+  <h3>11 &middot; Code: freezing layers and counting parameters <span class="diff hard">stretch</span></h3>
+  <div class="stem">
+    <p>You are fine-tuning <code>distilbert-base-uncased</code> for single-label binary classification with only 900 labeled examples, so you decide to freeze the embedding table and the bottom four of the six encoder layers.</p>
+    <ol>
+      <li>Write the code that loads the model with two labels, applies that freezing, and prints trainable and total parameter counts with the trainable percentage to one decimal.</li>
+      <li>Compute the expected numbers by hand first. A DistilBERT encoder layer has <span class="eq">4d<sup>2</sup> + 4d</span> attention parameters, <span class="eq">2df + f + d</span> feed-forward parameters and <span class="eq">4d</span> layer-norm parameters, with <span class="eq">d = 768</span> and <span class="eq">f = 3072</span>. The embeddings are <span class="eq">30522d + 512d + 2d</span>. The head is <span class="eq">d<sup>2</sup> + d</span> (pre-classifier) plus <span class="eq">2d + 2</span> (classifier).</li>
+      <li>Explain why the warning about newly initialized <code>classifier</code> weights on the first load is expected, and when the same warning would indicate a real problem.</li>
+    </ol>
+    <p><strong>Expected output</strong>:</p>
+<pre>14,767,874 / 66,955,010 trainable (22.1%)</pre>
+  </div>
+  <details>
+    <summary>Show solution</summary>
+    <p><strong>1.</strong></p>
+<pre>from transformers import AutoModelForSequenceClassification
+
+model = AutoModelForSequenceClassification.from_pretrained(
+    "distilbert-base-uncased", num_labels=2)
+
+for p in model.distilbert.embeddings.parameters():
+    p.requires_grad = False
+for layer in model.distilbert.transformer.layer[:4]:
+    for p in layer.parameters():
+        p.requires_grad = False
+
+trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
+total     = sum(p.numel() for p in model.parameters())
+print(f"{trainable:,} / {total:,} trainable ({100 * trainable / total:.1f}%)")</pre>
+    <p><strong>2.</strong> Per encoder layer, with <span class="eq">d = 768</span>, <span class="eq">f = 3072</span>:</p>
+<pre>attention   : 4(768²) + 4(768)          = 2,359,296 + 3,072   = 2,362,368
+feed-forward: 2(768)(3072) + 3072 + 768 = 4,718,592 + 3,840   = 4,722,432
+layer norms : 4(768)                                          =     3,072
+                                                                ----------
+                                                                 7,087,872
+
+embeddings  : 30522(768) + 512(768) + 2(768)                  = 23,835,648
+head        : 768² + 768 + 2(768) + 2 = 590,592 + 1,538       =    592,130
+
+total       : 6(7,087,872) + 23,835,648 + 592,130             = 66,955,010
+trainable   : 2(7,087,872) + 592,130                          = 14,767,874
+percentage  : 100 × 14,767,874 / 66,955,010                   =      22.1%</pre>
+    <p>Two layers plus the head is about a fifth of the model. With 900 examples that is the right order of magnitude &mdash; unfreezing all 67 million parameters gives the model enough capacity to memorize the training set in two or three epochs.</p>
+    <p><strong>3.</strong> The warning appears because <code>distilbert-base-uncased</code> was pretrained with a masked-language-model head, not a classification head. <code>pre_classifier</code> and <code>classifier</code> do not exist in the checkpoint, so <code>from_pretrained</code> creates them from scratch and tells you so. That is correct and expected on the <em>first</em> load. The same warning is a real problem if it appears when you load <em>your own fine-tuned checkpoint</em> for inference: it means the classification weights you trained were not found, you are serving a random head, and your production accuracy will be near chance while your training logs look fine. Check the path you saved to, and confirm the directory contains the model weights and config.</p>
+  </details>
+</div>
+
+<!-- 12 -->
+<div class="exercise" id="e12">
+  <div class="qtype">Explain &middot; evaluation</div>
+  <h3>12 &middot; Explain: the metric a stakeholder should see <span class="diff hard">stretch</span></h3>
+  <div class="stem">
+    <p>Your team ships a binary classifier that routes incoming support messages to either an automated resolution path or a human queue. Roughly 8% of messages are eligible for automation. A product manager asks for "one number that tells me if it is working" and proposes accuracy.</p>
+    <p>Write a short answer (150&ndash;250 words) that: (a) explains concretely, with numbers from this setup, why accuracy alone will mislead; (b) proposes what you would put on the dashboard instead and why; and (c) names one situation in which accuracy <em>would</em> be the right headline.</p>
+  </div>
+  <details>
+    <summary>Show solution</summary>
+    <p><strong>(a) Why accuracy misleads here.</strong> With 8% eligible, a classifier that routes everything to the human queue &mdash; reading nothing, learning nothing &mdash; is 92% accurate. Any real model's accuracy is therefore trapped in a narrow band near 92%, where a movement of one point can mean a large change in behavior on the class that matters. Worse, the two errors have completely different costs: a false positive automates a message that needed a human, which can mean a customer's real issue is closed unread; a false negative sends an automatable message to a person, which costs a few minutes. Accuracy adds these together with equal weight, which is exactly wrong.</p>
+    <p><strong>(b) What to put on the dashboard.</strong> The 2&times;2 confusion matrix in raw counts, plus precision and recall on the positive (automatable) class at a stated threshold, plus the do-nothing baseline accuracy for reference. Precision is the metric tied to the expensive error, so it should be the headline, with a service level attached: for example "precision &ge; 0.98 at whatever recall that costs". Add the ECE so the displayed probabilities are known to mean something, and add class prevalence per period so drift is visible.</p>
+    <p><strong>(c) When accuracy is right.</strong> When the classes are roughly balanced <em>and</em> the two error types cost about the same &mdash; for instance routing between two equally staffed queues where a mis-route in either direction costs one transfer. Then accuracy is a fair summary and its simplicity is a genuine advantage.</p>
+  </details>
+</div>
+
+<!-- 13 -->
+<div class="exercise" id="e13">
+  <div class="qtype">Explain &middot; model choice</div>
+  <h3>13 &middot; Explain: 1,000 labels and no GPU <span class="diff hard">stretch</span></h3>
+  <div class="stem">
+    <p>You have 1,000 labeled examples of short in-domain text, a CPU-only server, and a hard requirement of under 50 ms per prediction at the ninety-fifth percentile. Decide between fine-tuning a pretrained encoder and training TF&ndash;IDF with logistic regression.</p>
+    <p>Justify your choice using at least two constraints, then describe one realistic situation in which your choice would be the wrong one and the other option would win. There is no single correct answer; the reasoning is what is being assessed.</p>
+  </div>
+  <details>
+    <summary>Show solution</summary>
+    <p><strong>A defensible answer: start with TF&ndash;IDF and logistic regression.</strong></p>
+    <p><em>Constraint 1 &mdash; latency.</em> A prediction from the classical pipeline is a tokenization pass plus a dot product over a few dozen non-zero features: well under a millisecond on a CPU. A DistilBERT forward pass on a CPU is typically tens of milliseconds and is sensitive to sequence length and load, so a 50 ms budget at the ninety-fifth percentile is a genuine risk rather than a formality. The classical model meets the requirement with room to spare.</p>
+    <p><em>Constraint 2 &mdash; data volume against capacity.</em> 1,000 examples against 67 million parameters is a memorization risk that has to be managed with frozen layers, early stopping and a validation split you can barely afford to carve out &mdash; a 200-example validation set gives noisy metrics, so you will struggle to tell a real gain from run-to-run variance.</p>
+    <p><em>Constraint 3 &mdash; cost and operational surface.</em> The classical model trains in seconds, retrains on a schedule with no GPU, produces readable weights you can show a reviewer, and adds no model-loading time to a cold start.</p>
+    <p><strong>Where this choice is wrong.</strong> If the label depends on negation, word order or paraphrase &mdash; "I did not receive a refund" versus "I received a refund" &mdash; the bag-of-words vectors are close or identical and the linear model has no route to the right answer, while the encoder handles it directly. Also, if the deployment text uses vocabulary the 1,000 training documents never contain (new product names, a different customer segment, misspellings), the closed vocabulary drops those terms entirely while subword tokenization degrades gracefully. In either case the encoder wins by enough to justify the cost, and the answer is to fine-tune, then handle latency with distillation, quantization, batching, or by keeping the classical model as a fast path and escalating only uncertain cases.</p>
+    <p><strong>The move that settles it.</strong> Build the classical baseline first &mdash; it takes an afternoon &mdash; and use its error analysis as evidence. If most errors are negation and paraphrase, you have a measured argument for the encoder rather than an assumption.</p>
+  </details>
+</div>
+
+<!-- 14 -->
+<div class="exercise" id="e14">
+  <div class="qtype">Explain &middot; calibration</div>
+  <h3>14 &middot; Explain: what the score in the API response means <span class="diff hard">stretch</span></h3>
+  <div class="stem">
+    <p>Your service returns:</p>
+<pre>{"label": "complaint", "score": 0.94, "model_version": "distilbert-ft-v3"}</pre>
+    <p>An operations lead proposes a rule: auto-escalate anything with a score above 0.90, and tells the team this will be wrong "about one time in ten".</p>
+    <ol>
+      <li>Explain why that inference is not supported by the number, in terms a non-specialist can follow.</li>
+      <li>Describe the measurement you would run to find out whether it is true, including which data split you would use.</li>
+      <li>State what you would change in the service so the rule becomes defensible.</li>
+    </ol>
+  </div>
+  <details>
+    <summary>Show solution</summary>
+    <p><strong>1.</strong> The 0.94 comes out of a softmax, which is a function that takes two arbitrary real numbers and rescales them so they are positive and add to one. That guarantees the output <em>looks</em> like a probability; it does not make the number equal to the frequency of being right. The training objective rewards ranking the correct class above the wrong one, and nothing in it forces "0.94" to correspond to 94 correct out of 100. Empirically, networks fine-tuned to low training loss are usually overconfident, and the effect gets stronger the longer you train on a small corpus. So the rule's premise &mdash; "0.94 means about one error in ten above 0.90" &mdash; is a claim about the world that nobody has measured.</p>
+    <p><strong>2.</strong> Measure calibration on a held-out split that was used for neither training nor threshold selection. Collect the predictions, sort them into ten bins by confidence, and in each bin compare the mean stated confidence against the observed fraction correct. Plot the pairs against the diagonal (a reliability diagram) and summarize with expected calibration error, <span class="eq">ECE = &Sigma;<sub>b</sub> (n<sub>b</sub>/n) |accuracy(b) &minus; confidence(b)|</span>, alongside the Brier score. The number that answers the operations lead directly is the observed accuracy of the single bin above 0.90. If the model states 0.94 there and is right 82% of the time, the rule is wrong about one time in five, not one in ten.</p>
+    <p><strong>3.</strong> Three changes. (a) Fit a temperature on a dedicated calibration split by minimizing negative log-likelihood over that one parameter, and apply it before the softmax in the service; this leaves the predicted labels and therefore accuracy, precision, recall and F1 unchanged while making the numbers mean what they say. (b) Return the calibrated probability in the response, and record in the model card the ECE before and after and the date of the calibration split. (c) Re-measure on a schedule, because calibration drifts when the input distribution moves even if accuracy looks stable &mdash; and log every prediction so the check can be reproduced later against real traffic.</p>
+  </details>
+</div>
+
+<div class="callout">
+  <strong>If you finish early.</strong> Re-run problems 5 and 6 with the positive class flipped &mdash; call "not a complaint" the positive class and recompute all four metrics. Accuracy will not move; precision, recall and F1 will change substantially. Then write one sentence explaining why that is not a paradox.
+</div>
+
+<div class="nav">
+  <a href="Lecture_Notes_Topic_2_Natural_Language_Understanding.html">&larr; Back to the lecture notes</a>
+  <span>Topic 2 &mdash; Natural Language Understanding</span>
+</div>
+
+</div>
+
+<script>
+function f(x,n){ return Number(x).toFixed(n); }
+function sig(z){ return 1/(1+Math.exp(-z)); }
+function cmTable(tp,fn,fp,tn){
+  return '<table class="cm">' +
+    '<tr><th></th><th>predicted 1</th><th>predicted 0</th></tr>' +
+    '<tr><th>actual 1</th><td class="tp">TP = '+tp+'</td><td class="fn">FN = '+fn+'</td></tr>' +
+    '<tr><th>actual 0</th><td class="fp">FP = '+fp+'</td><td class="tn">TN = '+tn+'</td></tr>' +
+    '</table>';
+}
+
+/* --- problem 3: idf calculator --- */
+(function(){
+  var out = document.getElementById('idf-out');
+  if(!out) return;
+  var NEl = document.getElementById('idf-N'), dEl = document.getElementById('idf-df');
+  function up(){
+    var N = Math.max(1, Math.round(+NEl.value || 1));
+    var df = Math.max(1, Math.round(+dEl.value || 1));
+    var warn = (df > N) ? '\n\n# df cannot exceed N: a term cannot occur in more documents than exist.' : '';
+    out.textContent =
+      'N  = ' + N + '\n' +
+      'df = ' + df + '\n\n' +
+      'log10(N/df)            = log10(' + f(N/df,4) + ') = ' + f(Math.log(N/df)/Math.LN10, 4) + '\n' +
+      'ln(N/df)               = ln(' + f(N/df,4) + ')    = ' + f(Math.log(N/df), 4) + '\n' +
+      'ln((1+N)/(1+df)) + 1   = ln(' + f((1+N)/(1+df),4) + ') + 1 = ' + f(Math.log((1+N)/(1+df))+1, 4) + '\n\n' +
+      '# ratio between the two textbook forms is ln(10) = 2.3026 for every df,\n' +
+      '# so the ranking of terms is identical under either.' + warn;
+  }
+  NEl.addEventListener('input', up);
+  dEl.addEventListener('input', up);
+  up();
+})();
+
+/* --- problem 7: threshold sweep over twelve examples --- */
+(function(){
+  var tEl = document.getElementById('ex-th');
+  if(!tEl) return;
+  var tbl = document.getElementById('ex-th-table'), grid = document.getElementById('ex-th-grid'),
+      out = document.getElementById('ex-th-out');
+  var data = [
+    {id:1, y:1, s:0.95}, {id:2, y:1, s:0.88}, {id:3, y:0, s:0.82}, {id:4, y:1, s:0.71},
+    {id:5, y:0, s:0.66}, {id:6, y:1, s:0.58}, {id:7, y:0, s:0.49}, {id:8, y:1, s:0.44},
+    {id:9, y:0, s:0.35}, {id:10, y:0, s:0.22}, {id:11, y:1, s:0.18}, {id:12, y:0, s:0.07}
+  ];
+  function draw(){
+    var t = +tEl.value;
+    document.getElementById('ex-thv').textContent = f(t,2);
+    var tp=0, fn=0, fp=0, tn=0;
+    var rows = '<table class="cmp"><tr><th>id</th><th>true label</th><th>score</th><th>predicted</th><th>outcome</th></tr>';
+    data.forEach(function(d){
+      var pred = d.s >= t ? 1 : 0, kind;
+      if(d.y===1 && pred===1){ tp++; kind='TP'; }
+      else if(d.y===1){ fn++; kind='FN'; }
+      else if(pred===1){ fp++; kind='FP'; }
+      else { tn++; kind='TN'; }
+      rows += '<tr class="' + (pred ? 'hit' : '') + '"><td>' + d.id + '</td><td>' + d.y +
+              '</td><td>' + f(d.s,2) + '</td><td>' + pred + '</td><td><code>' + kind + '</code></td></tr>';
+    });
+    rows += '</table>';
+    tbl.innerHTML = rows;
+    grid.innerHTML = cmTable(tp,fn,fp,tn);
+    var n = tp+fn+fp+tn;
+    var acc = (tp+tn)/n;
+    var prec = (tp+fp) ? tp/(tp+fp) : null;
+    var rec = (tp+fn) ? tp/(tp+fn) : null;
+    var f1 = (prec && rec) ? 2*prec*rec/(prec+rec) : 0;
+    out.innerHTML =
+      'threshold = ' + f(t,2) + ' &nbsp;|&nbsp; predicted positive: ' + (tp+fp) + ' of 12<br>' +
+      'accuracy  = (' + tp + '+' + tn + ')/12 = ' + f(acc,4) + '<br>' +
+      'precision = ' + (prec===null ? 'undefined (no positive predictions)' : tp + '/' + (tp+fp) + ' = ' + f(prec,4)) + '<br>' +
+      'recall    = ' + (rec===null ? 'undefined' : tp + '/' + (tp+fn) + ' = ' + f(rec,4)) + '<br>' +
+      'F1        = ' + f(f1,4);
+  }
+  tEl.addEventListener('input', draw);
+  draw();
+})();
+
+/* --- problem 8: two logits and a temperature --- */
+(function(){
+  var out = document.getElementById('ts-out');
+  if(!out) return;
+  var z0El=document.getElementById('ts-z0'), z1El=document.getElementById('ts-z1'), TEl=document.getElementById('ts-T');
+  var shift = 0;
+  function up(){
+    var z0 = +z0El.value + shift, z1 = +z1El.value + shift, T = +TEl.value;
+    document.getElementById('ts-z0v').textContent = f(+z0El.value,1);
+    document.getElementById('ts-z1v').textContent = f(+z1El.value,1);
+    document.getElementById('ts-Tv').textContent = f(T,1);
+    var d = z1 - z0, p1 = sig(d/T), p0 = 1 - p1;
+    out.textContent =
+      'logits (with shift +' + shift + ') : z0 = ' + f(z0,2) + ', z1 = ' + f(z1,2) + '\n' +
+      'temperature                  : T  = ' + f(T,2) + '\n\n' +
+      'z1 - z0            = ' + f(d,4) + '\n' +
+      '(z1 - z0) / T      = ' + f(d/T,4) + '\n' +
+      'p1 = sigma((z1-z0)/T) = ' + f(p1,4) + '\n' +
+      'p0                    = ' + f(p0,4) + '   (p0 + p1 = ' + f(p0+p1,4) + ')\n\n' +
+      'predicted label = ' + (p1 >= 0.5 ? 1 : 0) + '   ' +
+        (Math.abs(d) < 1e-9 ? '(a tie: the logits are equal)' : '(unchanged by T — a positive T cannot flip the sign of z1 - z0)');
+  }
+  [z0El,z1El,TEl].forEach(function(e){ e.addEventListener('input', up); });
+  document.getElementById('ts-shift').addEventListener('click', function(){
+    shift = shift ? 0 : 5;
+    this.textContent = shift ? 'Remove the +5 logit shift' : 'Add +5 to both logits';
+    up();
+  });
+  up();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+.env
+ui/.streamlit/secrets.toml
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+.DS_Store
+
+# Treebank files and trained weights. Both are large, both are reproducible, and
+# neither belongs in a repository someone has to clone. Record where the corpus
+# came from in the README and push the model to the Hugging Face Hub instead.
+data/
+models/

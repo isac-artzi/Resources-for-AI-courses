@@ -1,0 +1,40 @@
+# Render.com blueprint for the API tier (Cloud #2).
+# Dashboard -> New -> Blueprint -> point at your fork.
+# After the first deploy, set SUPABASE_URL and SUPABASE_SERVICE_KEY as secret
+# environment variables in the service settings (sync: false means Render will
+# not read them from this file).
+#
+# INFERENCE ONLY. Nothing in this blueprint trains anything: the free plan does
+# not have the memory or the time, and a build that tries to fine-tune during
+# deploy will be killed. Train elsewhere, commit or upload the weights, and let
+# this service load them.
+services:
+  - type: web
+    name: moodlens-api
+    runtime: python
+    plan: free
+    # torch and transformers make this build slow. That is expected the first
+    # time; Render caches the wheel downloads afterwards.
+    buildCommand: "pip install -r api/requirements.txt"
+    # One worker. A second uvicorn worker means a second copy of the model in
+    # RAM, and on the free plan that is how you meet the OOM killer.
+    startCommand: "uvicorn api.main:app --host 0.0.0.0 --port $PORT --workers 1"
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: MODEL_VERSION
+        value: "moodlens-v1"
+      - key: BASE_MODEL
+        value: "distilbert-base-uncased"
+      - key: MODEL_DIR
+        value: "./models/moodlens-v1"
+      # Render's filesystem is ephemeral; keep the Hugging Face cache in /tmp.
+      - key: HF_HOME
+        value: "/tmp/hf"
+      - key: ALLOWED_ORIGINS
+        value: "*"

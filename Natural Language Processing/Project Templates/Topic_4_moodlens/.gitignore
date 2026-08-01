@@ -1,0 +1,16 @@
+.env
+ui/.streamlit/secrets.toml
+# Streamlit looks for secrets relative to the directory you run from, so a copy
+# can end up here too. Both paths are ignored; neither should ever be committed.
+.streamlit/secrets.toml
+models/
+*.joblib
+*.safetensors
+*.bin
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+.DS_Store

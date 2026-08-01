@@ -1,0 +1,17 @@
+# Default configuration for the preprocessing pipeline.
+# The API accepts these per request; this file records the defaults so a run can
+# be reproduced from the repository alone.
+
+preprocess:
+  lowercase: true
+  strip_punctuation: true
+  remove_stopwords: true
+  remove_digits: false
+  stem: false
+  lemmatize: true
+
+tokenize:
+  # At least two, with DIFFERENT algorithms — that is what the comparison needs.
+  tokenizers:
+    - bert-base-uncased   # WordPiece
+    - gpt2                # byte-level BPE

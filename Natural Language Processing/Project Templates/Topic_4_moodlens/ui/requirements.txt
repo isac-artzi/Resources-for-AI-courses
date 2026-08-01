@@ -1,0 +1,10 @@
+# UI tier — installed by Streamlit Community Cloud.
+# No transformers, no torch, no scikit-learn: the UI is a thin client on
+# purpose. If you find yourself needing a model library here, the logic belongs
+# in the API, and if you find yourself needing a metric library here, the number
+# belongs in a logged training run instead of being recomputed on every page
+# load.
+streamlit==1.38.0
+requests==2.32.3
+pandas==2.2.2
+supabase==2.7.4

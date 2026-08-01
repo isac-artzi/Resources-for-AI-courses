@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 3 Exercises — Controllable Natural Language Generation</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+       margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6; }
+.container { max-width: 980px; margin: 24px auto 48px; background: white;
+             padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.35em; margin-top: 40px;
+     border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+h4 { color: #555; font-size: 1.0em; margin-top: 18px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 6px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7;
+       padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px; overflow-x: auto;
+      border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79;
+           padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px;
+        margin: 14px 0; border-radius: 4px; font-size: 0.93em; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+        padding: 22px; margin: 22px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.controls { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 180px; }
+.control input[type="number"] { width: 80px; padding: 4px 8px;
+            border: 1px solid #CFD7DF; border-radius: 4px; font-family: inherit; }
+.control select { padding: 5px 8px; border: 1px solid #CFD7DF; border-radius: 4px;
+                  font-family: inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px;
+           border-radius: 6px; font-family: "SF Mono", Consolas, monospace;
+           font-size: 0.88em; min-width: 220px; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 16px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.93em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+      background: #F2F4F7; padding: 4px 8px; border-radius: 4px; }
+.eq-block { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+            background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+            text-align: center; margin: 14px 0; display: block; }
+.nav { display: flex; justify-content: space-between; margin-top: 40px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+       padding: 16px 22px; margin-bottom: 28px; font-size: 0.92em; }
+.toc h3 { margin: 0 0 8px; color: #1F4E79; font-size: 1.0em; }
+.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 24px; }
+.toc a { color: #1F4E79; text-decoration: none; } .toc a:hover { text-decoration: underline; }
+.tag { display: inline-block; padding: 2px 8px; background: #E0E5EB;
+       border-radius: 12px; font-size: 0.75em; color: #555;
+       text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px; }
+.tag.interactive { background: #E1F0EA; color: #1B5E20; }
+.tag.code { background: #F2F4F7; color: #555; }
+.tag.math { background: #FCE8EE; color: #6E1414; }
+table.cmp { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 0.92em; }
+table.cmp th, table.cmp td { border: 1px solid #E0E5EB; padding: 8px 12px; text-align: left; }
+table.cmp th { background: #F2F4F7; color: #1F4E79; }
+.archetype { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
+.arc-card { border: 1px solid #D0D8E0; border-radius: 8px; padding: 14px;
+            background: white; font-size: 0.9em; }
+.arc-card .name { color: #1F4E79; font-weight: 600; }
+.arc-card .role { color: #555; margin-top: 6px; }
+</style><style>
+/* Append-only additions for this exercise set. Nothing above this line is modified. */
+.exercise { border:1px solid #E0E5EB; border-radius:8px; padding:20px 26px;
+            margin:22px 0; background:#FCFDFE; }
+.exercise h3 { margin:0 0 2px; color:#1F4E79; font-size:1.12em; }
+.exercise .qtype { color:#888; font-size:0.78em; text-transform:uppercase;
+                   letter-spacing:0.05em; margin-bottom:12px; }
+.exercise .diff { float:right; font-size:0.72em; color:#888; text-transform:uppercase;
+                  letter-spacing:0.05em; }
+details { margin-top:14px; border-top:1px dashed #D0D8E0; padding-top:10px; }
+details summary { cursor:pointer; color:#1F4E79; font-weight:600; font-size:0.93em;
+                  list-style:none; padding:6px 0; }
+details summary::-webkit-details-marker { display:none; }
+details summary::before { content:"\25B8  "; color:#1F4E79; }
+details[open] summary::before { content:"\25BE  "; }
+details summary:hover { text-decoration:underline; }
+details .sol { background:#F7FAFC; border-left:4px solid #1B5E20; padding:12px 18px;
+               border-radius:4px; margin-top:8px; }
+details .sol p:first-child { margin-top:0; }
+.small { font-size:0.88em; color:#555; }
+.tokrow { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0; }
+.tok { display:inline-block; padding:4px 9px; border-radius:5px; background:#EAF1F8;
+       border:1px solid #C7D8EA; font-family:"SF Mono",Consolas,Monaco,monospace;
+       font-size:0.88em; color:#1F4E79; }
+.logit-inputs { display:flex; gap:10px; flex-wrap:wrap; margin:10px 0; }
+.logit-inputs .li { display:flex; flex-direction:column; gap:3px; font-size:0.8em; color:#555; }
+.logit-inputs .li input { width:78px; padding:4px 6px; border:1px solid #CFD7DF;
+                          border-radius:4px; font-family:inherit; text-align:center; }
+@media (max-width:760px){ .toc ol { columns:1; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="brand">Exercises</div>
+<h1>Topic 3 — Controllable Natural Language Generation</h1>
+<p class="subtitle">Fourteen problems, roughly in order of difficulty: by-hand arithmetic on logits and probabilities, prediction-then-check with live widgets, short functions to write, and three questions that only have written answers. Every problem has a full worked solution.</p>
+
+<div class="callout">
+  <strong>How to use these.</strong> Work each problem on paper before opening the solution. For the by-hand problems, keep four decimal places; the solutions do. For the widget problems, write your prediction down first — the entire value of a prediction-then-check exercise disappears if you look at the widget first. The code problems state an expected output; your function must reproduce it exactly.
+</div>
+
+<div class="toc">
+  <h3>Contents</h3>
+  <ol>
+    <li><a href="#e1">Logits to probabilities</a></li>
+    <li><a href="#e2">Applying temperature by hand</a></li>
+    <li><a href="#e3">Top-p and top-k on the same distribution</a></li>
+    <li><a href="#e4">Perplexity by hand</a></li>
+    <li><a href="#e5">Distinct-n by hand</a></li>
+    <li><a href="#e6">Repetition penalty arithmetic</a></li>
+    <li><a href="#e7">Predict then check: temperature and entropy</a></li>
+    <li><a href="#e8">Predict then check: k versus p on a flat step</a></li>
+    <li><a href="#e9">Predict then check: beam width</a></li>
+    <li><a href="#e10">Write: temperature plus nucleus truncation</a></li>
+    <li><a href="#e11">Write: perplexity from a probability list</a></li>
+    <li><a href="#e12">Write: distinct-n</a></li>
+    <li><a href="#e13">Explain: why perplexity cannot tune a decoder</a></li>
+    <li><a href="#e14">Explain: reading an inter-rater disagreement table</a></li>
+  </ol>
+</div>
+
+<!-- ============ 1 ============ -->
+<div class="exercise" id="e1">
+  <div class="qtype">By hand · Softmax <span class="diff">warm-up</span></div>
+  <h3>Exercise 1 — Logits to probabilities</h3>
+  <p>A model produces three logits for the next token: <code>z = [1.0, 0.0, -1.0]</code>.</p>
+  <ol>
+    <li>Compute the probability of each token to four decimal places.</li>
+    <li>Now add 5 to every logit, giving <code>[6.0, 5.0, 4.0]</code>. Without recomputing, state what happens to the probabilities and why.</li>
+    <li>What is the ratio <code>p&#8321; / p&#8322;</code>, and what quantity determines it?</li>
+  </ol>
+  <details><summary>Show solution</summary><div class="sol">
+    <p><strong>Part 1.</strong> Exponentiate each logit:</p>
+    <pre>exp(1.0)  = 2.7183
+exp(0.0)  = 1.0000
+exp(-1.0) = 0.3679
+                    sum = 4.0862
+
+p1 = 2.7183 / 4.0862 = 0.6652
+p2 = 1.0000 / 4.0862 = 0.2447
+p3 = 0.3679 / 4.0862 = 0.0900     (sum = 0.9999, rounding)</pre>
+    <p><strong>Part 2.</strong> Nothing happens. Softmax is invariant to adding a constant to every logit: <code>exp(z_i + c) / &Sigma; exp(z_j + c) = e<sup>c</sup>exp(z_i) / (e<sup>c</sup> &Sigma; exp(z_j))</code>, and the <code>e<sup>c</sup></code> cancels. The probabilities are still <code>[0.6652, 0.2447, 0.0900]</code>. This is exactly why implementations subtract <code>max(z)</code> before exponentiating: it keeps the exponentials small enough to avoid overflow and provably changes nothing.</p>
+    <p><strong>Part 3.</strong> <code>p&#8321;/p&#8322; = exp(z&#8321;)/exp(z&#8322;) = exp(z&#8321; - z&#8322;) = exp(1.0) = 2.7183</code>. Only the logit <em>difference</em> matters, never the absolute values. A logit gap of 1 is a probability ratio of <code>e</code>; a gap of 5 is a ratio of about 148.</p>
+  </div></details>
+</div>
+
+<!-- ============ 2 ============ -->
+<div class="exercise" id="e2">
+  <div class="qtype">By hand · Temperature <span class="diff">warm-up</span></div>
+  <h3>Exercise 2 — Applying temperature by hand</h3>
+  <p>Take the logit vector <code>z = [3.0, 1.0, 0.0]</code>. Compute the resulting probability distribution at <code>T = 0.5</code>, <code>T = 1.0</code>, and <code>T = 2.0</code>, to four decimal places. Then answer: does temperature ever change which token is most likely?</p>
+  <details><summary>Show solution</summary><div class="sol">
+    <p>Temperature divides the logits before the softmax: <code>p_i = softmax(z_i / T)</code>.</p>
+    <pre>T = 0.5   z/T = [6.0, 2.0, 0.0]
+          exp = [403.4288, 7.3891, 1.0000]    sum = 411.8178
+          p   = [0.9796, 0.0179, 0.0024]
+
+T = 1.0   z/T = [3.0, 1.0, 0.0]
+          exp = [ 20.0855, 2.7183, 1.0000]    sum =  23.8038
+          p   = [0.8438, 0.1142, 0.0420]
+
+T = 2.0   z/T = [1.5, 0.5, 0.0]
+          exp = [  4.4817, 1.6487, 1.0000]    sum =   7.1304
+          p   = [0.6285, 0.2312, 0.1402]</pre>
+    <p>Halving the temperature pushed the leader from 0.8438 to 0.9796; doubling it dropped the leader to 0.6285 and more than tripled the weight on the least likely token (0.0420 to 0.1402).</p>
+    <p><strong>Does temperature reorder the tokens?</strong> No. Dividing by a positive <code>T</code> is a monotonic transformation of every logit by the same positive factor, so if <code>z_i &gt; z_j</code> then <code>z_i/T &gt; z_j/T</code> for any <code>T &gt; 0</code>, and softmax is monotonic in its input. The ranking is invariant. Temperature only changes how far apart the candidates are, and it never assigns exactly zero to anything — that is truncation's job.</p>
+  </div></details>
+</div>
+
+<!-- ============ 3 ============ -->
+<div class="exercise" id="e3">
+  <div class="qtype">By hand · Truncation <span class="diff">core</span></div>
+  <h3>Exercise 3 — Top-p and top-k on the same distribution</h3>
+  <p>A decoding step produces these seven candidate probabilities, already sorted:</p>
+  <pre>t1 0.35   t2 0.22   t3 0.18   t4 0.12   t5 0.07   t6 0.04   t7 0.02</pre>
+  <ol>
+    <li>Which tokens survive <code>top-p = 0.9</code>? Give the renormalized probabilities.</li>
+    <li>Which tokens survive <code>top-k = 3</code>? Give the renormalized probabilities.</li>
+    <li>If both filters are applied together (the usual implementation takes the intersection), which tokens survive?</li>
+    <li>State one context in which the <code>k = 3</code> answer is clearly the wrong filter.</li>
+  </ol>
+  <details><summary>Show solution</summary><div class="sol">
+    <p><strong>Part 1.</strong> Accumulate in descending order until the cumulative mass first reaches 0.9. The token that crosses the threshold is included, so the kept mass is always <code>&ge; p</code>.</p>
+    <pre>t1  0.35   cum 0.35
+t2  0.22   cum 0.57
+t3  0.18   cum 0.75
+t4  0.12   cum 0.87
+t5  0.07   cum 0.94   &lt;- first time cum >= 0.90, stop here
+t6  0.04   (excluded)
+t7  0.02   (excluded)</pre>
+    <p>Nucleus = <code>{t1, t2, t3, t4, t5}</code>, five tokens, holding 0.94. Renormalize by dividing by 0.94:</p>
+    <pre>t1: 0.35 / 0.94 = 0.3723
+t2: 0.22 / 0.94 = 0.2340
+t3: 0.18 / 0.94 = 0.1915
+t4: 0.12 / 0.94 = 0.1277
+t5: 0.07 / 0.94 = 0.0745
+                  ------
+                  1.0000</pre>
+    <p><strong>Part 2.</strong> Top-k = 3 keeps <code>{t1, t2, t3}</code>, holding <code>0.35 + 0.22 + 0.18 = 0.75</code>. Renormalize by 0.75:</p>
+    <pre>t1: 0.35 / 0.75 = 0.4667
+t2: 0.22 / 0.75 = 0.2933
+t3: 0.18 / 0.75 = 0.2400
+                  ------
+                  1.0000</pre>
+    <p><strong>Part 3.</strong> The intersection of <code>{t1..t5}</code> and <code>{t1,t2,t3}</code> is <code>{t1, t2, t3}</code> — the tighter filter wins. With both knobs on, the effective distribution is the one from Part 2. This is the normal case when <code>k</code> is small: <code>p</code> does nothing, and a user moving the <code>p</code> slider will see no effect and report a bug.</p>
+    <p><strong>Part 4.</strong> Any step where the model is legitimately uncertain across many options — the token after "She opened the door and", or the first word of a free-form story. Here <code>k = 3</code> discards 0.25 of genuine probability mass, so the service produces the same three openings over and over and looks far more repetitive than the model actually is. That is precisely the situation top-p was designed for: it widens automatically when the distribution is flat.</p>
+  </div></details>
+</div>
+
+<!-- ============ 4 ============ -->
+<div class="exercise" id="e4">
+  <div class="qtype">By hand · Perplexity <span class="diff">core</span></div>
+  <h3>Exercise 4 — Perplexity by hand</h3>
+  <p>A model is scored on a five-token reference sentence. The probabilities it assigned to the tokens that actually occurred are:</p>
+  <pre>0.40   0.10   0.25   0.50   0.20</pre>
+  <ol>
+    <li>Compute the perplexity to four decimal places.</li>
+    <li>Verify your answer a second way, using the geometric mean.</li>
+    <li>Which single token contributed most to the score, and by how much?</li>
+  </ol>
+  <p class="small">Use the calculator below to check your arithmetic after you have finished — not before.</p>
+  <div class="demo">
+    <h3>Check · Perplexity calculator</h3>
+    <div class="logit-inputs" id="x4-inputs"></div>
+    <div class="readout" id="x4-readout" style="margin-top:8px;"></div>
+    <pre id="x4-out"></pre>
+  </div>
+  <details><summary>Show solution</summary><div class="sol">
+    <p><strong>Part 1.</strong> Perplexity is <code>exp(-(1/N) &Sigma; ln p_t)</code>.</p>
+    <pre>ln 0.40 = -0.916291
+ln 0.10 = -2.302585
+ln 0.25 = -1.386294
+ln 0.50 = -0.693147
+ln 0.20 = -1.609438
+          ----------
+   sum  = -6.907755
+
+average  = -6.907755 / 5 = -1.381551
+PPL      = exp(1.381551) = 3.9811</pre>
+    <p><strong>Part 2.</strong> Perplexity is the reciprocal of the geometric mean of the per-token probabilities. The product is <code>0.40 &times; 0.10 &times; 0.25 &times; 0.50 &times; 0.20 = 0.001</code>, so the geometric mean is <code>0.001<sup>1/5</sup> = 10<sup>-0.6</sup> = 0.251189</code>, and <code>1 / 0.251189 = 3.9811</code>. Same number. (Whenever the arithmetic looks clean, check whether the product is a round power of ten — it usually means the exercise was built that way.)</p>
+    <p><strong>Part 3.</strong> Token 2, with <code>p = 0.10</code>. Its surprisal <code>-ln 0.10 = 2.302585</code> nats is a third of the entire sum of 6.907755, more than any other token. Perplexity is dominated by the tokens the model got most wrong, because <code>-ln p</code> grows without bound as <code>p &rarr; 0</code>. To see how sharply: change that one probability to 0.001 and the sum becomes <code>-11.512925</code>, the average <code>-2.302585</code>, and the perplexity jumps to <code>10.0000</code> — two and a half times worse from one token out of five.</p>
+    <p><strong>Interpretation.</strong> A perplexity of 3.98 means the model was, on average, as uncertain as if it had been choosing uniformly among roughly four equally likely tokens at every step.</p>
+  </div></details>
+</div>
+
+<!-- ============ 5 ============ -->
+<div class="exercise" id="e5">
+  <div class="qtype">By hand · Diversity metrics <span class="diff">core</span></div>
+  <h3>Exercise 5 — Distinct-n by hand</h3>
+  <p>A generation produced this output (whitespace tokenization, ten tokens):</p>
+  <pre>the plan is good the plan is good the plan</pre>
+  <ol>
+    <li>Compute distinct-1, distinct-2, and distinct-3.</li>
+    <li>List the repeated bigrams.</li>
+    <li>A teammate proposes reporting distinct-1 alone as the project's "quality metric". Give the shortest counterexample that defeats the proposal.</li>
+  </ol>
+  <details><summary>Show solution</summary><div class="sol">
+    <p><strong>Part 1.</strong> <code>distinct-n = |unique n-grams| / |total n-grams|</code>, and a length-10 sequence has <code>10 - n + 1</code> n-grams.</p>
+    <pre>n = 1  unique {the, plan, is, good}                          = 4,  total 10  ->  0.4000
+n = 2  unique {the plan, plan is, is good, good the}        = 4,  total  9  ->  0.4444
+n = 3  unique {the plan is, plan is good, is good the,
+               good the plan}                               = 4,  total  8  ->  0.5000</pre>
+    <p><strong>Part 2.</strong> The bigram list in order is: <code>the plan</code>, <code>plan is</code>, <code>is good</code>, <code>good the</code>, <code>the plan</code>, <code>plan is</code>, <code>is good</code>, <code>good the</code>, <code>the plan</code>. So <code>the plan</code> appears three times and <code>plan is</code>, <code>is good</code>, <code>good the</code> appear twice each. All four distinct bigrams repeat — this is a pure four-token cycle, which is exactly what degenerate repetition looks like in the metric.</p>
+    <p><strong>Part 3.</strong> Any string of unrelated words: <code>xylophone gravel Tuesday hypotenuse marmalade</code> scores distinct-1 = 1.000, the maximum. Random tokens are the best possible score on every order of distinct-n. Distinct-n is a repetition <em>detector</em>, not a quality metric, and it is only meaningful next to a coherence signal — which in this topic means a human rating.</p>
+    <p>A second, subtler point worth stating in your report: distinct-n falls mechanically as text gets longer, because function words must recur. Only compare distinct-n across outputs of comparable length, or report length alongside it.</p>
+  </div></details>
+</div>
+
+<!-- ============ 6 ============ -->
+<div class="exercise" id="e6">
+  <div class="qtype">By hand · Repetition penalty <span class="diff">core</span></div>
+  <h3>Exercise 6 — Repetition penalty arithmetic</h3>
+  <p>Logits for four candidate tokens are <code>z = [2.0, 1.0, 0.0, -1.0]</code>. Tokens 1 and 4 (the first and last) have already appeared in the generated text. Apply a repetition penalty of <code>&rho; = 2.0</code> using the standard rule: divide by <code>&rho;</code> when the logit is positive, multiply by <code>&rho;</code> when it is not.</p>
+  <ol>
+    <li>Give the adjusted logits.</li>
+    <li>Give the probabilities before and after, to four decimal places.</li>
+    <li>Explain why the rule splits on the sign instead of always dividing.</li>
+  </ol>
+  <details><summary>Show solution</summary><div class="sol">
+    <p><strong>Part 1.</strong></p>
+    <pre>z1 =  2.0  repeated, z > 0   ->  2.0 / 2.0 =  1.0
+z2 =  1.0  not repeated      ->             =  1.0
+z3 =  0.0  not repeated      ->             =  0.0
+z4 = -1.0  repeated, z <= 0  -> -1.0 * 2.0  = -2.0
+
+adjusted z = [1.0, 1.0, 0.0, -2.0]</pre>
+    <p><strong>Part 2.</strong> Before, on <code>[2.0, 1.0, 0.0, -1.0]</code>:</p>
+    <pre>exp = [7.3891, 2.7183, 1.0000, 0.3679]   sum = 11.4753
+p   = [0.6439, 0.2369, 0.0871, 0.0321]</pre>
+    <p>After, on <code>[1.0, 1.0, 0.0, -2.0]</code>:</p>
+    <pre>exp = [2.7183, 2.7183, 1.0000, 0.1353]   sum =  6.5719
+p   = [0.4136, 0.4136, 0.1522, 0.0206]</pre>
+    <p>The repeated leader fell from 0.6439 to 0.4136 and is now tied with token 2, so greedy decoding would face a tie where it previously had a clear winner. The repeated token 4 fell from 0.0321 to 0.0206. Both repeated tokens moved down; both fresh tokens moved up.</p>
+    <p><strong>Part 3.</strong> Because dividing a negative number by <code>&rho; &gt; 1</code> moves it <em>up</em>, toward zero. If the rule were "always divide", then <code>z4 = -1.0</code> would become <code>-0.5</code>, raising that token's relative weight — the opposite of a penalty. Multiplying instead pushes it further negative. The sign split is what makes the operation monotone in the intended direction for every logit, and it is the detail most often lost when people reimplement this from memory.</p>
+    <p>One caution for your service: <code>&rho; = 2.0</code> is aggressive. At that level you are also suppressing articles, prepositions, and the subject of the sentence, which produces strained, thesaurus-like text. Treat 1.05–1.2 as the working range and read the outputs.</p>
+  </div></details>
+</div>
+
+<!-- ============ 7 ============ -->
+<div class="exercise" id="e7">
+  <div class="qtype">Predict then check · Temperature <span class="diff">core</span></div>
+  <h3>Exercise 7 — Predict then check: temperature and entropy</h3>
+  <p>The widget below holds a fixed eight-token logit vector and varies only <code>T</code>. <strong>Before touching it</strong>, write down your answers:</p>
+  <ol>
+    <li>As <code>T</code> goes from 0.05 to 3.0, does the entropy increase, decrease, or move non-monotonically?</li>
+    <li>At <code>T = 0.05</code>, roughly what will the top token's probability be, and what will the entropy be?</li>
+    <li>The vector has eight tokens. What is the largest entropy the widget can ever show, and what value of <code>T</code> approaches it?</li>
+    <li>At <code>T = 1</code> the widget reports "effective choices <code>2<sup>H</sup></code>". Predict whether that number will be closer to 2, 4, or 8.</li>
+  </ol>
+  <div class="demo">
+    <h3>Check · Temperature</h3>
+    <div class="controls">
+      <div class="control"><label for="x7-T">temperature T = <span id="x7-Tv">1.00</span></label>
+        <input type="range" id="x7-T" min="0.05" max="3.0" step="0.05" value="1.0"></div>
+      <button id="x7-cold" class="secondary">T = 0.05</button>
+      <button id="x7-one" class="secondary">T = 1</button>
+      <button id="x7-hot" class="secondary">T = 3</button>
+    </div>
+    <canvas id="x7-canvas" width="820" height="250"></canvas>
+    <div class="readout" id="x7-readout" style="margin-top:10px;"></div>
+  </div>
+  <details><summary>Show solution</summary><div class="sol">
+    <p><strong>1. Monotonically increasing.</strong> Raising <code>T</code> shrinks every logit difference by the same factor, which moves the distribution uniformly toward flat. Entropy is maximized by the uniform distribution, so it rises monotonically with <code>T</code>. There is no interior maximum or minimum to look for.</p>
+    <p><strong>2.</strong> The logits are <code>[4.0, 3.2, 2.5, 2.0, 1.0, 0.2, -0.5, -1.4]</code>. At <code>T = 0.05</code> the gap between the top two becomes <code>(4.0 - 3.2)/0.05 = 16</code>, and <code>e<sup>16</sup> &asymp; 8.9 &times; 10<sup>6</sup></code>, so the top token takes essentially all the mass: <code>p &asymp; 1.0000</code> and entropy <code>&asymp; 0.000</code> bits. This is the sense in which <code>T &rarr; 0</code> <em>is</em> greedy decoding — the distribution collapses to a point mass on the argmax.</p>
+    <p><strong>3.</strong> The maximum possible entropy over eight outcomes is <code>log&#8322;8 = 3</code> bits, attained only at the uniform distribution, which is the <code>T &rarr; &infin;</code> limit. At <code>T = 3</code> the widget shows about 2.78 bits — close, but not there, because <code>T = 3</code> is not infinite. Entropy approaches 3 asymptotically and never reaches it for finite <code>T</code>.</p>
+    <p><strong>4. Closer to 4.</strong> At <code>T = 1</code> the distribution is <code>[0.5275, 0.2370, 0.1177, 0.0714, 0.0263, 0.0118, 0.0059, 0.0024]</code>, whose entropy is about 1.89 bits, so <code>2<sup>H</sup> &asymp; 3.7</code>. Reading that number is a useful habit: eight tokens are nominally available, but the model is really weighing fewer than four of them. It is also a good sanity check on a top-k setting — if <code>2<sup>H</sup></code> is around 4, a <code>k</code> of 50 is not doing anything at this step.</p>
+  </div></details>
+</div>
+
+<!-- ============ 8 ============ -->
+<div class="exercise" id="e8">
+  <div class="qtype">Predict then check · Truncation <span class="diff">core</span></div>
+  <h3>Exercise 8 — Predict then check: k versus p on a flat step</h3>
+  <p>The widget holds sixteen tokens and lets you switch between a sharp distribution and a flat one, with <code>k</code> and <code>p</code> both adjustable. <strong>Write your predictions first:</strong></p>
+  <ol>
+    <li>With <code>k = 6</code> and <code>p = 0.9</code>: on the <em>sharp</em> distribution, how many tokens do you expect the nucleus to contain — fewer than 6, exactly 6, or more than 6?</li>
+    <li>Same settings on the <em>flat</em> distribution: same question.</li>
+    <li>On the flat distribution with <code>k = 6</code> and <code>p = 0.9</code>, which of the two filters is actually deciding the outcome?</li>
+    <li>Predict the direction the nucleus size moves when you raise the temperature from 1.0 to 2.0, holding <code>p</code> fixed.</li>
+  </ol>
+  <div class="demo">
+    <h3>Check · Top-k and top-p</h3>
+    <div class="controls">
+      <div class="control"><label for="x8-shape">distribution</label>
+        <select id="x8-shape">
+          <option value="sharp">sharp</option>
+          <option value="flat" selected>flat</option>
+        </select></div>
+      <div class="control"><label for="x8-k">top-k = <span id="x8-kv">6</span></label>
+        <input type="range" id="x8-k" min="1" max="16" step="1" value="6"></div>
+      <div class="control"><label for="x8-p">top-p = <span id="x8-pv">0.90</span></label>
+        <input type="range" id="x8-p" min="0.05" max="1.0" step="0.01" value="0.90"></div>
+      <div class="control"><label for="x8-T">temperature = <span id="x8-Tv">1.00</span></label>
+        <input type="range" id="x8-T" min="0.2" max="2.0" step="0.05" value="1.0"></div>
+    </div>
+    <canvas id="x8-canvas" width="820" height="260"></canvas>
+    <pre id="x8-out"></pre>
+  </div>
+  <details><summary>Show solution</summary><div class="sol">
+    <p><strong>1. Fewer than 6 — in fact 1.</strong> The sharp vector puts about 0.93 on the top token, which already exceeds 0.9, so the nucleus stops at the first token. Top-k = 6 keeps six tokens but five of them are then removed by the nucleus, and the intersection is a single token. At this step the sampler is effectively greedy no matter what <code>k</code> you set.</p>
+    <p><strong>2. More than 6 — around 14.</strong> On the flat vector no single token is large, so the cumulative sum needs roughly fourteen tokens to reach 0.9. The nucleus expanded by a factor of fourteen without you touching a slider. That adaptivity is the entire argument for top-p.</p>
+    <p><strong>3. Top-k is deciding.</strong> The nucleus wants ~14 tokens; <code>k = 6</code> caps it at 6, so the intersection is 6 and the surviving mass before renormalization is only about 0.49. On this step the <code>p</code> slider is inert: a user could drag it from 0.90 to 1.00 and see no change at all. If your service exposes both knobs, this is worth surfacing in the UI — it is the most common source of "the top-p control does nothing" confusion.</p>
+    <p><strong>4. It grows.</strong> Higher temperature flattens the distribution, so more tokens are needed before the cumulative mass reaches <code>p</code>. This is why the order of operations matters: temperature is applied <em>before</em> truncation, so raising <code>T</code> widens the nucleus in addition to reshaping it. Two knobs that look independent are coupled through this ordering, and it is why raising temperature and raising <code>p</code> together tends to produce far more variance than either change alone.</p>
+  </div></details>
+</div>
+
+<!-- ============ 9 ============ -->
+<div class="exercise" id="e9">
+  <div class="qtype">Predict then check · Beam search <span class="diff">core</span></div>
+  <h3>Exercise 9 — Predict then check: beam width</h3>
+  <p>The widget runs beam search over a fixed depth-3 probability tree. The first-step probabilities are <code>P(the) = 0.60</code> and <code>P(that) = 0.40</code>. <strong>Predict before checking:</strong></p>
+  <ol>
+    <li>Which first token will greedy (<code>B = 1</code>) choose, and what is the probability of the full three-token sequence it ends up with?</li>
+    <li>At <code>B = 2</code>, will the best final sequence start with the same token? Why might it not?</li>
+    <li>At <code>B = 4</code>, four sequences survive. Predict how many of them are near-duplicates of one another.</li>
+  </ol>
+  <div class="demo">
+    <h3>Check · Beam search tree</h3>
+    <div class="controls">
+      <div class="control"><label for="x9-w">beam width B = <span id="x9-wv">1</span></label>
+        <input type="range" id="x9-w" min="1" max="4" step="1" value="1"></div>
+      <div class="readout" id="x9-readout"></div>
+    </div>
+    <pre id="x9-out"></pre>
+  </div>
+  <details><summary>Show solution</summary><div class="sol">
+    <p><strong>1.</strong> Greedy takes "the" because <code>0.60 &gt; 0.40</code>. From there the best continuation is "results" at 0.40, then "were" (or "are", tied) at 0.50. The sequence is <code>the results were</code> with probability <code>0.60 &times; 0.40 &times; 0.50 = 0.12</code>.</p>
+    <p><strong>2. No — the best sequence starts with "that".</strong> Beam 2 keeps both first tokens alive. Expanding gives five candidates: <code>that the</code> at <code>0.40 &times; 0.90 = 0.36</code>, <code>the results</code> at 0.24, <code>the team</code> at 0.21, <code>the data</code> at 0.15, <code>that we</code> at 0.04. The top two are <code>that the</code> and <code>the results</code>. On the last step, <code>that the results</code> scores <code>0.36 &times; 0.95 = 0.342</code> — nearly three times greedy's 0.12.</p>
+    <p>The mechanism is the point: "that" is individually less likely than "the", but it leads into a subtree with an overwhelmingly probable continuation. Greedy is myopic because it commits before it can see that. Beam search buys exactly one thing — a less myopic search — and it buys it with compute proportional to <code>B</code>.</p>
+    <p><strong>3. Three of the four.</strong> At <code>B = 4</code> the survivors are <code>that the results</code> (0.342), <code>the team was</code> (0.126), <code>the results were</code> (0.120), and <code>the results are</code> (0.120). The last three all begin with "the" and two of them differ by a single word. That is diversity collapse: raising the beam width bought likelihood, not variety. If you wanted four genuinely different outputs — for a "give me some options" feature — beam search is the wrong tool, and you should sample four times instead.</p>
+  </div></details>
+</div>
+
+<!-- ============ 10 ============ -->
+<div class="exercise" id="e10">
+  <div class="qtype">Write code · Decoding pipeline <span class="diff">harder</span></div>
+  <h3>Exercise 10 — Write: temperature plus nucleus truncation</h3>
+  <p>Write a function that takes a list of logits, a temperature, and a top-p value, and returns the final sampling distribution. Apply the operations in the correct order: temperature first, then the nucleus, then renormalize. Use the standard nucleus convention (include the token that crosses the threshold). Do not use any library beyond <code>math</code>.</p>
+<pre>import math
+
+def temperature_top_p(logits, temperature=1.0, top_p=1.0):
+    """Return a list of probabilities the same length as `logits`,
+    with truncated tokens set to exactly 0.0 and the rest summing to 1."""
+    # your code here</pre>
+  <p>Expected output for <code>logits = [2.0, 1.0, 0.5, 0.0, -1.0]</code>, <code>temperature = 0.8</code>, <code>top_p = 0.9</code>:</p>
+<pre>[0.6945, 0.1990, 0.1065, 0.0000, 0.0000]</pre>
+  <p>Your function must also satisfy: with <code>top_p = 1.0</code> and <code>temperature = 1.0</code> it returns a plain softmax, and its output always sums to 1.0 within floating-point tolerance.</p>
+  <details><summary>Show solution</summary><div class="sol">
+<pre>import math
+
+def temperature_top_p(logits, temperature=1.0, top_p=1.0):
+    if temperature &lt;= 0:
+        raise ValueError("temperature must be positive; use argmax for greedy")
+
+    # 1. temperature, then a numerically safe softmax
+    scaled = [z / temperature for z in logits]
+    m = max(scaled)
+    exps = [math.exp(z - m) for z in scaled]
+    total = sum(exps)
+    probs = [e / total for e in exps]
+
+    # 2. nucleus: walk in descending order, stop once cumulative >= top_p
+    order = sorted(range(len(probs)), key=lambda i: probs[i], reverse=True)
+    keep, cumulative = set(), 0.0
+    for i in order:
+        keep.add(i)
+        cumulative += probs[i]
+        if cumulative &gt;= top_p:
+            break
+
+    # 3. renormalize over the surviving set
+    mass = sum(probs[i] for i in keep)
+    return [probs[i] / mass if i in keep else 0.0 for i in range(len(probs))]
+
+
+print([round(x, 4) for x in
+       temperature_top_p([2.0, 1.0, 0.5, 0.0, -1.0], 0.8, 0.9)])
+# [0.6945, 0.199, 0.1065, 0.0, 0.0]</pre>
+    <p><strong>Walking the expected output.</strong> Dividing by 0.8 gives <code>[2.5, 1.25, 0.625, 0.0, -1.25]</code>, whose softmax is <code>[0.6471, 0.1854, 0.0992, 0.0531, 0.0152]</code>. Accumulating in descending order: 0.6471, then 0.8325, then 0.9317 — which is the first value at or above 0.9, so the nucleus is the top three tokens holding 0.9317. Dividing each by 0.9317 gives <code>[0.6945, 0.1990, 0.1065]</code>, and the remaining two are set to 0.</p>
+    <p><strong>Three things the naive version gets wrong.</strong> (1) Adding to the nucleus <em>after</em> testing the threshold instead of before, which drops the crossing token and leaves you with less than <code>p</code> of the mass. (2) Truncating before applying temperature, which lets temperature reintroduce weight the truncation was meant to remove. (3) Skipping the <code>max</code> subtraction in the softmax — harmless on five small logits, an overflow on a real 50,000-entry vocabulary at low temperature, where <code>z/T</code> can easily exceed 700 and <code>math.exp</code> raises <code>OverflowError</code>.</p>
+    <p>Check the two stated invariants: with <code>top_p = 1.0</code> the loop runs until the cumulative mass reaches 1.0, so every index enters <code>keep</code>, <code>mass = 1.0</code>, and the result is the plain softmax. And the returned list always sums to 1 because it is divided by the sum over exactly the kept set.</p>
+  </div></details>
+</div>
+
+<!-- ============ 11 ============ -->
+<div class="exercise" id="e11">
+  <div class="qtype">Write code · Evaluation <span class="diff">harder</span></div>
+  <h3>Exercise 11 — Write: perplexity from a probability list</h3>
+  <p>Write <code>perplexity(probs)</code> taking a list of per-token probabilities of the observed tokens and returning the perplexity. Guard against a zero probability, which would otherwise raise on <code>log(0)</code>.</p>
+  <p>Expected results:</p>
+<pre>perplexity([0.4, 0.1, 0.25, 0.5, 0.2])   ->  3.9811
+perplexity([0.25, 0.25, 0.25, 0.25])     ->  4.0000
+perplexity([1.0, 1.0, 1.0])              ->  1.0000</pre>
+  <p>Then answer in one sentence: why does the second case return exactly the number of options a uniform choice would have?</p>
+  <details><summary>Show solution</summary><div class="sol">
+<pre>import math
+
+def perplexity(probs, floor=1e-12):
+    if not probs:
+        raise ValueError("need at least one token")
+    total = 0.0
+    for p in probs:
+        if p &lt; 0.0 or p &gt; 1.0:
+            raise ValueError(f"not a probability: {p}")
+        total += math.log(max(p, floor))     # floor avoids log(0)
+    return math.exp(-total / len(probs))
+
+
+print(round(perplexity([0.4, 0.1, 0.25, 0.5, 0.2]), 4))   # 3.9811
+print(round(perplexity([0.25] * 4), 4))                   # 4.0
+print(round(perplexity([1.0] * 3), 4))                    # 1.0</pre>
+    <p><strong>Why the uniform case gives exactly 4.</strong> If every <code>p_t = 1/k</code>, then every <code>ln p_t = -ln k</code>, the average is <code>-ln k</code> regardless of how many tokens there are, and <code>exp(ln k) = k</code>. That is the whole interpretation of perplexity restated: it is the size of the uniform distribution that would have been equally hard to predict — the effective branching factor.</p>
+    <p><strong>On the floor.</strong> Flooring at <code>1e-12</code> keeps the function from crashing, but note what it does to the number: a single floored token contributes <code>-ln(1e-12) = 27.6</code> nats to the sum, which will dominate any short sequence. That is arguably correct behaviour — a model that assigned zero probability to something that happened really is infinitely wrong — but it means one such token makes the reported perplexity a statement about the floor rather than about the model. If you hit the floor in practice, report how many tokens hit it rather than quietly returning a huge number.</p>
+    <p><strong>Two more practical notes for the project report.</strong> Perplexity must be computed over a held-out reference set the model did not train on; computing it on the training corpus measures memorization. And it is per <em>token</em>, so it cannot be compared across models with different tokenizers — state your tokenizer alongside the number, or normalize per character.</p>
+  </div></details>
+</div>
+
+<!-- ============ 12 ============ -->
+<div class="exercise" id="e12">
+  <div class="qtype">Write code · Evaluation <span class="diff">harder</span></div>
+  <h3>Exercise 12 — Write: distinct-n</h3>
+  <p>Write <code>distinct_n(tokens, n)</code> returning the ratio of unique n-grams to total n-grams, and <code>repeated_ngrams(tokens, n)</code> returning a dictionary of n-grams that occur more than once, mapped to their counts. Handle the case where the token list is shorter than <code>n</code>.</p>
+  <p>Expected results for <code>tokens = ["a", "b", "a", "b", "c"]</code>:</p>
+<pre>distinct_n(tokens, 1)        ->  0.6000        # {a, b, c} of 5
+distinct_n(tokens, 2)        ->  0.7500        # {ab, ba, ab, bc} -> 3 unique of 4
+repeated_ngrams(tokens, 1)   ->  {("a",): 2, ("b",): 2}
+repeated_ngrams(tokens, 2)   ->  {("a", "b"): 2}
+distinct_n(["a"], 3)         ->  0.0</pre>
+  <details><summary>Show solution</summary><div class="sol">
+<pre>from collections import Counter
+
+def ngram_counts(tokens, n):
+    if n &lt; 1:
+        raise ValueError("n must be at least 1")
+    if len(tokens) &lt; n:
+        return Counter()
+    return Counter(tuple(tokens[i:i + n]) for i in range(len(tokens) - n + 1))
+
+
+def distinct_n(tokens, n):
+    counts = ngram_counts(tokens, n)
+    total = sum(counts.values())
+    if total == 0:
+        return 0.0
+    return len(counts) / total
+
+
+def repeated_ngrams(tokens, n):
+    return {g: c for g, c in ngram_counts(tokens, n).items() if c &gt; 1}
+
+
+tokens = ["a", "b", "a", "b", "c"]
+print(round(distinct_n(tokens, 1), 4))   # 0.6
+print(round(distinct_n(tokens, 2), 4))   # 0.75
+print(repeated_ngrams(tokens, 1))        # {('a',): 2, ('b',): 2}
+print(repeated_ngrams(tokens, 2))        # {('a', 'b'): 2}
+print(distinct_n(["a"], 3))              # 0.0</pre>
+    <p><strong>Why tuples and not strings.</strong> Joining tokens with a space to form the key is a latent bug: a token that itself contains a space would make <code>["new york", "city"]</code> and <code>["new", "york city"]</code> collide. Tuples are hashable and unambiguous.</p>
+    <p><strong>Why 0.0 and not an exception for the short case.</strong> This function will be called in a loop over many generations, and some of them will be one or two tokens long. Returning 0.0 keeps the aggregation code simple. Whether 0.0 or <code>None</code> is right depends on how you average — if you average distinct-n over generations, a spurious 0.0 drags the mean down, so exclude too-short outputs from the average rather than scoring them. Say which you did in the report.</p>
+    <p><strong>Using it.</strong> In the GenText evaluation, compute distinct-1 and distinct-2 for every generation and store them next to the decoding settings. The signal you are looking for is not an absolute threshold but a <em>gradient</em>: distinct-2 should rise as you raise temperature or <code>p</code>, and it should be visibly lower for greedy than for sampling on the same prompts. If it is not, either your decoding parameters are not reaching the model or the outputs are too short for the metric to mean anything.</p>
+  </div></details>
+</div>
+
+<!-- ============ 13 ============ -->
+<div class="exercise" id="e13">
+  <div class="qtype">Explain · Evaluation design <span class="diff">open</span></div>
+  <h3>Exercise 13 — Explain: why perplexity cannot tune a decoder</h3>
+  <p>A teammate proposes the following experiment for the GenText project:</p>
+  <blockquote style="border-left:3px solid #D0D8E0; padding-left:14px; color:#555; margin:14px 0;">
+    "We will generate 200 outputs at each of five temperature settings, compute the perplexity of each generated output under our own fine-tuned model, and pick the temperature with the lowest average perplexity as our production default."
+  </blockquote>
+  <p>Write a response of a few paragraphs that (a) predicts the exact result of the experiment before it is run, (b) explains the mechanism that guarantees that result, and (c) proposes a replacement experiment that would actually answer the question they are asking.</p>
+  <details><summary>Show solution</summary><div class="sol">
+    <p><strong>(a) The prediction.</strong> The experiment will select the lowest temperature offered, and if <code>T = 0</code> or greedy were on the list it would select that. The reported "best" perplexity will be very low — quite possibly close to 1 — and the corresponding outputs will be the flattest and most repetitive of the five sets.</p>
+    <p><strong>(b) The mechanism.</strong> The experiment scores generated text under the same model that generated it. Perplexity is the exponentiated average negative log-likelihood of the tokens present. Greedy decoding selects, at every step, the token with the highest probability under that model. So the generated sequence is by construction the sequence that maximizes the per-step probabilities being measured, and its perplexity is the minimum achievable. Every increase in temperature moves probability mass away from the argmax and toward tokens with lower <code>p</code>, so the average <code>-ln p</code> rises and the measured perplexity rises with it. The experiment is not measuring quality; it is measuring how close the decoder was to argmax, which is a definition, not a finding.</p>
+    <p>The circularity is worth stating precisely, because "we used a standard metric" is a persuasive-sounding defence: perplexity is a measure of a <em>model's</em> fit to text it <em>did not produce</em>. Computing it on the model's own output removes the only thing that made it informative. The same objection applies to any likelihood-based score used this way, and it is why beam search — which explicitly maximizes sequence likelihood — also scores beautifully and reads poorly.</p>
+    <p>There is a second, independent problem: even a well-posed perplexity comparison would be blind to the failure modes that matter here. Degenerate repetition, hallucinated specifics, and prompt echo are all perfectly low-perplexity. A fluent fabricated statistic is exactly the kind of token sequence the model finds probable.</p>
+    <p><strong>(c) A replacement experiment.</strong> Split the question in two, because the two halves need different instruments.</p>
+    <ul>
+      <li><strong>Keep perplexity where it belongs.</strong> Use it to compare <em>models</em> — the base checkpoint against each fine-tuning run — on a fixed held-out reference set from the target corpus that no run trained on. That is a legitimate use and it answers "did fine-tuning help?".</li>
+      <li><strong>Compare decoding settings with a blind human study plus an automatic diversity signal.</strong> Fix a set of, say, 20 prompts. For each prompt, generate one output at each candidate temperature, recording the seed so runs are reproducible. Shuffle all outputs together and strip the settings so raters cannot see them. Have two raters score each output independently on fluency, coherence, relevance, factual support, and a binary "would you ship it". In parallel, compute distinct-1 and distinct-2 automatically for every output.</li>
+      <li><strong>Read the two signals together.</strong> The expected shape is that human scores form an inverted U across temperature — poor at the cold end because the text is repetitive, poor at the hot end because it derails — while distinct-n rises monotonically. The operating point you want is near the top of the human curve, and the diversity metric is what lets you confirm that the cold end's low scores really are repetition. Report inter-rater agreement (exact, adjacent, and a weighted &kappa;) so a reader can judge how much weight the human numbers carry.</li>
+    </ul>
+    <p>With 20 prompts you can detect a large difference and surface failure modes; you cannot resolve a difference of 0.2 on a five-point scale. If two settings come out close, the correct conclusion is that this study could not distinguish them — and picking either one on other grounds, such as latency or a stakeholder preference, is a defensible decision to write down.</p>
+  </div></details>
+</div>
+
+<!-- ============ 14 ============ -->
+<div class="exercise" id="e14">
+  <div class="qtype">Explain · Human evaluation <span class="diff">open</span></div>
+  <h3>Exercise 14 — Explain: reading an inter-rater disagreement table</h3>
+  <p>Two team members independently rated ten generated outputs on a 1–5 coherence scale:</p>
+<pre>output    1   2   3   4   5   6   7   8   9  10
+rater A   4   3   5   2   4   3   1   5   4   2
+rater B   3   3   4   2   5   4   1   5   3   3</pre>
+  <p>The computed statistics are:</p>
+<pre>exact agreement            4 / 10 = 0.400
+adjacent agreement (±1)   10 / 10 = 1.000
+mean signed difference (A - B)     = 0.000
+unweighted Cohen's kappa           = 0.2405
+linear-weighted kappa              = 0.5652
+quadratic-weighted kappa           = 0.8013</pre>
+  <ol>
+    <li>A reviewer sees &kappa; = 0.24 and concludes the ratings are unreliable and should be discarded. Is that the right conclusion? Argue your position using the other numbers.</li>
+    <li>Suppose instead the table had shown mean signed difference = <code>+1.1</code> with the same adjacent agreement. What different problem would that indicate, and what would you do about it?</li>
+    <li>Suppose two of the ten items had shown a disagreement of 3 points while the other eight matched exactly. Describe what you would do with those two items, and why averaging them would destroy information.</li>
+  </ol>
+  <details><summary>Show solution</summary><div class="sol">
+    <p><strong>Part 1. No — discarding the data would be the wrong call, and the unweighted &kappa; is the wrong statistic here.</strong></p>
+    <p>Unweighted &kappa; treats every disagreement as total: a 4-versus-5 counts exactly as badly as a 1-versus-5. On a nominal scale — where categories have no order, like "cat / dog / bird" — that is correct, because there is no sense in which one wrong category is closer than another. On an ordinal 1–5 rating scale it is plainly wrong, because a one-point gap is a near-agreement about a rating and a four-point gap is a flat contradiction.</p>
+    <p>The other numbers say the raters were in fact highly compatible. Adjacent agreement is 1.000: there is not a single item where they disagreed by more than one point. The mean signed difference is 0.000, so neither rater is systematically harsher. Quadratic-weighted &kappa; — the standard choice for ordinal rating scales, and the one that penalizes large gaps far more than small ones — is 0.8013, which is strong agreement. The honest summary is: <em>the raters agree on the ordering and magnitude of coherence but do not share an exact cut point between adjacent levels</em>, which is a rubric-granularity issue, not a reliability failure.</p>
+    <p>The practical response is not to discard, but either to (i) report the weighted &kappa; and explain the choice, or (ii) collapse the scale — a 1–3 scale, or a binary "would you ship it", will produce much higher exact agreement because it stops asking raters to make a distinction they cannot make reproducibly. Choosing a coarser scale that raters can apply consistently beats a fine scale they cannot. Whichever you do, report all three agreement numbers rather than the single most flattering one.</p>
+    <p><strong>Part 2. That would be a calibration problem, not a disagreement about content.</strong> A mean signed difference of +1.1 with perfect adjacent agreement means rater A is almost uniformly one point above rater B on every item — they rank the outputs identically and simply anchor the scale differently. Averaging them is not harmful here, but comparing raw scores across raters is: if rater A happened to rate more of the high-temperature outputs, that condition would look better purely because of who rated it.</p>
+    <p>Fixes, in increasing order of effort: standardize each rater's scores before aggregating (subtract that rater's own mean); compare <em>rankings</em> rather than absolute values; or switch the protocol to pairwise A/B comparisons, where the rater picks the better of two outputs and absolute calibration never enters. The prevention is a calibration round — both raters score the same five outputs together, discuss every gap, and only then rate the real set independently.</p>
+    <p><strong>Part 3. Read those two items; do not average them.</strong> Eight exact matches and two three-point gaps is a completely different situation from ten one-point gaps, even though a mean or a &kappa; can come out similar. It says the rubric works for most outputs and breaks on a specific kind of output. Those two are the most informative items in the study.</p>
+    <p>Averaging turns each into a middling score — a 2 and a 5 become 3.5 — which is a number no rater assigned and which describes no one's judgment. Worse, it hides the item inside the aggregate, so nobody ever looks at it again.</p>
+    <p>What to do instead: pull both items out, have both raters explain their score, and expect to find one of a small number of causes. The output is fluent but factually unverifiable, and one rater penalized the unverifiability while the other rated only the prose. The output is on-topic but answers a nearby question, and the raters disagreed about whether that counts as coherent or irrelevant. Or the output is in a register — a joke, a refusal, an empty response — that the rubric never anticipated. Each of those is a concrete rubric amendment, and each is more valuable to your project report than the aggregate mean, because it names a failure mode you can then look for systematically across the rest of the set.</p>
+  </div></details>
+</div>
+
+<div class="nav">
+  <a href="Lecture_Notes_Topic_3_Natural_Language_Generation.html">&larr; Back to the lecture notes</a>
+  <span>Topic 3 &middot; 14 exercises</span>
+</div>
+
+</div>
+
+<script>
+/* ============ shared helpers ============ */
+function softmax(a){ const m=Math.max.apply(null,a); const e=a.map(v=>Math.exp(v-m));
+  const s=e.reduce((x,y)=>x+y,0); return e.map(v=>v/s); }
+function entropyBits(p){ let h=0; for(const v of p) if(v>1e-12) h-=v*Math.log2(v); return h; }
+function fmt(x,n){ return (Math.round(x*Math.pow(10,n))/Math.pow(10,n)).toFixed(n); }
+function padR(s,n){ s=String(s); while(s.length<n) s+=' '; return s; }
+function padL(s,n){ s=String(s); while(s.length<n) s=' '+s; return s; }
+const C_BLUE='#1F4E79', C_LIGHT='#8FB4D4', C_AMBER='#F9A825', C_GREY='#CFD7DF', C_RED='#C00000';
+
+function barChart(ctx,W,H,vals,labels,colors,opts){
+  opts=opts||{}; ctx.clearRect(0,0,W,H);
+  const top=opts.top||26, bot=opts.bot||42, left=opts.left||38;
+  const n=vals.length; const bw=(W-left-16)/n;
+  const mx=opts.max || Math.max(1e-9, Math.max.apply(null,vals));
+  ctx.strokeStyle=C_GREY; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(left-6,H-bot+0.5); ctx.lineTo(W-8,H-bot+0.5); ctx.stroke();
+  for(let i=0;i<n;i++){
+    const h=Math.max(0, vals[i]/mx*(H-top-bot));
+    const x=left+i*bw;
+    ctx.fillStyle=colors[i]||C_BLUE;
+    ctx.fillRect(x+2, H-bot-h, Math.max(2,bw-5), h);
+    ctx.fillStyle='#555'; ctx.font='10px monospace'; ctx.textAlign='center';
+    ctx.fillText(String(labels[i]==null?'':labels[i]), x+bw/2, H-bot+14);
+    if(opts.showVals!==false && bw>26){
+      ctx.fillStyle='#333'; ctx.font='9px monospace';
+      ctx.fillText(fmt(vals[i],opts.dp==null?3:opts.dp), x+bw/2, H-bot-h-3);
+    }
+    ctx.textAlign='left';
+  }
+  if(opts.title){ ctx.fillStyle=C_BLUE; ctx.font='bold 12px sans-serif'; ctx.textAlign='left';
+                  ctx.fillText(opts.title, left, 16); }
+  return {left:left, bw:bw, top:top, bot:bot, mx:mx};
+}
+
+/* ============ Exercise 4 · perplexity checker ============ */
+(function(){
+  const host=document.getElementById('x4-inputs'); if(!host) return;
+  const ro=document.getElementById('x4-readout'), out=document.getElementById('x4-out');
+  const BASE=[0.40,0.10,0.25,0.50,0.20];
+  let cur=BASE.slice();
+  BASE.forEach((v,i)=>{
+    const d=document.createElement('div'); d.className='li';
+    d.innerHTML='<span>p'+(i+1)+'</span>';
+    const inp=document.createElement('input'); inp.type='number'; inp.step='0.01';
+    inp.min='0.000001'; inp.max='1'; inp.value=String(v); inp.id='x4-i'+i;
+    inp.oninput=function(){ let x=parseFloat(inp.value); if(!(x>0)) x=1e-6; if(x>1) x=1;
+      cur[i]=x; draw(); };
+    d.appendChild(inp); host.appendChild(d);
+  });
+  function draw(){
+    const lns=cur.map(Math.log), S=lns.reduce((a,b)=>a+b,0), N=cur.length;
+    const avg=S/N, ppl=Math.exp(-avg);
+    ro.textContent='PPL = '+fmt(ppl,4)+'   ·   cross-entropy = '+fmt(-avg/Math.LN2,4)+' bits/token';
+    let s='  t   p_t        ln p_t        -ln p_t\n';
+    s+='  --------------------------------------------\n';
+    cur.forEach((p,i)=>{ s+='  '+(i+1)+padL(fmt(p,6),11)+padL(fmt(lns[i],6),14)+
+      padL(fmt(-lns[i],6),15)+'\n'; });
+    s+='  --------------------------------------------\n';
+    s+='  sum ln p_t  = '+fmt(S,6)+'\n';
+    s+='  average     = '+fmt(S,6)+' / '+N+' = '+fmt(avg,6)+'\n';
+    s+='  PPL         = exp('+fmt(-avg,6)+') = '+fmt(ppl,4)+'\n';
+    const prod=cur.reduce((a,b)=>a*b,1);
+    s+='  cross-check : product of p_t = '+prod.toExponential(4)+
+       ',  geometric mean = '+fmt(Math.pow(prod,1/N),6)+
+       ',  1/gm = '+fmt(1/Math.pow(prod,1/N),4);
+    out.textContent=s;
+  }
+  draw();
+})();
+
+/* ============ Exercise 7 · temperature ============ */
+(function(){
+  const cvs=document.getElementById('x7-canvas'); if(!cvs) return;
+  const ctx=cvs.getContext('2d');
+  const TIn=document.getElementById('x7-T'), ro=document.getElementById('x7-readout');
+  const LOGITS=[4.0,3.2,2.5,2.0,1.0,0.2,-0.5,-1.4];
+  const LABELS=['t1','t2','t3','t4','t5','t6','t7','t8'];
+  const REF=softmax(LOGITS);
+  function draw(){
+    const T=Math.max(0.05, parseFloat(TIn.value));
+    document.getElementById('x7-Tv').textContent=fmt(T,2);
+    const p=softmax(LOGITS.map(z=>z/T));
+    const W=cvs.width,H=cvs.height;
+    const geo=barChart(ctx,W,H,p,LABELS,p.map(()=>C_BLUE),
+      {title:'logits fixed at [4.0, 3.2, 2.5, 2.0, 1.0, 0.2, -0.5, -1.4]   ·   dashed = T = 1',
+       dp:4, max:1.0});
+    ctx.strokeStyle=C_RED; ctx.lineWidth=1.3; ctx.setLineDash([4,3]);
+    REF.forEach((v,i)=>{ const h=v/geo.mx*(H-geo.top-geo.bot);
+      ctx.strokeRect(geo.left+i*geo.bw+2, H-geo.bot-h, Math.max(2,geo.bw-5), h); });
+    ctx.setLineDash([]);
+    const Hb=entropyBits(p);
+    ro.textContent='T = '+fmt(T,2)+'  ·  top p = '+fmt(Math.max.apply(null,p),6)+
+      '  ·  entropy = '+fmt(Hb,4)+' bits (maximum possible for 8 tokens = 3.0000)'+
+      '  ·  effective choices 2^H = '+fmt(Math.pow(2,Hb),3);
+  }
+  TIn.oninput=draw;
+  document.getElementById('x7-cold').onclick=function(){ TIn.value='0.05'; draw(); };
+  document.getElementById('x7-one').onclick=function(){ TIn.value='1'; draw(); };
+  document.getElementById('x7-hot').onclick=function(){ TIn.value='3'; draw(); };
+  draw();
+})();
+
+/* ============ Exercise 8 · top-k vs top-p ============ */
+(function(){
+  const cvs=document.getElementById('x8-canvas'); if(!cvs) return;
+  const ctx=cvs.getContext('2d');
+  const shape=document.getElementById('x8-shape'), kIn=document.getElementById('x8-k'),
+        pIn=document.getElementById('x8-p'), TIn=document.getElementById('x8-T'),
+        out=document.getElementById('x8-out');
+  const N=16;
+  function logitsFor(kind){
+    const z=[];
+    for(let i=0;i<N;i++) z.push(kind==='sharp' ? 6.0*Math.exp(-i*0.85) : 2.0 - i*0.06);
+    return z;
+  }
+  function draw(){
+    document.getElementById('x8-kv').textContent=kIn.value;
+    document.getElementById('x8-pv').textContent=fmt(+pIn.value,2);
+    document.getElementById('x8-Tv').textContent=fmt(+TIn.value,2);
+    const T=Math.max(0.05,parseFloat(TIn.value));
+    const p=softmax(logitsFor(shape.value).map(v=>v/T));
+    const ord=p.map((v,i)=>({v:v,i:i})).sort((a,b)=>b.v-a.v);
+    const K=+kIn.value, P=parseFloat(pIn.value);
+    const kSet=new Set(ord.slice(0,K).map(o=>o.i));
+    const pSet=new Set(); let cum=0, nucCum=0;
+    for(const o of ord){ pSet.add(o.i); cum+=o.v; if(cum>=P){ nucCum=cum; break; } }
+    if(nucCum===0) nucCum=cum;
+    const keep=new Set(); kSet.forEach(i=>{ if(pSet.has(i)) keep.add(i); });
+    let mass=0; keep.forEach(i=>mass+=p[i]);
+    const renorm=p.map((v,i)=>keep.has(i)? v/mass : 0);
+    const W=cvs.width,H=cvs.height;
+    const labels=[]; for(let i=0;i<N;i++) labels.push('t'+(i+1));
+    const cols=p.map((v,i)=> keep.has(i)?C_BLUE : ((kSet.has(i)||pSet.has(i))?C_AMBER:C_GREY));
+    const geo=barChart(ctx,W,H,p,labels,cols,
+      {title:'blue = kept by both   amber = cut by exactly one   grey = cut by both',dp:3,showVals:false});
+    ctx.fillStyle='rgba(143,180,212,0.55)';
+    renorm.forEach((v,i)=>{ if(v<=0) return; const h=v/geo.mx*(H-geo.top-geo.bot);
+      ctx.fillRect(geo.left+i*geo.bw+2, H-geo.bot-h, Math.max(2,geo.bw-5), h); });
+    let s='';
+    s+='shape = '+shape.value+'   T = '+fmt(T,2)+'   k = '+K+'   p = '+fmt(P,2)+'\n\n';
+    s+='top-k keeps       '+padL(kSet.size,3)+' tokens\n';
+    s+='nucleus keeps     '+padL(pSet.size,3)+' tokens, holding '+fmt(nucCum,4)+' of the mass\n';
+    s+='intersection      '+padL(keep.size,3)+' tokens, holding '+fmt(mass,4)+' before renormalizing\n';
+    s+='binding filter  : '+(kSet.size<pSet.size ? 'top-k (the p slider is inert here)'
+                            : (pSet.size<kSet.size ? 'top-p (the k slider is inert here)'
+                            : 'both agree on the same set'))+'\n\n';
+    s+='  rank  token   p        cumulative   in top-k   in nucleus\n';
+    s+='  ----------------------------------------------------------\n';
+    let cc=0;
+    ord.slice(0,8).forEach((o,r)=>{ cc+=o.v;
+      s+='  '+padL(r+1,4)+'  '+padR('t'+(o.i+1),7)+padL(fmt(o.v,4),8)+padL(fmt(cc,4),13)+
+         padL(kSet.has(o.i)?'yes':'no',11)+padL(pSet.has(o.i)?'yes':'no',13)+'\n'; });
+    s+='  ...  ('+(N-8)+' more, all ranked below)\n';
+    out.textContent=s;
+  }
+  [shape,kIn,pIn,TIn].forEach(e=>{ e.oninput=draw; e.onchange=draw; });
+  draw();
+})();
+
+/* ============ Exercise 9 · beam search ============ */
+(function(){
+  const wIn=document.getElementById('x9-w'); if(!wIn) return;
+  const ro=document.getElementById('x9-readout'), out=document.getElementById('x9-out');
+  const TREE={
+    '':            {the:0.60, that:0.40},
+    'the':         {results:0.40, team:0.35, data:0.25},
+    'that':        {the:0.90, we:0.10},
+    'the|results': {were:0.50, are:0.50},
+    'the|team':    {was:0.60, has:0.40},
+    'the|data':    {was:0.70, is:0.30},
+    'that|the':    {results:0.95, team:0.05},
+    'that|we':     {should:0.80, will:0.20}
+  };
+  const DEPTH=3;
+  function beamRun(B){
+    let beams=[{seq:[], lp:0}]; const hist=[];
+    for(let d=0; d<DEPTH; d++){
+      const cand=[];
+      beams.forEach(b=>{ const row=TREE[b.seq.join('|')];
+        if(row) Object.keys(row).forEach(t=>cand.push({seq:b.seq.concat([t]),
+                                                       lp:b.lp+Math.log(row[t])})); });
+      cand.sort((a,b)=>b.lp-a.lp);
+      const kept=cand.slice(0,B);
+      hist.push({cand:cand, kept:kept});
+      beams=kept;
+    }
+    return {beams:beams, hist:hist};
+  }
+  function draw(){
+    const B=+wIn.value;
+    document.getElementById('x9-wv').textContent=String(B);
+    const r=beamRun(B);
+    const best=r.beams[0];
+    ro.textContent='B = '+B+'  ·  best = "The report says '+best.seq.join(' ')+'"  ·  p = '+
+      fmt(Math.exp(best.lp),4);
+    let s='prompt: "The report says ..."\n\n';
+    r.hist.forEach((h,d)=>{
+      s+='step '+(d+1)+': '+h.cand.length+' candidate(s), keeping the top '+
+         Math.min(B,h.cand.length)+'\n';
+      h.cand.forEach((cd,i)=>{
+        s+='   '+(i<B?'KEEP ':'drop ')+padR('"'+cd.seq.join(' ')+'"',26)+
+           '  p='+fmt(Math.exp(cd.lp),5)+'   log p='+fmt(cd.lp,4)+'\n';
+      });
+      s+='\n';
+    });
+    s+='final beams, best first:\n';
+    r.beams.forEach((b,i)=>{ s+='  '+(i+1)+'. "'+b.seq.join(' ')+'"   p='+fmt(Math.exp(b.lp),5)+'\n'; });
+    const prefixes={};
+    r.beams.forEach(b=>{ const k=b.seq.slice(0,2).join(' '); prefixes[k]=(prefixes[k]||0)+1; });
+    const dupes=Object.keys(prefixes).filter(k=>prefixes[k]>1);
+    s+='\nsurviving beams sharing a two-token prefix: '+
+       (dupes.length? dupes.map(k=>'"'+k+'" x'+prefixes[k]).join(', ') : 'none');
+    out.textContent=s;
+  }
+  wIn.oninput=draw; draw();
+})();
+</script>
+</body>
+</html>

@@ -2,3 +2,8 @@
 *Syllabus*
 .DS_Store
 .vscode/
+
+# Video walkthroughs are distributed outside the repo — they bloat every clone.
+*.mp4
+*.mov
+*.m4v

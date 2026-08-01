@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic 6 Lecture Notes — Part-of-Speech Tagging</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+       margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6; }
+.container { max-width: 980px; margin: 24px auto 48px; background: white;
+             padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.35em; margin-top: 40px;
+     border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+h4 { color: #555; font-size: 1.0em; margin-top: 18px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 6px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7;
+       padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px; overflow-x: auto;
+      border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.9em; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79;
+           padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px;
+        margin: 14px 0; border-radius: 4px; font-size: 0.93em; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+        padding: 22px; margin: 22px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.controls { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 180px; }
+.control input[type="number"] { width: 80px; padding: 4px 8px;
+            border: 1px solid #CFD7DF; border-radius: 4px; font-family: inherit; }
+.control select { padding: 5px 8px; border: 1px solid #CFD7DF; border-radius: 4px;
+                  font-family: inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px;
+           border-radius: 6px; font-family: "SF Mono", Consolas, monospace;
+           font-size: 0.88em; min-width: 220px; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 16px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.93em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+      background: #F2F4F7; padding: 4px 8px; border-radius: 4px; }
+.eq-block { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic;
+            background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+            text-align: center; margin: 14px 0; display: block; }
+.nav { display: flex; justify-content: space-between; margin-top: 40px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px;
+       padding: 16px 22px; margin-bottom: 28px; font-size: 0.92em; }
+.toc h3 { margin: 0 0 8px; color: #1F4E79; font-size: 1.0em; }
+.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 24px; }
+.toc a { color: #1F4E79; text-decoration: none; } .toc a:hover { text-decoration: underline; }
+.tag { display: inline-block; padding: 2px 8px; background: #E0E5EB;
+       border-radius: 12px; font-size: 0.75em; color: #555;
+       text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px; }
+.tag.interactive { background: #E1F0EA; color: #1B5E20; }
+.tag.code { background: #F2F4F7; color: #555; }
+.tag.math { background: #FCE8EE; color: #6E1414; }
+table.cmp { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 0.92em; }
+table.cmp th, table.cmp td { border: 1px solid #E0E5EB; padding: 8px 12px; text-align: left; }
+table.cmp th { background: #F2F4F7; color: #1F4E79; }
+.archetype { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
+.arc-card { border: 1px solid #D0D8E0; border-radius: 8px; padding: 14px;
+            background: white; font-size: 0.9em; }
+.arc-card .name { color: #1F4E79; font-weight: 600; }
+.arc-card .role { color: #555; margin-top: 6px; }
+/* --- appended: widget helpers for this topic --- */
+.tokrow { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.tok { border: 1px solid #E0E5EB; border-radius: 6px; padding: 6px 10px; background: #fff;
+       text-align: center; font-size: 0.85em; min-width: 62px; }
+.tok .w { font-family: "SF Mono", Consolas, monospace; color: #1A1A1A; }
+.tok .t { font-size: 0.82em; color: #1F4E79; font-weight: 600; margin-top: 3px; }
+.tok .n { font-size: 0.72em; color: #777; margin-top: 2px; }
+.tok.amb { border-color: #F9A825; background: #FFF8E1; }
+.tok.unk { border-color: #C00000; background: #FBE9E7; }
+.tok.err { box-shadow: inset 0 -4px 0 #C00000; }
+.tok.right { box-shadow: inset 0 -4px 0 #1B5E20; }
+.mono { font-family: "SF Mono", Consolas, monospace; font-size: 0.86em; }
+table.mini { border-collapse: collapse; font-size: 0.85em; margin: 10px 0; }
+table.mini th, table.mini td { border: 1px solid #E0E5EB; padding: 4px 9px; text-align: left; }
+table.mini th { background: #F2F4F7; color: #1F4E79; }
+.rulebox { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 22px; margin: 10px 0;
+           font-size: 0.88em; }
+.rulebox label { display: flex; gap: 7px; align-items: flex-start; }
+.ok { color: #1B5E20; font-weight: 600; } .bad { color: #C00000; font-weight: 600; }
+.scroll { overflow-x: auto; }
+.tagbtns { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.tagbtns button { padding: 4px 10px; font-size: 0.82em; }
+.tagbtns button.sel { background: #F9A825; color: #1A1A1A; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 780px) { .two { grid-template-columns: 1fr; } }
+.tiny { font-size: 0.85em; color: #666; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="brand">Lecture notes · ~ 75 min read</div>
+<h1>Topic 6 — Part-of-Speech Tagging as Token Classification</h1>
+<p class="subtitle">From a lookup table you can read with your own eyes to a fine-tuned transformer token classifier — and an honest account of when the transformer loses.</p>
+
+<div class="callout">
+  <strong>What you should walk away with.</strong> (1) You can name the 17 universal POS tags and say why a 45-tag set is harder to inspect. (2) You can explain lexical ambiguity with real words and say exactly which errors it forces on a context-free tagger. (3) You can build a most-frequent-tag lookup table by hand from a tagged corpus and tag a new sentence with it. (4) You can write a rule-based fallback for unknown words and predict what turning each rule off does to accuracy. (5) You can fine-tune a transformer token classifier and get the subword-label alignment right. (6) You can read a confusion matrix over tags and explain why macro-F1 and token accuracy disagree. (7) You will not be surprised when a badly fine-tuned transformer loses to a lookup table, and you will know how to find out why.
+</div>
+
+<div class="toc">
+  <h3>What's in these notes</h3>
+  <ol>
+    <li><a href="#s1">POS tagging is token classification</a></li>
+    <li><a href="#s2">Tag sets: 17 universal tags, and 45</a></li>
+    <li><a href="#s3">Lexical ambiguity</a></li>
+    <li><a href="#s4">Counting: building the lookup table</a></li>
+    <li><a href="#s5">The most-frequent-tag baseline</a></li>
+    <li><a href="#s6">Tagging live with the lookup</a></li>
+    <li><a href="#s7">Unknown words and the fallback rules</a></li>
+    <li><a href="#s8">Worked by hand, start to finish</a></li>
+    <li><a href="#s9">Why this baseline is the right comparison</a></li>
+    <li><a href="#s10">Fine-tuning a transformer token classifier</a></li>
+    <li><a href="#s11">The subword alignment problem</a></li>
+    <li><a href="#s12">Token accuracy versus macro-F1</a></li>
+    <li><a href="#s13">Confusion matrices over tags</a></li>
+    <li><a href="#s14">When the transformer loses to the lookup</a></li>
+    <li><a href="#s15">What to report, and where to read more</a></li>
+  </ol>
+</div>
+
+<!-- ================= §1 ================= -->
+<h2 id="s1">1 · POS tagging is token classification</h2>
+<p>A part-of-speech tagger takes a sequence of tokens and assigns one label to <em>each</em> token. That is the whole task. It is not sequence classification (one label for the whole input) and it is not generation (a new sequence of arbitrary length). It is <strong>token classification</strong>: the output has exactly the same length as the input, and position <em>i</em> of the output is a label for position <em>i</em> of the input.</p>
+
+<pre>tokens :  The   run   was   long   .
+tags   :  DET   NOUN  AUX   ADJ    PUNCT</pre>
+
+<p>That one-to-one structure is what makes the whole topic tractable. It means:</p>
+<ul>
+  <li><strong>Evaluation is trivial to define.</strong> Compare the predicted tag with the gold tag, token by token. Count matches. There is no alignment problem at the word level, no BLEU, no human judgement.</li>
+  <li><strong>A dumb model is available.</strong> Because each token gets its own label, you can predict a token's label from the token alone, ignoring everything around it. That is the lookup baseline in section 5, and it is much better than it has any right to be.</li>
+  <li><strong>The same head works for other tasks.</strong> Named-entity recognition, chunking, and error detection are all token classification. The Hugging Face class is <code>AutoModelForTokenClassification</code> for all of them; only the label set changes.</li>
+</ul>
+
+<p>POS tags matter downstream because they are cheap syntax. A parser wants to know whether <em>book</em> is the head of a noun phrase or a verb; an information-extraction rule that looks for "adjective immediately before a product noun" needs the adjective label; a search index that stems only verbs needs to know which tokens are verbs. When the tagger is wrong, those consumers are wrong silently — nothing crashes, the output is just subtly worse.</p>
+
+<!-- ================= §2 ================= -->
+<h2 id="s2">2 · Tag sets: 17 universal tags, and 45 <span class="tag interactive">interactive</span></h2>
+<p>A <strong>tag set</strong> is the fixed, finite list of labels your tagger is allowed to output. Choosing it is a design decision that you make before you touch a model, and it determines what your confusion matrix looks like, what counts as an error, and whether your numbers are comparable to anyone else's.</p>
+
+<p>The Universal Dependencies project defines <strong>17 universal POS tags</strong> (UPOS). They are deliberately coarse and deliberately cross-lingual: the same 17 labels are used for every treebank in every language in the project, which is what makes cross-lingual comparison possible at all.</p>
+
+<div class="demo">
+  <h3>Widget 1 · The 17 universal tags, with frequency</h3>
+  <p class="tiny">Click a tag. The bar chart is an illustrative token-frequency profile for English newswire-style text — it has the right shape (a handful of tags carry most of the mass) but the exact percentages are synthetic, not measured.</p>
+  <div class="tagbtns" id="ts-btns"></div>
+  <div class="controls">
+    <div class="control"><label><input type="checkbox" id="ts-ptb"> show Penn Treebank subtags</label></div>
+    <div class="readout" id="ts-read" style="min-width:100%"></div>
+  </div>
+  <canvas id="ts-canvas" width="880" height="240"></canvas>
+</div>
+
+<p>The other tag set you will meet is the <strong>Penn Treebank</strong> set, usually quoted at <strong>45 tags</strong>. It is finer: instead of one <code>VERB</code> tag it has six (<code>VB VBD VBG VBN VBP VBZ</code>), instead of one <code>NOUN</code> it has <code>NN</code> and <code>NNS</code>, instead of one <code>ADJ</code> it has <code>JJ JJR JJS</code>. That extra detail is genuinely useful if you need tense or number downstream.</p>
+
+<p>It is also much harder to read. Three concrete reasons, and they are not aesthetic complaints:</p>
+<ol>
+  <li><strong>The matrix is 6.9× bigger.</strong> A 17-tag confusion matrix has 289 cells, 272 of them off-diagonal. A 45-tag matrix has 2,025 cells, 1,980 off-diagonal. At a readable cell size the 45-tag matrix does not fit on a screen; shrink it to fit and the labels collide. You can no longer find the big confusions by looking — you have to sort a list, at which point the picture is not doing any work.</li>
+  <li><strong>Errors get scattered.</strong> A single conceptual confusion ("the model muddles nouns and verbs") lands in one cell in UPOS and in twelve cells in PTB (2 noun tags × 6 verb tags). Each cell is individually small, so a real, systematic problem looks like noise.</li>
+  <li><strong>Some distinctions disappear, others appear.</strong> PTB's <code>IN</code> covers both prepositions and subordinating conjunctions, so the ADP/SCONJ confusion — one of the most common in UPOS — is literally invisible in a PTB matrix. Meanwhile a large share of the PTB matrix's off-diagonal mass sits <em>inside</em> a coarse class (VBD vs VBN, NN vs NNS), which is a different, usually less interesting kind of error.</li>
+</ol>
+
+<p>For this course, use UPOS. You get a matrix you can actually stare at, and Universal Dependencies gives you the treebanks with those tags already in them. You will see both matrices side by side in <a href="#s13">section 13</a>.</p>
+
+<!-- ================= §3 ================= -->
+<h2 id="s3">3 · Lexical ambiguity <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>Here is the fact that makes POS tagging a real task rather than a dictionary lookup: <strong>the same word takes different tags in different contexts.</strong> The word type is fixed; the tag is not.</p>
+
+<table class="cmp">
+  <tr><th>Word</th><th>Sentence</th><th>Tag</th><th>What decides it</th></tr>
+  <tr><td rowspan="2"><code>book</code></td><td>I read the <strong>book</strong> on the table .</td><td>NOUN</td>
+      <td rowspan="2">A determiner before it makes it a noun; an imperative frame makes it a verb.</td></tr>
+  <tr><td>Please <strong>book</strong> a table for two .</td><td>VERB</td></tr>
+  <tr><td rowspan="2"><code>run</code></td><td>They <strong>run</strong> a small shop .</td><td>VERB</td>
+      <td rowspan="2">Subject pronoun before it → verb; determiner before it → noun.</td></tr>
+  <tr><td>The <strong>run</strong> was long .</td><td>NOUN</td></tr>
+  <tr><td rowspan="3"><code>that</code></td><td>She said <strong>that</strong> they run .</td><td>SCONJ</td>
+      <td rowspan="3">Three different jobs for one spelling. This is the single most confusing English function word.</td></tr>
+  <tr><td>I like <strong>that</strong> book .</td><td>DET</td></tr>
+  <tr><td>The book <strong>that</strong> I read was long .</td><td>PRON</td></tr>
+  <tr><td rowspan="3"><code>like</code></td><td>I <strong>like</strong> the book .</td><td>VERB</td>
+      <td rowspan="3">Verb, preposition, and subordinating conjunction all share the spelling.</td></tr>
+  <tr><td>It looks <strong>like</strong> rain .</td><td>ADP</td></tr>
+  <tr><td><strong>Like</strong> I said , it was long .</td><td>SCONJ</td></tr>
+</table>
+
+<p>Now quantify it. If a tagger is <em>context-free</em> — if it sees only the word type and nothing else — then for a given word type <em>w</em> the best it can possibly do is always emit the tag that <em>w</em> takes most often. Its accuracy on that word is capped:</p>
+
+<p class="eq-block">
+  ceiling(w) = max<sub>t</sub> count(w, t) / Σ<sub>t</sub> count(w, t)
+</p>
+
+<p>This is not a property of any particular algorithm. It is an upper bound that no context-free method can beat, because a context-free method must return the same answer every time it sees <em>w</em>. If <code>that</code> is SCONJ 49% of the time, DET 29%, and PRON 22%, then <em>any</em> context-free tagger gets at most 49% of the <code>that</code> tokens right, and there is nothing to tune.</p>
+
+<div class="demo">
+  <h3>Widget 2 · Ambiguity explorer — the same word, two tags, one answer</h3>
+  <p class="tiny">Pick a word. The lookup emits one tag for every occurrence; each example is marked right or wrong against its gold tag. Counts are illustrative but the ceiling arithmetic is computed from them.</p>
+  <div class="controls">
+    <div class="control"><label for="amb-word">ambiguous word</label>
+      <select id="amb-word">
+        <option value="book">book</option>
+        <option value="run">run</option>
+        <option value="that">that</option>
+        <option value="like">like</option>
+      </select></div>
+    <div class="readout" id="amb-read" style="min-width:100%"></div>
+  </div>
+  <div id="amb-out"></div>
+</div>
+
+<div class="warn">
+  <strong>The trap.</strong> Ambiguity is concentrated in a small number of very frequent word types. Most word <em>types</em> in a corpus are unambiguous; most ambiguous types are common function words, so a large share of ambiguous <em>tokens</em> comes from a handful of spellings. That is why the lookup baseline scores so high — and why every point above it has to be won on exactly those few words.
+</div>
+
+<!-- ================= §4 ================= -->
+<h2 id="s4">4 · Counting: building the lookup table <span class="tag interactive">interactive</span></h2>
+<p>The baseline you will build has no training loop, no gradients, and no hyperparameters. It has one pass over a tagged corpus and a dictionary.</p>
+
+<pre>counts = {}                       # word -> {tag: n}
+for sentence in train:
+    for word, tag in sentence:
+        w = word.lower()
+        counts.setdefault(w, {})
+        counts[w][tag] = counts[w].get(tag, 0) + 1
+
+lookup = {w: max(d, key=lambda t: (d[t], t is not None and -ord(t[0]))) for w, d in counts.items()}</pre>
+
+<p>That last line is doing something subtle, so write it plainly instead. Ties happen constantly on small corpora, and a tie broken by dictionary insertion order is a silent source of irreproducible results. Break ties deterministically:</p>
+
+<pre>def most_frequent_tag(d):
+    # sort by count descending, then tag name ascending -> fully deterministic
+    return sorted(d.items(), key=lambda kv: (-kv[1], kv[0]))[0][0]
+
+lookup = {w: most_frequent_tag(d) for w, d in counts.items()}</pre>
+
+<p>Here is the five-sentence corpus we will use for the rest of these notes. It is tiny on purpose: you can verify every number in it yourself.</p>
+
+<pre>S1  I/PRON read/VERB the/DET book/NOUN on/ADP the/DET table/NOUN ./PUNCT
+S2  Please/INTJ book/VERB a/DET table/NOUN for/ADP two/NUM ./PUNCT
+S3  They/PRON run/VERB a/DET small/ADJ shop/NOUN and/CCONJ they/PRON run/VERB it/PRON well/ADV ./PUNCT
+S4  The/DET run/NOUN was/AUX long/ADJ ./PUNCT
+S5  She/PRON likes/VERB the/DET new/ADJ book/NOUN ./PUNCT</pre>
+
+<p>37 tokens, 23 word types. Step through the counting yourself:</p>
+
+<div class="demo">
+  <h3>Widget 3 · Lookup-table builder — count the corpus one token at a time</h3>
+  <div class="controls">
+    <button id="lb-step">Step one token</button>
+    <button id="lb-sent" class="secondary">Finish sentence</button>
+    <button id="lb-all" class="secondary">Count everything</button>
+    <button id="lb-reset" class="secondary">Reset</button>
+    <div class="readout" id="lb-read" style="min-width:340px"></div>
+  </div>
+  <div id="lb-cursor" class="mono" style="margin-bottom:10px"></div>
+  <div class="scroll"><div id="lb-table"></div></div>
+</div>
+
+<p>Two things to notice as the table fills in. First, almost every entry has a single tag with a count of 1 — those word types are unambiguous <em>as far as this corpus can tell</em>, which is not the same as being unambiguous in English. Second, only <code>book</code> and <code>run</code> ever accumulate two tags, and both settle 2-to-1. Six of 37 tokens (16%) belong to an ambiguous type, and the table is going to be wrong on a third of them by construction.</p>
+
+<!-- ================= §5 ================= -->
+<h2 id="s5">5 · The most-frequent-tag baseline <span class="tag math">math</span></h2>
+<p>The baseline is now one line of inference:</p>
+
+<p class="eq-block">
+  tag&#770;(w) = argmax<sub>t</sub> count(w, t)&nbsp;&nbsp;&nbsp;if w ∈ lookup,&nbsp;&nbsp;&nbsp;else fallback(w)
+</p>
+
+<p>Four properties, and each of them is a reason to build it before you build anything else:</p>
+
+<table class="cmp">
+  <tr><th>Property</th><th>Why it matters</th></tr>
+  <tr><td><strong>No training.</strong> One counting pass, seconds on a full treebank.</td>
+      <td>You have a number to beat on day one, before the GPU queue clears.</td></tr>
+  <tr><td><strong>Completely inspectable.</strong> The model <em>is</em> a dictionary. You can print it, diff two versions, and read the entry for any word.</td>
+      <td>Every prediction has a one-line explanation: "the training corpus tagged <code>run</code> as VERB 2 times and NOUN 1 time." No attribution method, no attention map, no hand-waving.</td></tr>
+  <tr><td><strong>Deterministic.</strong> Same corpus, same table, same predictions, forever.</td>
+      <td>Any change in your numbers is a change in your data or your evaluation code, never in a random seed.</td></tr>
+  <tr><td><strong>Already around 90% on English.</strong> This is the standard textbook result for the most-frequent-tag baseline on English treebank data.</td>
+      <td>It sets the bar where it belongs. A transformer at 91% is not "working" — it is barely earning its keep.</td></tr>
+</table>
+
+<p>That last row is the one students find hardest to believe, so take it apart. The baseline gets roughly nine tokens in ten right without looking at context at all, because:</p>
+<ul>
+  <li>A large share of tokens are punctuation, determiners, prepositions, pronouns, and auxiliaries — high-frequency closed-class words that are nearly always the same tag.</li>
+  <li>Content words are individually rarer but overwhelmingly unambiguous: <code>table</code>, <code>shop</code>, <code>treebank</code>, <code>corpus</code> take one tag essentially always.</li>
+  <li>The ambiguous words are frequent, but for most of them one tag dominates heavily, so "always guess the dominant tag" is right most of the time even on them.</li>
+</ul>
+
+<div class="callout">
+  <strong>Read the baseline number the right way.</strong> "The transformer got 96.5%" means nothing on its own. "The transformer got 96.5% where the lookup got 90.2%, so it removed 64% of the baseline's errors" is a claim you can defend. Always report the error reduction, not just the accuracy: <span class="eq">(acc_model − acc_base) / (1 − acc_base)</span>.
+</div>
+
+<!-- ================= §6 ================= -->
+<h2 id="s6">6 · Tagging live with the lookup <span class="tag interactive">interactive</span></h2>
+<p>Type a sentence and watch the table do its work. The widget below uses a larger illustrative lexicon (a couple of hundred entries with plausible-looking counts, not measured ones) plus the fallback rules from the next section. Each token is annotated with <em>why</em> it got its tag. Because this lexicon is much bigger than the five-sentence corpus of section 4, it will not reproduce the hand computation in section 8 — <code>in</code>, for instance, is a known word here and an unknown word there. That difference is the point: coverage is what moves the number.</p>
+
+<div class="demo">
+  <h3>Widget 4 · Live most-frequent-tag tagger</h3>
+  <div class="controls" style="align-items:stretch">
+    <div class="control" style="flex:1; min-width:420px">
+      <label for="tg-in">sentence</label>
+      <input type="text" id="tg-in" value="Please book the fastest morning run in Boston ."
+             style="padding:8px 10px; border:1px solid #CFD7DF; border-radius:4px; font-family:inherit; font-size:0.95em;">
+    </div>
+    <button id="tg-go">Tag it</button>
+  </div>
+  <div class="controls">
+    <button class="secondary" data-tgex="She said that they run the shop well .">example: that/SCONJ</button>
+    <button class="secondary" data-tgex="It looks like rain , so book a table .">example: like/ADP</button>
+    <button class="secondary" data-tgex="The unbelievably fastest runners deployed 3 models in Helsinki .">example: unknown words</button>
+  </div>
+  <div id="tg-out" class="tokrow"></div>
+  <div class="readout" id="tg-read" style="min-width:100%"></div>
+  <p class="tiny">White = known and unambiguous in the lexicon. Amber = known but ambiguous (the lexicon has seen more than one tag; the note shows the distribution and the ceiling). Red = unknown, routed to the fallback rules; the note names the rule that fired.</p>
+</div>
+
+<!-- ================= §7 ================= -->
+<h2 id="s7">7 · Unknown words and the fallback rules <span class="tag interactive">interactive</span></h2>
+<p>Every word type your tagger has never seen is a hole in the dictionary. On a real treebank, somewhere between 2% and 8% of test tokens are unknown depending on the domain gap, and <strong>nearly all of the baseline's remaining error lives in those tokens.</strong> That is the single most important operational fact about this baseline: the known words are almost solved, the unknown words are almost a coin flip, and the overall number is a weighted average of the two.</p>
+
+<p>You cannot look them up, so you look at their shape. The classic fallback is an ordered list of rules on the surface form:</p>
+
+<pre>def fallback(token, is_first_word):
+    if all(not c.isalnum() for c in token):        return "PUNCT"
+    if any(c.isdigit() for c in token):            return "NUM"
+    if token[0].isupper() and not is_first_word:   return "PROPN"
+    if token.endswith("ly"):                       return "ADV"
+    if token.endswith(("ing", "ed")):              return "VERB"
+    if token.endswith("est"):                      return "ADJ"
+    if token.endswith(("ous", "ive", "al", "ful")):return "ADJ"
+    if token.endswith(("tion","ment","ness","ity")):return "NOUN"
+    if token.endswith("s"):                        return "NOUN"
+    return "NOUN"                                  # default: unknown words are usually nouns</pre>
+
+<p>Order matters and is part of the model. <code>dangerous</code> ends in both <code>-ous</code> and <code>-s</code>; the ADJ rule has to come first or you get NOUN. <code>kindness</code> ends in both <code>-ness</code> and <code>-s</code>; same story.</p>
+
+<p>The default of NOUN is not arbitrary. New word types entering a language are overwhelmingly nouns — product names, jargon, borrowings, typos of nouns — so guessing NOUN when nothing else fires is the right prior.</p>
+
+<div class="demo">
+  <h3>Widget 5 · Suffix-rule editor — turn rules off and watch accuracy move</h3>
+  <p class="tiny">36 held-out "unknown" words with gold tags. Toggle a rule and the tagger re-runs. The right-hand column shows what happens to accuracy if you turn <em>that</em> rule off from the current configuration — computed live, not hard-coded.</p>
+  <div class="rulebox" id="sr-rules"></div>
+  <div class="controls">
+    <div class="control"><label for="sr-default">default tag (nothing fired)</label>
+      <select id="sr-default"><option>NOUN</option><option>PROPN</option><option>VERB</option><option>X</option></select></div>
+    <button id="sr-alloff" class="secondary">All rules off</button>
+    <button id="sr-allon" class="secondary">All rules on</button>
+    <div class="readout" id="sr-read" style="min-width:330px"></div>
+  </div>
+  <div class="two">
+    <div><canvas id="sr-canvas" width="420" height="200"></canvas></div>
+    <div class="scroll"><div id="sr-wrong"></div></div>
+  </div>
+</div>
+
+<p>Three findings you should be able to reproduce in that widget, because they generalise:</p>
+<ol>
+  <li><strong>Two rules are redundant.</strong> With a NOUN default, the <code>-tion/-ment/-ness/-ity → NOUN</code> rule and the <code>-s → NOUN</code> rule change nothing at all on this set: every word they fire on would have fallen through to NOUN anyway. Deleting them costs zero accuracy and removes two things to maintain. Rules that agree with your default are decoration.</li>
+  <li><strong>Turning a rule off can <em>help</em>.</strong> The <code>-est → ADJ</code> rule wins on <code>largest</code>, <code>smallest</code>, <code>brightest</code> and loses on <code>interest</code> and <code>forest</code>, so its net value on this set is small. The <code>-ly → ADV</code> rule is worth more, but it still costs you <code>family</code> and <code>reply</code>. A suffix rule is a bet, not a fact.</li>
+  <li><strong>The default carries most of the weight.</strong> All rules off, guessing NOUN every time, is already about 42% on this set. That is the number your rules have to beat, and each individual rule buys only a few points.</li>
+</ol>
+
+<div class="warn">
+  <strong>Do not silently drop unknown words from evaluation.</strong> If your evaluation loop skips tokens the lookup has no entry for, you have deleted the only hard part of the task and your baseline number is fiction. Report accuracy on all tokens, and separately on known and unknown tokens. The split is the interesting result.
+</div>
+
+<!-- ================= §8 ================= -->
+<h2 id="s8">8 · Worked by hand, start to finish <span class="tag math">math</span></h2>
+<p>Now do the whole thing on paper. Corpus from section 4, five sentences, 37 tokens.</p>
+
+<h3>Step 1 — count (word, tag) pairs</h3>
+<p>Lowercase every word. Walk the five sentences in order and tally:</p>
+
+<table class="mini">
+<tr><th>word</th><th>tag counts</th><th>most-frequent tag</th><th>note</th></tr>
+<tr><td>i</td><td>PRON 1</td><td>PRON</td><td></td></tr>
+<tr><td>read</td><td>VERB 1</td><td>VERB</td><td></td></tr>
+<tr><td>the</td><td>DET 4</td><td>DET</td><td>most frequent type in the corpus</td></tr>
+<tr><td>book</td><td>NOUN 2, VERB 1</td><td>NOUN</td><td><strong>ambiguous</strong> — ceiling 2/3 = 66.7%</td></tr>
+<tr><td>on</td><td>ADP 1</td><td>ADP</td><td></td></tr>
+<tr><td>table</td><td>NOUN 2</td><td>NOUN</td><td></td></tr>
+<tr><td>.</td><td>PUNCT 5</td><td>PUNCT</td><td></td></tr>
+<tr><td>please</td><td>INTJ 1</td><td>INTJ</td><td></td></tr>
+<tr><td>a</td><td>DET 2</td><td>DET</td><td></td></tr>
+<tr><td>for</td><td>ADP 1</td><td>ADP</td><td></td></tr>
+<tr><td>two</td><td>NUM 1</td><td>NUM</td><td></td></tr>
+<tr><td>they</td><td>PRON 2</td><td>PRON</td><td></td></tr>
+<tr><td>run</td><td>VERB 2, NOUN 1</td><td>VERB</td><td><strong>ambiguous</strong> — ceiling 2/3 = 66.7%</td></tr>
+<tr><td>small</td><td>ADJ 1</td><td>ADJ</td><td></td></tr>
+<tr><td>shop</td><td>NOUN 1</td><td>NOUN</td><td></td></tr>
+<tr><td>and</td><td>CCONJ 1</td><td>CCONJ</td><td></td></tr>
+<tr><td>it</td><td>PRON 1</td><td>PRON</td><td></td></tr>
+<tr><td>well</td><td>ADV 1</td><td>ADV</td><td></td></tr>
+<tr><td>was</td><td>AUX 1</td><td>AUX</td><td></td></tr>
+<tr><td>long</td><td>ADJ 1</td><td>ADJ</td><td></td></tr>
+<tr><td>she</td><td>PRON 1</td><td>PRON</td><td></td></tr>
+<tr><td>likes</td><td>VERB 1</td><td>VERB</td><td></td></tr>
+<tr><td>new</td><td>ADJ 1</td><td>ADJ</td><td></td></tr>
+</table>
+
+<p>Check your arithmetic: the counts must sum to 37. 1+1+4+3+1+2+5+1+2+1+1+2+3+1+1+1+1+1+1+1+1+1+1 = 37. Good.</p>
+
+<h3>Step 2 — tag a sentence the corpus has never seen</h3>
+<p>Test sentence, with gold tags:</p>
+<pre>Please/INTJ  book/VERB  the/DET  fastest/ADJ  morning/NOUN  run/NOUN  in/ADP  Boston/PROPN  ./PUNCT</pre>
+
+<p>Run each token through the baseline. Known words go to the table; unknown words go to the fallback in the order given in section 7.</p>
+
+<table class="mini">
+<tr><th>#</th><th>token</th><th>route</th><th>predicted</th><th>gold</th><th></th></tr>
+<tr><td>1</td><td>Please</td><td>lookup: INTJ 1</td><td>INTJ</td><td>INTJ</td><td class="ok">correct</td></tr>
+<tr><td>2</td><td>book</td><td>lookup: NOUN 2 &gt; VERB 1</td><td>NOUN</td><td>VERB</td><td class="bad">WRONG — ambiguity</td></tr>
+<tr><td>3</td><td>the</td><td>lookup: DET 4</td><td>DET</td><td>DET</td><td class="ok">correct</td></tr>
+<tr><td>4</td><td>fastest</td><td>unknown → rule <code>-est → ADJ</code></td><td>ADJ</td><td>ADJ</td><td class="ok">correct</td></tr>
+<tr><td>5</td><td>morning</td><td>unknown → rule <code>-ing → VERB</code></td><td>VERB</td><td>NOUN</td><td class="bad">WRONG — rule over-fires</td></tr>
+<tr><td>6</td><td>run</td><td>lookup: VERB 2 &gt; NOUN 1</td><td>VERB</td><td>NOUN</td><td class="bad">WRONG — ambiguity</td></tr>
+<tr><td>7</td><td>in</td><td>unknown → no rule fires → default</td><td>NOUN</td><td>ADP</td><td class="bad">WRONG — default</td></tr>
+<tr><td>8</td><td>Boston</td><td>unknown → rule <code>capitalised, not first → PROPN</code></td><td>PROPN</td><td>PROPN</td><td class="ok">correct</td></tr>
+<tr><td>9</td><td>.</td><td>lookup: PUNCT 5</td><td>PUNCT</td><td>PUNCT</td><td class="ok">correct</td></tr>
+</table>
+
+<h3>Step 3 — score it, and split the score</h3>
+<p class="eq-block">
+  accuracy = 5 / 9 = 0.556<br>
+  known-token accuracy = 3 / 5 = 0.600&nbsp;&nbsp;&nbsp;(Please, book, the, run, .)<br>
+  unknown-token accuracy = 2 / 4 = 0.500&nbsp;&nbsp;&nbsp;(fastest, morning, in, Boston)
+</p>
+
+<p>55.6% is far below the ~90% figure from section 5, and the reason is entirely the corpus size. With 37 training tokens, 4 of 9 test tokens are unknown (44%); on a real treebank that figure is a few percent. Scale the corpus and the known-token share goes up, the known-token accuracy goes up (because counts become reliable), and the overall number climbs toward 90%.</p>
+
+<p>Now read the errors, which is the actual point of the exercise:</p>
+<ul>
+  <li><strong><code>book</code> and <code>run</code> are ambiguity errors.</strong> The lookup could not have got both right. It says NOUN for <code>book</code> and VERB for <code>run</code>, and this sentence needs the opposite of each. Notice that this is not a bug and not fixable by more data — more data makes the table <em>more</em> confident in exactly the wrong answer for these two tokens. You need context to fix them, and that is the whole argument for the transformer.</li>
+  <li><strong><code>morning</code> is a rule error.</strong> The <code>-ing → VERB</code> rule fires on a noun. Fixable in principle — add <code>morning</code> to the lexicon, or drop the rule — but every patch you add is a new bet that can lose elsewhere.</li>
+  <li><strong><code>in</code> is a coverage error.</strong> A preposition fell through to the NOUN default because 37 tokens were not enough to have seen it. This class of error vanishes with corpus size: closed-class function words are essentially never unknown on a real training set. Do not over-learn from it.</li>
+</ul>
+
+<div class="callout">
+  <strong>Do this by hand once.</strong> Building the table, tagging a sentence, and classifying each error into ambiguity / rule / coverage takes fifteen minutes and permanently changes how you read a confusion matrix. Every number you will produce later in this topic is this computation at scale.
+</div>
+
+<!-- ================= §9 ================= -->
+<h2 id="s9">9 · Why this baseline is the right comparison</h2>
+<p>You could compare your transformer to a random tagger, to a majority-class tagger (everything is NOUN, roughly 17%), or to a published number from someone else's paper. All three are worse choices. Here is the case for the lookup.</p>
+
+<h3>It is the strongest thing that is still explainable</h3>
+<p>A baseline has one job: to tell you how much of your model's score is coming from the <em>task</em> and how much from your <em>model</em>. The lookup captures everything that is learnable from the word identity alone — which, in POS tagging, is most of it. Whatever the transformer adds on top is, by construction, the contribution of context. That is exactly the quantity your report is about.</p>
+
+<h3>When it is wrong, you can point at the word</h3>
+<p>This is the property that makes it worth building rather than citing. Take any error the lookup made and you get a complete, checkable explanation in one line:</p>
+<pre>token 6: "run"
+  lookup entry: {VERB: 2, NOUN: 1}  ->  predicts VERB
+  gold: NOUN
+  diagnosis: lexical ambiguity. A context-free tagger cannot resolve this.
+             Ceiling for "run" is 2/3 = 66.7%; this token is in the losing third.</pre>
+<p>You can put that in a report. You can show it to someone who has never seen a neural network and they will understand both the error and why context is required to fix it. Compare with the corresponding statement about a transformer error — "the model assigned probability 0.61 to VERB" — which explains nothing.</p>
+
+<p>Concretely, the lookup partitions its own errors into three buckets you can count exactly: <strong>ambiguity errors</strong> (the word is in the table, gold tag is not the most frequent one — irreducible without context), <strong>rule errors</strong> (unknown word, a suffix rule fired and was wrong), and <strong>coverage errors</strong> (unknown word, nothing fired, took the default). Compute those three numbers for your baseline and you have a map of where a better model could possibly help. If 80% of the baseline's errors are ambiguity errors and your transformer only improves by 2 points, your transformer is not using context.</p>
+
+<h3>It is honest about the domain</h3>
+<p>Run the lookup built on treebank A over test data from domain B and the unknown-word rate tells you the domain gap in a single number, before you train anything. That is a cheap and unusually trustworthy diagnostic.</p>
+
+<div class="callout">
+  <strong>Historical aside — HMMs.</strong> Before neural taggers, the standard statistical approach was a hidden Markov model: emission probabilities <span class="eq">P(word | tag)</span>, transition probabilities <span class="eq">P(tag<sub>i</sub> | tag<sub>i−1</sub>)</span>, and Viterbi decoding to find the best tag sequence. It works, it uses context (a one-tag window), and it was state of the art for years. It is worth knowing that it exists and that it is where "tagging is a sequence problem" comes from. It is <em>not</em> the baseline in this course: it needs training, its parameters are not directly readable, and its errors do not reduce to a one-line explanation. The lookup is the baseline. If you want a middle rung on the ladder, add a second lookup keyed on <span class="eq">(previous tag, word)</span> rather than reaching for an HMM.
+</div>
+
+<!-- ================= §10 ================= -->
+<h2 id="s10">10 · Fine-tuning a transformer token classifier <span class="tag code">code</span></h2>
+<p>The transformer side is standard and short. An encoder produces one contextual vector per subword; a linear head maps each vector to 17 logits; cross-entropy is summed over positions. The only interesting part is the data preparation, which is section 11.</p>
+
+<pre>from transformers import AutoTokenizer, AutoModelForTokenClassification
+
+LABELS = ["ADJ","ADP","ADV","AUX","CCONJ","DET","INTJ","NOUN","NUM",
+          "PART","PRON","PROPN","PUNCT","SCONJ","SYM","VERB","X"]      # 17 UPOS tags
+id2label = {i: l for i, l in enumerate(LABELS)}
+label2id = {l: i for i, l in enumerate(LABELS)}
+
+tok = AutoTokenizer.from_pretrained("distilbert-base-cased")
+model = AutoModelForTokenClassification.from_pretrained(
+    "distilbert-base-cased",
+    num_labels=len(LABELS), id2label=id2label, label2id=label2id)</pre>
+
+<p>Three choices in that block that are not free:</p>
+<ul>
+  <li><strong>A <code>cased</code> checkpoint.</strong> Capitalisation is one of the strongest signals for PROPN. An uncased model throws it away before the encoder sees it, and your PROPN recall drops for a reason that will take you an afternoon to find.</li>
+  <li><strong>Pass <code>id2label</code> and <code>label2id</code>.</strong> Otherwise the saved model reports <code>LABEL_0 … LABEL_16</code> and anyone loading it — including you, in three weeks — has to guess the order. This is free correctness; take it.</li>
+  <li><strong><code>num_labels</code> must match your tag set exactly.</strong> If your treebank uses 17 UPOS tags but you pass 18 "just in case", you get a dead logit that macro-F1 will happily count as a tag with F1 = 0 and drag your score down.</li>
+</ul>
+
+<p>Loading the data: get an English treebank from <a href="https://universaldependencies.org/">universaldependencies.org</a>. The CoNLL-U format is one token per line, tab-separated, with the UPOS tag in column 4 and blank lines between sentences. A reader is about fifteen lines:</p>
+
+<pre>def read_conllu(path):
+    sents, toks, tags = [], [], []
+    for line in open(path, encoding="utf-8"):
+        line = line.rstrip("\n")
+        if not line:
+            if toks: sents.append((toks, tags)); toks, tags = [], []
+            continue
+        if line.startswith("#"): continue
+        f = line.split("\t")
+        if "-" in f[0] or "." in f[0]: continue     # skip multiword and empty nodes
+        toks.append(f[1]); tags.append(f[3])        # FORM, UPOS
+    if toks: sents.append((toks, tags))
+    return sents</pre>
+
+<p>Skipping the multiword-token ranges (lines with IDs like <code>7-8</code>) and empty nodes (IDs like <code>5.1</code>) is not optional — include them and your token counts will not match your tag counts, and the mismatch will surface as an off-by-one alignment error three steps later.</p>
+
+<p>Training arguments worth stating explicitly, with reasons rather than magic numbers: a small learning rate (fine-tuning, not training from scratch), two to four epochs (POS tagging converges fast because the task is easy and the signal is dense — every token is a training example), and evaluation every epoch on the dev split so you can see over-fitting when it starts. Then:</p>
+
+<pre>import numpy as np
+from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
+
+def compute_metrics(eval_pred):
+    logits, labels = eval_pred
+    preds = np.argmax(logits, axis=-1)
+    mask = labels != -100                       # drop specials + continuation subwords
+    y_true = labels[mask]
+    y_pred = preds[mask]
+    return {
+        "accuracy": accuracy_score(y_true, y_pred),
+        "macro_f1": f1_score(y_true, y_pred, average="macro", zero_division=0),
+    }</pre>
+
+<p>The Hugging Face course section on token classification (<a href="https://huggingface.co/learn/nlp-course/chapter7/2">huggingface.co/learn/nlp-course/chapter7/2</a>) walks through the same pipeline for NER; the only difference for POS tagging is the label set and the fact that you do not need BIO decoding, because POS tags are not spans.</p>
+
+<!-- ================= §11 ================= -->
+<h2 id="s11">11 · The subword alignment problem <span class="tag interactive">interactive</span></h2>
+<p>Here is the trap that costs more marks than anything else in this topic. Your gold data has <strong>one tag per word</strong>. Your tokenizer produces <strong>one embedding per subword</strong>, and a word can become one, two, or five subwords. The lengths do not match, and if you line them up wrong nothing crashes — you get a model that trains happily, reports a plausible loss curve, and is quietly garbage.</p>
+
+<pre>words    : The  tokenizer        splits      unbelievable            words  into  subwords     .
+subwords : The  token ##izer     split ##s   un ##bel ##iev ##able   words  into  sub ##words  .
+             8 words  ->  14 subwords</pre>
+
+<p>The convention: assign the word's tag to the <strong>first</strong> subword of that word, and assign <code>-100</code> to every continuation subword and to the special tokens. PyTorch's cross-entropy ignores <code>-100</code> by default, so those positions contribute nothing to the loss. At prediction time you read the tag off the first subword of each word.</p>
+
+<pre>def align(words, tags, tokenizer):
+    enc = tokenizer(words, is_split_into_words=True, truncation=True)
+    word_ids = enc.word_ids()          # e.g. [None, 0, 1, 1, 2, 2, 3, 3, 3, 3, ..., None]
+    labels, prev = [], None
+    for wid in word_ids:
+        if wid is None:                # [CLS] / [SEP] / padding
+            labels.append(-100)
+        elif wid != prev:              # FIRST subword of a new word -> real label
+            labels.append(label2id[tags[wid]])
+        else:                          # continuation subword -> ignored
+            labels.append(-100)
+        prev = wid
+    enc["labels"] = labels
+    return enc</pre>
+
+<p><code>word_ids()</code> is the whole solution. It is provided by the fast tokenizers and it tells you, for every subword position, which original word it came from. If you find yourself writing <code>zip(subwords, tags)</code>, stop: that is the bug.</p>
+
+<div class="demo">
+  <h3>Widget 6 · Subword alignment — correct, label-all, and the off-by-one bug</h3>
+  <p class="tiny">Each strip shows the 14 subwords with the label assigned to each position. Read-back is done the way inference does it: take the predicted tag at the first subword of each word. Accuracy is computed from that read-back, assuming the model learns whatever labels you gave it.</p>
+  <div class="controls">
+    <div class="control"><label for="sa-mode">alignment strategy</label>
+      <select id="sa-mode">
+        <option value="first">first subword only, rest = −100 (correct)</option>
+        <option value="all">label every subword with the word's tag</option>
+        <option value="zip">zip(subwords, tags) — the off-by-one bug</option>
+        <option value="last">last subword only, rest = −100</option>
+      </select></div>
+    <div class="readout" id="sa-read" style="min-width:100%"></div>
+  </div>
+  <canvas id="sa-canvas" width="880" height="270"></canvas>
+</div>
+
+<p>What the four strategies actually do:</p>
+<table class="cmp">
+  <tr><th>Strategy</th><th>Effect</th></tr>
+  <tr><td><strong>First subword only</strong></td><td>Correct. Loss is computed once per word, so every word contributes equally regardless of how many subwords it splits into.</td></tr>
+  <tr><td><strong>Label every subword</strong></td><td>Trains and gets the read-back right, but re-weights the loss: <code>unbelievable</code> contributes four times as much as <code>words</code>. It also inflates any accuracy you compute at the subword level, because continuation subwords are easy. If you report subword-level accuracy you are not reporting POS tagging accuracy.</td></tr>
+  <tr><td><strong>zip(subwords, tags)</strong></td><td>Catastrophic and silent. Tags slide leftward from the first multi-subword word onward; every word after it is trained on somebody else's label, and the tail of every sentence gets no label at all. Loss still decreases — the model learns the wrong function competently.</td></tr>
+  <tr><td><strong>Last subword only</strong></td><td>Read-back matches if you also read from the last subword. Mixing the two — train on last, predict from first — is another silent failure. Pick one convention and use it in both places.</td></tr>
+</table>
+
+<div class="warn">
+  <strong>How to catch it in thirty seconds.</strong> After building your dataset, take one example, zip the subword strings with the label ids, and print the pairs where the label is not −100. Every printed pair must be (first subword of a word, that word's tag). Do this before you launch training, every single time. If the printout looks right, the alignment is right; if you skip the printout, you will find out from a confusion matrix a day later.
+</div>
+
+<!-- ================= §12 ================= -->
+<h2 id="s12">12 · Token accuracy versus macro-F1 <span class="tag math">math</span><span class="tag interactive">interactive</span></h2>
+<p>Two numbers, and they answer different questions.</p>
+
+<p><strong>Token accuracy</strong> is the fraction of tokens tagged correctly. It weights every token equally, which means it weights every <em>tag</em> by how often that tag occurs. NOUN, PUNCT, VERB, ADP and DET together are the bulk of the tokens, so accuracy is mostly a report on those five.</p>
+
+<p class="eq-block">
+  accuracy = (Σ<sub>t</sub> M[t][t]) / (Σ<sub>t</sub> Σ<sub>p</sub> M[t][p])
+</p>
+
+<p><strong>Macro-F1</strong> computes precision, recall and F1 <em>per tag</em> and then takes an unweighted mean over tags. Every tag counts once, whether it has 1,700 tokens or 10.</p>
+
+<p class="eq-block">
+  P<sub>t</sub> = M[t][t] / Σ<sub>g</sub> M[g][t]&nbsp;&nbsp;&nbsp;
+  R<sub>t</sub> = M[t][t] / Σ<sub>p</sub> M[t][p]&nbsp;&nbsp;&nbsp;
+  F1<sub>t</sub> = 2 P<sub>t</sub> R<sub>t</sub> / (P<sub>t</sub> + R<sub>t</sub>)<br>
+  macro-F1 = (1/T) Σ<sub>t</sub> F1<sub>t</sub>
+</p>
+
+<p>The consequence: <strong>rare tags dominate macro-F1.</strong> With 17 tags, a single tag going from F1 = 1.0 to F1 = 0.0 costs you 1/17 ≈ 5.9 macro-F1 points no matter how rare it is. If that tag has 10 tokens out of 10,000, it costs accuracy 0.1 points. Three rare tags collapsing costs 17.6 macro-F1 points and 0.3 accuracy points. The two metrics will tell you completely different stories about the same model, and both stories are true.</p>
+
+<div class="demo">
+  <h3>Widget 7 · Accuracy and macro-F1 pulling in different directions</h3>
+  <p class="tiny">17 tags with an illustrative support distribution over 10,000 tokens. Errors from a tag are sent to NOUN (the usual sink). Drag the rare-tag recall slider and watch macro-F1 fall while accuracy barely moves.</p>
+  <div class="controls">
+    <div class="control"><label for="mf-rare">recall on rare tags (INTJ, SYM, X)</label>
+      <input type="range" id="mf-rare" min="0" max="1" step="0.02" value="0.9"></div>
+    <div class="control"><label for="mf-common">recall on all other tags</label>
+      <input type="range" id="mf-common" min="0.7" max="1" step="0.005" value="0.96"></div>
+    <div class="control"><label for="mf-sup">tokens per rare tag</label>
+      <input type="range" id="mf-sup" min="3" max="300" step="1" value="20"></div>
+  </div>
+  <div class="readout" id="mf-read" style="min-width:100%; margin-bottom:12px"></div>
+  <canvas id="mf-canvas" width="880" height="250"></canvas>
+</div>
+
+<p>Practical guidance:</p>
+<ul>
+  <li><strong>Report both, always.</strong> Accuracy alone hides a model that has given up on the tail. Macro-F1 alone makes a model that is excellent at the tags anyone cares about look mediocre.</li>
+  <li><strong>Report the support column.</strong> A macro-F1 built on a tag with 4 test tokens is not measuring anything stable — one token flips it by 25 recall points. Print per-tag support next to per-tag F1 so the reader can discount the noisy rows.</li>
+  <li><strong>Use <code>zero_division=0</code> and know what it does.</strong> If your model never predicts SYM, precision for SYM is 0/0. Setting it to 0 is the conservative choice and it will visibly hurt macro-F1 — which is the correct outcome, because a tag you never predict is a tag you have failed at.</li>
+  <li><strong>Do not compare macro-F1 across different tag sets.</strong> Macro-F1 over 17 tags and macro-F1 over 45 tags are simply different quantities — a different number of terms in the average, over a different set of distinctions. The 45-tag figure is usually lower for the same model because it averages over more rare tags, but the direction is not guaranteed, so the comparison is meaningless either way. State the tag set every time you state a macro-F1.</li>
+</ul>
+
+<!-- ================= §13 ================= -->
+<h2 id="s13">13 · Confusion matrices over tags <span class="tag interactive">interactive</span></h2>
+<p>A confusion matrix <span class="eq">M</span> over tags has gold tags on rows and predicted tags on columns: <span class="eq">M[g][p]</span> is the number of tokens whose gold tag is <em>g</em> and whose predicted tag is <em>p</em>. The diagonal is correct predictions. Everything else is an error with a name.</p>
+
+<p>Read it in this order:</p>
+<ol>
+  <li><strong>Find the largest off-diagonal cells.</strong> These are your systematic errors. Two or three of them usually account for most of the total error mass.</li>
+  <li><strong>Check whether they are symmetric.</strong> If NOUN→VERB and VERB→NOUN are both large, the model has not learned the distinction. If only ADJ→NOUN is large, the model has a bias: it over-predicts NOUN, probably because NOUN is the majority class.</li>
+  <li><strong>Look along each rare row.</strong> A rare tag with a near-empty diagonal and all its mass in one column is a tag the model has effectively deleted from its output space.</li>
+  <li><strong>Pull three real sentences per large cell.</strong> A confusion matrix tells you <em>what</em>; only the sentences tell you <em>why</em>. This is what the deliverable asks for when it says "identify ambiguous word classes where the models disagree and give a worked example of each".</li>
+</ol>
+
+<div class="demo">
+  <h3>Widget 8 · Confusion matrix, 17 tags versus 45</h3>
+  <p class="tiny">Synthetic matrix over 10,000 tokens with realistic confusion structure — illustrative of shape, not a measured result. Slide "model quality" from the lookup-like end to the transformer-like end and watch the off-diagonal mass shrink. Then switch to 45 tags and try to find the largest confusion with your eyes.</p>
+  <div class="controls">
+    <div class="control"><label for="cm-set">tag set</label>
+      <select id="cm-set"><option value="17">17 universal tags</option><option value="45">45 Penn Treebank tags</option></select></div>
+    <div class="control"><label for="cm-q">model quality (0 = lookup-like, 1 = strong transformer)</label>
+      <input type="range" id="cm-q" min="0" max="1" step="0.02" value="0"></div>
+    <div class="control"><label><input type="checkbox" id="cm-log" checked> compress colour scale</label></div>
+  </div>
+  <div class="two">
+    <div><canvas id="cm-canvas" width="560" height="560"></canvas></div>
+    <div>
+      <div class="readout" id="cm-read"></div>
+      <div id="cm-top"></div>
+    </div>
+  </div>
+</div>
+
+<p>The confusions that show up on English POS tagging, and what causes each:</p>
+<table class="cmp">
+  <tr><th>Confusion</th><th>Typical cause</th><th>Example</th></tr>
+  <tr><td>NOUN ↔ VERB</td><td>Zero-derivation: English lets almost any noun be a verb and vice versa, with no morphological marking.</td><td><em>the <strong>run</strong> was long</em> vs <em>they <strong>run</strong> a shop</em></td></tr>
+  <tr><td>NOUN ↔ PROPN</td><td>Capitalisation is the main cue and it is unreliable: sentence-initial words, headlines, all-caps text.</td><td><em><strong>Apple</strong> fell</em> — fruit or company</td></tr>
+  <tr><td>ADJ ↔ NOUN</td><td>Noun-noun compounds. The modifier looks like an adjective slot but is tagged NOUN.</td><td><em>the <strong>treebank</strong> corpus</em></td></tr>
+  <tr><td>ADJ ↔ ADV</td><td>Flat adverbs with no <code>-ly</code>.</td><td><em>drive <strong>fast</strong></em> (ADV) vs <em>a <strong>fast</strong> car</em> (ADJ)</td></tr>
+  <tr><td>ADP ↔ SCONJ</td><td>The same word introduces a noun phrase or a clause.</td><td><em><strong>before</strong> dinner</em> (ADP) vs <em><strong>before</strong> we ate</em> (SCONJ)</td></tr>
+  <tr><td>AUX ↔ VERB</td><td><code>have</code>, <code>be</code>, <code>do</code> are auxiliaries in some frames and main verbs in others.</td><td><em>I <strong>have</strong> eaten</em> (AUX) vs <em>I <strong>have</strong> a book</em> (VERB)</td></tr>
+  <tr><td>DET ↔ PRON</td><td>Determiner or standalone pronoun, same spelling.</td><td><em><strong>that</strong> book</em> (DET) vs <em>I saw <strong>that</strong></em> (PRON)</td></tr>
+  <tr><td>PART ↔ ADP</td><td><code>to</code> before an infinitive versus <code>to</code> as a preposition.</td><td><em><strong>to</strong> run</em> (PART) vs <em><strong>to</strong> the shop</em> (ADP)</td></tr>
+</table>
+
+<p>Every row of that table is a place where the transformer <em>should</em> beat the lookup, because every one of them is resolvable from the neighbouring words. If your transformer does not improve on these cells, it is not using context and something is wrong with your setup — most likely the alignment from section 11.</p>
+
+<!-- ================= §14 ================= -->
+<h2 id="s14">14 · When the transformer loses to the lookup</h2>
+<p>It happens, it is not rare, and pretending otherwise is the fastest way to fail an evaluation. A transformer token classifier that has been fine-tuned badly can and does score below a dictionary you built in four seconds. Here is the list of causes, roughly in order of how often they are the actual explanation:</p>
+
+<table class="cmp">
+  <tr><th>Cause</th><th>Symptom in the numbers</th><th>Fix</th></tr>
+  <tr><td><strong>Broken subword alignment</strong></td>
+      <td>Accuracy plateaus far below baseline; loss still decreases smoothly; the confusion matrix looks scrambled rather than structured — errors are spread everywhere instead of concentrated on the pairs in section 13.</td>
+      <td>Print the (subword, label) pairs. Use <code>word_ids()</code>.</td></tr>
+  <tr><td><strong>Train/eval convention mismatch</strong></td>
+      <td>Train loss is fine, dev accuracy is bizarre. Often you trained on first-subword labels and evaluated on every subword, or forgot to mask <code>-100</code> in <code>compute_metrics</code>.</td>
+      <td>Mask <code>labels != -100</code> in the metric, and read back from the same subword you trained.</td></tr>
+  <tr><td><strong>Too little training</strong></td>
+      <td>Accuracy climbing steadily when you stopped. One epoch on a small treebank is not enough for 17-way classification to settle.</td>
+      <td>Train to convergence on dev; POS tagging is cheap.</td></tr>
+  <tr><td><strong>Learning rate too high</strong></td>
+      <td>Loss spikes then flattens at a high value; the model collapses to predicting NOUN (or the majority tag) everywhere. Accuracy ≈ the NOUN share; macro-F1 near zero.</td>
+      <td>Lower it by an order of magnitude and use warmup.</td></tr>
+  <tr><td><strong>Uncased checkpoint</strong></td>
+      <td>Overall accuracy close to baseline, but PROPN recall much worse than the baseline's. The lookup's capitalisation rule beats a model that cannot see capitalisation.</td>
+      <td>Use a cased checkpoint.</td></tr>
+  <tr><td><strong>Label-id scrambling</strong></td>
+      <td>Accuracy near chance, confusion matrix is a permutation of a good one — high mass in a scattered set of off-diagonal cells, low on the diagonal.</td>
+      <td>Build <code>label2id</code> once, from a sorted list, and use it for both encoding and decoding.</td></tr>
+  <tr><td><strong>Truncation</strong></td>
+      <td>Accuracy fine on short sentences, poor on long ones. Tokens past <code>max_length</code> were silently dropped, and if you padded the label list to match, the tail is misaligned too.</td>
+      <td>Check the length distribution; raise <code>max_length</code> or use striding.</td></tr>
+  <tr><td><strong>Domain gap</strong></td>
+      <td>Both models drop, but the transformer drops further. It over-fit surface patterns of the training domain; the lookup at least still knows the closed-class words.</td>
+      <td>Report it as a finding. This is a real result, not a bug.</td></tr>
+</table>
+
+<p>The honest finding is worth stating in your report if you get it: <em>"our fine-tuned transformer scored 88.1% token accuracy against the lookup baseline's 90.4%. Investigation showed X."</em> A negative result that you diagnosed is worth more than a positive result you cannot explain. What is not acceptable is reporting the transformer number without the baseline number, or quietly dropping the baseline when it wins.</p>
+
+<div class="callout">
+  <strong>The diagnostic that finds it fastest.</strong> Compute the two confusion matrices and subtract them: <span class="eq">M<sub>transformer</sub> − M<sub>lookup</sub></span>. Cells where the transformer is worse show up as positive off-diagonal entries. If those cells are the ambiguity pairs from section 13, your model is under-trained. If they are scattered with no linguistic pattern, your data pipeline is broken — go back to section 11.
+</div>
+
+<!-- ================= §15 ================= -->
+<h2 id="s15">15 · What to report, and where to read more</h2>
+<p>For the topic project (TagWise), the evaluation section should contain all of the following. None of it is optional and all of it follows from the sections above.</p>
+
+<ol>
+  <li><strong>The tag set and the data.</strong> Which treebank, which splits, how many sentences and tokens in each, and the tag distribution. Include the number of tag types actually present — if the treebank never uses X, say so, because it changes macro-F1.</li>
+  <li><strong>The baseline, fully specified.</strong> Lowercasing policy, tie-breaking rule, the ordered list of fallback rules, and the default tag. Someone should be able to rebuild your exact table from the description.</li>
+  <li><strong>Unknown-word rate on the test split</strong>, plus accuracy split three ways: overall, known tokens, unknown tokens. For both models.</li>
+  <li><strong>Token accuracy and macro-F1 for both models</strong>, with a per-tag table showing precision, recall, F1 and support.</li>
+  <li><strong>Error reduction</strong> of the transformer over the baseline, not just the raw accuracies.</li>
+  <li><strong>A confusion matrix over the 17 tags for each model</strong>, and the top five off-diagonal cells listed numerically underneath — because nobody can read the top five off a heat map reliably.</li>
+  <li><strong>At least three ambiguous word classes where the two models disagree</strong>, each with one worked example: the sentence, the gold tag, both predictions, and one sentence of diagnosis. Section 8 shows the format.</li>
+  <li><strong>The honest comparison.</strong> If the baseline won on some measure, say which and why.</li>
+</ol>
+
+<h3>Reading</h3>
+<ul>
+  <li><a href="https://web.stanford.edu/~jurafsky/slp3/8.pdf">Speech and Language Processing, chapter 8</a> — POS tagging and sequence labelling, including the tag sets, the most-frequent-tag baseline, and the classical statistical taggers. This is the reference for everything in sections 1–9.</li>
+  <li><a href="https://universaldependencies.org/">universaldependencies.org</a> — the UPOS tag definitions, the treebanks, and the CoNLL-U format specification. The <a href="https://universaldependencies.org/#english-treebanks">English treebanks</a> list is where to get your data.</li>
+  <li><a href="https://huggingface.co/learn/nlp-course/chapter7/2">huggingface.co/learn/nlp-course/chapter7/2</a> — token classification end to end, including <code>word_ids()</code> alignment and the <code>DataCollatorForTokenClassification</code>.</li>
+</ul>
+
+<div class="callout">
+  <strong>One-sentence summary.</strong> POS tagging is token classification; a most-frequent-tag lookup with a rule-based fallback gets you to roughly 90% for free and tells you exactly which words it cannot do; a transformer earns its place only by fixing the ambiguity errors the lookup cannot fix, and it will only do that if your subword alignment is correct.
+</div>
+
+<div class="nav">
+  <span>Topic 6 — Part-of-Speech Tagging</span>
+  <a href="Exercises_Topic_6_Part_of_Speech_Tagging.html">Practice exercises →</a>
+</div>
+
+</div>
+
+<script>
+/* ============================================================
+   Shared helpers
+   ============================================================ */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function pct(x){ return (100*x).toFixed(1) + '%'; }
+function mftOf(dist){
+  // deterministic: highest count, ties broken by tag name ascending
+  return Object.keys(dist).sort(function(a,b){
+    if (dist[b] !== dist[a]) return dist[b] - dist[a];
+    return a < b ? -1 : 1;
+  })[0];
+}
+function sumVals(o){ var s=0; for (var k in o) s += o[k]; return s; }
+
+var UPOS = ["ADJ","ADP","ADV","AUX","CCONJ","DET","INTJ","NOUN","NUM",
+            "PART","PRON","PROPN","PUNCT","SCONJ","SYM","VERB","X"];
+
+/* ============================================================
+   Widget 1 — tag set explorer
+   ============================================================ */
+(function(){
+  var INFO = {
+    ADJ:  {name:"adjective", ex:"small, new, long, fastest", ptb:"JJ, JJR, JJS", conf:"NOUN, ADV", f:65},
+    ADP:  {name:"adposition (preposition/postposition)", ex:"on, in, for, before", ptb:"IN", conf:"SCONJ, PART, ADV", f:100},
+    ADV:  {name:"adverb", ex:"well, quickly, very, fast", ptb:"RB, RBR, RBS, WRB", conf:"ADJ, ADP", f:50},
+    AUX:  {name:"auxiliary", ex:"was, is, will, can, have", ptb:"MD (and forms of be/have/do)", conf:"VERB", f:55},
+    CCONJ:{name:"coordinating conjunction", ex:"and, or, but", ptb:"CC", conf:"SCONJ", f:35},
+    DET:  {name:"determiner", ex:"the, a, this, that", ptb:"DT, WDT, PDT", conf:"PRON", f:90},
+    INTJ: {name:"interjection", ex:"please, oh, yes, hey", ptb:"UH", conf:"ADV, NOUN", f:4},
+    NOUN: {name:"common noun", ex:"book, table, shop, corpus", ptb:"NN, NNS", conf:"VERB, PROPN, ADJ", f:170},
+    NUM:  {name:"numeral", ex:"two, 17, 3.5, third", ptb:"CD", conf:"ADJ, NOUN", f:20},
+    PART: {name:"particle", ex:"to (infinitive), not, 's", ptb:"TO, RP, POS", conf:"ADP", f:25},
+    PRON: {name:"pronoun", ex:"I, they, it, that (relative)", ptb:"PRP, PRP$, WP, WP$, EX", conf:"DET", f:80},
+    PROPN:{name:"proper noun", ex:"Boston, Helsinki, Chicago", ptb:"NNP, NNPS", conf:"NOUN", f:55},
+    PUNCT:{name:"punctuation", ex:". , ? ! ( )", ptb:". , : `` '' -LRB- -RRB-", conf:"SYM", f:120},
+    SCONJ:{name:"subordinating conjunction", ex:"that, if, because, while", ptb:"IN (merged with ADP)", conf:"ADP, DET", f:18},
+    SYM:  {name:"symbol", ex:"%, $, +, =", ptb:"SYM, $, #", conf:"PUNCT, X", f:2},
+    VERB: {name:"verb", ex:"read, run, likes, deployed", ptb:"VB, VBD, VBG, VBN, VBP, VBZ", conf:"NOUN, AUX, ADJ", f:110},
+    X:    {name:"other / unanalysable", ex:"foreign fragments, list markers", ptb:"FW, LS", conf:"NOUN, PROPN", f:1}
+  };
+  var order = UPOS.slice().sort(function(a,b){ return INFO[b].f - INFO[a].f; });
+  var total = 0; UPOS.forEach(function(t){ total += INFO[t].f; });
+  var sel = "NOUN";
+  var btns = document.getElementById('ts-btns');
+  var read = document.getElementById('ts-read');
+  var ptbBox = document.getElementById('ts-ptb');
+  var c = document.getElementById('ts-canvas'), ctx = c.getContext('2d');
+
+  UPOS.forEach(function(t){
+    var b = document.createElement('button');
+    b.textContent = t; b.dataset.t = t;
+    b.onclick = function(){ sel = t; render(); };
+    btns.appendChild(b);
+  });
+
+  function render(){
+    Array.prototype.forEach.call(btns.children, function(b){
+      b.className = (b.dataset.t === sel) ? 'sel' : '';
+    });
+    var i = INFO[sel];
+    var cum = 0, rank = 0;
+    for (var k=0; k<order.length; k++){ cum += INFO[order[k]].f; if (order[k]===sel){ rank = k+1; break; } }
+    var top5 = 0; for (var j=0;j<5;j++) top5 += INFO[order[j]].f;
+    read.innerHTML =
+      '<strong>' + sel + '</strong> — ' + esc(i.name) +
+      '<br>examples: ' + esc(i.ex) +
+      (ptbBox.checked ? '<br>Penn Treebank subtags: ' + esc(i.ptb) : '') +
+      '<br>usually confused with: ' + esc(i.conf) +
+      '<br>share of tokens ' + pct(i.f/total) + ' · rank ' + rank + ' of 17 · ' +
+      'top-5 tags cover ' + pct(top5/total) + ' of all tokens';
+    draw();
+  }
+
+  function draw(){
+    var W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    var n = order.length, pad = 34, bw = (W - pad - 20) / n;
+    var maxF = INFO[order[0]].f;
+    for (var k=0;k<n;k++){
+      var t = order[k], h = (INFO[t].f/maxF) * (H - 70);
+      ctx.fillStyle = (t===sel) ? '#F9A825' : '#1F4E79';
+      ctx.globalAlpha = (t===sel) ? 1.0 : 0.55;
+      ctx.fillRect(pad + k*bw + 3, H - 42 - h, bw - 6, h);
+      ctx.globalAlpha = 1.0;
+      ctx.save();
+      ctx.translate(pad + k*bw + bw/2 + 4, H - 36);
+      ctx.rotate(-Math.PI/3.4);
+      ctx.fillStyle = (t===sel) ? '#8A5A00' : '#555';
+      ctx.font = (t===sel ? 'bold ' : '') + '10px monospace';
+      ctx.fillText(t, 0, 0);
+      ctx.restore();
+      ctx.fillStyle = '#555'; ctx.font = '9px monospace';
+      ctx.fillText((100*INFO[t].f/total).toFixed(1), pad + k*bw + 5, H - 48 - h);
+    }
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 11px sans-serif';
+    ctx.fillText('percent of tokens (illustrative English profile)', pad, 16);
+  }
+
+  ptbBox.onchange = render;
+  render();
+})();
+
+/* ============================================================
+   Widget 2 — ambiguity explorer
+   ============================================================ */
+(function(){
+  var AMB = {
+    book: { dist: {NOUN: 42, VERB: 9},
+      ex: [ {s:"I read the book on the table .", i:3, gold:"NOUN"},
+            {s:"Please book a table for two .", i:1, gold:"VERB"},
+            {s:"She likes the new book .", i:4, gold:"NOUN"},
+            {s:"Book the flight before noon .", i:0, gold:"VERB"} ] },
+    run: { dist: {VERB: 38, NOUN: 12},
+      ex: [ {s:"They run a small shop .", i:1, gold:"VERB"},
+            {s:"The run was long .", i:1, gold:"NOUN"},
+            {s:"We run the shop well .", i:1, gold:"VERB"},
+            {s:"That morning run left me tired .", i:2, gold:"NOUN"} ] },
+    that: { dist: {SCONJ: 120, DET: 70, PRON: 55},
+      ex: [ {s:"She said that they run .", i:2, gold:"SCONJ"},
+            {s:"I like that book .", i:2, gold:"DET"},
+            {s:"The book that I read was long .", i:2, gold:"PRON"},
+            {s:"He knew that it was late .", i:2, gold:"SCONJ"} ] },
+    like: { dist: {VERB: 64, ADP: 22, SCONJ: 8},
+      ex: [ {s:"I like the book .", i:1, gold:"VERB"},
+            {s:"It looks like rain .", i:2, gold:"ADP"},
+            {s:"Like I said , it was long .", i:0, gold:"SCONJ"},
+            {s:"They like to run .", i:1, gold:"VERB"} ] }
+  };
+  var sel = document.getElementById('amb-word');
+  var out = document.getElementById('amb-out');
+  var read = document.getElementById('amb-read');
+
+  function render(){
+    var w = sel.value, d = AMB[w], dist = d.dist;
+    var tot = sumVals(dist), best = mftOf(dist);
+    var html = '', right = 0;
+    d.ex.forEach(function(e){
+      var toks = e.s.split(' ');
+      html += '<div class="tokrow">';
+      toks.forEach(function(t, idx){
+        var target = (idx === e.i);
+        var cls = 'tok' + (target ? ' amb' : '');
+        var predicted = target ? best : '';
+        if (target){
+          var ok = (best === e.gold);
+          if (ok) right++;
+          cls += ok ? ' right' : ' err';
+          html += '<div class="' + cls + '"><div class="w">' + esc(t) + '</div>' +
+                  '<div class="t">' + predicted + '</div>' +
+                  '<div class="n">gold ' + e.gold + '</div></div>';
+        } else {
+          html += '<div class="' + cls + '"><div class="w">' + esc(t) + '</div></div>';
+        }
+      });
+      html += '</div>';
+    });
+    out.innerHTML = html;
+    var parts = Object.keys(dist).sort(function(a,b){return dist[b]-dist[a];})
+                 .map(function(t){ return t + ' ' + dist[t] + ' (' + pct(dist[t]/tot) + ')'; });
+    read.innerHTML =
+      'lexicon entry for <strong>' + esc(w) + '</strong>: ' + parts.join(' · ') +
+      '<br>most-frequent tag = <strong>' + best + '</strong>, emitted for every occurrence' +
+      '<br>context-free ceiling = ' + Math.max.apply(null, Object.keys(dist).map(function(t){return dist[t];})) +
+      '/' + tot + ' = <strong>' + pct(Math.max.apply(null, Object.keys(dist).map(function(t){return dist[t];}))/tot) + '</strong>' +
+      '<br>on the ' + d.ex.length + ' sentences above the lookup gets <strong>' + right + '/' + d.ex.length +
+      '</strong> = ' + pct(right/d.ex.length) + ' — no amount of extra counting changes this';
+  }
+  sel.onchange = render;
+  render();
+})();
+
+/* ============================================================
+   Widget 3 — lookup-table builder
+   ============================================================ */
+var CORPUS = [
+  [["I","PRON"],["read","VERB"],["the","DET"],["book","NOUN"],["on","ADP"],["the","DET"],["table","NOUN"],[".","PUNCT"]],
+  [["Please","INTJ"],["book","VERB"],["a","DET"],["table","NOUN"],["for","ADP"],["two","NUM"],[".","PUNCT"]],
+  [["They","PRON"],["run","VERB"],["a","DET"],["small","ADJ"],["shop","NOUN"],["and","CCONJ"],["they","PRON"],["run","VERB"],["it","PRON"],["well","ADV"],[".","PUNCT"]],
+  [["The","DET"],["run","NOUN"],["was","AUX"],["long","ADJ"],[".","PUNCT"]],
+  [["She","PRON"],["likes","VERB"],["the","DET"],["new","ADJ"],["book","NOUN"],[".","PUNCT"]]
+];
+var FLAT = [];
+CORPUS.forEach(function(s, si){ s.forEach(function(p, ti){ FLAT.push({w:p[0], t:p[1], s:si, i:ti}); }); });
+
+(function(){
+  var pos = 0, counts = {};
+  var read = document.getElementById('lb-read');
+  var cursor = document.getElementById('lb-cursor');
+  var tableDiv = document.getElementById('lb-table');
+
+  function step(){
+    if (pos >= FLAT.length) return false;
+    var e = FLAT[pos];
+    var w = e.w.toLowerCase();
+    if (!counts[w]) counts[w] = {};
+    counts[w][e.t] = (counts[w][e.t] || 0) + 1;
+    pos++;
+    return true;
+  }
+  function render(){
+    var words = Object.keys(counts).sort();
+    var html = '<table class="mini"><tr><th>word</th><th>tag counts</th><th>most-frequent tag</th><th>status</th></tr>';
+    var ambTypes = 0, ambTokens = 0;
+    words.forEach(function(w){
+      var d = counts[w], best = mftOf(d), tot = sumVals(d);
+      var keys = Object.keys(d).sort(function(a,b){ return d[b]-d[a] || (a<b?-1:1); });
+      var nAmb = keys.length > 1;
+      if (nAmb){ ambTypes++; ambTokens += tot; }
+      var maxc = d[keys[0]];
+      var tie = keys.length > 1 && d[keys[1]] === maxc;
+      html += '<tr><td class="mono">' + esc(w) + '</td><td class="mono">' +
+              keys.map(function(k){ return k + ' ' + d[k]; }).join(', ') + '</td>' +
+              '<td class="mono"><strong>' + best + '</strong></td><td>' +
+              (tie ? '<span class="bad">tie &rarr; alphabetical</span>'
+                   : nAmb ? '<span class="bad">ambiguous, ceiling ' + pct(maxc/tot) + '</span>'
+                          : '<span class="ok">unambiguous</span>') +
+              '</td></tr>';
+    });
+    html += '</table>';
+    tableDiv.innerHTML = html;
+
+    if (pos < FLAT.length){
+      var e = FLAT[pos];
+      var s = CORPUS[e.s];
+      var line = s.map(function(p, idx){
+        return (idx === e.i) ? '[' + p[0] + '/' + p[1] + ']' : p[0] + '/' + p[1];
+      }).join(' ');
+      cursor.innerHTML = 'next token (S' + (e.s+1) + '): ' + esc(line);
+    } else {
+      cursor.innerHTML = '<span class="ok">corpus consumed — table complete</span>';
+    }
+    read.innerHTML = 'consumed ' + pos + ' / ' + FLAT.length + ' tokens · ' +
+                     words.length + ' word types · ' + ambTypes + ' ambiguous type' +
+                     (ambTypes === 1 ? '' : 's') + ' covering ' + ambTokens + ' token' +
+                     (ambTokens === 1 ? '' : 's');
+  }
+  document.getElementById('lb-step').onclick = function(){ step(); render(); };
+  document.getElementById('lb-sent').onclick = function(){
+    if (pos >= FLAT.length) return;
+    var si = FLAT[pos].s;
+    while (pos < FLAT.length && FLAT[pos].s === si) step();
+    render();
+  };
+  document.getElementById('lb-all').onclick = function(){ while (step()); render(); };
+  document.getElementById('lb-reset').onclick = function(){ pos = 0; counts = {}; render(); };
+  render();
+})();
+
+/* ============================================================
+   Fallback rules (shared by widgets 4 and 5)
+   ============================================================ */
+var RULES = [
+  {id:'digit', on:true, label:'contains a digit → NUM',
+   test:function(w){ return /[0-9]/.test(w); }, tag:'NUM'},
+  {id:'cap',   on:true, label:'capitalised, not sentence-initial → PROPN',
+   test:function(w, first){ return !first && /^[A-Z]/.test(w); }, tag:'PROPN'},
+  {id:'ly',    on:true, label:'ends in -ly → ADV',
+   test:function(w){ return /ly$/.test(w.toLowerCase()); }, tag:'ADV'},
+  {id:'inged', on:true, label:'ends in -ing or -ed → VERB',
+   test:function(w){ return /(ing|ed)$/.test(w.toLowerCase()); }, tag:'VERB'},
+  {id:'est',   on:true, label:'ends in -est → ADJ',
+   test:function(w){ return /est$/.test(w.toLowerCase()); }, tag:'ADJ'},
+  {id:'adjsuf',on:true, label:'ends in -ous/-ive/-al/-ful → ADJ',
+   test:function(w){ return /(ous|ive|al|ful)$/.test(w.toLowerCase()); }, tag:'ADJ'},
+  {id:'nounsuf',on:true, label:'ends in -tion/-ment/-ness/-ity → NOUN',
+   test:function(w){ return /(tion|ment|ness|ity)$/.test(w.toLowerCase()); }, tag:'NOUN'},
+  {id:'plural',on:true, label:'ends in -s → NOUN',
+   test:function(w){ return /s$/.test(w.toLowerCase()); }, tag:'NOUN'}
+];
+
+function applyFallback(word, isFirst, enabled, dflt){
+  if (/^[^A-Za-z0-9]+$/.test(word)) return {tag:'PUNCT', why:'punctuation only'};
+  for (var i=0;i<RULES.length;i++){
+    var r = RULES[i];
+    if (enabled[r.id] && r.test(word, isFirst)) return {tag:r.tag, why:'rule: ' + r.label};
+  }
+  return {tag:dflt, why:'no rule fired → default ' + dflt};
+}
+
+/* ============================================================
+   Widget 4 — live tagger
+   ============================================================ */
+(function(){
+  var LEX = {
+    "the":{DET:820},"a":{DET:410},"an":{DET:70},"this":{DET:60,PRON:30},
+    "that":{SCONJ:120,DET:70,PRON:55},
+    "i":{PRON:150},"you":{PRON:90},"he":{PRON:70},"she":{PRON:65},"it":{PRON:110},
+    "we":{PRON:60},"they":{PRON:80},"me":{PRON:25},"them":{PRON:30},"there":{PRON:25,ADV:18},
+    "his":{PRON:40},"her":{PRON:35},"their":{PRON:30},"my":{PRON:28},"your":{PRON:25},"our":{PRON:20},
+    "book":{NOUN:42,VERB:9},"books":{NOUN:20,VERB:3},
+    "run":{VERB:38,NOUN:12},"runs":{VERB:15,NOUN:6},"running":{VERB:18,NOUN:3},
+    "like":{VERB:64,ADP:22,SCONJ:8},"likes":{VERB:14,NOUN:3},
+    "back":{ADV:40,NOUN:35,ADJ:8,VERB:4},"well":{ADV:55,INTJ:14,NOUN:6,ADJ:3},
+    "left":{VERB:30,ADJ:18,NOUN:9},"round":{ADJ:12,ADP:8,NOUN:6,VERB:3},
+    "fast":{ADV:14,ADJ:12},"light":{NOUN:22,ADJ:10,VERB:3},"long":{ADJ:28,ADV:5},
+    "table":{NOUN:26},"tables":{NOUN:8},"shop":{NOUN:18,VERB:4},"shops":{NOUN:7},
+    "on":{ADP:220,ADV:15},"in":{ADP:300,ADV:12},"for":{ADP:180,SCONJ:9},
+    "to":{PART:260,ADP:150},"of":{ADP:290},"with":{ADP:120},"at":{ADP:95},"by":{ADP:80},
+    "from":{ADP:75},"about":{ADP:40,ADV:6},"before":{ADP:35,SCONJ:20,ADV:5},"after":{ADP:30,SCONJ:14},
+    "is":{AUX:190,VERB:12},"are":{AUX:150},"was":{AUX:130},"were":{AUX:70},
+    "be":{AUX:90,VERB:8},"been":{AUX:45},"am":{AUX:20},
+    "have":{AUX:70,VERB:35},"has":{AUX:60,VERB:20},"had":{AUX:55,VERB:15},
+    "will":{AUX:60,NOUN:4},"can":{AUX:70,NOUN:3,VERB:2},"may":{AUX:25},"should":{AUX:30},
+    "would":{AUX:40},"could":{AUX:30},"must":{AUX:12},"do":{AUX:35,VERB:18},"does":{AUX:20,VERB:8},
+    "not":{PART:110},"n't":{PART:40},
+    "and":{CCONJ:210},"or":{CCONJ:70},"but":{CCONJ:65,ADP:3},"so":{CCONJ:25,ADV:20,SCONJ:10},
+    "if":{SCONJ:55},"when":{SCONJ:40,ADV:20},"while":{SCONJ:25,NOUN:3},"because":{SCONJ:30},
+    "very":{ADV:45},"quickly":{ADV:12},"often":{ADV:18},"never":{ADV:22},"also":{ADV:30},
+    "only":{ADV:35,ADJ:8},"here":{ADV:20},"now":{ADV:28},"then":{ADV:24},
+    "good":{ADJ:40},"small":{ADJ:25},"large":{ADJ:22},"new":{ADJ:45},"old":{ADJ:20},
+    "time":{NOUN:60,VERB:2},"people":{NOUN:50},"day":{NOUN:35},"year":{NOUN:30},
+    "word":{NOUN:25},"words":{NOUN:22},"model":{NOUN:30},"models":{NOUN:18},
+    "tag":{NOUN:20,VERB:8},"tags":{NOUN:24,VERB:4},"sentence":{NOUN:26},"sentences":{NOUN:16},
+    "corpus":{NOUN:14},"rain":{NOUN:16,VERB:3},"flight":{NOUN:12},"noon":{NOUN:6},
+    "read":{VERB:22,NOUN:2},"said":{VERB:40},"say":{VERB:30},"says":{VERB:14},
+    "make":{VERB:30},"made":{VERB:25},"get":{VERB:28},"go":{VERB:26},"went":{VERB:14},
+    "see":{VERB:24},"saw":{VERB:12},"looks":{VERB:12,NOUN:4},"write":{VERB:18},"wrote":{VERB:9},
+    "knew":{VERB:8},"know":{VERB:22},"left":{VERB:30,ADJ:18,NOUN:9},
+    "one":{NUM:40,PRON:12},"two":{NUM:30},"three":{NUM:18},
+    "please":{INTJ:12},"yes":{INTJ:8},"oh":{INTJ:6},"no":{INTJ:10,DET:20},
+    ".":{PUNCT:900},",":{PUNCT:700},"?":{PUNCT:60},"!":{PUNCT:25},";":{PUNCT:20},":":{PUNCT:22}
+  };
+  var input = document.getElementById('tg-in');
+  var out = document.getElementById('tg-out');
+  var read = document.getElementById('tg-read');
+  var enabled = {}; RULES.forEach(function(r){ enabled[r.id] = true; });
+
+  function tokenize(s){
+    var raw = s.trim().split(/\s+/).filter(function(x){ return x.length; });
+    var toks = [];
+    raw.forEach(function(t){
+      var m = t.match(/^([A-Za-z0-9'’.-]*?)([.,;:!?]+)$/);
+      if (m && m[1].length){ toks.push(m[1]); toks.push(m[2]); }
+      else toks.push(t);
+    });
+    return toks;
+  }
+
+  function render(){
+    var toks = tokenize(input.value);
+    var html = '', known = 0, amb = 0, unk = 0;
+    toks.forEach(function(t, idx){
+      var key = t.toLowerCase();
+      var d = LEX[key];
+      if (d){
+        known++;
+        var best = mftOf(d), tot = sumVals(d);
+        var keys = Object.keys(d).sort(function(a,b){ return d[b]-d[a] || (a<b?-1:1); });
+        var isAmb = keys.length > 1;
+        if (isAmb) amb++;
+        var note = isAmb
+          ? keys.map(function(k){ return k + ' ' + d[k]; }).join('/') + ' → ceiling ' + pct(d[keys[0]]/tot)
+          : 'unambiguous (' + tot + ')';
+        html += '<div class="tok' + (isAmb ? ' amb' : '') + '"><div class="w">' + esc(t) +
+                '</div><div class="t">' + best + '</div><div class="n">' + esc(note) + '</div></div>';
+      } else {
+        unk++;
+        var r = applyFallback(t, idx === 0, enabled, 'NOUN');
+        html += '<div class="tok unk"><div class="w">' + esc(t) +
+                '</div><div class="t">' + r.tag + '</div><div class="n">' + esc(r.why) + '</div></div>';
+      }
+    });
+    out.innerHTML = html;
+    read.innerHTML = toks.length + ' tokens · ' + known + ' known (' +
+      amb + ' of them ambiguous) · ' + unk + ' unknown → fallback rules · ' +
+      'unknown rate ' + (toks.length ? pct(unk/toks.length) : '0.0%');
+  }
+  document.getElementById('tg-go').onclick = render;
+  input.addEventListener('input', render);
+  Array.prototype.forEach.call(document.querySelectorAll('[data-tgex]'), function(b){
+    b.onclick = function(){ input.value = b.dataset.tgex; render(); };
+  });
+  render();
+})();
+
+/* ============================================================
+   Widget 5 — suffix-rule editor
+   ============================================================ */
+(function(){
+  var EVAL = [
+    ["2024","NUM",false],["3.5","NUM",false],["17","NUM",false],
+    ["Boston","PROPN",true],["Chicago","PROPN",true],["Helsinki","PROPN",true],
+    ["quickly","ADV",false],["slowly","ADV",false],["happily","ADV",false],["quietly","ADV",false],
+    ["running","VERB",false],["walked","VERB",false],["deployed","VERB",false],["tagging","VERB",false],
+    ["largest","ADJ",false],["smallest","ADJ",false],["brightest","ADJ",false],
+    ["dangerous","ADJ",false],["creative","ADJ",false],["national","ADJ",false],["hopeful","ADJ",false],
+    ["attention","NOUN",false],["movement","NOUN",false],["kindness","NOUN",false],["density","NOUN",false],
+    ["tokens","NOUN",false],["sentences","NOUN",false],["corpora","NOUN",false],["corpus","NOUN",false],
+    ["morning","NOUN",false],["lattice","NOUN",false],["family","NOUN",false],["reply","NOUN",false],
+    ["interest","NOUN",false],["forest","NOUN",false],["treebank","NOUN",false]
+  ];
+  var enabled = {}; RULES.forEach(function(r){ enabled[r.id] = true; });
+  var box = document.getElementById('sr-rules');
+  var dflt = document.getElementById('sr-default');
+  var read = document.getElementById('sr-read');
+  var wrongDiv = document.getElementById('sr-wrong');
+  var c = document.getElementById('sr-canvas'), ctx = c.getContext('2d');
+
+  function score(en, d){
+    var right = 0, wrong = [];
+    EVAL.forEach(function(e){
+      // treat every held-out word as mid-sentence so the capitalisation rule can fire
+      var r = applyFallback(e[0], false, en, d);
+      if (r.tag === e[1]) right++;
+      else wrong.push({w:e[0], gold:e[1], pred:r.tag, why:r.why});
+    });
+    return {right:right, n:EVAL.length, wrong:wrong};
+  }
+
+  function build(){
+    box.innerHTML = '';
+    RULES.forEach(function(r){
+      var lab = document.createElement('label');
+      var cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.checked = enabled[r.id];
+      cb.onchange = function(){ enabled[r.id] = cb.checked; render(); };
+      var span = document.createElement('span');
+      span.innerHTML = r.label + ' <span class="tiny" id="d-' + r.id + '"></span>';
+      lab.appendChild(cb); lab.appendChild(span);
+      box.appendChild(lab);
+    });
+  }
+
+  function render(){
+    var d = dflt.value;
+    var base = score(enabled, d);
+    RULES.forEach(function(r){
+      var alt = {}; for (var k in enabled) alt[k] = enabled[k];
+      alt[r.id] = !enabled[r.id];
+      var s = score(alt, d);
+      var delta = s.right - base.right;
+      var el = document.getElementById('d-' + r.id);
+      if (el){
+        var word = enabled[r.id] ? 'off' : 'on';
+        el.innerHTML = '[turning ' + word + ': ' +
+          (delta > 0 ? '<span class="ok">+' + delta : delta < 0 ? '<span class="bad">' + delta : '<span>' + delta) +
+          '</span> correct]';
+      }
+    });
+    var allOff = {}; RULES.forEach(function(r){ allOff[r.id] = false; });
+    var floorS = score(allOff, d);
+    var allOn = {}; RULES.forEach(function(r){ allOn[r.id] = true; });
+    var ceilS = score(allOn, d);
+    read.innerHTML = 'unknown-word accuracy: <strong>' + base.right + '/' + base.n +
+      ' = ' + pct(base.right/base.n) + '</strong><br>' +
+      'default only (all rules off): ' + pct(floorS.right/floorS.n) +
+      ' · all rules on: ' + pct(ceilS.right/ceilS.n);
+
+    var html = '<table class="mini"><tr><th>word</th><th>gold</th><th>predicted</th><th>why</th></tr>';
+    base.wrong.forEach(function(w){
+      html += '<tr><td class="mono">' + esc(w.w) + '</td><td>' + w.gold +
+              '</td><td class="bad">' + w.pred + '</td><td class="tiny">' + esc(w.why) + '</td></tr>';
+    });
+    html += '</table>';
+    wrongDiv.innerHTML = '<div class="tiny" style="margin-bottom:4px">' + base.wrong.length +
+                         ' errors on the held-out set</div>' + html;
+
+    // bar chart: floor / current / ceiling
+    var W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    var vals = [
+      {l:'default only', v:floorS.right/floorS.n, col:'#C00000'},
+      {l:'current rules', v:base.right/base.n,   col:'#F9A825'},
+      {l:'all rules on',  v:ceilS.right/ceilS.n, col:'#1F4E79'}
+    ];
+    var bw = (W - 80)/vals.length;
+    vals.forEach(function(o, i){
+      var h = o.v * (H - 60);
+      ctx.fillStyle = o.col;
+      ctx.fillRect(50 + i*bw + 14, H - 34 - h, bw - 28, h);
+      ctx.fillStyle = '#333'; ctx.font = '10px sans-serif';
+      ctx.fillText(o.l, 50 + i*bw + 12, H - 20);
+      ctx.fillStyle = '#1A1A1A'; ctx.font = 'bold 11px monospace';
+      ctx.fillText(pct(o.v), 50 + i*bw + 20, H - 40 - h);
+    });
+    ctx.strokeStyle = '#CFD7DF'; ctx.beginPath();
+    ctx.moveTo(40, H-34); ctx.lineTo(W-10, H-34); ctx.stroke();
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 11px sans-serif';
+    ctx.fillText('accuracy on 36 unknown words', 50, 18);
+  }
+
+  document.getElementById('sr-alloff').onclick = function(){
+    RULES.forEach(function(r){ enabled[r.id] = false; }); build(); render();
+  };
+  document.getElementById('sr-allon').onclick = function(){
+    RULES.forEach(function(r){ enabled[r.id] = true; }); build(); render();
+  };
+  dflt.onchange = render;
+  build(); render();
+})();
+
+/* ============================================================
+   Widget 6 — subword alignment
+   ============================================================ */
+(function(){
+  var WORDS = ["The","tokenizer","splits","unbelievable","words","into","subwords","."];
+  var TAGS  = ["DET","NOUN","VERB","ADJ","NOUN","ADP","NOUN","PUNCT"];
+  var PIECES = [["The"],["token","##izer"],["split","##s"],
+                ["un","##bel","##iev","##able"],["words"],["into"],["sub","##words"],["."]];
+  var sub = [], wordId = [], firstOf = [], lastOf = [];
+  PIECES.forEach(function(ps, wi){
+    firstOf[wi] = sub.length;
+    ps.forEach(function(p){ sub.push(p); wordId.push(wi); });
+    lastOf[wi] = sub.length - 1;
+  });
+
+  var sel = document.getElementById('sa-mode');
+  var read = document.getElementById('sa-read');
+  var c = document.getElementById('sa-canvas'), ctx = c.getContext('2d');
+
+  function labelsFor(mode){
+    var L = new Array(sub.length).fill(null);   // null = -100 (ignored)
+    if (mode === 'first'){
+      for (var w=0; w<WORDS.length; w++) L[firstOf[w]] = TAGS[w];
+    } else if (mode === 'last'){
+      for (var w2=0; w2<WORDS.length; w2++) L[lastOf[w2]] = TAGS[w2];
+    } else if (mode === 'all'){
+      for (var i=0;i<sub.length;i++) L[i] = TAGS[wordId[i]];
+    } else if (mode === 'zip'){
+      for (var j=0; j<Math.min(sub.length, TAGS.length); j++) L[j] = TAGS[j];
+    }
+    return L;
+  }
+  function readBack(L){
+    // inference reads the tag at the FIRST subword of each word
+    return WORDS.map(function(_, w){ return L[firstOf[w]]; });
+  }
+
+  function render(){
+    var mode = sel.value;
+    var L = labelsFor(mode);
+    var pred = readBack(L);
+    var right = 0;
+    pred.forEach(function(p, i){ if (p === TAGS[i]) right++; });
+    var supervised = L.filter(function(x){ return x !== null; }).length;
+
+    var notes = {
+      first: 'Correct. One label per word, continuation subwords ignored, loss weighted evenly across words.',
+      all:   'Read-back is right, but every subword carries loss, so long words dominate the gradient and any subword-level accuracy you report is inflated.',
+      zip:   'The bug. Tags slide left from the first multi-subword word onward and the tail of the sentence gets no supervision at all. Training loss still falls.',
+      last:  'Consistent only if inference also reads the last subword. Reading the first subword here gives what you see below.'
+    };
+    read.innerHTML =
+      '<strong>' + supervised + '</strong> of ' + sub.length + ' subword positions are supervised · ' +
+      'read-back accuracy over ' + WORDS.length + ' words = <strong>' + right + '/' + WORDS.length +
+      ' = ' + pct(right/WORDS.length) + '</strong><br>' + esc(notes[mode]);
+
+    var W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    var x0 = 20, y0 = 34, cw = (W - 40) / sub.length;
+
+    ctx.fillStyle = '#1F4E79'; ctx.font = 'bold 11px sans-serif';
+    ctx.fillText('subword sequence and the label assigned to each position', x0, 20);
+
+    for (var i=0;i<sub.length;i++){
+      var isFirst = (firstOf[wordId[i]] === i);
+      ctx.fillStyle = isFirst ? '#EAF1F8' : '#F7F9FC';
+      ctx.strokeStyle = isFirst ? '#1F4E79' : '#CFD7DF';
+      ctx.lineWidth = 1;
+      ctx.fillRect(x0 + i*cw + 1, y0, cw - 2, 34);
+      ctx.strokeRect(x0 + i*cw + 1, y0, cw - 2, 34);
+      ctx.fillStyle = '#1A1A1A'; ctx.font = '9px monospace';
+      ctx.fillText(sub[i], x0 + i*cw + 4, y0 + 21);
+
+      var lab = L[i];
+      ctx.fillStyle = (lab === null) ? '#F2F4F7' : '#E1F0EA';
+      ctx.strokeStyle = (lab === null) ? '#CFD7DF' : '#1B5E20';
+      ctx.fillRect(x0 + i*cw + 1, y0 + 40, cw - 2, 28);
+      ctx.strokeRect(x0 + i*cw + 1, y0 + 40, cw - 2, 28);
+      ctx.fillStyle = (lab === null) ? '#999' : '#1B5E20';
+      ctx.font = '9px monospace';
+      ctx.fillText(lab === null ? '-100' : lab, x0 + i*cw + 4, y0 + 58);
+    }
+
+    // word-level read-back row
+    ctx.fillStyle = '#1F4E79'; ctx.font = 'bold 11px sans-serif';
+    ctx.fillText('word-level read-back (tag taken from the first subword of each word)', x0, y0 + 100);
+    var ww = (W - 40) / WORDS.length;
+    for (var w=0; w<WORDS.length; w++){
+      var ok = (pred[w] === TAGS[w]);
+      ctx.fillStyle = '#FFF'; ctx.strokeStyle = '#CFD7DF';
+      ctx.fillRect(x0 + w*ww + 2, y0 + 112, ww - 4, 60);
+      ctx.strokeRect(x0 + w*ww + 2, y0 + 112, ww - 4, 60);
+      ctx.fillStyle = '#1A1A1A'; ctx.font = '10px monospace';
+      ctx.fillText(WORDS[w], x0 + w*ww + 8, y0 + 128);
+      ctx.fillStyle = ok ? '#1B5E20' : '#C00000'; ctx.font = 'bold 10px monospace';
+      ctx.fillText(pred[w] === null ? '(none)' : pred[w], x0 + w*ww + 8, y0 + 146);
+      ctx.fillStyle = '#777'; ctx.font = '9px monospace';
+      ctx.fillText('gold ' + TAGS[w], x0 + w*ww + 8, y0 + 162);
+      ctx.fillStyle = ok ? '#1B5E20' : '#C00000';
+      ctx.fillRect(x0 + w*ww + 2, y0 + 168, ww - 4, 4);
+    }
+  }
+  sel.onchange = render;
+  render();
+})();
+
+/* ============================================================
+   Metric helpers (widgets 7 and 8)
+   ============================================================ */
+function metricsFromMatrix(M, n){
+  var total = 0, diag = 0, rowSum = new Array(n).fill(0), colSum = new Array(n).fill(0);
+  for (var i=0;i<n;i++) for (var j=0;j<n;j++){
+    total += M[i][j]; rowSum[i] += M[i][j]; colSum[j] += M[i][j];
+    if (i===j) diag += M[i][j];
+  }
+  var f1 = new Array(n).fill(0), prec = new Array(n).fill(0), rec = new Array(n).fill(0);
+  var macroSum = 0, counted = 0;
+  for (var t=0;t<n;t++){
+    prec[t] = colSum[t] > 0 ? M[t][t]/colSum[t] : 0;
+    rec[t]  = rowSum[t] > 0 ? M[t][t]/rowSum[t] : 0;
+    f1[t]   = (prec[t]+rec[t]) > 0 ? 2*prec[t]*rec[t]/(prec[t]+rec[t]) : 0;
+    if (rowSum[t] > 0){ macroSum += f1[t]; counted++; }
+  }
+  return {acc: total ? diag/total : 0, macroF1: counted ? macroSum/counted : 0,
+          f1:f1, prec:prec, rec:rec, rowSum:rowSum, colSum:colSum, total:total};
+}
+
+/* ============================================================
+   Widget 7 — accuracy vs macro-F1
+   ============================================================ */
+(function(){
+  var TAGS = ["NOUN","PUNCT","VERB","ADP","DET","PRON","ADJ","AUX","PROPN","ADV",
+              "CCONJ","PART","NUM","SCONJ","INTJ","SYM","X"];
+  var BASE_SUP = {NOUN:1700,PUNCT:1200,VERB:1100,ADP:1000,DET:900,PRON:800,ADJ:650,
+                  AUX:550,PROPN:550,ADV:500,CCONJ:350,PART:250,NUM:200,SCONJ:180,
+                  INTJ:0,SYM:0,X:0};
+  var RARE = ["INTJ","SYM","X"];
+  var rare = document.getElementById('mf-rare');
+  var common = document.getElementById('mf-common');
+  var supS = document.getElementById('mf-sup');
+  var read = document.getElementById('mf-read');
+  var c = document.getElementById('mf-canvas'), ctx = c.getContext('2d');
+  var n = TAGS.length, NOUNi = TAGS.indexOf("NOUN"), VERBi = TAGS.indexOf("VERB");
+
+  function build(rr, cr, rsup){
+    var M = []; for (var i=0;i<n;i++) M.push(new Array(n).fill(0));
+    for (var t=0;t<n;t++){
+      var tag = TAGS[t];
+      var sup = (RARE.indexOf(tag) >= 0) ? rsup : BASE_SUP[tag];
+      var r = (RARE.indexOf(tag) >= 0) ? rr : cr;
+      var correct = Math.round(sup * r);
+      var errs = sup - correct;
+      M[t][t] += correct;
+      if (errs > 0){
+        var sink = (t === NOUNi) ? VERBi : NOUNi;
+        M[t][sink] += errs;
+      }
+    }
+    return M;
+  }
+
+  function render(){
+    var rr = +rare.value, cr = +common.value, rsup = +supS.value;
+    var m  = metricsFromMatrix(build(rr, cr, rsup), n);
+    var m1 = metricsFromMatrix(build(1.0, cr, rsup), n);
+    var m0 = metricsFromMatrix(build(0.0, cr, rsup), n);
+
+    read.innerHTML =
+      'token accuracy = <strong>' + pct(m.acc) + '</strong>  ·  macro-F1 = <strong>' + pct(m.macroF1) + '</strong>' +
+      '  ·  total tokens = ' + m.total.toLocaleString() +
+      '<br>moving rare-tag recall from 1.00 to 0.00 (everything else held fixed) costs ' +
+      '<strong>' + (100*(m1.acc - m0.acc)).toFixed(2) + '</strong> accuracy points but ' +
+      '<strong>' + (100*(m1.macroF1 - m0.macroF1)).toFixed(2) + '</strong> macro-F1 points' +
+      '<br>each of the 3 rare tags currently holds ' + rsup + ' tokens = ' +
+      pct(3*rsup/m.total) + ' of the corpus, yet they are ' + pct(3/n) + ' of macro-F1';
+
+    var W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    var pad = 40, bw = (W - pad - 20)/n;
+    for (var t=0;t<n;t++){
+      var v = m.f1[t], h = v * (H - 78);
+      var isRare = RARE.indexOf(TAGS[t]) >= 0;
+      ctx.fillStyle = isRare ? '#C00000' : '#1F4E79';
+      ctx.globalAlpha = isRare ? 1.0 : 0.7;
+      ctx.fillRect(pad + t*bw + 3, H - 48 - h, bw - 6, h);
+      ctx.globalAlpha = 1.0;
+      ctx.save();
+      ctx.translate(pad + t*bw + bw/2 + 4, H - 42);
+      ctx.rotate(-Math.PI/3.4);
+      ctx.fillStyle = isRare ? '#C00000' : '#555';
+      ctx.font = '10px monospace';
+      ctx.fillText(TAGS[t], 0, 0);
+      ctx.restore();
+      ctx.fillStyle = '#555'; ctx.font = '9px monospace';
+      ctx.fillText(v.toFixed(2), pad + t*bw + 3, H - 54 - h);
+    }
+    // macro-F1 reference line
+    var y = H - 48 - m.macroF1*(H-78);
+    ctx.strokeStyle = '#F9A825'; ctx.lineWidth = 2; ctx.setLineDash([5,4]);
+    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-20, y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#8A5A00'; ctx.font = 'bold 10px sans-serif';
+    ctx.fillText('macro-F1 = ' + m.macroF1.toFixed(3), pad + 4, y - 4);
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 11px sans-serif';
+    ctx.fillText('per-tag F1 (red = rare tags)', pad, 16);
+  }
+  rare.oninput = render; common.oninput = render; supS.oninput = render;
+  render();
+})();
+
+/* ============================================================
+   Widget 8 — confusion matrix, 17 vs 45 tags
+   ============================================================ */
+(function(){
+  var TAGS = ["NOUN","PUNCT","VERB","ADP","DET","PRON","ADJ","AUX","PROPN","ADV",
+              "CCONJ","PART","NUM","SCONJ","INTJ","SYM","X"];
+  var SUP  = { NOUN:1700, PUNCT:1200, VERB:1100, ADP:1000, DET:900, PRON:800, ADJ:650,
+               AUX:550, PROPN:550, ADV:500, CCONJ:350, PART:250, NUM:200, SCONJ:180,
+               INTJ:40, SYM:20, X:10 };
+  var PAIRS = [
+    ["NOUN","VERB",0.05],["NOUN","ADJ",0.03],["NOUN","PROPN",0.04],
+    ["VERB","NOUN",0.06],["VERB","AUX",0.03],["VERB","ADJ",0.02],
+    ["ADJ","NOUN",0.07],["ADJ","ADV",0.04],["ADJ","VERB",0.02],
+    ["ADV","ADJ",0.06],["ADV","ADP",0.03],
+    ["PROPN","NOUN",0.10],
+    ["ADP","SCONJ",0.06],["ADP","PART",0.04],["ADP","ADV",0.02],
+    ["SCONJ","ADP",0.15],["SCONJ","DET",0.05],
+    ["DET","PRON",0.04],["PRON","DET",0.05],
+    ["AUX","VERB",0.07],["PART","ADP",0.08],["NUM","NOUN",0.04],
+    ["INTJ","NOUN",0.30],["INTJ","ADV",0.10],
+    ["SYM","PUNCT",0.35],["SYM","X",0.10],
+    ["X","NOUN",0.40],["X","PROPN",0.10],
+    ["PUNCT","SYM",0.01]
+  ];
+  // Penn-style subtags. SCONJ and ADP both map to IN: PTB cannot express that distinction.
+  var SUB = {
+    NOUN:[["NN",0.70],["NNS",0.30]],
+    PROPN:[["NNP",0.88],["NNPS",0.12]],
+    VERB:[["VB",0.22],["VBD",0.22],["VBG",0.14],["VBN",0.16],["VBP",0.12],["VBZ",0.14]],
+    AUX:[["MD",1.0]],
+    ADJ:[["JJ",0.82],["JJR",0.11],["JJS",0.07]],
+    ADV:[["RB",0.82],["RBR",0.08],["RBS",0.04],["WRB",0.06]],
+    PRON:[["PRP",0.68],["PRP$",0.24],["WP",0.04],["WP$",0.01],["EX",0.03]],
+    DET:[["DT",0.90],["WDT",0.07],["PDT",0.03]],
+    ADP:[["IN",1.0]], SCONJ:[["IN",1.0]],
+    NUM:[["CD",1.0]], CCONJ:[["CC",1.0]],
+    PART:[["TO",0.70],["RP",0.20],["POS",0.10]],
+    INTJ:[["UH",1.0]],
+    SYM:[["SYM",0.60],["$",0.25],["#",0.15]],
+    X:[["FW",0.70],["LS",0.30]],
+    PUNCT:[[".",0.35],[",",0.40],[":",0.08],["``",0.07],["''",0.07],["-LRB-",0.015],["-RRB-",0.015]]
+  };
+  var PTB = ["CC","CD","DT","EX","FW","IN","JJ","JJR","JJS","LS","MD","NN","NNS","NNP","NNPS",
+             "PDT","POS","PRP","PRP$","RB","RBR","RBS","RP","SYM","TO","UH","VB","VBD","VBG",
+             "VBN","VBP","VBZ","WDT","WP","WP$","WRB",".",",",":","``","''","-LRB-","-RRB-","$","#"];
+
+  var setSel = document.getElementById('cm-set');
+  var qIn = document.getElementById('cm-q');
+  var logBox = document.getElementById('cm-log');
+  var read = document.getElementById('cm-read');
+  var topDiv = document.getElementById('cm-top');
+  var c = document.getElementById('cm-canvas'), ctx = c.getContext('2d');
+
+  function coarse(q){
+    var n = TAGS.length, idx = {};
+    TAGS.forEach(function(t,i){ idx[t] = i; });
+    var M = []; for (var i=0;i<n;i++) M.push(new Array(n).fill(0));
+    var out = {}; TAGS.forEach(function(t){ out[t] = 0; });
+    var scale = 1 - 0.85*q;
+    PAIRS.forEach(function(p){
+      var cnt = Math.round(SUP[p[0]] * p[2] * scale);
+      M[idx[p[0]]][idx[p[1]]] += cnt;
+      out[p[0]] += cnt;
+    });
+    TAGS.forEach(function(t){ M[idx[t]][idx[t]] = Math.max(0, SUP[t] - out[t]); });
+    return M;
+  }
+
+  function fine(q){
+    var Mc = coarse(q);
+    var n = PTB.length, idx = {};
+    PTB.forEach(function(t,i){ idx[t] = i; });
+    var F = []; for (var i=0;i<n;i++) F.push(new Array(n).fill(0));
+    for (var g=0; g<TAGS.length; g++){
+      for (var p=0; p<TAGS.length; p++){
+        var mass = Mc[g][p];
+        if (!mass) continue;
+        var sg = SUB[TAGS[g]], sp = SUB[TAGS[p]];
+        if (g === p){
+          // correct coarse predictions stay correct at the fine level too:
+          // spread them along the fine diagonal, not over the outer product
+          for (var a0=0;a0<sg.length;a0++) F[idx[sg[a0][0]]][idx[sg[a0][0]]] += mass * sg[a0][1];
+        } else {
+          for (var a=0;a<sg.length;a++) for (var b=0;b<sp.length;b++){
+            F[idx[sg[a][0]]][idx[sp[b][0]]] += mass * sg[a][1] * sp[b][1];
+          }
+        }
+      }
+    }
+    // intra-class confusion: within a coarse class, subtags get confused with each other.
+    // Rates differ by class: VBD/VBN is genuinely hard, NN/NNS is not.
+    var INTRA = {NOUN:0.03, PROPN:0.03, VERB:0.12, ADJ:0.06, ADV:0.05, PRON:0.02,
+                 DET:0.02, PART:0.04, SYM:0.05, X:0.06, PUNCT:0.01};
+    for (var t=0; t<TAGS.length; t++){
+      var subs = SUB[TAGS[t]];
+      if (subs.length < 2) continue;
+      var r = (INTRA[TAGS[t]] || 0.03) * (1 - 0.85*q);
+      var ids = subs.map(function(s){ return idx[s[0]]; });
+      var moved = ids.map(function(i2){ return F[i2][i2] * r; });
+      for (var k=0;k<ids.length;k++){
+        F[ids[k]][ids[k]] -= moved[k];
+        for (var l=0;l<ids.length;l++) if (l !== k) F[ids[k]][ids[l]] += moved[k]/(ids.length-1);
+      }
+    }
+    for (var i3=0;i3<n;i3++) for (var j3=0;j3<n;j3++) F[i3][j3] = Math.round(F[i3][j3]);
+    return F;
+  }
+
+  function render(){
+    var q = +qIn.value, use45 = (setSel.value === '45');
+    var labels = use45 ? PTB : TAGS;
+    var M = use45 ? fine(q) : coarse(q);
+    var n = labels.length;
+    var m = metricsFromMatrix(M, n);
+
+    // top off-diagonal cells
+    var cells = [];
+    for (var i=0;i<n;i++) for (var j=0;j<n;j++) if (i!==j && M[i][j] > 0)
+      cells.push({g:labels[i], p:labels[j], v:M[i][j]});
+    cells.sort(function(a,b){ return b.v - a.v; });
+    var offMass = 0; cells.forEach(function(x){ offMass += x.v; });
+
+    var html = '<table class="mini" style="margin-top:10px"><tr><th>#</th><th>gold</th><th>predicted</th><th>tokens</th><th>share of all error</th></tr>';
+    for (var k=0; k<Math.min(6, cells.length); k++){
+      html += '<tr><td>' + (k+1) + '</td><td class="mono">' + esc(cells[k].g) + '</td><td class="mono">' +
+              esc(cells[k].p) + '</td><td>' + cells[k].v + '</td><td>' +
+              (offMass ? pct(cells[k].v/offMass) : '0.0%') + '</td></tr>';
+    }
+    html += '</table>';
+    topDiv.innerHTML = html;
+
+    read.innerHTML =
+      labels.length + ' tags &rarr; ' + (n*n).toLocaleString() + ' cells, ' +
+      (n*n - n).toLocaleString() + ' off-diagonal<br>' +
+      'accuracy = <strong>' + pct(m.acc) + '</strong> · macro-F1 = <strong>' + pct(m.macroF1) + '</strong><br>' +
+      'total error tokens = ' + offMass.toLocaleString() +
+      (use45 ? '<br><span class="bad">note</span>: PTB uses IN for both prepositions and subordinating ' +
+               'conjunctions, so the ADP/SCONJ confusion is invisible here; and a large share of the ' +
+               'off-diagonal mass now sits inside a coarse class (VBD/VBN, NN/NNS).'
+             : '');
+
+    // draw
+    var W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+    var padL = use45 ? 34 : 62, padT = use45 ? 34 : 62;
+    var cs = Math.min((W - padL - 10)/n, (H - padT - 10)/n);
+    for (var i2=0;i2<n;i2++){
+      var rs = m.rowSum[i2] || 1;
+      for (var j2=0;j2<n;j2++){
+        var frac = M[i2][j2]/rs;
+        var t = logBox.checked ? Math.pow(frac, 0.45) : frac;
+        t = Math.max(0, Math.min(1, t));
+        var col;
+        if (i2 === j2) col = 'rgb(' + Math.round(255-t*200) + ',' + Math.round(255-t*90) + ',' + Math.round(255-t*140) + ')';
+        else col = 'rgb(' + Math.round(255-t*10) + ',' + Math.round(255-t*195) + ',' + Math.round(255-t*190) + ')';
+        ctx.fillStyle = M[i2][j2] === 0 ? '#FCFDFE' : col;
+        ctx.fillRect(padL + j2*cs, padT + i2*cs, cs, cs);
+        if (cs > 12){ ctx.strokeStyle = '#FFF'; ctx.lineWidth = 1; ctx.strokeRect(padL + j2*cs, padT + i2*cs, cs, cs); }
+      }
+    }
+    ctx.strokeStyle = '#CFD7DF'; ctx.lineWidth = 1;
+    ctx.strokeRect(padL, padT, n*cs, n*cs);
+    ctx.fillStyle = '#555';
+    if (cs >= 13){
+      ctx.font = '9px monospace';
+      for (var k2=0;k2<n;k2++){
+        ctx.fillText(labels[k2], 4, padT + k2*cs + cs/2 + 3);
+        ctx.save();
+        ctx.translate(padL + k2*cs + cs/2 + 3, padT - 6);
+        ctx.rotate(-Math.PI/2.6);
+        ctx.fillText(labels[k2], 0, 0);
+        ctx.restore();
+      }
+    } else {
+      ctx.font = '8px monospace';
+      for (var k3=0;k3<n;k3+=5){
+        ctx.fillText(labels[k3], 2, padT + k3*cs + cs);
+        ctx.save();
+        ctx.translate(padL + k3*cs + cs, padT - 4);
+        ctx.rotate(-Math.PI/2.6);
+        ctx.fillText(labels[k3], 0, 0);
+        ctx.restore();
+      }
+      ctx.fillStyle = '#C00000'; ctx.font = 'bold 10px sans-serif';
+      ctx.fillText('labels omitted — they do not fit', padL, H - 6);
+    }
+    ctx.fillStyle = '#1F4E79'; ctx.font = 'bold 10px sans-serif';
+    ctx.fillText('predicted →', padL, 12);
+    ctx.save(); ctx.translate(10, padT + n*cs/2 + 26); ctx.rotate(-Math.PI/2);
+    ctx.fillText('gold →', 0, 0); ctx.restore();
+  }
+  setSel.onchange = render; qIn.oninput = render; logBox.onchange = render;
+  render();
+})();
+</script>
+</body>
+</html>

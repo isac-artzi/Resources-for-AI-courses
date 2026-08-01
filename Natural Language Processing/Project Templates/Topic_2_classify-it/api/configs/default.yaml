@@ -1,0 +1,94 @@
+# Default configuration for Classify-It.
+#
+# This file records the defaults so a run can be reproduced from the repository
+# alone. Whatever you pass to fit_baseline() and fine_tune_transformer() should
+# land in the runs table verbatim — if a value in here changes the result and it
+# is not in the logged hyperparameters, the run is not reproducible.
+
+dataset:
+  # Fill these in for the corpus you chose. The Build Steps require at least
+  # 5,000 rows, a documented source, documented label definitions, and a stated
+  # class balance. The /schema endpoint serves them, so they have to be real.
+  name: "REPLACE_ME"
+  source: "REPLACE_ME — public URL or citation"
+  path: "data/corpus.csv"
+  text_column: "text"
+  label_column: "label"
+
+  # Exactly two label values. Single-label, binary: one label per example, two
+  # possible values. Multiclass and multilabel are out of scope for this product
+  # and shared/schemas.py will refuse to construct a schema for them.
+  labels: ["REPLACE_ME_POSITIVE", "REPLACE_ME_NEGATIVE"]
+  positive_label: "REPLACE_ME_POSITIVE"
+  label_definitions:
+    REPLACE_ME_POSITIVE: "One sentence: what did an annotator have to see to assign this?"
+    REPLACE_ME_NEGATIVE: "One sentence."
+
+split:
+  test_size: 0.2
+  seed: 42
+  stratify: true
+  # De-duplicate on the text hash before splitting. Boilerplate messages repeat
+  # in support corpora, and duplicates straddling the split turn part of your
+  # held-out score into a memorization score.
+  deduplicate: true
+
+baseline:
+  vectorizer: tfidf
+  # Unigrams plus bigrams. Bigrams are how a bag-of-words model gets any purchase
+  # at all on "not helpful" versus "helpful" — one of the places you should
+  # expect the transformer to win anyway.
+  ngram_range: [1, 2]
+  min_df: 2
+  max_features: 50000
+  lowercase: true
+  sublinear_tf: true
+  classifier: logistic_regression
+  C: 1.0
+  # "balanced" reweights the loss by inverse class frequency. It usually helps
+  # recall on the minority class and it makes predict_proba no longer match the
+  # base rate, which is one more reason calibration is a separate step.
+  class_weight: balanced
+  max_iter: 1000
+  solver: liblinear
+  seed: 42
+
+transformer:
+  checkpoint: distilbert-base-uncased
+  num_labels: 2
+  # Truncation length. Look at your own token-length distribution before
+  # accepting this: 256 is wasteful if your median message is 30 tokens, and
+  # silently lossy if your corpus contains long complaint emails.
+  max_length: 256
+  learning_rate: 2.0e-5
+  epochs: 3
+  per_device_train_batch_size: 16
+  per_device_eval_batch_size: 32
+  weight_decay: 0.01
+  warmup_ratio: 0.06
+  eval_strategy: epoch
+  # Choose the checkpoint by F1, not by accuracy. On an imbalanced corpus the
+  # best-accuracy epoch is often the one where the model gave up on the
+  # minority class.
+  metric_for_best_model: f1
+  load_best_model_at_end: true
+  seed: 42
+  fp16: false
+
+calibration:
+  # "sigmoid" is Platt scaling — a one-feature logistic regression fitted on the
+  # model's scores. "isotonic" is non-parametric and needs more held-out data,
+  # roughly a few thousand rows, before it stops overfitting the curve.
+  # "none" is acceptable while you are building, as long as your model card says
+  # so instead of promising a calibrated probability you do not produce.
+  method: sigmoid
+  cv: 5
+  # Fit the calibrator on data the classifier did not train on. Calibrating on
+  # the training set certifies memorized confidence and looks principled while
+  # being worse than doing nothing.
+  fit_on: held_out
+
+serving:
+  artifact_dir: artifacts
+  default_model_kind: transformer
+  max_batch_size: 64

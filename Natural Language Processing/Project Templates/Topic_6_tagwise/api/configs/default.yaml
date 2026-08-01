@@ -1,0 +1,40 @@
+# Default configuration for both taggers.
+# Your build script reads this file; the values it used go into the run row, so
+# a run can be reproduced from the repository alone. Change a value here, bump
+# MODEL_VERSION, rebuild — that is the whole audit trail.
+
+corpus:
+  # A part-of-speech-annotated treebank. The English treebanks at
+  # https://universaldependencies.org/#english-treebanks are the intended source.
+  # Record which one and which revision: "accuracy 0.96" means nothing without it.
+  name: replace-with-the-treebank-you-used
+  revision: replace-with-the-release-or-commit
+  train: data/train.conllu
+  dev: data/dev.conllu
+  test: data/test.conllu
+  # UPOS is the 17-tag universal set. Both models must use the same one, and the
+  # confusion matrix is only readable because this number is 17 and not 45.
+  tagset: UPOS
+
+baseline:
+  # Lowercase the table's keys? Fewer unknown words, worse proper nouns. This is
+  # a hyperparameter even though it has no gradient — record which way you set it.
+  lowercase_keys: false
+  # What to do when a word's two most frequent tags are level.
+  tie_break: corpus_frequency
+  # What an unseen word gets when no suffix or shape rule fires.
+  fallback_default_tag: NOUN
+
+transformer:
+  # A small checkpoint is enough for token classification and is the difference
+  # between minutes and hours on free hardware.
+  base_model: distilbert-base-uncased
+  learning_rate: 5.0e-5
+  epochs: 3
+  batch_size: 16
+  max_length: 128
+  weight_decay: 0.01
+  seed: 42
+  # Where the fine-tuned model is written. Gitignored — publish to the Hugging
+  # Face Hub and point the API at the Hub id instead of committing weights.
+  output_dir: models/tagwise-transformer
