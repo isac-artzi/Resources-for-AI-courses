@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tutorials — Reinforcement Learning</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family:-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+       margin:0; background:#F7F9FC; color:#1A1A1A; line-height:1.6; }
+.container { max-width:940px; margin:24px auto 48px; background:white;
+             padding:32px 48px; box-shadow:0 2px 8px rgba(0,0,0,0.06); border-radius:8px; }
+.brand { color:#888; font-size:0.85em; letter-spacing:0.05em; text-transform:uppercase; }
+h1 { color:#1F4E79; font-size:2.0em; border-bottom:3px solid #1F4E79;
+     padding-bottom:10px; margin:6px 0 8px; }
+.subtitle { color:#555; font-style:italic; margin-bottom:24px; }
+.callout { background:#EAF1F8; border-left:4px solid #1F4E79;
+           padding:14px 18px; margin:16px 0 28px; border-radius:4px; }
+.callout strong { color:#1F4E79; }
+.topic { border:1px solid #E0E5EB; border-radius:8px; padding:18px 22px;
+         margin:14px 0; background:#FCFDFE;
+         display:grid; grid-template-columns: max-content 1fr auto; gap:18px; align-items:center; }
+.topic .num { background:#1F4E79; color:white; width:42px; height:42px;
+              display:flex; align-items:center; justify-content:center;
+              border-radius:8px; font-weight:600; font-size:1.05em; }
+.topic .title { font-weight:600; color:#1F4E79; font-size:1.05em; }
+.topic .desc { color:#444; font-size:0.92em; margin-top:4px; }
+.topic .links { display:flex; gap:10px; }
+.topic a { text-decoration:none; padding:8px 14px; border-radius:6px;
+           font-size:0.9em; font-weight:500; border:1px solid transparent;
+           white-space:nowrap; }
+.topic a.tut { background:#1F4E79; color:white; }
+.topic a.tut:hover { background:#2D5C8C; }
+.topic a.ex { background:white; color:#1F4E79; border-color:#1F4E79; }
+.topic a.ex:hover { background:#EAF1F8; }
+.seq { margin:26px 0 8px; padding:14px 18px; background:#FCFDFE; border:1px solid #E0E5EB;
+       border-radius:8px; font-size:0.9em; color:#444; }
+.seq strong { color:#1F4E79; }
+.footer { margin-top:32px; padding-top:14px; border-top:1px solid #E0E5EB;
+          color:#888; font-size:0.85em; text-align:center; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">2026 Curriculum Update</div>
+<h1>Tutorials — Reinforcement Learning</h1>
+<p class="subtitle">Self-paced, interactive companions to the course syllabus. Each tutorial derives the theory for one topic and shows how it is implemented in practice — with live, in-browser simulations you can drive yourself. The emphasis is not just on <em>what</em> we compute, but on <em>why</em> we compute it that way and not another. Each topic also has a set of ten self-graded exercises.</p>
+
+<div class="callout">
+ <strong>How to use these files.</strong> Open the tutorial for a topic, read the derivations, then drive each interactive demo until you can predict its behavior before you touch the controls. Every demo computes in real time in your browser — there are no AI APIs, installs, or accounts. The "In practice" section of each tutorial connects the theory to the three-tier (Streamlit + FastAPI + Supabase) product you ship for that topic, and the exercises are the quantities you will have to compute inside it.
+</div>
+
+<div class="seq">
+ <strong>Where this course sits.</strong> Reinforcement learning is treated here as one continuous argument rather than six separate subjects. Topic 1 states the problem; Topics 2–5 build the four families of solution — planning, policy gradients, actor-critic, and search; Topic 6 shows that the alignment methods behind contemporary language models are the same regularised objective the course has already derived, with a different reference distribution. Every topic ships a deployed product, and no deployed service in this course imports PyTorch.
+</div>
+
+<div class="topic">
+ <div class="num">1</div>
+ <div>
+ <div class="title">Introduction to Reinforcement Learning</div>
+ <div class="desc">The agent–environment interface as a formal object, what discounting actually buys, value iteration on a slippery lake, cumulative regret on a bandit, a live tabular Q-learning trainer, and how to measure an agent honestly with seed bands.</div>
+ </div>
+ <div class="links">
+ <a class="tut" href="Tutorial-Topic-1-Introduction-to-Reinforcement-Learning.html">Tutorial</a>
+ <a class="ex" href="Exercises-Topic-1-Introduction-to-Reinforcement-Learning.html">Exercises</a>
+ </div>
+</div>
+
+<div class="topic">
+ <div class="num">2</div>
+ <div>
+ <div class="title">Markov Decision Process &amp; Monte Carlo Learning</div>
+ <div class="desc">The Bellman expectation equation derived, the policy improvement theorem proved, value iteration against policy iteration on one gridworld, first-visit versus every-visit Monte Carlo with a seed band, and why ordinary importance sampling is unbiased and unusable.</div>
+ </div>
+ <div class="links">
+ <a class="tut" href="Tutorial-Topic-2-Markov-Decision-Process-and-Monte-Carlo-Learning.html">Tutorial</a>
+ <a class="ex" href="Exercises-Topic-2-Markov-Decision-Process-and-Monte-Carlo-Learning.html">Exercises</a>
+ </div>
+</div>
+
+<div class="topic">
+ <div class="num">3</div>
+ <div>
+ <div class="title">Policy Gradient Methods</div>
+ <div class="desc">The policy gradient theorem derived from the log-derivative trick, policy gradients as weighted maximum likelihood, a live score-function estimator showing what a baseline does to variance, importance weights as policies diverge, and entropy on the simplex.</div>
+ </div>
+ <div class="links">
+ <a class="tut" href="Tutorial-Topic-3-Policy-Gradient-Methods.html">Tutorial</a>
+ <a class="ex" href="Exercises-Topic-3-Policy-Gradient-Methods.html">Exercises</a>
+ </div>
+</div>
+
+<div class="topic">
+ <div class="num">4</div>
+ <div>
+ <div class="title">Actor-Critic Methods — From A2C to SAC</div>
+ <div class="desc">The critic as a bias–variance dial, the PPO clipped surrogate plotted for both signs of the advantage, soft value iteration melting a policy as the temperature rises, the tanh-squash correction, and the identity that makes entropy regularisation and a trust region two different regularisers.</div>
+ </div>
+ <div class="links">
+ <a class="tut" href="Tutorial-Topic-4-Actor-Critic-Methods.html">Tutorial</a>
+ <a class="ex" href="Exercises-Topic-4-Actor-Critic-Methods.html">Exercises</a>
+ </div>
+</div>
+
+<div class="topic">
+ <div class="num">5</div>
+ <div>
+ <div class="title">Tree Search</div>
+ <div class="desc">Game trees and the size of the problem, one search scaffold with two node orderings, α–β pruning stepped node by node, Monte Carlo tree search phase by phase, the UCT selection rule derived from UCB, and a tic-tac-toe board you can play against all three agents.</div>
+ </div>
+ <div class="links">
+ <a class="tut" href="Tutorial-Topic-5-Tree-Search.html">Tutorial</a>
+ <a class="ex" href="Exercises-Topic-5-Tree-Search.html">Exercises</a>
+ </div>
+</div>
+
+<div class="topic">
+ <div class="num">6</div>
+ <div>
+ <div class="title">RLHF &amp; Multi-Agent Reinforcement Learning</div>
+ <div class="desc">The Bradley–Terry preference loss derived, the KL-regularised objective and its closed form, the cancellation that makes DPO computable, group-relative advantages without a critic, a reward-hacking simulator, and two Q-learners cycling around a mixed equilibrium.</div>
+ </div>
+ <div class="links">
+ <a class="tut" href="Tutorial-Topic-6-RLHF-and-Multi-Agent-Reinforcement-Learning.html">Tutorial</a>
+ <a class="ex" href="Exercises-Topic-6-RLHF-and-Multi-Agent-Reinforcement-Learning.html">Exercises</a>
+ </div>
+</div>
+
+<div class="footer">
+Reinforcement Learning · 2026 Revision
+</div>
+
+</div>
+</body>
+</html>

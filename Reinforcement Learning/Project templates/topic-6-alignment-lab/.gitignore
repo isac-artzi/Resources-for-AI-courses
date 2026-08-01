@@ -1,0 +1,17 @@
+.env
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+venv/
+.venv/
+*.egg-info/
+runs/
+# Policy artifacts ARE committed — they are the deployed model and must be
+# reviewable. If one exceeds ~50 MB you have built the wrong thing.
+!policies/*.npz
+
+# The embedding cache. Regenerable from train/embed.py, and megabytes of
+# float32 that nobody can review in a pull request. The CHARTS in reports/ are
+# a different matter — they are your evidence, so they are committed.
+cache/

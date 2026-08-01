@@ -1,0 +1,38 @@
+# ---------------------------------------------------------------------------
+# SERVING REQUIREMENTS — installed by Streamlit Community Cloud and by the
+# service tier. PyTorch is deliberately absent. See docs/no-torch.md.
+#
+# Measured footprint of this set in one process: ~85 MB.
+# `import torch` alone would add ~490 MB against a 690 MB guarantee.
+# ---------------------------------------------------------------------------
+streamlit==1.42.0
+fastapi==0.115.8
+uvicorn[standard]==0.34.0
+pydantic==2.10.6
+pydantic-settings==2.7.1
+numpy==2.2.2
+supabase==2.13.0
+pandas==2.2.3
+altair==5.5.0
+httpx==0.28.1
+
+# Gymnasium IS a serving dependency in this course, and it is worth being
+# precise about why that does not contradict the no-framework rule.
+#
+# `POST /rollout` runs bounded evaluation episodes server-side — that is a
+# standing endpoint, not an extra — so the deployed process has to be able to
+# construct the environment. Gymnasium is pure Python over NumPy: about 3 MB
+# installed, ~15 ms to import, no compiled extension, no bundled CUDA
+# libraries. The rule this course enforces is not "few dependencies"; it is
+# "the artifact you deploy is not the training graph." A 3 MB environment API
+# is not a training graph. A 490 MB tensor library with a CUDA runtime is.
+#
+# The classic-control extra only, never gymnasium[all]: `all` still declares
+# the obsolete swig-dependent Box2D package and fails to install.
+gymnasium[classic-control]==1.0.0
+
+# NOT here, on purpose:
+#   torch  — ~490 MB, and tests/test_no_torch.py fails the build if it appears
+#   scipy  — ~90 MB, used only by train/compare.py for the t distribution,
+#            which falls back to a self-contained implementation when absent
+#            (validated against SciPy in tests/test_topic2.py)

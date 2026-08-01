@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topic 1 Exercises — Introduction to Reinforcement Learning</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6;
+}
+.container { max-width: 940px; margin: 24px auto 48px; background: white;
+  padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+.score { position: sticky; top: 0; background: white; padding: 10px 14px;
+         border: 1px solid #E0E5EB; border-radius: 8px; margin-bottom: 12px;
+         color: #1F4E79; font-weight: 600; z-index: 10;
+         display: flex; justify-content: space-between; align-items: center; }
+.score .bar { background: #E0E5EB; border-radius: 999px; height: 8px;
+              width: 240px; overflow: hidden; }
+.score .bar > div { background: #1F4E79; height: 100%; transition: width 0.3s; }
+.exercise { border: 1px solid #E0E5EB; border-radius: 8px; padding: 22px 26px;
+            margin: 22px 0; background: #FCFDFE; }
+.exercise h3 { margin: 0 0 4px; color: #1F4E79; font-size: 1.1em; }
+.exercise .qtype { color: #888; font-size: 0.8em; text-transform: uppercase;
+                   letter-spacing: 0.05em; margin-bottom: 14px; }
+.stem { margin-bottom: 14px; }
+.stem code { font-family: "SF Mono", Consolas, Monaco, monospace;
+             background: #F2F4F7; padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+      overflow-x: auto; border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.92em; }
+table.tb { border-collapse:collapse; margin:12px 0; font-size:0.9em; }
+table.tb td, table.tb th { border:1px solid #D0D8E0; padding:5px 12px; text-align:center; }
+table.tb th { background:#EAF1F8; color:#1F4E79; }
+.options { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 14px; }
+.options label { cursor: pointer; padding: 10px 14px; background: white;
+                 border: 1px solid #D0D8E0; border-radius: 6px; transition: border-color 0.15s; }
+.options label:hover { border-color: #1F4E79; background: #F7FAFC; }
+.options input[type="radio"] { margin-right: 10px; }
+.numeric-row { display: flex; gap: 12px; align-items: center; margin: 10px 0 14px; }
+.numeric-row input { padding: 8px 12px; border: 1px solid #D0D8E0; border-radius: 6px;
+                     font-family: inherit; font-size: 1em; width: 160px; }
+button { background: #1F4E79; color: white; border: 0; padding: 9px 18px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.95em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+button:disabled { background: #B8C2CB; cursor: not-allowed; }
+.feedback { padding: 12px 16px; border-radius: 6px; margin-top: 10px;
+            font-size: 0.95em; display: none; }
+.feedback.show { display: block; }
+.feedback.correct { background: #E8F5E9; border-left: 4px solid #2E7D32; color: #1B5E20; }
+.feedback.incorrect { background: #FDECEA; border-left: 4px solid #C00000; color: #6E1414; }
+.feedback strong { display: block; margin-bottom: 4px; }
+.help { color: #777; font-size: 0.85em; margin-top: 6px; }
+.nav { display: flex; justify-content: space-between; margin-top: 36px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; }
+.nav a { color: #1F4E79; text-decoration: none; }
+.nav a:hover { text-decoration: underline; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">Practice exercises</div>
+<h1>Topic 1 — Introduction to Reinforcement Learning</h1>
+<p class="subtitle">Ten self-graded problems. Submit each one to see immediate feedback; the score bar at the top tracks your progress. Every problem is a quantity you will compute again inside your Topic 1 product.</p>
+
+<div class="score">
+  <span id="scoreText">Score: 0 / 10</span>
+  <div class="bar"><div id="scoreBar" style="width:0%"></div></div>
+</div>
+
+<!-- Q1 -->
+<div class="exercise" data-q="1">
+  <div class="qtype">Theoretical · Discounted return</div>
+  <h3>Question 1</h3>
+  <div class="stem">An episode produces the reward sequence <span class="eq">R₁ = 0</span>, <span class="eq">R₂ = 0</span>, <span class="eq">R₃ = 1</span> and then terminates. With <span class="eq">γ = 0.9</span>, what is the return <span class="eq">G₀</span>? Round to two decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.01" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · <span class="eq">G₀ = R₁ + γR₂ + γ²R₃</span>. The exponent counts steps of delay, and the first reward is not discounted.</div>
+</div>
+
+<!-- Q2 -->
+<div class="exercise" data-q="2">
+  <div class="qtype">Theoretical · Effective horizon</div>
+  <h3>Question 2</h3>
+  <div class="stem">A classmate sets <span class="eq">γ = 0.95</span> and claims the agent "plans about 95 steps ahead." Roughly how many steps does that discount factor actually correspond to? Give the standard effective horizon, to the nearest whole number.</div>
+  <div class="numeric-row">
+    <input type="number" step="1" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · The discount weights sum to <span class="eq">1/(1 − γ)</span>.</div>
+</div>
+
+<!-- Q3 -->
+<div class="exercise" data-q="3">
+  <div class="qtype">Conceptual · The Markov property</div>
+  <h3>Question 3</h3>
+  <div class="stem">You are building an agent that balances a pole from raw camera frames. A single frame shows the pole's angle but not how fast it is falling. Which statement is correct?</div>
+  <div class="options">
+    <label><input type="radio" name="q3" value="a"> The environment is non-Markov, so reinforcement learning cannot be applied to it at all.</label>
+    <label><input type="radio" name="q3" value="b"> The state representation is not Markov, because the next state depends on velocity information the frame omits; stacking consecutive frames restores the property.</label>
+    <label><input type="radio" name="q3" value="c"> The Markov property is a property of the physical world, so it either holds or it does not and there is nothing the engineer can do.</label>
+    <label><input type="radio" name="q3" value="d"> The Markov property only matters for model-based methods; a model-free agent such as Q-learning is unaffected.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q4 -->
+<div class="exercise" data-q="4">
+  <div class="qtype">Computational · One Bellman optimality backup</div>
+  <h3>Question 4</h3>
+  <div class="stem">In state <code>s</code> the agent has two actions and the current value estimates are <span class="eq">V(s′) = 0.80</span> for the one non-terminal successor. Take <span class="eq">γ = 0.9</span>.
+  <table class="tb">
+    <tr><th>action</th><th>outcome</th><th>probability</th><th>reward</th><th>next state</th></tr>
+    <tr><td>A</td><td>step across</td><td>1.0</td><td>0</td><td><code>s′</code> (non-terminal)</td></tr>
+    <tr><td rowspan="2">B</td><td>reach goal</td><td>0.5</td><td>1</td><td>terminal</td></tr>
+    <tr><td>fall in hole</td><td>0.5</td><td>0</td><td>terminal</td></tr>
+  </table>
+  Apply one Bellman optimality backup. What is the new <span class="eq">V(s)</span>? Round to two decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.01" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · Compute <span class="eq">q(s,a) = Σ P(s′|s,a)[r + γV(s′)]</span> for each action, then take the maximum. Terminal successors contribute <span class="eq">V = 0</span>.</div>
+</div>
+
+<!-- Q5 -->
+<div class="exercise" data-q="5">
+  <div class="qtype">Theoretical · Why value iteration terminates</div>
+  <h3>Question 5</h3>
+  <div class="stem">Value iteration is guaranteed to converge to <span class="eq">v*</span> from any initialisation. What is the actual reason?</div>
+  <div class="options">
+    <label><input type="radio" name="q5" value="a"> Because the state space is finite, so the algorithm must eventually visit every state.</label>
+    <label><input type="radio" name="q5" value="b"> Because the Bellman optimality operator is a γ-contraction in the max norm, so by the Banach fixed-point theorem the iterates converge geometrically to its unique fixed point.</label>
+    <label><input type="radio" name="q5" value="c"> Because the rewards are bounded between 0 and 1 in this environment.</label>
+    <label><input type="radio" name="q5" value="d"> Because the initial values are set to zero, which is a lower bound on <span class="eq">v*</span>.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q6 -->
+<div class="exercise" data-q="6">
+  <div class="qtype">Computational · The Q-learning update</div>
+  <h3>Question 6</h3>
+  <div class="stem">A transition <span class="eq">(s, a, r, s′)</span> arrives with <span class="eq">r = 0</span>. You currently hold <span class="eq">Q(s,a) = 0.40</span> and <span class="eq">max<sub>a′</sub> Q(s′,a′) = 0.60</span>. With <span class="eq">α = 0.1</span> and <span class="eq">γ = 0.99</span>, what is <span class="eq">Q(s,a)</span> after the update? Round to two decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.01" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · Form the TD target <span class="eq">r + γ·max Q(s′,·)</span>, subtract the current estimate to get the TD error, and move <span class="eq">α</span> of the way along it.</div>
+</div>
+
+<!-- Q7 -->
+<div class="exercise" data-q="7">
+  <div class="qtype">Computational · The exploration tax</div>
+  <h3>Question 7</h3>
+  <div class="stem">An agent runs a fixed <span class="eq">ε = 0.2</span> over four actions, long after its value estimates have converged. What percentage of all actions taken are exploratory <em>and</em> suboptimal? Give the percentage (for example, enter <code>12.5</code> for 12.5%).</div>
+  <div class="numeric-row">
+    <input type="number" step="0.1" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · With probability <span class="eq">ε</span> the agent picks uniformly among all <span class="eq">k</span> actions — one of which is the greedy one it would have chosen anyway.</div>
+</div>
+
+<!-- Q8 -->
+<div class="exercise" data-q="8">
+  <div class="qtype">Conceptual · Off-policy learning</div>
+  <h3>Question 8</h3>
+  <div class="stem">Your agent behaves ε-greedily throughout training, yet Q-learning still converges to the value of the <em>greedy</em> policy. Why?</div>
+  <div class="options">
+    <label><input type="radio" name="q8" value="a"> Because ε decays to zero, so at the end the behaviour policy and the greedy policy are the same.</label>
+    <label><input type="radio" name="q8" value="b"> Because the TD target uses <span class="eq">max<sub>a′</sub> Q(s′,a′)</span> rather than the action the behaviour policy would take, so the quantity being estimated is the greedy policy's value regardless of how the data was collected.</label>
+    <label><input type="radio" name="q8" value="c"> Because the exploratory actions are random and therefore average out to zero across the update.</label>
+    <label><input type="radio" name="q8" value="d"> Because Q-learning discards transitions generated by exploratory actions.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q9 -->
+<div class="exercise" data-q="9">
+  <div class="qtype">Computational · Seeds and confidence intervals</div>
+  <h3>Question 9</h3>
+  <div class="stem">You report a mean return across 4 seeds and your 95% confidence interval has a half-width of 0.08. Your reviewer wants the half-width down to 0.04. Assuming the seed-to-seed standard deviation is unchanged, approximately how many seeds do you need in total?</div>
+  <div class="numeric-row">
+    <input type="number" step="1" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · The half-width is proportional to <span class="eq">s/√n</span>.</div>
+</div>
+
+<!-- Q10 -->
+<div class="exercise" data-q="10">
+  <div class="qtype">Application · The serving architecture</div>
+  <h3>Question 10</h3>
+  <div class="stem">Your Topic 1 product trains a tabular Q-learning agent in PyTorch-free NumPy, exports the Q-table, and serves it behind FastAPI. A classmate proposes importing PyTorch into <code>api/main.py</code> "just for the tensor utilities." Which response is correct for this course?</div>
+  <div class="options">
+    <label><input type="radio" name="q10" value="a"> It is fine, because PyTorch is already in <code>requirements-train.txt</code>.</label>
+    <label><input type="radio" name="q10" value="b"> It breaks the standing rule: <code>import torch</code> alone costs roughly 490 MB of resident memory against a 690 MB guarantee on the deployed tier, and <code>tests/test_no_torch.py</code> asserts <code>"torch" not in sys.modules</code> after importing the app.</label>
+    <label><input type="radio" name="q10" value="c"> It is fine as long as the model itself is still a NumPy array.</label>
+    <label><input type="radio" name="q10" value="d"> It is only a problem in Topic 6, where the models are large.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="nav"><a href="index.html">← All tutorials</a><a href="Tutorial-Topic-1-Introduction-to-Reinforcement-Learning.html">Topic 1 tutorial →</a></div>
+</div>
+
+<script>
+/* ---- Answer key + feedback content ---- */
+const KEY = {
+  1: { type: 'numeric', accept: 0.81, tol: 0.005,
+       ok: 'G₀ = 0 + 0.9·0 + 0.81·1 = 0.81. Note that the reward arriving two steps later is discounted twice, not three times — the index of the first reward is 1, and its exponent is 0.',
+       no: 'Check the exponents. G₀ = R₁ + γR₂ + γ²R₃, so the reward of 1 at t = 3 is multiplied by γ² = 0.81, not γ³.' },
+  2: { type: 'numeric', accept: 20, tol: 0.6,
+       ok: '1/(1 − 0.95) = 20 steps. The relationship is strongly non-linear: 0.9 buys 10 steps, 0.95 buys 20, and 0.99 buys 100. Reading γ as a percentage is the mistake being tested.',
+       no: 'Use the sum of the discount weights, 1/(1 − γ). At γ = 0.95 that is 1/0.05.' },
+  3: { type: 'mc', accept: 'b',
+       ok: 'The Markov property is a property of your state representation, not of the world, and it is something you engineer. Stacking frames (or adding an explicit velocity channel) restores it. This is the first modelling decision in any reinforcement learning project.',
+       no: 'Consider whether the property belongs to the world or to the representation you chose — and whether anything can be added to the state to restore it.' },
+  4: { type: 'numeric', accept: 0.72, tol: 0.005,
+       ok: 'q(s,A) = 1.0·(0 + 0.9·0.80) = 0.72 and q(s,B) = 0.5·(1 + 0) + 0.5·(0 + 0) = 0.50, so the backup gives V(s) = max(0.72, 0.50) = 0.72. Note that the risky action B has the higher immediate reward and still loses — this is exactly the calculation that makes an optimal policy on a slippery lake move away from the goal.',
+       no: 'Compute both action values. Terminal successors contribute γ·V = 0, so action B is worth 0.5·1 = 0.50; action A is worth 0.9·0.80. Take the larger.' },
+  5: { type: 'mc', accept: 'b',
+       ok: 'The operator satisfies ‖TV − TV′‖∞ ≤ γ‖V − V′‖∞, which is what makes the fixed point unique and the convergence geometric at rate γ. This is also why the residual plot in the tutorial is a straight line on a log axis with slope log γ.',
+       no: 'Finiteness and bounded rewards are not enough on their own — undiscounted problems can have finite state spaces and still fail to converge. Look for the property that makes the fixed point unique.' },
+  6: { type: 'numeric', accept: 0.4194, tol: 0.006,
+       ok: 'The TD target is 0 + 0.99·0.60 = 0.594, the TD error is 0.594 − 0.40 = 0.194, and the update is 0.40 + 0.1·0.194 = 0.4194 ≈ 0.42. The estimate moves a tenth of the way toward the target — which is why α trades learning speed against the variance you inherit from a single sampled transition.',
+       no: 'Form the target r + γ·max Q(s′,·) = 0.99 × 0.60, subtract the current 0.40 to get the TD error, multiply by α = 0.1, and add that to the current value.' },
+  7: { type: 'numeric', accept: 15, tol: 0.3,
+       ok: 'ε·(k−1)/k = 0.2 × 3/4 = 0.15, so 15% of all actions are wasted forever — not during learning, but permanently. This is the gap you will see between the training-return curve and the greedy-evaluation score in your product, and it is the reason those two numbers live in two different tables.',
+       no: 'The agent explores on a fraction ε of steps, but 1 of the k uniformly-chosen actions is the greedy one it would have taken anyway. So the wasted fraction is ε(k−1)/k.' },
+  8: { type: 'mc', accept: 'b',
+       ok: 'That max in the target is the whole of off-policy learning. It is also why the training-return curve is not a measure of the learned policy: the curve reflects the behaviour policy, the table reflects the greedy one. A decaying ε helps the behaviour curve, not the correctness of what is learned.',
+       no: 'Look at which action appears inside the TD target versus which action generated the transition. Q-learning would still be off-policy with a constant ε.' },
+  9: { type: 'numeric', accept: 16, tol: 0.6,
+       ok: 'Half-width ∝ 1/√n, so halving it costs 4× the seeds: 4 → 16. This quadratic cost is why three-seed comparisons are so common and so weak, and why "run more seeds" is expensive advice that is nonetheless usually right.',
+       no: 'The half-width scales as 1/√n. To halve it you must quadruple n, not double it.' },
+  10:{ type: 'mc', accept: 'b',
+       ok: 'The split between requirements-train.txt and requirements-serve.txt is the architecture, and the pytest guard is what keeps it true. A tabular policy needs one line of NumPy to serve; there is nothing PyTorch would add except 490 MB.',
+       no: 'The rule is about the memory footprint of the deployed process, not about what the model is made of. Recall the measured cost of import torch against the guaranteed allocation.' },
+};
+
+const state = {}; let solved = new Set();
+
+document.querySelectorAll('.exercise').forEach(ex => {
+  const qid = +ex.dataset.q;
+  const btn = ex.querySelector('[data-check]');
+  const fb = ex.querySelector('[data-feedback]');
+  btn.addEventListener('click', () => {
+    const k = KEY[qid]; let user;
+    if (k.type === 'numeric') {
+      const inp = ex.querySelector('[data-input]');
+      user = parseFloat(inp.value);
+      if (Number.isNaN(user)) {
+        fb.className = 'feedback incorrect show';
+        fb.innerHTML = '<strong>Please enter a number.</strong>';
+        return;
+      }
+    } else {
+      const picked = ex.querySelector('input[type=radio]:checked');
+      if (!picked) {
+        fb.className = 'feedback incorrect show';
+        fb.innerHTML = '<strong>Please select an option.</strong>';
+        return;
+      }
+      user = picked.value;
+    }
+    const ok = (k.type === 'numeric')
+      ? Math.abs(user - k.accept) <= k.tol
+      : user === k.accept;
+    if (ok) {
+      fb.className = 'feedback correct show';
+      fb.innerHTML = '<strong>Correct.</strong>' + k.ok;
+      if (!solved.has(qid)) { solved.add(qid); updateScore(); }
+      btn.disabled = true;
+    } else {
+      fb.className = 'feedback incorrect show';
+      fb.innerHTML = '<strong>Not quite.</strong>' + k.no;
+    }
+  });
+});
+
+function updateScore() {
+  const total = Object.keys(KEY).length;
+  document.getElementById('scoreText').textContent = `Score: ${solved.size} / ${total}`;
+  document.getElementById('scoreBar').style.width = `${(solved.size / total * 100).toFixed(0)}%`;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+# ---------------------------------------------------------------------------
+# SERVING REQUIREMENTS — installed by Streamlit Community Cloud and by the
+# service tier. PyTorch is deliberately absent. See docs/no-torch.md.
+#
+# Measured footprint of this set in one process: ~82 MB.
+# `import torch` alone would add ~490 MB against a 690 MB guarantee.
+#
+# TOPIC 3 ADDS ONE LINE: gymnasium[classic-control]. It is here because
+# POST /rollout runs episodes SERVER-SIDE, so the environment is genuinely a
+# serving dependency and not a training one. classic-control only — it is a
+# pure-Python wheel of a few megabytes. Never gymnasium[all], and never
+# gymnasium[box2d] in this file: Box2D publishes wheels for CPython 3.10-3.13
+# only, has no source distribution, and would make the deployed app
+# uninstallable on a host you do not control.
+# ---------------------------------------------------------------------------
+streamlit==1.42.0
+fastapi==0.115.8
+uvicorn[standard]==0.34.0
+pydantic==2.10.6
+pydantic-settings==2.7.1
+numpy==2.2.2
+supabase==2.13.0
+pandas==2.2.3
+altair==5.5.0
+httpx==0.28.1
+gymnasium[classic-control]==1.0.0

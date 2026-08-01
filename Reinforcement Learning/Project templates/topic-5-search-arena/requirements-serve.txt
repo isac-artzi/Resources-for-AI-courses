@@ -1,0 +1,32 @@
+# ---------------------------------------------------------------------------
+# SERVING REQUIREMENTS — installed by Streamlit Community Cloud and by the
+# service tier. PyTorch is deliberately absent. See docs/no-torch.md.
+#
+# Measured footprint of this set in one process: ~82 MB.
+# `import torch` alone would add ~490 MB against a 690 MB guarantee.
+#
+# TOPIC 5 NOTE — the search agents need NOTHING here beyond NumPy.
+#
+# Read that literally. `envs/connect_four.py::Position`, the whole of `search/`
+# and the learned evaluator in `search/net.py` are pure Python and NumPy: the
+# strongest agent in this product is four matrix multiplies read out of a `.npz`
+# at inference time. gymnasium appears below only because `POST /rollout` is a
+# standing endpoint that runs evaluation episodes SERVER-SIDE and therefore has
+# to construct the environment. `envs/connect_four.py` imports it defensively
+# (a try/except at module scope) precisely so that a serving image WITHOUT
+# gymnasium still starts and still plays — the search path never touches it.
+#
+# Gymnasium is an environment library, not a training framework. The no-torch
+# rule is about the 490 MB, not about the word "RL".
+# ---------------------------------------------------------------------------
+streamlit==1.42.0
+fastapi==0.115.8
+uvicorn[standard]==0.34.0
+pydantic==2.10.6
+pydantic-settings==2.7.1
+numpy==2.2.2
+gymnasium[classic-control]==1.0.0    # /rollout only — see the note above
+supabase==2.13.0
+pandas==2.2.3
+altair==5.5.0
+httpx==0.28.1

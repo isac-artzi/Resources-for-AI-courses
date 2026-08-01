@@ -1,0 +1,159 @@
+{
+  "tfidf": {
+    "feature_dim": 74,
+    "held_out_accuracy": 0.86875,
+    "baseline_accuracy": 0.5,
+    "n_test_pairs": 480,
+    "accuracy_stderr": 0.015412619119572115,
+    "mean_margin": 1.726448893547058,
+    "length_bias": {
+      "pearson_r": 0.3530427458017516,
+      "r_squared": 0.1246391803632402,
+      "slope": 0.12031770644756662,
+      "n": 960
+    },
+    "length_decodability_r2": 0.7568520228779165,
+    "length_matched": {
+      "n_matched": 131,
+      "accuracy": 0.8625954198473282,
+      "stderr": 0.0300793557956613,
+      "tolerance_tokens": 2
+    },
+    "length_matched_drop": 0.0062,
+    "history": [
+      {
+        "epoch": 0,
+        "train_loss": 0.6702735185623169,
+        "test_accuracy": 0.83125
+      },
+      {
+        "epoch": 5,
+        "train_loss": 0.3879810988903046,
+        "test_accuracy": 0.8833333333333333
+      },
+      {
+        "epoch": 10,
+        "train_loss": 0.3777108828226725,
+        "test_accuracy": 0.8791666666666667
+      },
+      {
+        "epoch": 15,
+        "train_loss": 0.3641885201136271,
+        "test_accuracy": 0.88125
+      },
+      {
+        "epoch": 20,
+        "train_loss": 0.34415610432624816,
+        "test_accuracy": 0.8770833333333333
+      },
+      {
+        "epoch": 24,
+        "train_loss": 0.3241038848956426,
+        "test_accuracy": 0.86875
+      }
+    ],
+    "artifact": {
+      "name": "reward_tfidf",
+      "format": "npz",
+      "bytes": 20127,
+      "sha256": "e6fca2a2bc452782a705ecfa73b5572259202239d4d7c294ff8e4c06d651091c",
+      "kind": "reward-head",
+      "obs_dim": 74,
+      "n_actions": null
+    }
+  },
+  "embedding": {
+    "feature_dim": 256,
+    "held_out_accuracy": 0.8958333333333334,
+    "baseline_accuracy": 0.5,
+    "n_test_pairs": 480,
+    "accuracy_stderr": 0.013943036809209209,
+    "mean_margin": 1.6435295343399048,
+    "length_bias": {
+      "pearson_r": 0.3283081602665829,
+      "r_squared": 0.10778624809762827,
+      "slope": 0.10666413053484099,
+      "n": 960
+    },
+    "length_decodability_r2": 0.10416360144301373,
+    "length_matched": {
+      "n_matched": 131,
+      "accuracy": 0.8931297709923665,
+      "stderr": 0.026992928556515906,
+      "tolerance_tokens": 2
+    },
+    "length_matched_drop": 0.0027,
+    "history": [
+      {
+        "epoch": 0,
+        "train_loss": 0.6814152280489604,
+        "test_accuracy": 0.8229166666666666
+      },
+      {
+        "epoch": 5,
+        "train_loss": 0.41709226965904234,
+        "test_accuracy": 0.8645833333333334
+      },
+      {
+        "epoch": 10,
+        "train_loss": 0.3870779554049174,
+        "test_accuracy": 0.8875
+      },
+      {
+        "epoch": 15,
+        "train_loss": 0.3820175349712372,
+        "test_accuracy": 0.89375
+      },
+      {
+        "epoch": 20,
+        "train_loss": 0.3789370238780975,
+        "test_accuracy": 0.8958333333333334
+      },
+      {
+        "epoch": 24,
+        "train_loss": 0.3759933392206828,
+        "test_accuracy": 0.8958333333333334
+      }
+    ],
+    "artifact": {
+      "name": "reward_embedding",
+      "format": "npz",
+      "bytes": 62356,
+      "sha256": "6d01c1c96981cf315c6d68e5350154e9973362df974c4eb8624ea1f41aa9a4b7",
+      "kind": "mlp",
+      "obs_dim": 256,
+      "n_actions": 1
+    }
+  },
+  "tfidf_vs_embedding": {
+    "accuracy_difference": 0.027083333333333334,
+    "paired_stderr": 0.009081039465709737,
+    "z": 2.9824045403173027,
+    "b_only_first_head_right": 3,
+    "c_only_second_head_right": 16,
+    "n_pairs": 480,
+    "n_discordant": 19
+  },
+  "deployed": "tfidf",
+  "length_bias_threshold": 0.45,
+  "length_matched_min_accuracy": 0.6,
+  "dataset": {
+    "source": "synthetic-offline",
+    "train": {
+      "pairs": 1920,
+      "prompts": 231,
+      "mean_chosen_len": 18.240104166666665,
+      "mean_rejected_len": 15.68125,
+      "longer_chosen_rate": 0.6213541666666667,
+      "label_length_pearson_r": 0.265648862349032
+    },
+    "test": {
+      "pairs": 480,
+      "prompts": 60,
+      "mean_chosen_len": 18.397916666666667,
+      "mean_rejected_len": 15.683333333333334,
+      "longer_chosen_rate": 0.65,
+      "label_length_pearson_r": 0.2894069671441729
+    }
+  }
+}

@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topic 6 Tutorial — Reinforcement Learning From Human Feedback and Multi-Agent Reinforcement Learning</title>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] }, svg: { fontCache: 'global' } };
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif; margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.62; }
+.container { max-width: 1000px; margin: 24px auto 48px; background: white; padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79; padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.34em; margin-top: 42px; border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 7px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+pre { background: #1f2733; color:#e6edf3; padding: 14px 18px; border-radius: 6px; overflow-x: auto; border-left: 4px solid #1F4E79; font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.86em; line-height:1.55; }
+pre .c { color:#8b98a9; } pre .k { color:#ff7b72; } pre .s { color:#a5d6ff; } pre .f { color:#d2a8ff; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79; padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.why { background:#F0FaF3; border-left:4px solid #1F8B4C; padding:14px 18px; margin:16px 0; border-radius:4px; }
+.why strong { color:#1F8B4C; }
+.deep { background:#FBF7FF; border-left:4px solid #6A3FA0; padding:14px 18px; margin:16px 0; border-radius:4px; }
+.deep strong { color:#6A3FA0; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px; margin: 14px 0; border-radius: 4px; font-size: 0.95em; }
+.product { background:#FCF6FF; border-left:4px solid #7B3FA0; padding:14px 18px; margin:16px 0; border-radius:4px; }
+.product strong { color:#7B3FA0; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px; padding: 22px; margin: 24px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.demo .tag { font-size:0.7em; background:#1F4E79; color:white; padding:2px 8px; border-radius:10px; vertical-align:middle; margin-left:8px; letter-spacing:0.04em;}
+.controls { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 200px; }
+.control input[type="text"], .control input[type="number"], .control select { padding:6px 8px; border:1px solid #CFD7DF; border-radius:4px; font-family:inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px; border-radius: 6px; font-size: 0.9em; }
+.mono { font-family:"SF Mono",Consolas,monospace; }
+textarea { width:100%; min-height:60px; padding:10px; border:1px solid #CFD7DF; border-radius:6px; font-family:"SF Mono",Consolas,monospace; font-size:0.9em; resize:vertical; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.9em; }
+button:hover { background: #2D5C8C; } button.secondary { background: #E0E5EB; color: #1A1A1A; } button.secondary:hover { background:#CFD7DF; }
+button:disabled { background:#CBD5E0; cursor:not-allowed; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; max-width:100%; }
+.tok { display:inline-block; background:#EAF1F8; border:1px solid #BcceE0; color:#1F4E79; padding:2px 7px; margin:2px; border-radius:10px; font-family:"SF Mono",Consolas,monospace; font-size:0.82em; }
+table.grid { border-collapse:collapse; font-family:"SF Mono",Consolas,monospace; font-size:0.8em; margin:8px 0; }
+table.grid td { border:1px solid #C7D2DE; width:64px; height:52px; text-align:center; padding:0; vertical-align:middle; line-height:1.25; }
+table.grid td .v { font-weight:bold; display:block; font-size:1.08em; }
+table.grid td .a { color:#1F4E79; font-size:1.15em; display:block; }
+table.grid td.hole { background:#3A4A5C; color:#fff; } table.grid td.goal { background:#1F8B4C; color:#fff; }
+table.grid td.start { outline:3px solid #F9A825; outline-offset:-3px; }
+table.tb { border-collapse:collapse; margin:12px 0; font-size:0.88em; } table.tb td, table.tb th { border:1px solid #D0D8E0; padding:5px 10px; text-align:center; } table.tb th { background:#EAF1F8; color:#1F4E79; }
+table.tb tr.hi td { background:#D6EAD9; font-weight:bold; }
+.nav { display: flex; justify-content: space-between; margin-top: 44px; padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { columns:2; font-size:0.92em; } .toc a { color:#1F4E79; text-decoration:none; } .toc a:hover{text-decoration:underline;}
+.legend { font-size:0.82em; color:#555; margin-top:6px; }
+.sw { display:inline-block; width:11px; height:11px; border-radius:2px; margin-right:4px; vertical-align:-1px; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">Tutorial · ~ 95 min · formal</div>
+<h1>Topic 6 — Reinforcement Learning From Human Feedback and Multi-Agent Reinforcement Learning</h1>
+<p class="subtitle">The capstone. Preference data becomes a scalar reward, that reward is optimised under a Kullback–Leibler constraint, and the closed-form solution of that constrained problem is inverted to remove the reward model entirely. Nothing here is new mathematics: it is the maximum-entropy objective of Topic 4 with one distribution changed. We then push the objective until it breaks — reward hacking is a theorem, not an accident — and finish by removing the last assumption the course has been leaning on since Topic 2, that the environment holds still while you learn.</p>
+
+<div class="callout">
+ <strong>Roadmap.</strong>
+ <div class="toc">
+ <a href="#s1">1. The three-stage pipeline</a><br>
+ <a href="#s2">2. Bradley–Terry and the reward model loss</a><br>
+ <a href="#s3">3. The KL-regularised objective and its closed form</a><br>
+ <a href="#s4">4. DPO: inverting the closed form</a><br>
+ <a href="#s5">5. GRPO: dropping the critic</a><br>
+ <a href="#s6">6. Reward hacking, and a second learner</a><br>
+ <a href="#s7">7. In practice (Alignment Lab)</a>
+ </div>
+</div>
+
+<h2 id="s1">1. The three-stage pipeline, and why alignment is a reinforcement learning problem</h2>
+<p>The canonical pipeline has three stages, and they are three different learning problems in sequence.</p>
+<ol>
+ <li><strong>Supervised fine-tuning.</strong> Start from a pretrained language model \(\pi_{\text{base}}\) and maximise the log-likelihood of a curated set of demonstrations \(\{(x_i,y_i)\}\): \(\max_\theta \sum_i \log \pi_\theta(y_i\mid x_i)\). This is ordinary supervised learning — there is a target string and the loss measures distance from it. The result, \(\pi^{\text{SFT}}\), is the model that will serve as both the initialisation and the reference \(\pi_{\text{ref}}\) for everything that follows.</li>
+ <li><strong>Reward modelling from comparisons.</strong> Sample two responses per prompt, have a human say which is better, and fit a scalar function \(r_\theta(x,y)\) whose <em>differences</em> reproduce those judgements. Its loss is derived in §2.</li>
+ <li><strong>Policy optimisation under a KL constraint.</strong> Maximise the learned reward while penalising divergence from \(\pi_{\text{ref}}\): \(\max_\pi \mathbb{E}_{x,\,y\sim\pi}\big[r(x,y)\big] - \beta\, \mathrm{KL}\!\left(\pi \,\|\, \pi_{\text{ref}}\right)\). This is the stage that is reinforcement learning, and §3 solves it in closed form.</li>
+</ol>
+<p>Stage 3 is not supervised learning, and the reason is precise rather than rhetorical. In supervised learning the loss is evaluated at a known target \(y^\star\); the gradient tells the model which direction moves it toward that string. Here there is no \(y^\star\). What exists is a function that <em>scores</em> whatever the model produced. The signal is <strong>evaluative</strong>, not <strong>instructive</strong> — the Topic 1 distinction, unchanged — and the three consequences named there recur exactly: the model must sample to discover alternatives, credit for a sequence-level score must be assigned back across the tokens that produced it, and the data distribution is generated by the policy being trained, so it moves as the policy moves.</p>
+<p>The last of those three deserves the sharpest statement. The objective is \(\mathbb{E}_{y\sim\pi_\theta}[r(x,y)]\): the parameter \(\theta\) appears in the distribution the expectation is taken over, not just in the integrand. That is the defining feature of a reinforcement learning objective and the reason the policy gradient theorem of Topic 3 exists at all. A supervised loss has the parameter only inside the integrand, over a fixed dataset.</p>
+
+<div class="why">
+ <strong>Why not simply fine-tune on the preferred responses and skip stages 2 and 3 entirely.</strong> The obvious alternative — take every comparison, throw away the rejected response, and run supervised fine-tuning on the chosen ones — is cheap, stable, and loses most of the signal. Three things go missing. First, a comparison is a statement about a <em>difference</em>; imitating the winner can raise \(\log\pi(y_w\mid x)\) but has no mechanism to lower \(\log \pi(y_l \mid x)\), so a bad behaviour the annotators explicitly rejected is never pushed down, only relatively out-competed. Second, imitation is capped by the best response in the dataset: the model can approach the annotators' demonstrations and cannot exceed them, because nothing in the loss can score a string no human wrote. A learned \(r\) can. Third, the chosen responses are a biased sample — they were sampled from a model, then filtered by preference — so maximum likelihood on them fits the filter as well as the preference. Best-of-\(n\) sampling is the honest version of this shortcut and it works, at \(n\times\) inference cost forever; RLHF is the attempt to pay that cost once, at training time.
+</div>
+
+<h2 id="s2">2. Bradley–Terry, and the reward that is only defined up to a constant</h2>
+<p>Human annotators are unreliable at absolute scores and reliable at comparisons. The <strong>Bradley–Terry</strong> model is the standard link from the second to the first. Posit a latent scalar \(r(x,y)\) and assume the probability that \(y_1\) is preferred to \(y_2\) is a logistic function of the difference:</p>
+\[ P(y_1 \succ y_2 \mid x) \;=\; \frac{\exp r(x,y_1)}{\exp r(x,y_1) + \exp r(x,y_2)} \;=\; \sigma\!\big(r(x,y_1) - r(x,y_2)\big), \qquad \sigma(z) = \frac{1}{1+e^{-z}}. \]
+<p>The second equality is division of numerator and denominator by \(\exp r(x,y_1)\); it is worth doing once by hand, because it is the step that makes the difference the only thing that appears.</p>
+<p>Given a dataset \(\mathcal{D} = \{(x, y_w, y_l)\}\) of prompts with a chosen and a rejected response, the likelihood of the observed labels under parameters \(\theta\) is \(\prod_{\mathcal{D}} \sigma\!\big(r_\theta(x,y_w)-r_\theta(x,y_l)\big)\). Taking the negative logarithm turns the product into a sum and gives the reward model loss:</p>
+\[ \boxed{\;\mathcal{L}_{\text{RM}}(\theta) \;=\; -\,\mathbb{E}_{(x,y_w,y_l)\sim\mathcal{D}}\Big[ \log \sigma\!\big( r_\theta(x,y_w) - r_\theta(x,y_l) \big) \Big].\;} \]
+<p>This is a binary cross-entropy on the logit \(\Delta = r_\theta(x,y_w)-r_\theta(x,y_l)\) with the label always 1, which is only a relabelling: the annotator's choice was encoded by which response was named \(y_w\). Its gradient is</p>
+\[ \nabla_\theta \mathcal{L}_{\text{RM}} \;=\; -\,\mathbb{E}\Big[ \sigma(-\Delta)\,\big(\nabla_\theta r_\theta(x,y_w) - \nabla_\theta r_\theta(x,y_l)\big) \Big], \]
+<p>using \(\frac{d}{dz}\log\sigma(z) = \sigma(-z)\). The weight \(\sigma(-\Delta)\) is near 1 when the model ranks the pair backwards and near 0 when it already ranks it correctly by a wide margin: the loss automatically concentrates on its own mistakes. Remember this weight — the identical factor reappears in the DPO gradient in §4, for the identical reason.</p>
+
+<h3>Only differences are identifiable</h3>
+<p>Fix a prompt \(x\) and let \(c(x)\) be any constant. Define a shifted reward \(\tilde r(x,y) = r(x,y) + c(x)\). Then for every comparison on that prompt,</p>
+\[ \tilde r(x,y_w) - \tilde r(x,y_l) \;=\; \big(r(x,y_w)+c(x)\big) - \big(r(x,y_l)+c(x)\big) \;=\; r(x,y_w) - r(x,y_l), \]
+<p>so every term of \(\mathcal{L}_{\text{RM}}\) is unchanged and the loss is exactly invariant. The reward function is therefore identified only up to a per-prompt additive constant: the Hessian of the loss is singular in the direction of the all-ones vector within each prompt's block, and gradient descent will settle wherever initialisation and weight decay happen to leave it.</p>
+<p>Three consequences follow, and all three are operational.</p>
+<ul>
+ <li><strong>A reward score in isolation means nothing.</strong> "This response scored 3.7" is not a statement about quality; it is a statement about quality plus an arbitrary offset that the optimiser never had a reason to fix. Only \(r(x,y_1)-r(x,y_2)\) for two responses to the <em>same</em> prompt carries information.</li>
+ <li><strong>Scores are not comparable across prompts.</strong> The offset \(c(x)\) is per-prompt. An easy prompt whose responses all score 5.0 and a hard prompt whose responses all score \(-1.0\) tell you nothing about which prompt was answered better. Ranking a mixed set of prompt–response pairs by raw score is measuring \(c(x)\).</li>
+ <li><strong>Centring is not a trick.</strong> RLHF implementations that subtract a per-prompt or per-batch mean reward before computing advantages are not applying a variance-reduction heuristic on top of the reward; they are projecting onto the identifiable subspace. GRPO's group normalisation in §5 is exactly this step promoted to the definition of the advantage.</li>
+</ul>
+
+<div class="demo">
+ <h3>Demo · The Bradley–Terry loss on four comparisons <span class="tag">interactive</span></h3>
+ <p>A single prompt with four responses. The reward model has assigned \(r = \{2.1,\,1.4,\,-0.3,\,0.8\}\) to A, B, C, D and the human labels are \(A \succ B\), \(C \succ A\), \(D \succ C\), \(B \succ D\) — note that these four labels are <em>cyclic</em> and no scalar \(r\) can satisfy all of them, which is the point. Each comparison contributes \(-\log\sigma(\Delta r)\) where \(\Delta r\) is the chosen minus the rejected reward. The curve is \(\sigma(\Delta r)\) with the four comparisons marked; the table decomposes the loss. Edit the four rewards and watch which comparison the fit is willing to sacrifice.</p>
+ <div class="controls">
+  <div class="control"><label>\(r(A)\)</label><input type="number" id="d1-a" step="0.1" value="2.1" style="width:90px"></div>
+  <div class="control"><label>\(r(B)\)</label><input type="number" id="d1-b" step="0.1" value="1.4" style="width:90px"></div>
+  <div class="control"><label>\(r(C)\)</label><input type="number" id="d1-c" step="0.1" value="-0.3" style="width:90px"></div>
+  <div class="control"><label>\(r(D)\)</label><input type="number" id="d1-d" step="0.1" value="0.8" style="width:90px"></div>
+  <div class="control"><label>&nbsp;</label><button id="d1-reset" class="secondary">Reset to the stated values</button></div>
+  <div class="control"><label>&nbsp;</label><button id="d1-shift" class="secondary">Add +10 to every reward</button></div>
+ </div>
+ <canvas id="d1-canvas" width="900" height="300"></canvas>
+ <table class="tb" id="d1-table"></table>
+ <div class="readout" id="d1-read"></div>
+</div>
+
+<div class="deep">
+ <strong>Why a cyclic label set is the normal case and not a pathology to be cleaned out of the data.</strong> The instinct on seeing \(A\succ B\), \(C\succ A\), \(D\succ C\), \(B\succ D\) is that an annotator was careless and the cycle should be filtered. Sometimes. But a cycle is exactly what a <em>population</em> of annotators with different orderings produces even when every individual is perfectly consistent, and it is what one annotator produces when the responses differ along more than one axis — helpfulness against harmlessness, brevity against completeness. Bradley–Terry assumes a single latent scalar, which is to say a total order, and a total order cannot represent a cycle. So the fit does not fail; it does something worse, which is to compromise, distributing the inconsistency as loss across all four comparisons and returning a confident-looking scalar that no annotator would endorse. Press "Add +10" in the demo and the total loss does not move by a floating-point ulp — the model's absolute scale is unconstrained — but the residual left by the cycle is irreducible at any scale. That irreducible residual is the first appearance of the argument in §6: the number the policy will be trained to maximise is not the thing the annotators were reporting.
+</div>
+
+<h2 id="s3">3. The KL-regularised objective and its closed form</h2>
+<p>With \(r\) in hand, stage 3 optimises</p>
+\[ \max_{\pi}\; \mathbb{E}_{x\sim\mathcal{D}}\,\mathbb{E}_{y\sim\pi(\cdot\mid x)}\big[ r(x,y) \big] \;-\; \beta\, D_{\mathrm{KL}}\!\big(\pi(\cdot\mid x) \,\big\|\, \pi_{\text{ref}}(\cdot\mid x)\big). \]
+<p>The penalty is not decoration. Without it the maximiser is a point mass on \(\arg\max_y r(x,y)\) — a single string, emitted for every prompt in its neighbourhood — and since \(r\) is a fitted model with errors, that string is chosen for the error as much as for the quality. §6 makes this precise.</p>
+
+<h3>Solving it</h3>
+<p>Fix a prompt \(x\) and treat the problem as an optimisation over the finite-dimensional simplex of distributions on responses. Write the objective with a Lagrange multiplier \(\lambda\) for the normalisation constraint:</p>
+\[ \mathcal{J}[\pi] \;=\; \sum_y \pi(y)\,r(y) \;-\; \beta\sum_y \pi(y)\log\frac{\pi(y)}{\pi_{\text{ref}}(y)} \;+\; \lambda\Big(1 - \sum_y \pi(y)\Big). \]
+<p>Differentiate with respect to a single \(\pi(y)\) and set to zero:</p>
+\[ \frac{\partial \mathcal{J}}{\partial \pi(y)} \;=\; r(y) \;-\; \beta\left(\log\frac{\pi(y)}{\pi_{\text{ref}}(y)} + 1\right) \;-\; \lambda \;=\; 0 \quad\Longrightarrow\quad \log\frac{\pi(y)}{\pi_{\text{ref}}(y)} \;=\; \frac{r(y)-\lambda}{\beta} - 1. \]
+<p>Exponentiate, and absorb every factor that does not depend on \(y\) into a single normaliser:</p>
+\[ \boxed{\;\pi^\star(y\mid x) \;=\; \frac{1}{Z(x)}\;\pi_{\text{ref}}(y\mid x)\,\exp\!\left(\frac{r(x,y)}{\beta}\right), \qquad Z(x) \;=\; \sum_{y} \pi_{\text{ref}}(y\mid x)\exp\!\left(\frac{r(x,y)}{\beta}\right).\;} \]
+<p>The objective is concave in \(\pi\) — a linear term minus a strictly convex KL — so this stationary point is the unique global maximum. The solution is the reference distribution <strong>exponentially tilted</strong> by the reward, with \(\beta\) setting the sharpness of the tilt. The identical Lagrangian, with \(\pi_{\text{ref}}\) replaced by a uniform distribution and \(r\) by \(Q\), produced the Boltzmann policy in Topic 4 §5; this is that derivation with one distribution changed.</p>
+
+<h3>Why \(Z(x)\) is intractable</h3>
+<p>\(Z(x)\) is a sum over \(y\) — and \(y\) ranges over <em>every string the model could emit</em>. For a vocabulary of \(|\mathcal{V}| \approx 50{,}000\) tokens and a response length of \(L\) tokens, that is \(|\mathcal{V}|^{L}\) terms; at \(L = 100\) the count is around \(10^{470}\). There is no factorisation to exploit, because \(r(x,y)\) is a function of the <em>whole</em> sequence — the reward model reads the completed response — so the sum does not decompose over positions the way an autoregressive likelihood does. \(Z(x)\) is therefore never computed. Every method in §4 and §5 exists to avoid it: PPO-style RLHF sidesteps it by never forming \(\pi^\star\) explicitly and taking sampled gradient steps toward it instead; DPO sidesteps it by arranging for it to cancel.</p>
+
+<h3>The maximum-entropy objective is the special case \(\pi_{\text{ref}} = \text{uniform}\)</h3>
+<p>Topic 4 established, over a finite action set \(\mathcal{A}\) with \(U(a) = 1/|\mathcal{A}|\),</p>
+\[ D_{\mathrm{KL}}(\pi\,\|\,U) \;=\; \sum_a \pi(a)\log\frac{\pi(a)}{1/|\mathcal{A}|} \;=\; -\,\mathcal{H}(\pi) \;+\; \log|\mathcal{A}|. \]
+<p>Substituting \(\pi_{\text{ref}} = U\) into the alignment objective and using the identity,</p>
+\[ \mathbb{E}[r] - \beta\,D_{\mathrm{KL}}(\pi\,\|\,U) \;=\; \mathbb{E}[r] + \beta\,\mathcal{H}(\pi) \;-\; \beta\log|\mathcal{A}|, \]
+<p>and the last term is constant in \(\pi\), so it shifts the objective's value and not its argmax. The alignment objective with a uniform reference <em>is</em> the maximum-entropy objective of Topic 4, and the closed form degenerates correspondingly: setting \(\pi_{\text{ref}}(y) = 1/|\mathcal{A}|\) above, the constant factor is absorbed by \(Z\) and leaves \(\pi^\star(a) \propto \exp(r(a)/\beta)\), the Boltzmann policy.</p>
+<p>The roles of the two temperatures line up exactly, and the difference is only in what they measure distance <em>to</em>. In Topic 4, \(\alpha\) was the price in reward of one nat of entropy — of distance from determinism — and it kept the converged policy stochastic so that exploration never stopped. Here \(\beta\) is the price in reward of one nat of divergence <em>from the reference model</em>, and it keeps the converged policy close to a model that already speaks fluent English. Same units (reward per nat), same position in the Lagrangian, same exponential-tilt solution; different second argument. \(\beta \to 0\) recovers unconstrained reward maximisation (the tilt becomes a point mass on the argmax), \(\beta \to \infty\) recovers the reference (no tilt at all).</p>
+
+<div class="demo">
+ <h3>Demo · The KL-regularised optimum, computed exactly <span class="tag">interactive</span></h3>
+ <p>A five-token vocabulary — small enough that \(Z\) is a sum of five terms and can actually be evaluated. The reference is \(\pi_{\text{ref}} = (0.4,\,0.3,\,0.15,\,0.1,\,0.05)\) and the rewards are \(r = (0,1,2,3,4)\), so the reward and the reference disagree: the reference prefers token 1 and the reward prefers token 5. Drag \(\beta\) across three decades and watch the tilt. The readouts are the exact partition function, the achieved divergence, and the achieved expected reward — the two quantities the constraint is trading off.</p>
+ <div class="controls">
+  <div class="control"><label>\(\beta\) (log scale): <b id="d2-bL">1.00</b></label><input type="range" id="d2-b" min="-1.3" max="1.3" step="0.01" value="0"></div>
+  <div class="control"><label>&nbsp;</label><button id="d2-p1" class="secondary">\(\beta = 0.1\)</button></div>
+  <div class="control"><label>&nbsp;</label><button id="d2-p2" class="secondary">\(\beta = 1.0\)</button></div>
+  <div class="control"><label>&nbsp;</label><button id="d2-p3" class="secondary">\(\beta = 10.0\)</button></div>
+ </div>
+ <canvas id="d2-canvas" width="900" height="310"></canvas>
+ <div class="legend"><span class="sw" style="background:#8FA9C4"></span>\(\pi_{\text{ref}}\) &nbsp; <span class="sw" style="background:#1F4E79"></span>\(\pi^\star\) at the current \(\beta\) &nbsp; the dotted outline is the \(\beta\to 0\) limit (a point mass on the highest-reward token).</div>
+ <div class="readout" id="d2-read"></div>
+</div>
+
+<div class="why">
+ <strong>Why the penalty is \(D_{\mathrm{KL}}(\pi\,\|\,\pi_{\text{ref}})\) and not the other order, and why the reference is the fine-tuned model rather than the pretrained one.</strong> The divergence is not symmetric and the choice is load-bearing. \(D_{\mathrm{KL}}(\pi\|\pi_{\text{ref}}) = \mathbb{E}_{y\sim\pi}[\log\pi - \log\pi_{\text{ref}}]\) is an expectation under the <em>trained</em> policy, so it is estimable from the samples the policy is already generating — no second sampling distribution is needed — and it is infinite wherever \(\pi\) puts mass that \(\pi_{\text{ref}}\) assigns zero. That is mode-seeking: it forbids the policy from inventing text the reference would never produce, which is exactly the failure being guarded against. The reverse order \(D_{\mathrm{KL}}(\pi_{\text{ref}}\|\pi)\) is mass-covering — it would penalise the policy for <em>dropping</em> reference behaviours, including the ones the preference data rejected — and it would require sampling from \(\pi_{\text{ref}}\) to estimate. As for the reference itself: using the pretrained base rather than \(\pi^{\text{SFT}}\) makes the constraint pull toward a model that does not follow instructions at all, so every nat of the budget is spent re-learning the instruction format before any of it can be spent on preference. The reference is chosen to be the closest fluent model to where you want to end up, because the budget is measured from it.
+</div>
+
+<h2 id="s4">4. DPO: inverting the closed form</h2>
+<p>The closed form in §3 is a statement about the optimal policy given a reward. Read it in the other direction and it is a statement about the reward given a policy. Take logarithms of</p>
+\[ \pi^\star(y\mid x) \;=\; \frac{1}{Z(x)}\pi_{\text{ref}}(y\mid x)\exp\!\left(\frac{r(x,y)}{\beta}\right) \]
+<p>and solve for \(r\):</p>
+\[ \log \pi^\star(y\mid x) = \log\pi_{\text{ref}}(y\mid x) + \frac{r(x,y)}{\beta} - \log Z(x) \quad\Longrightarrow\quad \boxed{\; r(x,y) \;=\; \beta\log\frac{\pi^\star(y\mid x)}{\pi_{\text{ref}}(y\mid x)} \;+\; \beta\log Z(x). \;} \]
+<p>Every reward function has an optimal policy, and — this is the content of the identity — every policy is the optimal policy for <em>some</em> reward function, obtained by this formula. So instead of fitting \(r_\theta\) and then optimising for it, parameterise the policy \(\pi_\theta\) directly and treat the right-hand side as an <strong>implicit reward model</strong>.</p>
+
+<h3>The cancellation</h3>
+<p>Substitute the implicit reward into the Bradley–Terry loss of §2. The logit is a difference of two rewards <em>for the same prompt</em>:</p>
+\[ r(x,y_w) - r(x,y_l) \;=\; \left[\beta\log\frac{\pi_\theta(y_w\mid x)}{\pi_{\text{ref}}(y_w\mid x)} + \beta\log Z(x)\right] - \left[\beta\log\frac{\pi_\theta(y_l\mid x)}{\pi_{\text{ref}}(y_l\mid x)} + \beta\log Z(x)\right]. \]
+<p>The term \(\beta\log Z(x)\) is a function of \(x\) alone. Both responses in a comparison are responses to the <em>same</em> \(x\), so the term appears twice with opposite signs and cancels identically — not approximately, not up to an error term, but as an algebraic identity, for every \(x\) and every \(\beta\). What is left is computable:</p>
+\[ \boxed{\;\mathcal{L}_{\text{DPO}}(\theta) \;=\; -\,\mathbb{E}_{(x,y_w,y_l)\sim\mathcal{D}}\left[ \log\sigma\!\left( \beta\log\frac{\pi_\theta(y_w\mid x)}{\pi_{\text{ref}}(y_w\mid x)} \;-\; \beta\log\frac{\pi_\theta(y_l\mid x)}{\pi_{\text{ref}}(y_l\mid x)} \right) \right].\;} \]
+<p>Notice what this is: the reward model loss of §2 with \(r_\theta\) replaced by \(\beta\) times a log-ratio of two quantities the language model already computes. There is no reward network, no sampling during training, no critic, and no rollout loop — a preference dataset and two forward passes per response. That is the whole of DPO, and it is why it displaced the PPO pipeline for most practical alignment work.</p>
+<p>The cancellation is also precisely why this trick does not generalise for free. It works because the intractable term depended only on the conditioning variable and the comparison held that variable fixed. Compare two responses to <em>different</em> prompts and \(\beta\log Z(x_1) - \beta\log Z(x_2)\) survives, and it is exactly as intractable as before. This is the same identifiability fact as §2 wearing different clothes: only within-prompt differences are ever available.</p>
+
+<h3>The gradient, and where it is largest</h3>
+<p>Write \(h_w = \log\frac{\pi_\theta(y_w|x)}{\pi_{\text{ref}}(y_w|x)}\) and \(h_l\) likewise, so the loss is \(-\log\sigma\big(\beta(h_w-h_l)\big)\). Then</p>
+\[ \nabla_\theta \mathcal{L}_{\text{DPO}} \;=\; -\,\beta\,\mathbb{E}\Big[\; \underbrace{\sigma\!\big(\beta(h_l-h_w)\big)}_{\text{how wrong the implicit RM is}} \;\big(\nabla_\theta\log\pi_\theta(y_w\mid x) - \nabla_\theta\log\pi_\theta(y_l\mid x)\big)\Big]. \]
+<p>The bracketed weight is the \(\sigma(-\Delta)\) from §2, unchanged. It goes to 1 for pairs the current policy ranks backwards and to 0 for pairs it already ranks correctly by a margin — so the effective gradient magnitude saturates at \(\beta\) and vanishes once the margin is large. \(\beta\) therefore does two jobs at once here: it is the KL price from §3, and it is the scale of the loss's logit, which sets how quickly the per-example gradient saturates.</p>
+
+<div class="demo">
+ <h3>Demo · The DPO loss surface <span class="tag">interactive</span></h3>
+ <p>The loss over the two-dimensional space of log-ratios \((h_w, h_l)\). Left: a filled contour map with level curves; right: the magnitude of the gradient \(\lVert(\partial\mathcal{L}/\partial h_w,\; \partial \mathcal{L}/\partial h_l)\rVert = \beta\sqrt{2}\,\sigma(-\beta\Delta)\) plotted against the margin \(\Delta = h_w-h_l\). Move the marker with the two sliders and read the local gradient. Change \(\beta\) and watch the contours rotate — they do not: they stay parallel to the diagonal at every \(\beta\), and only their spacing changes.</p>
+ <div class="controls">
+  <div class="control"><label>\(\beta\): <b id="d3-bL">0.10</b></label><input type="range" id="d3-b" min="0.02" max="1.00" step="0.01" value="0.10"></div>
+  <div class="control"><label>chosen log-ratio \(h_w\): <b id="d3-wL">1.00</b></label><input type="range" id="d3-w" min="-4" max="4" step="0.05" value="1.0"></div>
+  <div class="control"><label>rejected log-ratio \(h_l\): <b id="d3-lL">-1.00</b></label><input type="range" id="d3-l" min="-4" max="4" step="0.05" value="-1.0"></div>
+ </div>
+ <canvas id="d3-canvas" width="900" height="360"></canvas>
+ <div class="legend">Dark = low loss, light = high loss. The white line is the zero-margin ridge \(h_w = h_l\), where the loss is \(\log 2\) regardless of \(\beta\).</div>
+ <div class="readout" id="d3-read"></div>
+</div>
+
+<h3>The failure mode DPO buys with being offline</h3>
+<p>DPO never samples from \(\pi_\theta\). Its entire loss is evaluated on \((y_w,y_l)\) pairs drawn from whatever distribution produced the preference dataset — typically an earlier model, or a mixture of models, or humans. Nothing in the objective evaluates the policy on its own outputs, so nothing corrects it there. This is the off-policy/on-policy distinction from Topic 1 with the correction machinery removed entirely: there is no importance weight, because there is no sampling to reweight.</p>
+<p>The concrete symptom is visible in the demo. The loss depends only on \(\Delta = h_w - h_l\); it has a flat direction along \(h_w + h_l\). So the optimiser can reduce the loss by lowering \(\log\pi_\theta(y_l\mid x)\) faster than it lowers \(\log\pi_\theta(y_w\mid x)\) — decreasing the probability of the <em>chosen</em> response as well, as long as the rejected one falls faster. Empirically this is what commonly happens: both log-probabilities decline through training while the margin and the loss both improve. The probability mass has to go somewhere, and it goes to responses that appear in no comparison and were therefore never rated. Off-distribution, the implicit reward model is unconstrained, and the policy drifts into exactly the region no data speaks about.</p>
+<p><strong>Online and iterative DPO variants</strong> close the loop: sample fresh completions from the current \(\pi_\theta\), label them — with a reward model, an LLM judge, or new human comparisons — append them to \(\mathcal{D}\), and repeat. The pairs are then drawn from the policy's own distribution, so the loss is evaluated where the policy actually places mass, and the drift is corrected as it happens. That reinstates the sampling loop DPO removed, which is the honest accounting: DPO's stability came from being offline, and its blind spot is the same property.</p>
+
+<div class="deep">
+ <strong>Why the flat direction in the DPO loss is the same object as the unidentifiable constant in §2, and why noticing that is worth more than memorising either.</strong> In §2 the reward was invariant to \(r \mapsto r + c(x)\), and the invariance was harmless because the reward was only ever consumed through differences. Here the loss is invariant to \((h_w, h_l) \mapsto (h_w + c,\, h_l + c)\) — the same one-dimensional degeneracy, now living in the policy's parameters rather than in a separate reward network. It is no longer harmless, because \(h = \log(\pi_\theta/\pi_{\text{ref}})\) is not a free coordinate: shifting it means moving actual probability mass, and probability mass removed from the two rated responses must be added to unrated ones. The degeneracy that was a gauge freedom in a reward model becomes a real displacement in a policy, because the policy is normalised and the reward model was not. This is the single most useful sentence to have in mind when reading a DPO training log: the loss going down and both log-probabilities going down are not in tension, and only the second one tells you where the model went.
+</div>
+
+<h2 id="s5">5. GRPO: dropping the critic</h2>
+<p>PPO-based RLHF trains a value network \(V_\phi(s)\) as a baseline, which for language means predicting the eventual sequence reward from a partial generation. <strong>Group relative policy optimisation</strong> deletes it. For each prompt \(x\), sample a group of \(G\) completions \(y_1,\dots,y_G\) from the current policy, score them all, and define the advantage of each by normalising within the group:</p>
+\[ \hat A_i \;=\; \frac{r_i - \operatorname{mean}(r_1,\dots,r_G)}{\operatorname{std}(r_1,\dots,r_G)}, \]
+<p>then take a clipped PPO-style step with \(\hat A_i\) assigned to every token of completion \(i\), plus a KL penalty against \(\pi_{\text{ref}}\).</p>
+
+<h3>The advantages sum to zero, and why that is forced</h3>
+<p>Let \(\bar r = \frac{1}{G}\sum_j r_j\) and \(s = \operatorname{std}(r)\). Then</p>
+\[ \sum_{i=1}^{G} \hat A_i \;=\; \frac{1}{s}\sum_{i=1}^{G} (r_i - \bar r) \;=\; \frac{1}{s}\left(\sum_i r_i - G\bar r\right) \;=\; \frac{1}{s}\big(G\bar r - G\bar r\big) \;=\; 0, \]
+<p>identically, for any rewards and any \(G\ge 2\) with \(s>0\). This is not an empirical observation about well-behaved groups; it is the definition of a mean. Dividing by the common positive scalar \(s\) cannot change it.</p>
+<p>The consequence is structural. Within a group, GRPO can only <em>reallocate</em> probability mass: it raises the likelihood of above-average completions by exactly as much total weight as it lowers below-average ones. It has no mechanism to say "all eight of these were good" or "all eight were bad" — a group of identical rewards has \(s = 0\), contributes no gradient at all, and in implementations is either skipped or rescued by an \(\epsilon\) in the denominator. This is the correct behaviour and it follows from Topic 4's baseline theorem: a baseline that depends on the state (here, the prompt) and not the action leaves the policy gradient unbiased, so subtracting the group mean is free. The group mean is a baseline conditioned on \(x\), estimated from samples instead of learned.</p>
+
+<h3>The standard error of a group-mean baseline</h3>
+<p>The group mean is an estimator, and estimators have error. If the \(G\) rewards are i.i.d. with variance \(\sigma^2\), then</p>
+\[ \operatorname{Var}\!\left[\bar r\right] \;=\; \frac{\sigma^2}{G}, \qquad \operatorname{SE}(\bar r) \;=\; \frac{\sigma}{\sqrt{G}}. \]
+<p>For a binary reward with success probability \(p\), \(\sigma = \sqrt{p(1-p)}\), which is maximised at \(p = 1/2\) where \(\sigma = 0.5\). So \(\operatorname{SE}(G) = 0.5/\sqrt{G}\), and requiring \(\operatorname{SE} \le 0.1\) gives</p>
+\[ \frac{0.5}{\sqrt{G}} \;\le\; 0.1 \quad\Longleftrightarrow\quad \sqrt{G} \ge 5 \quad\Longleftrightarrow\quad G \;\ge\; 25. \]
+<p>At \(G = 25\) the standard error is exactly \(0.1\); the smallest group that puts it strictly below is \(G = 26\). The \(1/\sqrt{G}\) scaling is the same tax as the seed count in Topic 1 §6 — halving the baseline's error costs four times the completions, and each completion is a full generation.</p>
+
+<div class="demo">
+ <h3>Demo · Group advantages and the baseline's standard error <span class="tag">interactive</span></h3>
+ <p>The group is \(r = \{1,0,1,1,0,0,1,0\}\) — eight completions, four of which succeeded. The table computes each \(\hat A_i\) and the running sum. On the right, the baseline's standard error \(\sigma/\sqrt{G}\) for a binary reward at \(p = 0.5\), with the \(0.1\) threshold and the current group size marked. Edit the rewards to see what happens when a group is unanimous.</p>
+ <div class="controls">
+  <div class="control"><label>group rewards (comma separated)</label><input type="text" id="d4-r" value="1, 0, 1, 1, 0, 0, 1, 0" size="30"></div>
+  <div class="control"><label>group size \(G\) for the error plot: <b id="d4-gL">8</b></label><input type="range" id="d4-g" min="2" max="64" step="1" value="8"></div>
+  <div class="control"><label>&nbsp;</label><button id="d4-unan" class="secondary">Make the group unanimous</button></div>
+ </div>
+ <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+  <div><table class="tb" id="d4-table"></table></div>
+  <div style="flex:1;min-width:340px"><canvas id="d4-canvas" width="470" height="280"></canvas></div>
+ </div>
+ <div class="readout" id="d4-read"></div>
+</div>
+
+<h3>Counting what is resident in memory</h3>
+<p>The practical argument for GRPO is arithmetic. During PPO-based RLHF, four models are held simultaneously:</p>
+<table class="tb">
+ <tr><th>model</th><th>role</th><th>PPO-RLHF</th><th>GRPO</th></tr>
+ <tr><td>policy \(\pi_\theta\)</td><td>trained; weights, gradients and optimiser state</td><td>yes</td><td>yes</td></tr>
+ <tr><td>reference \(\pi_{\text{ref}}\)</td><td>frozen; supplies the KL penalty</td><td>yes</td><td>yes</td></tr>
+ <tr><td>reward model \(r_\theta\)</td><td>frozen; scores completions</td><td>yes</td><td>yes</td></tr>
+ <tr class="hi"><td>critic \(V_\phi\)</td><td>trained; per-token baseline</td><td>yes</td><td><b>no</b></td></tr>
+ <tr><td colspan="2" style="text-align:right"><b>models resident</b></td><td><b>4</b></td><td><b>3</b></td></tr>
+</table>
+<p>The saving is worse than 4 to 3 suggests, because the critic is <em>trained</em>: it carries gradients and optimiser moments, which for Adam is roughly three times the parameter count again, and it is typically initialised at the size of the reward model or the policy. Removing it removes a full trainable copy, which at scale is the difference between fitting on a node and not.</p>
+
+<h3>What discarding the critic costs</h3>
+<p>Three things, and they should be stated rather than glossed.</p>
+<ul>
+ <li><strong>Per-token credit assignment.</strong> A critic gives \(V_\phi(s_t)\) at every prefix, so the advantage varies along the sequence and the update can distinguish the token that ruined the answer from the ninety that were fine. GRPO assigns one scalar \(\hat A_i\) to every token of completion \(i\). Credit assignment within a sequence is abandoned; only whole completions are compared.</li>
+ <li><strong>Amortisation across prompts.</strong> A value function generalises — having seen many prompts, it predicts the baseline for a new one at the cost of one forward pass. A group mean does not generalise at all: every prompt pays \(G\) fresh generations for its own baseline, and that is the sampling cost GRPO trades the memory for.</li>
+ <li><strong>Statistical efficiency.</strong> A learned baseline can drive the estimator's variance toward the irreducible minimum; a \(G\)-sample mean is stuck at \(\sigma^2/G\), which is why the demo's \(1/\sqrt{G}\) curve is the binding constraint on how small a group you can use.</li>
+</ul>
+<p>The reason this trade pays off in practice is that the settings GRPO was designed for — mathematical reasoning, code, anything with a verifiable reward — have sparse, high-variance, sequence-level rewards that a critic fits badly anyway. Paying for a critic that predicts a nearly-binary outcome from a half-written proof buys little, and \(G\) samples buy more.</p>
+
+<div class="why">
+ <strong>Why this is not simply "REINFORCE with a batch-mean baseline", which the course already covered in Topic 3.</strong> The obvious reading is that GRPO subtracts an average reward, which is the oldest variance-reduction trick in policy gradients. The distinction is what the average is conditioned on. A baseline computed over a whole batch averages across <em>different prompts</em>, so it estimates \(\mathbb{E}_x\mathbb{E}_{y}[r]\) — a constant. Topic 3 showed such a baseline is unbiased but only removes the variance component due to the overall reward level, leaving intact the much larger component due to some prompts being easy and others hard. GRPO's group shares one prompt, so its mean estimates \(\mathbb{E}_{y\sim\pi}[r\mid x]\), a state-conditioned baseline — which is precisely the quantity a critic is trained to approximate, and precisely the one Topic 4 proved to be the variance-minimising choice. GRPO does not replace the critic with a cruder object; it replaces a learned estimate of \(V(x)\) with a Monte Carlo estimate of the same quantity, and pays \(G\) samples instead of a network. Read this way, the \(1/\sqrt{G}\) curve in the demo is not a limitation of the method — it is the exact exchange rate between the two implementations of one idea.
+</div>
+
+<h2 id="s6">6. Reward hacking, and what happens when another learner shares your environment</h2>
+<p>Everything so far assumed the reward was the objective. It is not; it is a model of the objective, fitted from a finite sample of noisy human judgements, and §2 established that it is not even identified as a scalar. This section is about what happens when a policy optimises it hard, and then about the second assumption that fails in deployment — that the environment holds still.</p>
+
+<h3>Goodhart's law, stated precisely</h3>
+<p>Let \(r^\star(y)\) be the true objective — the thing the annotators were reporting on — and \(\hat r(y)\) the fitted proxy. Write the error as</p>
+\[ \hat r(y) \;=\; r^\star(y) \;+\; \varepsilon(y), \]
+<p>where \(\varepsilon\) is whatever the reward model got wrong: sampling noise, spurious correlates such as response length, and the irreducible residual left by inconsistent annotators from §2. Now optimise. Over a small set \(S\) of candidate responses near the reference, \(\varepsilon\) varies little relative to \(r^\star\), so \(\arg\max_{y\in S}\hat r \approx \arg\max_{y \in S} r^\star\) and the proxy is a good guide. As the optimiser searches a wider set, the maximum of a sum is taken over an ever larger collection, and the argmax is increasingly selected for whichever component is easiest to make large. If \(\varepsilon\) has heavier variation across the reachable set than \(r^\star\) does — which it will once \(r^\star\) has been nearly saturated — then the maximiser is selected on \(\varepsilon\). Formally, for the selected \(\hat y = \arg\max_{y\in S}\hat r(y)\),</p>
+\[ r^\star(\hat y) \;=\; \hat r(\hat y) - \varepsilon(\hat y), \]
+<p>and \(\hat r(\hat y)\) increases monotonically with \(|S|\) by construction while \(\mathbb{E}[\varepsilon(\hat y)]\) increases too, because \(\hat y\) was chosen partly <em>for</em> a large \(\varepsilon\). Beyond the point where the second term grows faster than the first, \(r^\star(\hat y)\) falls while \(\hat r(\hat y)\) keeps rising. That crossing is the decoupling point, and nothing about it requires the reward model to be badly trained. It requires only \(\varepsilon \neq 0\).</p>
+
+<h3>Why the KL penalty delays the decoupling and cannot prevent it</h3>
+<p>The KL penalty controls \(|S|\) — it is a soft bound on how far from \(\pi_{\text{ref}}\) the policy may travel, and therefore on how much of the response space the optimiser is effectively searching. A tighter constraint (larger \(\beta\)) keeps the search in a region where \(\varepsilon\) has not had room to vary, so the decoupling happens later and shallower. But look at the closed form from §3:</p>
+\[ \pi^\star(y\mid x) \;\propto\; \pi_{\text{ref}}(y\mid x)\exp\!\left(\frac{\hat r(x,y)}{\beta}\right) \;=\; \pi_{\text{ref}}(y\mid x)\exp\!\left(\frac{r^\star(x,y)}{\beta}\right)\exp\!\left(\frac{\varepsilon(x,y)}{\beta}\right). \]
+<p>The optimum is tilted by the <em>proxy</em>, which means it is tilted by \(\varepsilon\) as well as by \(r^\star\), for every finite \(\beta\). Increasing \(\beta\) divides both exponents equally: it shrinks the tilt toward the truth by exactly the same factor as it shrinks the tilt toward the error. There is no value of \(\beta\) that keeps one and discards the other, because the objective contains no term that can tell them apart — the only information it has about \(r^\star\) is \(\hat r\). \(\beta\to\infty\) prevents the decoupling by preventing the learning. That is the whole of the trade-off, and it is why the \(\beta\) sweep in the product is a required result rather than a hyperparameter search: the sweep is the measurement of where on this curve you are willing to sit.</p>
+
+<div class="demo">
+ <h3>Demo · Reward hacking: the proxy against the truth <span class="tag">interactive</span></h3>
+ <p>A simulated alignment run over 200 steps. The policy drifts from the reference at a rate the KL penalty controls; the proxy reward rises with the drift \(d = \sqrt{\mathrm{KL}}\), while the true quality rises and then falls, \(r^\star \propto a d - b d^2\). Both are observed with noise, as they would be. The dashed vertical line is the decoupling step — the last step at which the held-out human rating was still improving. Slide \(\beta\) up and watch the decoupling move to the right and become shallower; it does not disappear.</p>
+ <div class="controls">
+  <div class="control"><label>KL penalty \(\beta\): <b id="d5-bL">0.10</b></label><input type="range" id="d5-b" min="0.02" max="0.50" step="0.005" value="0.10"></div>
+  <div class="control"><label>&nbsp;</label><button id="d5-re" class="secondary">Resample the observation noise</button></div>
+ </div>
+ <canvas id="d5-canvas" width="900" height="330"></canvas>
+ <div class="legend"><span class="sw" style="background:#1F4E79"></span>proxy reward (reward-model score, left axis) &nbsp; <span class="sw" style="background:#1F8B4C"></span>held-out human rating (right axis) &nbsp; <span class="sw" style="background:#C0392B"></span>decoupling step</div>
+ <div class="readout" id="d5-read"></div>
+</div>
+
+<h3>Three mitigations, and what each one costs</h3>
+<ul>
+ <li><strong>Early stopping on a held-out human-rated set.</strong> Keep a set of prompts whose completions are rated by people, not by the reward model, and stop when that number stops improving. This works because it measures \(r^\star\) directly rather than \(\hat r\). The cost is that it is the only mitigation that requires continuing human labour at evaluation time, it is slow enough that it cannot be in the training loop, and the held-out set is small, so its own standard error is large — the Topic 1 §6 seed-band discipline applies to it, and a 30-prompt human evaluation cannot resolve a 2% difference.</li>
+ <li><strong>Reward-model ensembles.</strong> Train \(K\) reward models on different seeds or data splits and optimise the mean, or the minimum, or the mean minus a multiple of the disagreement. The independent components of \(\varepsilon\) average down at \(1/\sqrt{K}\), and the disagreement between members is a usable uncertainty signal on which to penalise. The cost is \(K\) times the reward-model training and \(K\) forward passes at every scoring step, and — the part that is usually understated — the components of \(\varepsilon\) that come from the <em>data</em> rather than the fit are shared by every member, so ensembling reduces variance and not the bias. Length bias is in every member.</li>
+ <li><strong>A tighter KL constraint.</strong> Raise \(\beta\). This is the cheapest to implement and the only one with no additional compute cost, and by the argument above it buys delay rather than immunity. Its cost is capability: the policy is held near \(\pi_{\text{ref}}\), so the actual improvement in \(r^\star\) that alignment delivers is smaller. The demo shows both halves of this at once.</li>
+</ul>
+
+<div class="deep">
+ <strong>Whether an aggregated preference signal is a sufficient definition of what is good.</strong> The mathematics above is neutral between two readings of \(r\), and the choice between them is not a mathematical one. On the first reading, \(r\) is a <em>definition</em>: the good just is what suitably informed people, aggregated, prefer, and there is no further fact for the model to be wrong about. On that reading \(\varepsilon\) is pure sampling error, it shrinks with more annotators and better coverage, and Goodhart's law is an engineering problem with an engineering solution. On the second reading, \(r\) is an <em>estimator</em> of a standard that exists independently of the preferences — the preferences are evidence about the good, not constitutive of it — and then \(\varepsilon\) contains a component that no amount of data removes, because the sample and the target are different kinds of thing. The course's stated position, which the worldview reflection asks you to engage with directly (Micah 6:8; Romans 12:2), is the second: a moral standard that is objective and revealed rather than learned, against which an aggregate of preferences is measured rather than identified. You are not asked to agree; you are asked to notice that the two readings make <em>different empirical predictions</em>, and that your own \(\beta\) sweep is a measurement that bears on them. If \(\varepsilon\) is sampling error, the decoupling point should move outward without limit as the preference dataset grows. If it is not, the decoupling point converges to a finite bound no dataset closes, and the honest design response is architectural rather than statistical: keep a human in the loop at the point of consequence, bound the deployment rather than the loss, and refuse to treat the optimiser's number as the thing you cared about. Two further observations belong here rather than in a separate paragraph, because they are facts about the equations. First, §2's Bradley–Terry model assumes a single latent scalar — a total order — and a population whose members genuinely order outcomes differently does not have one; the fit does not report this, it averages it away, so a reward model trained on a diverse population systematically encodes the majority and reports no uncertainty about the minority it overwrote. Second, the same failure is well documented in institutions that reward measured performance — test scores standing in for education, citation counts for research quality, response time for care — and the mechanism is identical: a proxy adopted because it was measurable, optimised until the residual dominated. That the failure is not specific to machine learning is the strongest evidence that it is structural rather than a defect of any particular reward model.
+</div>
+
+<h3>The second learner</h3>
+<p>Every algorithm in this course has assumed a Markov decision process \(\langle \mathcal{S},\mathcal{A},P,R,\gamma\rangle\) in which \(P\) is a fixed function. Put a second learning agent in the environment and that assumption fails — provably, not approximately.</p>
+<p>Consider \(n\) agents with a joint transition kernel \(P(s'\mid s, a_1,\dots,a_n)\). Agent \(i\) observes only its own action, so the kernel it experiences is the joint kernel with the others marginalised out under their current policies:</p>
+\[ P_i^{\,t}(s' \mid s, a_i) \;=\; \sum_{a_{-i}} \left( \prod_{j\neq i} \pi_j^{\,t}(a_j \mid s) \right) P(s' \mid s, a_i, a_{-i}). \]
+<p>Every factor \(\pi_j^{\,t}\) carries a time index, because agent \(j\) is learning. Therefore \(P_i^{\,t}\) carries one too: the transition function agent \(i\) faces is <strong>time-dependent</strong>. The property violated is the <strong>stationarity of \(P\)</strong> in the Topic 2 MDP definition — the requirement that \(\Pr(S_{t+1}=s'\mid S_t=s,A_t=a)\) be the same function at every \(t\). Note carefully that this is a different failure from the Markov property itself: the process may still be Markov in the joint state; what has broken is that the kernel is no longer a fixed object.</p>
+<p>The damage is specific. Q-learning's convergence proof (Topic 1 §5) requires a stationary \(P\) so that the Bellman optimality operator is a fixed \(\gamma\)-contraction with a fixed unique fixed point. Against a moving \(P_i^{\,t}\) the operator changes every step, the fixed point moves, and the iterates chase a target that recedes. There is no theorem left. Replay buffers make it worse, not better: stored transitions were generated under the opponents' <em>old</em> policies and are simply wrong about the current kernel.</p>
+
+<h3>Matching pennies: no deterministic equilibrium exists</h3>
+<p>Two agents each choose Heads or Tails. Agent 1 (the matcher) receives \(+1\) if the choices agree and \(-1\) otherwise; agent 2 receives the negative. The game is zero-sum.</p>
+<table class="tb">
+ <tr><th></th><th>Agent 2: H</th><th>Agent 2: T</th></tr>
+ <tr><th>Agent 1: H</th><td>\(+1,\,-1\)</td><td>\(-1,\,+1\)</td></tr>
+ <tr><th>Agent 1: T</th><td>\(-1,\,+1\)</td><td>\(+1,\,-1\)</td></tr>
+</table>
+<p>Check all four deterministic profiles. At \((H,H)\) agent 2 earns \(-1\) and would earn \(+1\) by switching to T, so it is not an equilibrium. At \((H,T)\) agent 1 earns \(-1\) and would earn \(+1\) by switching to T. By the same argument at \((T,H)\) and \((T,T)\). No pure profile survives, so <strong>no deterministic policy is a Nash equilibrium</strong>. This is the multi-agent version of a fact Topic 1 noted about single-agent problems only in passing: an \(\arg\max\) cannot express the optimum here, and a policy-based method is not a convenience but a necessity.</p>
+<p>For the mixed equilibrium, let agent 1 play H with probability \(p\) and agent 2 play H with probability \(q\). Agent 1's expected payoff from H is \(q - (1-q) = 2q-1\) and from T is \((1-q) - q = 1-2q\). At equilibrium agent 1 must be indifferent — otherwise it would put all its mass on the better action and agent 2 would then deviate — so \(2q-1 = 1-2q\), giving \(q = 1/2\). The symmetric argument on agent 2's payoffs gives \(p = 1/2\). The unique Nash equilibrium is \((\tfrac12,\tfrac12)\) with value \(0\) to both.</p>
+
+<div class="demo">
+ <h3>Demo · Two learners, one environment <span class="tag">interactive</span></h3>
+ <p>Two independent tabular Q-learners on matching pennies. Each keeps \(Q(a)\) for its two actions, selects with a Boltzmann policy at temperature \(\tau\), and updates only the action it took: \(Q(a) \leftarrow Q(a) + \alpha(r - Q(a))\). Neither models the other; neither knows the other exists. Left: each agent's probability of playing Heads over time. Right: the phase plot of \(p_1\) against \(p_2\), with the Nash equilibrium marked. The trajectory orbits the equilibrium and does not converge to it. Then tick <em>freeze agent 2</em>: the moment one policy stops moving, agent 1 faces a stationary kernel, the problem is an ordinary MDP again, and it converges — to a deterministic best response, in a few hundred steps.</p>
+ <div class="controls">
+  <div class="control"><label>learning rate \(\alpha\) (log): <b id="d6-aL">0.0015</b></label><input type="range" id="d6-a" min="-3.2" max="-1.6" step="0.02" value="-2.82"></div>
+  <div class="control"><label>temperature \(\tau\): <b id="d6-tL">0.10</b></label><input type="range" id="d6-t" min="0.05" max="0.40" step="0.01" value="0.10"></div>
+  <div class="control"><label>&nbsp;</label><label><input type="checkbox" id="d6-freeze"> freeze agent 2</label></div>
+  <div class="control"><label>&nbsp;</label><button id="d6-run">Run 10,000 rounds again</button></div>
+ </div>
+ <canvas id="d6-canvas" width="900" height="340"></canvas>
+ <div class="legend"><span class="sw" style="background:#1F4E79"></span>agent 1 (matcher), \(P(\text{Heads})\) &nbsp; <span class="sw" style="background:#C0392B"></span>agent 2 (mismatcher), \(P(\text{Heads})\) &nbsp; <span class="sw" style="background:#F9A825"></span>Nash equilibrium \((\tfrac12,\tfrac12)\)</div>
+ <div class="readout" id="d6-read"></div>
+</div>
+
+<div class="why">
+ <strong>Why the orbit does not settle even though the time-average is exactly the equilibrium, and why reading the average is the trap.</strong> The average of \(p_1\) over a long run sits within a percent or so of \(0.5\), which invites the conclusion that the learners found the equilibrium and are jittering around it from sampling noise. They did not. The dynamics are a rotation: when agent 1 leans toward Heads, agent 2's best response leans toward Tails, which pushes agent 1 toward Tails, which pushes agent 2 toward Heads, and the cycle closes. The gradient field of a zero-sum game has a rotational component that gradient-following dynamics circle rather than descend — the equilibrium is a centre, not an attractor. The phase plot shows this and the time-average hides it, which is the practical warning: an agent whose deployed behaviour is a large-amplitude cycle whose <em>mean</em> is the equilibrium is not playing the equilibrium at any moment, and an opponent that samples its current behaviour rather than its history will exploit it. This is also why "it converged, look at the mean reward" is not an acceptable claim in a multi-agent report, and why the phase-space plot is the required visual element rather than the reward curve.
+</div>
+
+<h3>The iterated prisoner's dilemma, and the discount factor doing moral work</h3>
+<p>With the standard payoffs — temptation \(T=5\), reward \(R=3\), punishment \(P=1\), sucker \(S=0\), satisfying \(T > R > P > S\) — defection strictly dominates in the one-shot game: whatever the opponent does, defecting pays more. The unique Nash equilibrium is mutual defection at \((1,1)\), which is Pareto-dominated by mutual cooperation at \((3,3)\). Independent Q-learners on the one-shot game find \((D,D)\) reliably, because each is individually correct.</p>
+<p>Repeat the game with discount \(\gamma\) and the analysis changes. Against a grim-trigger or tit-for-tat opponent, permanent cooperation is worth \(R/(1-\gamma)\), while defecting once and being punished forever is worth \(T + \gamma P/(1-\gamma)\). Cooperation is sustainable when</p>
+\[ \frac{R}{1-\gamma} \;\ge\; T + \frac{\gamma P}{1-\gamma} \quad\Longleftrightarrow\quad \gamma \;\ge\; \frac{T-R}{T-P} \;=\; \frac{5-3}{5-1} \;=\; 0.5. \]
+<p>The discount factor of Topic 1 — introduced there to make an infinite sum converge — is here the condition under which cooperation is individually rational. Cooperation is not added to the agents as a value; it emerges when the shadow of the future is long enough, and it collapses the moment \(\gamma\) drops below the threshold or the horizon becomes known and finite (in which case backward induction unravels cooperation from the last round). This is what "emergent behaviour" means in a multi-agent system: a property of the equilibrium, derivable from the payoffs and \(\gamma\), not a property installed in any agent.</p>
+
+<h3>Centralised training with decentralised execution</h3>
+<p>The standard mitigation for non-stationarity is <strong>CTDE</strong>. During training, each agent's critic is given the joint information — the full state and all agents' actions — while each agent's <em>actor</em> sees only its own local observation. At execution the critics are discarded and each actor runs alone on local input.</p>
+<p>The mechanism is exactly the equation above. The non-stationarity arose because agent \(i\)'s kernel was the joint kernel with \(a_{-i}\) marginalised out under changing policies. A critic that conditions on \(a_{-i}\) does not marginalise: it evaluates \(P(s'\mid s, a_1,\dots,a_n)\), which is the true environment kernel and is stationary by assumption. The learning signal is therefore computed against a fixed target even while every policy moves. Decentralisation is preserved because the actor's input was never widened.</p>
+<p>CTDE cannot be used whenever the training-time centralisation is unavailable. The clean case is <strong>agents trained by different parties</strong>: an automated trading agent deployed into a market against competitors' proprietary agents cannot condition a critic on their actions during training, because it will never see them, and the other agents are updating their policies continuously. The same obstruction applies to ad-hoc teamwork with agents you did not train — including human partners, whose "policy" you cannot instrument — and to any setting where a simulator faithful enough to supply the joint state does not exist. In those settings the non-stationarity is not mitigated, and the honest engineering response is to design for it: shorter update horizons, explicit opponent modelling, or a policy robust across a distribution of opponents rather than optimal against one.</p>
+
+<h2 id="s7">7. In practice (Alignment Lab)</h2>
+<p class="product"><strong>In the build.</strong> Every derivation above becomes a table, an endpoint, or a chart. The Bradley–Terry loss of §2 is the training objective for both reward heads. The \(\beta\) of §3 is a column in <code>alignment_runs</code>, swept at 0.05, 0.1 and 0.5. The DPO objective of §4 is what <code>DPOTrainer</code> minimises. The decoupling of §6 is the chart you must produce from your own runs, annotated with the step you claim it happened. And the multi-agent experiments are the last thing the service shows, because they are the argument that the single-agent framing the whole course was built on has a boundary.</p>
+
+<h3>The architecture: no transformer and no PyTorch in the serving tier</h3>
+<p>This is a design decision with the same shape as the one made in Topic 1, applied to language, and it should be documented as design rather than defended as a workaround.</p>
+<ul>
+ <li><strong>The encoder runs offline, once.</strong> Every prompt–response pair is passed through a frozen sentence encoder in the <em>training</em> tier and the resulting fixed-length vectors are cached. The encoder is never fine-tuned, so this is a pure function of the text and running it more than once computes the same answer twice. It never leaves the training tier.</li>
+ <li><strong>The reward model is a small head over cached vectors.</strong> It trains in PyTorch and exports to a NumPy <code>.npz</code> archive, registered in <code>policies</code> with byte size and SHA-256, exactly like the \(Q\)-table in Topic 1 and every policy since. A two-layer head over a 768-dimensional vector is a pair of matrix multiplies; that is what the service performs.</li>
+ <li><strong>Generation happens offline and is persisted.</strong> Completions for the held-out prompt set are generated from the base model and from each aligned variant in the training tier and written to <code>completions</code>. The deployed service therefore <em>scores</em> text; it does not generate it. <code>GET /completions</code> is a database read.</li>
+</ul>
+<p>The reasoning is the same one that governs a real inference budget: the expensive, GPU-shaped, non-deterministic part of the system is moved to a batch job whose outputs are artefacts, and the tier that must answer a request in milliseconds under a fixed memory guarantee is left holding arrays. The standing test <code>tests/test_no_torch.py</code> asserting <code>"torch" not in sys.modules</code> after importing the app is what keeps the claim true.</p>
+
+<h3>Two reward heads on one loss</h3>
+<p>Both heads minimise the identical Bradley–Terry loss from §2 and differ only in their input features: one over the cached encoder embeddings, one over TF-IDF features computed from raw text with scikit-learn. This is a controlled comparison, so the difference in held-out pairwise accuracy is attributable to the representation and nothing else. Report both against the 50% chance baseline and plot the reward-margin distribution for each.</p>
+<p>The <strong>length-bias regression</strong> is the required test, and it is the concrete form of the spurious-correlate problem. Regress the assigned reward on response length in tokens over the held-out set and report the correlation. Expect the TF-IDF head to be the more susceptible one, and expect it for a stated reason: TF-IDF over raw counts grows with document length before normalisation, so length is nearly a linear feature of the representation, whereas mean-pooled embeddings are length-normalised by construction and can only pick up length through whatever stylistic correlates survive pooling. The pytest guard fails the build if \(|\rho|\) exceeds a threshold you justify in the README — justify it against the correlation between length and human preference in your own split, not against a round number.</p>
+<p>Ship the head you can defend. The TF-IDF head is fully self-contained, has no encoder dependency at serving time, and is the one <code>POST /score</code> uses for live text. The embedding head is stronger and is used offline to score the persisted completion library. State what the cheaper one costs you in accuracy and in length bias, with numbers.</p>
+
+<h3>The DPO loss, in under fifteen lines</h3>
+<pre><span class="c"># train/dpo.py — DQ 3(b). Inputs are summed token log-probs for whole sequences.</span>
+<span class="k">import</span> torch, torch.nn.functional <span class="k">as</span> F
+
+<span class="k">def</span> <span class="f">dpo_loss</span>(pol_chosen, pol_rejected, ref_chosen, ref_rejected, beta=<span class="s">0.1</span>):
+    <span class="c">"""Each argument: shape (B,), log pi(y|x) summed over the response tokens."""</span>
+    h_w = pol_chosen   - ref_chosen        <span class="c"># log( pi_theta / pi_ref ) on the chosen</span>
+    h_l = pol_rejected - ref_rejected      <span class="c"># log( pi_theta / pi_ref ) on the rejected</span>
+    logits = beta * (h_w - h_l)            <span class="c"># beta*log Z(x) cancelled here: same x</span>
+    loss = -F.<span class="f">logsigmoid</span>(logits).<span class="f">mean</span>()
+    <span class="k">with</span> torch.<span class="f">no_grad</span>():                   <span class="c"># the two metrics logged to alignment_runs</span>
+        margin = (beta * (h_w - h_l)).<span class="f">mean</span>()          <span class="c"># implicit reward margin</span>
+        acc    = (h_w &gt; h_l).<span class="f">float</span>().<span class="f">mean</span>()          <span class="c"># implicit reward accuracy</span>
+    <span class="k">return</span> loss, margin, acc</pre>
+<p>The verification DQ 3(b) asks for is one line: hold <code>h_l</code> fixed, sweep <code>h_w</code> upward on synthetic tensors, and confirm the loss decreases monotonically and its gradient magnitude decays toward zero — the saturation predicted in §4 and drawn in D3.</p>
+
+<h3>The serving-side scoring function</h3>
+<pre><span class="c"># api/reward.py — the entire serving-side forward pass. No torch. No transformer.</span>
+<span class="k">import</span> numpy <span class="k">as</span> np
+
+_A  = np.<span class="f">load</span>(<span class="s">"policies/rm_tfidf_v1.npz"</span>)
+W1, b1, W2, b2 = _A[<span class="s">"W1"</span>], _A[<span class="s">"b1"</span>], _A[<span class="s">"W2"</span>], _A[<span class="s">"b2"</span>]
+
+<span class="k">def</span> <span class="f">score</span>(text: str) -> float:
+    x = <span class="f">tfidf_vector</span>(text)                 <span class="c"># (d,) float32, vocabulary + idf from the archive</span>
+    h = np.<span class="f">maximum</span>(x @ W1 + b1, <span class="s">0.0</span>)        <span class="c"># ReLU</span>
+    <span class="k">return</span> float(h @ W2 + b2)             <span class="c"># scalar; identifiable only as a difference</span>
+
+<span class="k">def</span> <span class="f">compare</span>(a: str, b: str):
+    ra, rb = <span class="f">score</span>(a), <span class="f">score</span>(b)
+    <span class="k">return</span> {<span class="s">"preferred"</span>: <span class="s">"a"</span> <span class="k">if</span> ra &gt; rb <span class="k">else</span> <span class="s">"b"</span>, <span class="s">"margin"</span>: abs(ra - rb)}</pre>
+<p>The comment on the return line is not decoration. <code>POST /score</code> returns a number that §2 proved is defined only up to a per-prompt constant, and the Model Card tab must say so in words a product manager will read: this score ranks two responses to the same prompt and means nothing on its own. <code>POST /compare</code> is the endpoint that returns an identifiable quantity, which is why it exists alongside <code>/score</code> rather than as a convenience wrapper.</p>
+
+<div class="warn">
+ <strong>Library facts, current as of this build.</strong> TRL is at 1.9.x. <code>SFTTrainer</code>, <code>RewardTrainer</code>, <code>DPOTrainer</code> and <code>GRPOTrainer</code> are stable; <code>PPOTrainer</code> is <em>experimental</em>. That is the practical reason this product builds on DPO rather than reproducing the InstructGPT pipeline directly — you are asked to compare PPO-based RLHF against DPO and GRPO analytically in the report, not to fight an experimental trainer. Separately: PettingZoo moved the multi-particle environments out of the main package in release 1.26.0 and into a standalone <code>mpe2</code> package. <code>pip install "pettingzoo[mpe]"</code> no longer exists; install <code>mpe2</code> and import <code>simple_spread_v3</code> from it, or use <code>pistonball_v6</code> from PettingZoo Butterfly, which is unaffected.
+</div>
+
+<h3>What the reward-versus-KL chart has to show</h3>
+<p>Plot mean reward-model score and KL from the reference against \(\beta\) on the same axes, from your three runs. The expected shape is monotone: smaller \(\beta\) buys more KL and a higher proxy score. That chart alone proves nothing, because the proxy is the thing that was optimised. The claim the product must support is about the <em>third</em> quantity — read at least twenty completions by hand, quote specific ones, and state where reading them stopped agreeing with the score. If your setup did not exhibit decoupling, say so and explain why: 2,000 comparison pairs and a 124M-parameter policy is a small enough optimisation that \(\varepsilon\) may not have had room to dominate, and reporting a negative result with that reasoning is a stronger submission than manufacturing a positive one.</p>
+
+<div class="callout">
+ <strong>What the course did.</strong> Topic 1 defined an MDP and required \(P\) to be stationary; §6 removed that and showed what is left of the convergence guarantees. Topic 1 also introduced \(\gamma\) as a device for making a sum converge; §6 used it as the condition for cooperation to be individually rational. Topic 3 proved that a state-conditioned baseline is free; §5 used exactly that theorem to justify a group mean. Topic 4 derived the maximum-entropy objective and its Boltzmann optimum; §3 changed one distribution in it and obtained the objective of RLHF, and §4 inverted the result to remove the reward model. The claim made at the start of this topic was that no new mathematics would be introduced. Check it: every boxed equation above is a substitution into something already derived.
+</div>
+
+<div class="nav"><a href="Tutorial-Topic-5-Tree-Search.html">← Topic 5 · Tree Search</a><a href="index.html">All tutorials →</a></div>
+</div>
+<script>
+/* ============================================================
+   Shared helpers
+   ============================================================ */
+function clear(ctx,c){ ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height); }
+function axes(ctx,x0,y0,w,h,xlab,ylab){
+  ctx.strokeStyle='#C7D2DE'; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(x0,y0-h); ctx.lineTo(x0,y0); ctx.lineTo(x0+w,y0); ctx.stroke();
+  ctx.fillStyle='#666'; ctx.font='11px -apple-system,Arial';
+  if(xlab){ ctx.textAlign='center'; ctx.fillText(xlab,x0+w/2,y0+30); }
+  if(ylab){ ctx.save(); ctx.translate(x0-40,y0-h/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText(ylab,0,0); ctx.restore(); }
+  ctx.textAlign='left';
+}
+function polyline(ctx,pts,color,width){
+  if(pts.length<2) return;
+  ctx.strokeStyle=color; ctx.lineWidth=width||2; ctx.beginPath();
+  ctx.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]);
+  ctx.stroke();
+}
+function gridlines(ctx,x0,y0,w,h,n){
+  ctx.strokeStyle='#EEF2F6'; ctx.lineWidth=1;
+  for(let i=0;i<=n;i++){ const y=y0-h*i/n; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+w,y); ctx.stroke(); }
+}
+function sigmoid(z){ return 1/(1+Math.exp(-z)); }
+function logsig(z){ return z<-30 ? z : -Math.log1p(Math.exp(-z)); }
+function mulberry(a){ return function(){ a|=0; a=a+0x6D2B79F5|0;
+  let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function gaussFrom(rnd){ let u=0,v=0; while(u===0)u=rnd(); while(v===0)v=rnd();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+function pearson(a,b){
+  const n=a.length, ma=a.reduce((x,y)=>x+y,0)/n, mb=b.reduce((x,y)=>x+y,0)/n;
+  let sab=0,sa=0,sb=0;
+  for(let i=0;i<n;i++){ const da=a[i]-ma, db=b[i]-mb; sab+=da*db; sa+=da*da; sb+=db*db; }
+  return (sa>0&&sb>0) ? sab/Math.sqrt(sa*sb) : 0;
+}
+function tex(el){ if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([el]); }
+
+/* ============================================================
+   D1: Bradley-Terry loss on four comparisons
+   ============================================================ */
+(function(){
+  const ids=['d1-a','d1-b','d1-c','d1-d'];
+  const inp=ids.map(i=>document.getElementById(i));
+  const cv=document.getElementById('d1-canvas'), ctx=cv.getContext('2d');
+  const tbl=document.getElementById('d1-table'), out=document.getElementById('d1-read');
+  const NAMES=['A','B','C','D'];
+  const COMPS=[[0,1],[2,0],[3,2],[1,3]];      // winner index, loser index
+  const DEFAULTS=[2.1,1.4,-0.3,0.8];
+
+  function readR(){
+    return inp.map((el,i)=>{ const v=parseFloat(el.value); return isNaN(v)?DEFAULTS[i]:v; });
+  }
+  function draw(){
+    const r=readR();
+    const rows=COMPS.map(([w,l])=>{
+      const d=r[w]-r[l], p=sigmoid(d), loss=-logsig(d);
+      return {w,l,d,p,loss};
+    });
+    const total=rows.reduce((a,x)=>a+x.loss,0);
+    const worst=rows.reduce((a,x)=>x.loss>a.loss?x:a,rows[0]);
+    const wrong=rows.filter(x=>x.d<0);
+
+    clear(ctx,cv);
+    const x0=58,y0=245,w=800,h=200;
+    gridlines(ctx,x0,y0,w,h,4);
+    axes(ctx,x0,y0,w,h,'reward difference  Δr = r(chosen) − r(rejected)','σ(Δr)');
+    const LO=-5,HI=5;
+    const X=d=>x0+w*(d-LO)/(HI-LO), Y=p=>y0-h*p;
+    // y ticks
+    ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial';
+    for(let i=0;i<=4;i++) ctx.fillText((i/4).toFixed(2), x0-32, Y(i/4)+3);
+    for(let d=LO;d<=HI;d+=2.5){ ctx.textAlign='center'; ctx.fillText(d.toFixed(1), X(d), y0+15); }
+    ctx.textAlign='left';
+    // 0.5 reference and the Delta=0 line
+    ctx.strokeStyle='#E0C48F'; ctx.setLineDash([4,4]); ctx.beginPath();
+    ctx.moveTo(x0,Y(0.5)); ctx.lineTo(x0+w,Y(0.5)); ctx.moveTo(X(0),y0); ctx.lineTo(X(0),y0-h); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#B08028'; ctx.font='10px -apple-system,Arial';
+    ctx.fillText('Δr = 0 : the model is indifferent; loss = log 2 = 0.693', X(0)+6, y0-h+12);
+    // shade the "ranked backwards" half
+    ctx.fillStyle='rgba(192,57,43,0.05)'; ctx.fillRect(x0,y0-h,X(0)-x0,h);
+    // curve
+    const pts=[]; for(let i=0;i<=400;i++){ const d=LO+(HI-LO)*i/400; pts.push([X(d),Y(sigmoid(d))]); }
+    polyline(ctx,pts,'#1F4E79',2.2);
+    // markers
+    const order=rows.map((x,i)=>i).sort((i,j)=>rows[i].d-rows[j].d);
+    const dy=[-12,20,-12,20];
+    order.forEach((idx,k)=>{
+      const x=rows[idx];
+      const px=X(Math.max(LO,Math.min(HI,x.d))), py=Y(x.p);
+      const bad = x.d<0;
+      ctx.fillStyle = bad ? '#C0392B' : '#1F8B4C';
+      ctx.beginPath(); ctx.arc(px,py,5.5,0,7); ctx.fill();
+      ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
+      ctx.strokeStyle='#B8C2CB'; ctx.lineWidth=1; ctx.beginPath();
+      ctx.moveTo(px,py); ctx.lineTo(px,py+dy[k%4]+(dy[k%4]<0?4:-6)); ctx.stroke();
+      ctx.fillStyle='#333'; ctx.font='11px -apple-system,Arial'; ctx.textAlign='center';
+      ctx.fillText(NAMES[x.w]+' ≻ '+NAMES[x.l], px, py+dy[k%4]);
+      ctx.textAlign='left';
+    });
+    let hh='<tr><th>comparison</th><th>Δr</th><th>σ(Δr)</th><th>loss −log σ(Δr)</th><th>share of total</th></tr>';
+    rows.forEach(x=>{
+      const cls = x.d<0 ? ' class="hi"' : '';
+      hh+=`<tr${cls}><td>${NAMES[x.w]} ≻ ${NAMES[x.l]}</td><td>${x.d.toFixed(2)}</td>`
+        + `<td>${x.p.toFixed(4)}</td><td>${x.loss.toFixed(4)}</td><td>${(100*x.loss/total).toFixed(1)}%</td></tr>`;
+    });
+    hh+=`<tr><td colspan="3" style="text-align:right"><b>total</b></td><td><b>${total.toFixed(4)}</b></td><td>100%</td></tr>`;
+    tbl.innerHTML=hh;
+
+    const mean=r.reduce((a,b)=>a+b,0)/4;
+    out.innerHTML =
+      `Total loss = <b>${total.toFixed(4)}</b> over four comparisons (mean ${(total/4).toFixed(4)} per pair). `
+      + (wrong.length
+          ? `The model ranks <b style="color:#C0392B">${NAMES[wrong[0].w]} ≻ ${NAMES[wrong[0].l]}</b> backwards — it assigns \\(\\Delta r = ${wrong[0].d.toFixed(2)}\\), so \\(\\sigma(\\Delta r) = ${wrong[0].p.toFixed(4)}\\) and that single pair contributes <b>${(100*wrong[0].loss/total).toFixed(1)}%</b> of the total loss. `
+          : `Every comparison is ranked correctly (\\(\\Delta r > 0\\) throughout), so the loss is small and the gradient weights \\(\\sigma(-\\Delta r)\\) are all near zero. `)
+      + `The heaviest single term is ${NAMES[worst.w]}≻${NAMES[worst.l]} at ${worst.loss.toFixed(4)}. `
+      + `Mean reward = ${mean.toFixed(2)}; shifting all four rewards by any constant leaves every \\(\\Delta r\\), and therefore the total, unchanged — press the shift button and compare.`;
+    tex(out);
+  }
+  inp.forEach(el=>el.oninput=draw);
+  document.getElementById('d1-reset').onclick=()=>{ inp.forEach((el,i)=>el.value=DEFAULTS[i]); draw(); };
+  document.getElementById('d1-shift').onclick=()=>{ const r=readR(); inp.forEach((el,i)=>el.value=(r[i]+10).toFixed(2)); draw(); };
+  draw();
+})();
+
+/* ============================================================
+   D2: the KL-regularised optimum on five tokens
+   ============================================================ */
+(function(){
+  const bS=document.getElementById('d2-b'), bL=document.getElementById('d2-bL');
+  const cv=document.getElementById('d2-canvas'), ctx=cv.getContext('2d'), out=document.getElementById('d2-read');
+  const PREF=[0.4,0.3,0.15,0.1,0.05], R=[0,1,2,3,4];
+
+  function optimal(beta){
+    const lw=PREF.map((p,i)=>Math.log(p)+R[i]/beta);
+    const m=Math.max(...lw);
+    const e=lw.map(v=>Math.exp(v-m));
+    const s=e.reduce((a,b)=>a+b,0);
+    const pi=e.map(v=>v/s);
+    const logZ=m+Math.log(s);
+    let kl=0, er=0;
+    pi.forEach((p,i)=>{ if(p>1e-300) kl+=p*Math.log(p/PREF[i]); er+=p*R[i]; });
+    return {pi, logZ, Z:Math.exp(logZ), kl, er};
+  }
+  function draw(){
+    const beta=Math.pow(10,parseFloat(bS.value));
+    bL.textContent = beta<0.1 ? beta.toFixed(3) : beta.toFixed(2);
+    const S=optimal(beta);
+    clear(ctx,cv);
+    const x0=60,y0=250,w=790,h=195;
+    gridlines(ctx,x0,y0,w,h,4);
+    axes(ctx,x0,y0,w,h,'token','probability');
+    ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial';
+    for(let i=0;i<=4;i++) ctx.fillText((i/4).toFixed(2), x0-32, y0-h*i/4+3);
+    const gw=w/5, bw=gw*0.30;
+    for(let i=0;i<5;i++){
+      const cx=x0+gw*(i+0.5);
+      // reference
+      ctx.fillStyle='#8FA9C4';
+      ctx.fillRect(cx-bw-3, y0-h*PREF[i], bw, h*PREF[i]);
+      // optimal
+      ctx.fillStyle='#1F4E79';
+      ctx.fillRect(cx+3, y0-h*S.pi[i], bw, h*S.pi[i]);
+      // beta -> 0 limit outline (point mass on token 5)
+      const lim = (i===4)?1:0;
+      ctx.strokeStyle='#7B3FA0'; ctx.setLineDash([3,3]); ctx.lineWidth=1.2;
+      ctx.strokeRect(cx+3, y0-h*lim, bw, h*lim); ctx.setLineDash([]);
+      ctx.fillStyle='#333'; ctx.font='11px -apple-system,Arial'; ctx.textAlign='center';
+      ctx.fillText('t'+(i+1)+'  (r='+R[i]+')', cx, y0+16);
+      ctx.fillStyle='#1F4E79'; ctx.font='10px -apple-system,Arial';
+      ctx.fillText(S.pi[i].toFixed(4), cx+3+bw/2, y0-h*S.pi[i]-4);
+      ctx.fillStyle='#6B7C90';
+      ctx.fillText(PREF[i].toFixed(2), cx-bw/2-3, y0-h*PREF[i]-4);
+      ctx.textAlign='left';
+    }
+    const zs = S.Z>1e6 ? S.Z.toExponential(3) : S.Z.toFixed(4);
+    let limit;
+    if(beta<0.15) limit='Near the \\(\\beta\\to 0\\) limit: almost all mass on the highest-reward token, i.e. the argmax. The reference has stopped mattering.';
+    else if(beta>5) limit='Near the \\(\\beta\\to\\infty\\) limit: \\(\\pi^\\star\\) is collapsing back onto \\(\\pi_{\\text{ref}}\\) and the reward has stopped mattering.';
+    else limit='Between the limits: the reward has reordered the tokens but the reference still carries weight in the ranking.';
+    out.innerHTML =
+      `\\(\\beta = ${beta<0.1?beta.toFixed(3):beta.toFixed(2)}\\) &nbsp;·&nbsp; \\(Z = ${zs}\\) &nbsp;(\\(\\log Z = ${S.logZ.toFixed(4)}\\)) &nbsp;·&nbsp; `
+      + `\\(D_{\\mathrm{KL}}(\\pi^\\star\\|\\pi_{\\text{ref}}) = ${S.kl.toFixed(4)}\\) nats &nbsp;·&nbsp; \\(\\mathbb{E}_{\\pi^\\star}[r] = ${S.er.toFixed(4)}\\) `
+      + `(against \\(\\mathbb{E}_{\\pi_{\\text{ref}}}[r] = 1.1000\\)). ` + limit
+      + ` Here \\(Z\\) is a sum of five terms; for a language model it is a sum over every string, which is why no method in §4 or §5 evaluates it.`;
+    tex(out);
+  }
+  bS.oninput=draw;
+  document.getElementById('d2-p1').onclick=()=>{ bS.value=-1; draw(); };
+  document.getElementById('d2-p2').onclick=()=>{ bS.value=0;  draw(); };
+  document.getElementById('d2-p3').onclick=()=>{ bS.value=1;  draw(); };
+  draw();
+})();
+
+/* ============================================================
+   D3: the DPO loss surface
+   ============================================================ */
+(function(){
+  const bS=document.getElementById('d3-b'), wS=document.getElementById('d3-w'), lS=document.getElementById('d3-l');
+  const bL=document.getElementById('d3-bL'), wL=document.getElementById('d3-wL'), lL=document.getElementById('d3-lL');
+  const cv=document.getElementById('d3-canvas'), ctx=cv.getContext('2d'), out=document.getElementById('d3-read');
+  const LO=-4, HI=4;
+  const loss=(hw,hl,b)=>-logsig(b*(hw-hl));
+
+  function draw(){
+    const beta=parseFloat(bS.value), hw=parseFloat(wS.value), hl=parseFloat(lS.value);
+    bL.textContent=beta.toFixed(2); wL.textContent=hw.toFixed(2); lL.textContent=hl.toFixed(2);
+    clear(ctx,cv);
+    // ---- left panel: contour map ----
+    const px=64, py=310, W=290, H=290;
+    const X=v=>px+W*(v-LO)/(HI-LO), Y=v=>py-H*(v-LO)/(HI-LO);
+    const NC=58, cw=W/NC, ch=H/NC;
+    const Lmax=loss(LO,HI,beta), Lmin=loss(HI,LO,beta);
+    for(let i=0;i<NC;i++){
+      for(let j=0;j<NC;j++){
+        const a=LO+(HI-LO)*(i+0.5)/NC, b2=LO+(HI-LO)*(j+0.5)/NC;
+        const L=loss(a,b2,beta);
+        const f=Math.max(0,Math.min(1,(L-Lmin)/Math.max(1e-9,Lmax-Lmin)));
+        const r=Math.round(12+(253-12)*f), g=Math.round(38+(241-38)*f), bl=Math.round(66+(214-66)*f);
+        ctx.fillStyle=`rgb(${r},${g},${bl})`;
+        ctx.fillRect(px+i*cw, py-(j+1)*ch, cw+0.7, ch+0.7);
+      }
+    }
+    // analytic contour lines: L constant  <=>  hw - hl = -log(e^L - 1)/beta
+    const levels=[0.05,0.1,0.2,0.4,0.693,1.0,1.6,2.4,3.4];
+    ctx.lineWidth=1;
+    levels.forEach(L=>{
+      const d=-Math.log(Math.exp(L)-1)/beta;
+      if(!isFinite(d)) return;
+      // line hw - hl = d, clipped to the box
+      const pts=[];
+      for(const hlv of [LO,HI]){ const hwv=hlv+d; if(hwv>=LO-1e-9&&hwv<=HI+1e-9) pts.push([hwv,hlv]); }
+      for(const hwv of [LO,HI]){ const hlv=hwv-d; if(hlv>=LO-1e-9&&hlv<=HI+1e-9) pts.push([hwv,hlv]); }
+      if(pts.length<2) return;
+      ctx.strokeStyle = Math.abs(L-0.693)<1e-6 ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.45)';
+      ctx.lineWidth = Math.abs(L-0.693)<1e-6 ? 2 : 1;
+      ctx.beginPath(); ctx.moveTo(X(pts[0][0]),Y(pts[0][1])); ctx.lineTo(X(pts[1][0]),Y(pts[1][1])); ctx.stroke();
+      const mx=(pts[0][0]+pts[1][0])/2, my=(pts[0][1]+pts[1][1])/2;
+      ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.font='9px -apple-system,Arial';
+      ctx.fillText(L.toFixed(2), X(mx)+3, Y(my)-3);
+    });
+    ctx.strokeStyle='#C7D2DE'; ctx.strokeRect(px,py-H,W,H);
+    ctx.fillStyle='#666'; ctx.font='11px -apple-system,Arial'; ctx.textAlign='center';
+    ctx.fillText('chosen log-ratio  h_w', px+W/2, py+30);
+    ctx.save(); ctx.translate(px-38,py-H/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText('rejected log-ratio  h_l',0,0); ctx.restore();
+    ctx.font='10px -apple-system,Arial'; ctx.fillStyle='#999';
+    [-4,-2,0,2,4].forEach(v=>{ ctx.fillText(v, X(v), py+14); ctx.textAlign='right'; ctx.fillText(v, px-6, Y(v)+3); ctx.textAlign='center'; });
+    ctx.textAlign='left';
+    // marker
+    ctx.fillStyle='#F9A825'; ctx.strokeStyle='#7A5200'; ctx.lineWidth=1.6;
+    ctx.beginPath(); ctx.arc(X(hw),Y(hl),6,0,7); ctx.fill(); ctx.stroke();
+
+    // ---- right panel: gradient magnitude against the margin ----
+    const qx=470, qy=310, QW=380, QH=250;
+    gridlines(ctx,qx,qy,QW,QH,4);
+    axes(ctx,qx,qy,QW,QH,'margin  Δ = h_w − h_l','‖∇L‖  (per unit log-ratio)');
+    const gmax=beta*Math.SQRT2*1.14;   // axis rescales with beta so the shape is always legible
+    const G=(d)=>beta*Math.SQRT2*sigmoid(-beta*d);
+    const gp=[]; for(let i=0;i<=300;i++){ const d=-8+16*i/300; gp.push([qx+QW*(d+8)/16, qy-QH*G(d)/gmax]); }
+    polyline(ctx,gp,'#7B3FA0',2.2);
+    ctx.strokeStyle='#C0392B'; ctx.setLineDash([4,4]);
+    const ceil=qy-QH*(beta*Math.SQRT2)/gmax;
+    ctx.beginPath(); ctx.moveTo(qx,ceil); ctx.lineTo(qx+QW,ceil); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#C0392B'; ctx.font='10px -apple-system,Arial';
+    ctx.fillText('ceiling β√2 = '+(beta*Math.SQRT2).toFixed(3), qx+6, ceil-4);
+    ctx.fillStyle='#999';
+    for(let i=0;i<=4;i++) ctx.fillText((gmax*i/4).toFixed(3), qx-38, qy-QH*i/4+3);
+    ctx.textAlign='center';
+    [-8,-4,0,4,8].forEach(d=>ctx.fillText(d, qx+QW*(d+8)/16, qy+14));
+    ctx.textAlign='left';
+    const dmark=hw-hl;
+    if(dmark>=-8&&dmark<=8){
+      ctx.fillStyle='#F9A825'; ctx.strokeStyle='#7A5200'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.arc(qx+QW*(dmark+8)/16, qy-QH*G(dmark)/gmax, 5,0,7); ctx.fill(); ctx.stroke();
+    }
+
+    const L=loss(hw,hl,beta), wgt=sigmoid(-beta*(hw-hl));
+    out.innerHTML =
+      `At \\(h_w = ${hw.toFixed(2)}\\), \\(h_l = ${hl.toFixed(2)}\\), \\(\\beta = ${beta.toFixed(2)}\\): margin \\(\\Delta = ${(hw-hl).toFixed(2)}\\), `
+      + `loss \\(= ${L.toFixed(4)}\\), gradient weight \\(\\sigma(-\\beta\\Delta) = ${wgt.toFixed(4)}\\), `
+      + `\\(\\partial\\mathcal{L}/\\partial h_w = ${(-beta*wgt).toFixed(4)}\\) and \\(\\partial\\mathcal{L}/\\partial h_l = ${(beta*wgt).toFixed(4)}\\). `
+      + `<b>The gradient is largest where \\(\\Delta \\to -\\infty\\)</b> — the pairs the implicit reward model currently ranks backwards — and its magnitude saturates at \\(\\beta\\sqrt{2} = ${(beta*Math.SQRT2).toFixed(3)}\\) rather than growing without bound, because the weight \\(\\sigma(-\\beta\\Delta)\\) is capped at 1. `
+      + `It decays to zero once the margin is comfortably positive, so already-correct pairs stop contributing. `
+      + `Every contour is a line of slope 1: the loss depends on \\(h_w - h_l\\) alone and is exactly flat along \\(h_w + h_l\\), which is the null direction discussed above.`;
+    tex(out);
+  }
+  [bS,wS,lS].forEach(el=>el.oninput=draw);
+  draw();
+})();
+
+/* ============================================================
+   D4: GRPO group advantages and the baseline standard error
+   ============================================================ */
+(function(){
+  const rIn=document.getElementById('d4-r'), gS=document.getElementById('d4-g'), gL=document.getElementById('d4-gL');
+  const cv=document.getElementById('d4-canvas'), ctx=cv.getContext('2d');
+  const tbl=document.getElementById('d4-table'), out=document.getElementById('d4-read');
+
+  function parseR(){
+    const v=rIn.value.split(',').map(x=>parseFloat(x.trim())).filter(x=>!isNaN(x));
+    return v.length>=2 ? v : [1,0,1,1,0,0,1,0];
+  }
+  function draw(){
+    const r=parseR(), G=r.length;
+    const mean=r.reduce((a,b)=>a+b,0)/G;
+    const varp=r.reduce((a,b)=>a+(b-mean)*(b-mean),0)/G;
+    const sd=Math.sqrt(varp);
+    const degenerate = sd<1e-12;
+    const A=r.map(x=> degenerate ? 0 : (x-mean)/sd);
+    let run=0;
+    let hh='<tr><th>i</th><th>r<sub>i</sub></th><th>r<sub>i</sub> − mean</th><th>Â<sub>i</sub></th><th>running ΣÂ</th></tr>';
+    A.forEach((a,i)=>{ run+=a;
+      hh+=`<tr><td>${i+1}</td><td>${r[i]}</td><td>${(r[i]-mean).toFixed(3)}</td>`
+        + `<td style="color:${a>0?'#1F8B4C':(a<0?'#C0392B':'#888')};font-weight:600">${a.toFixed(4)}</td>`
+        + `<td>${run.toFixed(6)}</td></tr>`; });
+    hh+=`<tr class="hi"><td colspan="3" style="text-align:right"><b>Σ Â<sub>i</sub></b></td><td colspan="2"><b>${run.toFixed(12)}</b></td></tr>`;
+    tbl.innerHTML=hh;
+
+    // SE against G
+    const Gsel=parseInt(gS.value); gL.textContent=Gsel;
+    clear(ctx,cv);
+    const x0=56,y0=225,w=380,h=180;
+    gridlines(ctx,x0,y0,w,h,4);
+    axes(ctx,x0,y0,w,h,'group size  G','SE of the group mean');
+    const GMAX=64, SEMAX=0.36;
+    const X=g=>x0+w*(g-2)/(GMAX-2), Y=s=>y0-h*Math.min(s,SEMAX)/SEMAX;
+    ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial';
+    for(let i=0;i<=4;i++) ctx.fillText((SEMAX*i/4).toFixed(2), x0-34, y0-h*i/4+3);
+    ctx.textAlign='center';
+    [2,16,25,40,64].forEach(g=>ctx.fillText(g, X(g), y0+14));
+    ctx.textAlign='left';
+    // 0.1 threshold
+    ctx.strokeStyle='#C0392B'; ctx.setLineDash([4,4]); ctx.beginPath();
+    ctx.moveTo(x0,Y(0.1)); ctx.lineTo(x0+w,Y(0.1)); ctx.stroke();
+    ctx.moveTo(X(25),y0); ctx.lineTo(X(25),y0-h); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#C0392B'; ctx.fillText('SE = 0.10', x0+w-58, Y(0.1)-5);
+    ctx.fillText('G = 25', X(25)+4, y0-h+12);
+    const pts=[]; for(let g=2;g<=GMAX;g+=0.25) pts.push([X(g),Y(0.5/Math.sqrt(g))]);
+    polyline(ctx,pts,'#1F4E79',2.2);
+    const seSel=0.5/Math.sqrt(Gsel);
+    ctx.fillStyle='#F9A825'; ctx.strokeStyle='#7A5200'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(X(Gsel),Y(seSel),5.5,0,7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#333'; ctx.font='11px -apple-system,Arial';
+    ctx.fillText('G='+Gsel+', SE='+seSel.toFixed(4), Math.min(X(Gsel)+8, x0+w-110), Y(seSel)-8);
+
+    out.innerHTML =
+      `Group of ${G}: mean = <b>${mean.toFixed(4)}</b>, population std = <b>${sd.toFixed(6)}</b>, \\(\\sum_i \\hat A_i = \\) <b>${run.toFixed(12)}</b> — zero to floating-point precision, and zero exactly in the algebra, because \\(\\sum_i (r_i - \\bar r) = 0\\) by the definition of \\(\\bar r\\) and dividing by a common positive scalar preserves that. `
+      + (degenerate
+          ? `<b style="color:#C0392B">This group is unanimous</b>, so \\(\\mathrm{std}(r) = 0\\), every advantage is undefined, and the group supplies <b>no gradient at all</b>. Implementations either skip such groups or add an \\(\\epsilon\\) to the denominator; both amount to admitting that a group with no internal disagreement carries no learning signal. `
+          : `Because the advantages sum to zero, the update can only <em>reallocate</em> probability among the ${G} completions: it cannot conclude that all of them were good. `)
+      + `At the selected \\(G = ${Gsel}\\) the baseline's standard error for a binary reward at \\(p = 0.5\\) is \\(0.5/\\sqrt{${Gsel}} = ${seSel.toFixed(4)}\\). `
+      + `The requirement \\(\\mathrm{SE}\\le 0.1\\) gives \\(\\sqrt{G}\\ge 5\\), i.e. <b>\\(G \\ge 25\\)</b> (with \\(G = 25\\) hitting exactly \\(0.1\\) and \\(G = 26\\) the smallest group strictly below it) — twenty-five full generations per prompt, per step, purely to know where the middle is.`;
+    tex(out);
+  }
+  rIn.oninput=draw; gS.oninput=draw;
+  document.getElementById('d4-unan').onclick=()=>{ rIn.value='1, 1, 1, 1, 1, 1, 1, 1'; draw(); };
+  draw();
+})();
+
+/* ============================================================
+   D5: reward hacking, proxy against truth
+   ============================================================ */
+(function(){
+  const bS=document.getElementById('d5-b'), bL=document.getElementById('d5-bL');
+  const cv=document.getElementById('d5-canvas'), ctx=cv.getContext('2d'), out=document.getElementById('d5-read');
+  const T=200, K0=200, LAM0=0.0045, CK=1.2, CL=2.4, AA=1.0, BB=0.09;
+  let seed=20240607;
+
+  function sim(beta){
+    const rnd=mulberry(seed);
+    const Kmax=K0/(1+CK*beta), lam=LAM0/(1+CL*beta);
+    const proxy=[], truth=[], clean=[], kl=[];
+    for(let t=0;t<T;t++){
+      const K=Kmax*(1-Math.exp(-lam*t)), d=Math.sqrt(K);
+      const p=AA*d, q=AA*d-BB*K;
+      kl.push(K);
+      clean.push(q);
+      proxy.push(p+0.12*gaussFrom(rnd));
+      truth.push(q+0.10*gaussFrom(rnd));
+    }
+    return {proxy,truth,clean,kl};
+  }
+  function draw(){
+    const beta=parseFloat(bS.value); bL.textContent=beta.toFixed(3);
+    const S=sim(beta);
+    let peak=0; for(let t=1;t<T;t++) if(S.clean[t]>S.clean[peak]) peak=t;
+    const half=T>>1;
+    const r1=pearson(S.proxy.slice(0,half), S.truth.slice(0,half));
+    const r2=pearson(S.proxy.slice(half),  S.truth.slice(half));
+
+    clear(ctx,cv);
+    const x0=62,y0=265,w=760,h=225;
+    gridlines(ctx,x0,y0,w,h,4);
+    axes(ctx,x0,y0,w,h,'training step','');
+    const pmin=0, pmax=Math.max(...S.proxy)*1.06;
+    const tmin=Math.min(...S.truth)-0.25, tmax=Math.max(...S.truth)+0.25;
+    const X=t=>x0+w*t/(T-1);
+    const YP=v=>y0-h*(v-pmin)/(pmax-pmin);
+    const YT=v=>y0-h*(v-tmin)/(tmax-tmin);
+    // left axis ticks (proxy)
+    ctx.font='10px -apple-system,Arial';
+    for(let i=0;i<=4;i++){ ctx.fillStyle='#1F4E79'; ctx.fillText((pmin+(pmax-pmin)*i/4).toFixed(1), x0-32, y0-h*i/4+3); }
+    for(let i=0;i<=4;i++){ ctx.fillStyle='#1F8B4C'; ctx.fillText((tmin+(tmax-tmin)*i/4).toFixed(1), x0+w+8, y0-h*i/4+3); }
+    ctx.strokeStyle='#C7D2DE'; ctx.beginPath(); ctx.moveTo(x0+w,y0); ctx.lineTo(x0+w,y0-h); ctx.stroke();
+    ctx.textAlign='center'; ctx.fillStyle='#999';
+    [0,50,100,150,199].forEach(t=>ctx.fillText(t, X(t), y0+14));
+    ctx.textAlign='left';
+    ctx.fillStyle='#1F4E79'; ctx.fillText('proxy reward', x0+4, y0-h+12);
+    ctx.textAlign='right'; ctx.fillStyle='#1F8B4C'; ctx.fillText('held-out human rating', x0+w-4, y0-h+12); ctx.textAlign='left';
+    // decoupling marker
+    ctx.strokeStyle='#C0392B'; ctx.lineWidth=1.6; ctx.setLineDash([5,4]);
+    ctx.beginPath(); ctx.moveTo(X(peak),y0); ctx.lineTo(X(peak),y0-h); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#C0392B'; ctx.font='11px -apple-system,Arial';
+    ctx.fillText('decoupling: step '+peak, Math.min(X(peak)+6, x0+w-130), y0-12);
+    // series
+    polyline(ctx, S.proxy.map((v,t)=>[X(t),YP(v)]), 'rgba(31,78,121,0.85)', 1.6);
+    polyline(ctx, S.truth.map((v,t)=>[X(t),YT(v)]), 'rgba(31,139,76,0.85)', 1.6);
+    polyline(ctx, S.clean.map((v,t)=>[X(t),YT(v)]), '#1F8B4C', 2.4);
+
+    out.innerHTML =
+      `\\(\\beta = ${beta.toFixed(3)}\\): the two series decouple at step <b style="color:#C0392B">${peak}</b>, where the held-out rating peaks at ${S.clean[peak].toFixed(2)}; by step 199 it has fallen to ${S.clean[T-1].toFixed(2)} while the proxy has climbed to ${S.proxy[T-1].toFixed(2)}. `
+      + `Pearson correlation between the two series: <b>${r1>=0?'+':''}${r1.toFixed(3)}</b> over the first half, <b>${r2>=0?'+':''}${r2.toFixed(3)}</b> over the second. `
+      + `Final \\(D_{\\mathrm{KL}}\\) from the reference \\(\\approx ${S.kl[T-1].toFixed(1)}\\) nats. `
+      + `Raise \\(\\beta\\) and the decoupling step moves right and the collapse becomes shallower — but it never leaves the plot, because \\(\\pi^\\star \\propto \\pi_{\\text{ref}}\\exp(r^\\star/\\beta)\\exp(\\varepsilon/\\beta)\\) tilts toward the error and the truth by the same \\(1/\\beta\\). `
+      + `A monitor watching only the blue curve would report steady improvement at every step shown.`;
+    tex(out);
+  }
+  bS.oninput=draw;
+  document.getElementById('d5-re').onclick=()=>{ seed=(seed*1664525+1013904223)>>>0; draw(); };
+  draw();
+})();
+
+/* ============================================================
+   D6: two independent Q-learners on matching pennies
+   ============================================================ */
+(function(){
+  const aS=document.getElementById('d6-a'), tS=document.getElementById('d6-t'), fz=document.getElementById('d6-freeze');
+  const aL=document.getElementById('d6-aL'), tL=document.getElementById('d6-tL');
+  const cv=document.getElementById('d6-canvas'), ctx=cv.getContext('2d'), out=document.getElementById('d6-read');
+  const STEPS=10000, BURN=800;
+  let seed=7654321;
+
+  function softmax2(q0,q1,tau){ const m=Math.max(q0,q1);
+    const e0=Math.exp((q0-m)/tau), e1=Math.exp((q1-m)/tau); return e0/(e0+e1); }
+
+  function run(alpha,tau,freeze){
+    const rnd=mulberry(seed);
+    let Q1=[0.10,-0.10], Q2=[-0.10,0.10];
+    const p1=new Float64Array(STEPS), p2=new Float64Array(STEPS);
+    let rew1=0;
+    for(let t=0;t<STEPS;t++){
+      const a=softmax2(Q1[0],Q1[1],tau), b=softmax2(Q2[0],Q2[1],tau);
+      p1[t]=a; p2[t]=b;
+      const a1 = rnd()<a ? 0 : 1, a2 = rnd()<b ? 0 : 1;
+      const r1 = (a1===a2) ? 1 : -1;
+      Q1[a1]+=alpha*(r1-Q1[a1]);
+      if(!freeze) Q2[a2]+=alpha*(-r1-Q2[a2]);
+      rew1+=r1;
+    }
+    return {p1,p2,rew1:rew1/STEPS};
+  }
+  function draw(){
+    const alpha=Math.pow(10,parseFloat(aS.value)), tau=parseFloat(tS.value), freeze=fz.checked;
+    aL.textContent=alpha.toFixed(4); tL.textContent=tau.toFixed(2);
+    const S=run(alpha,tau,freeze);
+    clear(ctx,cv);
+    // ---- left: probabilities over time ----
+    const x0=56,y0=272,w=440,h=228;
+    gridlines(ctx,x0,y0,w,h,4);
+    axes(ctx,x0,y0,w,h,'round','P(Heads)');
+    ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial';
+    for(let i=0;i<=4;i++) ctx.fillText((i/4).toFixed(2), x0-32, y0-h*i/4+3);
+    ctx.textAlign='center';
+    [0,2500,5000,7500,10000].forEach(t=>ctx.fillText((t/1000).toFixed(1)+'k', x0+w*t/STEPS, y0+14));
+    ctx.textAlign='left';
+    ctx.strokeStyle='#F9A825'; ctx.setLineDash([4,4]); ctx.beginPath();
+    ctx.moveTo(x0,y0-h*0.5); ctx.lineTo(x0+w,y0-h*0.5); ctx.stroke(); ctx.setLineDash([]);
+    const step=Math.max(1,Math.floor(STEPS/700));
+    const c1=[],c2=[];
+    for(let t=0;t<STEPS;t+=step){ c1.push([x0+w*t/STEPS, y0-h*S.p1[t]]); c2.push([x0+w*t/STEPS, y0-h*S.p2[t]]); }
+    polyline(ctx,c2,'rgba(192,57,43,0.85)',1.4);
+    polyline(ctx,c1,'rgba(31,78,121,0.9)',1.4);
+
+    // ---- right: phase plot ----
+    const px=580, py=272, W=228, H=228;
+    ctx.strokeStyle='#EEF2F6';
+    for(let i=0;i<=4;i++){ const v=i/4;
+      ctx.beginPath(); ctx.moveTo(px,py-H*v); ctx.lineTo(px+W,py-H*v); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(px+W*v,py); ctx.lineTo(px+W*v,py-H); ctx.stroke(); }
+    ctx.strokeStyle='#C7D2DE'; ctx.strokeRect(px,py-H,W,H);
+    const sub=Math.max(1,Math.floor(STEPS/2500));
+    const pre=[], ph=[];
+    for(let t=0;t<BURN;t+=sub) pre.push([px+W*S.p1[t], py-H*S.p2[t]]);
+    for(let t=BURN;t<STEPS;t+=sub) ph.push([px+W*S.p1[t], py-H*S.p2[t]]);
+    polyline(ctx,pre,'rgba(150,160,175,0.45)',1);
+    polyline(ctx,ph,'rgba(106,63,160,0.55)',1);
+    ctx.fillStyle='#F9A825'; ctx.strokeStyle='#7A5200'; ctx.lineWidth=1.6;
+    ctx.beginPath(); ctx.arc(px+W*0.5, py-H*0.5, 6,0,7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#1F8B4C'; ctx.beginPath(); ctx.arc(ph[0][0],ph[0][1],4,0,7); ctx.fill();
+    ctx.fillStyle='#C0392B'; ctx.beginPath(); ctx.arc(ph[ph.length-1][0],ph[ph.length-1][1],4,0,7); ctx.fill();
+    ctx.fillStyle='#666'; ctx.font='11px -apple-system,Arial'; ctx.textAlign='center';
+    ctx.fillText('agent 1  P(Heads)', px+W/2, py+30);
+    ctx.save(); ctx.translate(px-32,py-H/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText('agent 2  P(Heads)',0,0); ctx.restore();
+    ctx.font='10px -apple-system,Arial'; ctx.fillStyle='#999';
+    [0,0.5,1].forEach(v=>{ ctx.fillText(v.toFixed(1), px+W*v, py+14); ctx.textAlign='right'; ctx.fillText(v.toFixed(1), px-5, py-H*v+3); ctx.textAlign='center'; });
+    ctx.textAlign='left';
+    ctx.fillStyle='#1F8B4C'; ctx.fillText('t = '+BURN, ph[0][0]+6, ph[0][1]-6);
+    ctx.fillStyle='#C0392B'; ctx.fillText('end', ph[ph.length-1][0]+6, ph[ph.length-1][1]+12);
+
+    // statistics, measured after the burn-in transient
+    let m1=0,m2=0,lo1=1,hi1=0;
+    for(let t=BURN;t<STEPS;t++){ m1+=S.p1[t]; m2+=S.p2[t];
+      if(S.p1[t]<lo1) lo1=S.p1[t]; if(S.p1[t]>hi1) hi1=S.p1[t]; }
+    m1/=(STEPS-BURN); m2/=(STEPS-BURN);
+    let prev=Math.atan2(S.p2[BURN]-0.5, S.p1[BURN]-0.5), acc=0;
+    for(let t=BURN+1;t<STEPS;t+=4){ const a=Math.atan2(S.p2[t]-0.5, S.p1[t]-0.5);
+      let d=a-prev; while(d>Math.PI)d-=2*Math.PI; while(d<-Math.PI)d+=2*Math.PI; acc+=d; prev=a; }
+    const turns=Math.abs(acc)/(2*Math.PI);
+    const tail1=(()=>{ let s=0; for(let t=STEPS-1000;t<STEPS;t++) s+=S.p1[t]; return s/1000; })();
+
+    out.innerHTML = freeze
+      ? `<b>Agent 2 frozen.</b> Its policy is fixed at \\(P(\\text{Heads}) = ${m2.toFixed(3)}\\), so agent 1 faces a transition kernel that does not depend on \\(t\\) — an ordinary stationary MDP. `
+        + `Agent 1 converges to \\(P(\\text{Heads}) = ${tail1.toFixed(4)}\\) over the last 1,000 rounds, a <b>deterministic best response</b>, and earns ${S.rew1.toFixed(3)} per round instead of the equilibrium value 0. `
+        + `Nothing about the algorithm changed; only the opponent stopped moving. That is the whole content of the non-stationarity claim, and it is why "my multi-agent training diverged" is usually a statement about the assumption rather than the code.`
+      : `Both agents learning. Time-averaged policies after the first ${BURN} rounds: \\(\\bar p_1 = ${m1.toFixed(3)}\\), \\(\\bar p_2 = ${m2.toFixed(3)}\\) — both within a few percent of the Nash equilibrium \\((\\tfrac12,\\tfrac12)\\). `
+        + `But neither policy <em>is</em> \\(\\tfrac12\\) at any moment: agent 1 ranges over \\([${lo1.toFixed(2)},\\,${hi1.toFixed(2)}]\\) and the phase trajectory completes about <b>${turns.toFixed(1)}</b> orbits around the equilibrium. `
+        + `Agent 1's mean reward is ${S.rew1.toFixed(3)}, close to the game value 0. The equilibrium is a <em>centre</em> of these dynamics, not an attractor: reading the time-average as convergence is the error the phase plot exists to prevent.`;
+    tex(out);
+  }
+  [aS,tS].forEach(el=>el.oninput=draw);
+  fz.onchange=draw;
+  document.getElementById('d6-run').onclick=()=>{ seed=(seed*1103515245+12345)>>>0; draw(); };
+  draw();
+})();
+</script>
+</body>
+</html>

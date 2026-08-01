@@ -1,0 +1,57 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"     # pin: Box2D wheels stop at 3.13, so never 3.14
+
+      # NOTE: CI installs the SERVING requirements plus a test runner, and
+      # nothing else. If a serving module ever grows a training-tier import,
+      # this step fails before the no-torch guard even runs. That is intended.
+      - name: Install serving requirements only
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-serve.txt
+          pip install pytest ruff
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Test (includes the no-torch guard)
+        run: pytest -q
+
+      - name: Migration check — every migration must be checked in and ordered
+        run: |
+          test -d db/migrations
+          ls db/migrations/*.sql
+          # 002 adds the table this product is about. A repository whose UI
+          # charts gradient_stats but whose migrations do not create it is one
+          # that works on your laptop and nowhere else.
+          test -f db/migrations/002_gradient_stats.sql
+
+      # The serving path must be able to load and evaluate the committed
+      # artifact with NOTHING but requirements-serve.txt installed. This is the
+      # deployment rehearsal: if it needs torch, it fails here rather than at
+      # 3 a.m. on Streamlit Cloud.
+      #
+      # Note what CI does NOT run: tests/test_equivalence.py and
+      # tests/test_baseline_reduces_variance.py need PyTorch, so they SKIP here
+      # and run on your machine and in the training job. Do not "fix" that by
+      # adding torch to this workflow — installing serving deps only is what
+      # makes the guard meaningful.
+      - name: The deployed artifact loads and answers in NumPy alone
+        run: |
+          python -c "import api.main, sys; assert 'torch' not in sys.modules"
+          python -c "
+          from api.policy import PolicyArtifactStore
+          import numpy as np
+          s = PolicyArtifactStore('policies', default_name='vpg_cartpole')
+          p, meta = s.get('vpg_cartpole')
+          assert meta['kind'] == 'mlp' and meta['obs_dim'] == 4, meta
+          print('artifact ok:', meta['bytes'], 'bytes', p.act(np.zeros(4)))
+          "

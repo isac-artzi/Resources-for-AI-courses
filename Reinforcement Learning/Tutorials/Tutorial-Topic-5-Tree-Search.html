@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topic 5 Tutorial — Tree Search</title>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] }, svg: { fontCache: 'global' } };
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif; margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.62; }
+.container { max-width: 1000px; margin: 24px auto 48px; background: white; padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79; padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.34em; margin-top: 42px; border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 7px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+pre { background: #1f2733; color:#e6edf3; padding: 14px 18px; border-radius: 6px; overflow-x: auto; border-left: 4px solid #1F4E79; font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.86em; line-height:1.55; }
+pre .c { color:#8b98a9; } pre .k { color:#ff7b72; } pre .s { color:#a5d6ff; } pre .f { color:#d2a8ff; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79; padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.why { background:#F0FaF3; border-left:4px solid #1F8B4C; padding:14px 18px; margin:16px 0; border-radius:4px; }
+.why strong { color:#1F8B4C; }
+.deep { background:#FBF7FF; border-left:4px solid #6A3FA0; padding:14px 18px; margin:16px 0; border-radius:4px; }
+.deep strong { color:#6A3FA0; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px; margin: 14px 0; border-radius: 4px; font-size: 0.95em; }
+.product { background:#FCF6FF; border-left:4px solid #7B3FA0; padding:14px 18px; margin:16px 0; border-radius:4px; }
+.product strong { color:#7B3FA0; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px; padding: 22px; margin: 24px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.demo .tag { font-size:0.7em; background:#1F4E79; color:white; padding:2px 8px; border-radius:10px; vertical-align:middle; margin-left:8px; letter-spacing:0.04em;}
+.controls { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 200px; }
+.control input[type="text"], .control input[type="number"], .control select { padding:6px 8px; border:1px solid #CFD7DF; border-radius:4px; font-family:inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px; border-radius: 6px; font-size: 0.9em; }
+.mono { font-family:"SF Mono",Consolas,monospace; }
+textarea { width:100%; min-height:60px; padding:10px; border:1px solid #CFD7DF; border-radius:6px; font-family:"SF Mono",Consolas,monospace; font-size:0.9em; resize:vertical; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.9em; }
+button:hover { background: #2D5C8C; } button.secondary { background: #E0E5EB; color: #1A1A1A; } button.secondary:hover { background:#CFD7DF; }
+button:disabled { background:#CBD5E0; cursor:not-allowed; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; max-width:100%; }
+.tok { display:inline-block; background:#EAF1F8; border:1px solid #BcceE0; color:#1F4E79; padding:2px 7px; margin:2px; border-radius:10px; font-family:"SF Mono",Consolas,monospace; font-size:0.82em; }
+table.grid { border-collapse:collapse; font-family:"SF Mono",Consolas,monospace; font-size:0.8em; margin:8px 0; }
+table.grid td { border:1px solid #C7D2DE; width:64px; height:52px; text-align:center; padding:0; vertical-align:middle; line-height:1.25; }
+table.grid td .v { font-weight:bold; display:block; font-size:1.08em; }
+table.grid td .a { color:#1F4E79; font-size:1.15em; display:block; }
+table.grid td.hole { background:#3A4A5C; color:#fff; } table.grid td.goal { background:#1F8B4C; color:#fff; }
+table.grid td.start { outline:3px solid #F9A825; outline-offset:-3px; }
+table.tb { border-collapse:collapse; margin:12px 0; font-size:0.88em; } table.tb td, table.tb th { border:1px solid #D0D8E0; padding:5px 10px; text-align:center; } table.tb th { background:#EAF1F8; color:#1F4E79; }
+table.tb tr.hi td { background:#D6EAD9; font-weight:bold; }
+.nav { display: flex; justify-content: space-between; margin-top: 44px; padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { columns:2; font-size:0.92em; } .toc a { color:#1F4E79; text-decoration:none; } .toc a:hover{text-decoration:underline;}
+.legend { font-size:0.82em; color:#555; margin-top:6px; }
+.sw { display:inline-block; width:11px; height:11px; border-radius:2px; margin-right:4px; vertical-align:-1px; }
+table.board { border-collapse:collapse; margin:6px 0; }
+table.board td { padding:0; }
+table.board button { width:74px; height:74px; font-size:1.9em; font-weight:600; border-radius:0; border:1px solid #C7D2DE;
+  background:#fff; color:#1F4E79; padding:0; line-height:1; }
+table.board button:hover { background:#EAF1F8; }
+table.board button.taken { background:#F7F9FC; cursor:default; }
+table.board button.taken:hover { background:#F7F9FC; }
+table.board button.oo { color:#C0392B; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">Tutorial · ~ 105 min · formal</div>
+<h1>Topic 5 — Tree Search</h1>
+<p class="subtitle">Every method in this course so far learned a policy from experience. This one computes a decision at the moment it is needed, by looking ahead. We size the problem, build one search scaffold whose node ordering is a parameter rather than an algorithm, derive what α–β pruning buys and why it is exactly a square root, replace the evaluation function with random rollouts, derive UCT from the bandit bound of Topic 1, and finish where the line ends today: a learned evaluator inside the search loop, which is what search at inference time in a reasoning model is.</p>
+
+<div class="callout">
+ <strong>Roadmap.</strong>
+ <div class="toc">
+ <a href="#s1">1. Game trees and the size of the problem</a><br>
+ <a href="#s2">2. One scaffold, two orderings</a><br>
+ <a href="#s3">3. Monte Carlo tree search: the four phases</a><br>
+ <a href="#s4">4. UCT, derived from UCB</a><br>
+ <a href="#s5">5. Learning the evaluation: AlphaZero and MuZero</a><br>
+ <a href="#s6">6. Benchmarking search honestly</a><br>
+ <a href="#s7">7. In practice (Search Arena)</a>
+ </div>
+</div>
+
+<h2 id="s1">1. Game trees and the size of the problem</h2>
+<p>A two-player zero-sum game with perfect information is a tree. Nodes are positions, edges are legal moves, and the leaves carry the outcome from one player's point of view — say \(+1\), \(0\), \(-1\) for a win, draw, and loss for the player we call MAX. The two players alternate, MAX choosing the largest successor value and MIN the smallest. The value of a position is defined by the recursion</p>
+\[ V(s) \;=\; \begin{cases} u(s) & s \text{ terminal},\\[2pt] \max_{a \in \mathcal{A}(s)} V(\mathrm{do}(s,a)) & s \text{ a MAX node},\\[2pt] \min_{a \in \mathcal{A}(s)} V(\mathrm{do}(s,a)) & s \text{ a MIN node}. \end{cases} \]
+<p>This is the <strong>minimax</strong> value, and it is not an algorithm — it is a definition, with a two-line recursive evaluator that realises it. Zermelo's theorem says the recursion is well founded on any finite game: the value exists, and the optimal strategy for both players is to move to a successor achieving it. So in a formal sense every finite perfect-information game is solved. The entire subject exists because of the word <em>finite</em>.</p>
+
+<h3>Counting</h3>
+<p>Let \(b\) be the branching factor and \(d\) the depth. A complete tree of uniform branching factor has</p>
+\[ N(d) \;=\; \sum_{k=0}^{d} b^{k} \;=\; \frac{b^{\,d+1}-1}{b-1} \;\approx\; \frac{b}{b-1}\,b^{d}, \]
+<p>so up to a constant factor never larger than 2, the cost of exhaustive minimax is \(b^d\) — the leaves dominate everything above them. Two concrete games make the consequence vivid.</p>
+<p><strong>Tic-tac-toe.</strong> Nine cells, so a naive count of move orderings gives \(9! = 362\,880\). That number is an overcount in one respect and an undercount in another: games that end early are not \(9\) plies long, and distinct orderings are distinct tree paths whether or not they reach the same position. Enumerating the actual game tree from the empty board — stopping at every win and at every full board — gives <strong>549 946 nodes</strong>, of which <strong>255 168</strong> are terminal, and the terminal count decomposes as 131 184 wins for X, 77 904 for O and 46 080 draws. Those are the numbers the search in §2 will reproduce exactly, because the tree is small enough to walk in a browser.</p>
+<p><strong>Connect Four.</strong> Seven columns, so \(b \approx 7\) until columns fill; forty-two cells, so \(d \le 42\). The naive bound \(7^{42} \approx 3.2 \times 10^{35}\) is a wild overestimate because it ignores full columns and terminal positions — the true count of legal, reachable positions is \(4\,531\,985\,219\,092 \approx 4.5 \times 10^{12}\). The game was solved in 1988. It is still, in 2026, entirely infeasible to enumerate inside an HTTP request.</p>
+
+<div class="why">
+ <strong>Why "can we search this tree" is a budget question and not a correctness question.</strong> The minimax recursion is provably correct on both games, and the same eight lines of code run on both. What changes is only how long they take. This distinction is worth being pedantic about, because it determines what your engineering report is allowed to claim. If your agent plays badly, "the algorithm is wrong" is almost never the diagnosis; "the algorithm ran out of budget at depth 6 and the position it was scoring at depth 6 was misleading" is. It also determines what a fix looks like: correctness bugs are fixed by changing the recursion, budget failures are fixed by (i) visiting fewer nodes for the same answer, which is §2, (ii) spending the budget where it matters instead of uniformly, which is §3, or (iii) making each node worth more, which is §5. All three of those leave the definition of \(V(s)\) untouched.
+</div>
+
+<div class="demo">
+ <h3>Demo · The node-count calculator <span class="tag">interactive</span></h3>
+ <p>The whole of DQ 2, live. Four curves on a logarithmic axis: exhaustive \(N(d)\); a heuristic that visits a fixed fraction \(f\) of the nodes <em>at each level</em>; a heuristic that expands a fraction \(f\) of the children <em>of each visited node</em>, so the pruning compounds; and α–β under perfect ordering, \(b^{\lceil d/2\rceil} + b^{\lfloor d/2\rfloor} - 1\). The horizontal line is your budget in nodes, computed from a per-node cost and a wall-clock allowance; the readout gives the last depth each method fits inside it. The two heuristic curves are the point of the demo: only one of them changes the exponent.</p>
+ <div class="controls">
+ <div class="control"><label>branching factor \(b\): <b id="nc-bL">7</b></label><input type="range" id="nc-b" min="2" max="20" step="1" value="7"></div>
+ <div class="control"><label>max depth plotted \(d\): <b id="nc-dL">16</b></label><input type="range" id="nc-d" min="4" max="26" step="1" value="16"></div>
+ <div class="control"><label>fraction kept \(f\): <b id="nc-fL">0.30</b></label><input type="range" id="nc-f" min="0.05" max="1.00" step="0.01" value="0.30"></div>
+ </div>
+ <div class="controls">
+ <div class="control"><label>cost per node: <b id="nc-cL">1.0</b> µs</label><input type="range" id="nc-c" min="0.05" max="5" step="0.05" value="1.0"></div>
+ <div class="control"><label>wall-clock budget: <b id="nc-tL">1.0</b> s</label><input type="range" id="nc-t" min="0.1" max="30" step="0.1" value="1.0"></div>
+ </div>
+ <canvas id="nc-canvas" width="900" height="300"></canvas>
+ <div class="legend"><span class="sw" style="background:#C0392B"></span>exhaustive \(\sum b^k\) &nbsp; <span class="sw" style="background:#F9A825"></span>fraction \(f\) per level &nbsp; <span class="sw" style="background:#1F8B4C"></span>fraction \(f\) per node (compounding) &nbsp; <span class="sw" style="background:#1F4E79"></span>α–β, perfect ordering &nbsp; <span class="sw" style="background:#6A3FA0"></span>budget</div>
+ <div class="readout" id="nc-read"></div>
+</div>
+
+<div class="deep">
+ <strong>The distinction the demo is built around, stated once in symbols.</strong> "Explores 30% of the nodes at each level" admits two readings and they are not close. Read as a per-level quota, the count is \(1 + f\sum_{k=1}^{d} b^k\): a constant factor \(f\), an unchanged exponent, and an infeasibility depth that moves by \(\log_b(1/f)\) — for \(b=7\) and \(f=0.3\), by less than one ply. Read as a per-node expansion rate, an unexpanded node takes its entire subtree with it, the surviving count at level \(k\) is \((fb)^k\), and the effective branching factor becomes \(fb\) — for \(b=7\) and \(f=0.3\) that is \(2.1\), which is a different problem. Every real pruning method is the second kind, because that is what pruning <em>means</em>: you decline to expand, not merely to score. When you compare your derivation against the node counts logged in <code>games</code> for DQ 2(d), the discrepancy you will find is almost always this one, plus transpositions the derivation does not model.
+</div>
+
+<h2 id="s2">2. One scaffold, two orderings</h2>
+<p>It is conventional to present "exhaustive search" and "heuristic search" as two algorithms. They are not. They are one depth-limited recursion in which the sequence of children is produced by a callback, and the callback is the only thing that differs:</p>
+<pre><span class="c"># search/scaffold.py — the whole of both "algorithms"</span>
+<span class="k">def</span> <span class="f">search</span>(state, player, depth, alpha, beta, order, ctr):
+    ctr.nodes += 1
+    <span class="k">if</span> (u := state.<span class="f">terminal_value</span>(player)) <span class="k">is</span> <span class="k">not</span> <span class="s">None</span>: <span class="k">return</span> u
+    <span class="k">if</span> depth == 0:                          <span class="k">return</span> state.<span class="f">evaluate</span>(player)
+    best = -math.inf
+    <span class="k">for</span> m <span class="k">in</span> <span class="f">order</span>(state.<span class="f">legal_moves</span>(), state, player):   <span class="c"># &lt;-- the only difference</span>
+        v = -<span class="f">search</span>(state.<span class="f">do</span>(m), -player, depth - 1, -beta, -alpha, order, ctr)
+        best = <span class="f">max</span>(best, v); alpha = <span class="f">max</span>(alpha, best)
+        <span class="k">if</span> alpha &gt;= beta: <span class="k">break</span>                <span class="c"># the cutoff; correctness proved below</span>
+    <span class="k">return</span> best
+
+<span class="f">identity</span>  = <span class="k">lambda</span> moves, s, p: moves                          <span class="c"># exhaustive evaluation</span>
+<span class="f">heuristic</span> = <span class="k">lambda</span> moves, s, p: <span class="f">sorted</span>(moves, key=<span class="k">lambda</span> m: -s.<span class="f">do</span>(m).<span class="f">evaluate</span>(p))</pre>
+<p>Both callbacks return a permutation of the same set. Neither can change which leaves exist, so neither can change \(V(s)\): the value returned is identical, and only the number of nodes entered differs. That is the claim you should be able to make about your own implementation, and it is a test you can write — run both orderings on a fixed set of positions and assert equality of the returned value, not merely of the chosen move.</p>
+
+<h3>Why the cutoff is safe</h3>
+<p>Carry two bounds down the recursion: \(\alpha\), the best value MAX is already assured of somewhere above, and \(\beta\), the best MIN is already assured of. At a MIN node whose running value has fallen to \(v \le \alpha\), MAX will never choose this node — a value at or above \(\alpha\) is already available on another line — so the remaining children can only lower \(v\) further and cannot change the root value. Cutting there discards subtrees whose values are irrelevant, not subtrees whose values are unknown. The consequence: <strong>α–β returns exactly the minimax value</strong>, and the pruned nodes are the ones that provably could not have mattered.</p>
+
+<h3>Why the best case is a square root</h3>
+<p>Ordering matters because a cutoff needs a good value <em>early</em>. Classify the nodes of the searched tree in the standard way. A <strong>PV node</strong> lies on the principal variation and must examine all \(b\) children: its first child is another PV node, the remaining \(b-1\) are CUT nodes. A <strong>CUT node</strong> is one where a cutoff will occur; under perfect ordering the refuting child is tried first, so it examines exactly one child, an ALL node. An <strong>ALL node</strong> has no cutoff available and examines all \(b\) children, each a CUT node. Writing \(C(k)\) and \(A(k)\) for the number of leaves under a CUT and ALL node of remaining depth \(k\):</p>
+\[ C(k) = A(k-1), \qquad A(k) = b\,C(k-1) \quad\Longrightarrow\quad C(k) = b\,C(k-2). \]
+<p>The recursion advances two plies for one factor of \(b\), so \(C(k) \asymp b^{k/2}\). Adding the principal variation gives the Knuth–Moore result exactly:</p>
+\[ N_{\text{leaves}}(d) \;=\; b^{\lceil d/2 \rceil} + b^{\lfloor d/2 \rfloor} - 1 \;\approx\; 2\,b^{d/2} \;=\; 2\left(\sqrt{b}\right)^{d}. \]
+<p>The effective branching factor is \(\sqrt{b}\). Read the identity the other way and it says something more useful than a complexity class: for a fixed leaf budget \(B\), exhaustive search reaches depth \(\log_b B\) and perfectly ordered α–β reaches \(2\log_b B\). <strong>Perfect ordering doubles the reachable depth at the same cost.</strong> In practice ordering is imperfect and the realised effective branching factor lies between \(\sqrt{b}\) and \(b\); the ratio of the two node counts you log is the honest measurement of how good your ordering heuristic actually is.</p>
+
+<div class="demo">
+ <h3>Demo · Minimax with α–β, stepped <span class="tag">interactive</span></h3>
+ <p>A hand-built tree, \(b=3\) and \(d=3\): root MAX, then MIN, then MAX, then 27 fixed leaf values. Step the search and watch nodes turn amber as they are entered, blue as they return a value, and grey-struck when a cutoff discards them unvisited. The ordering selector calls the <em>same</em> traversal with a different child permutation — <code>identity</code> takes the children as stored, <code>best-first</code> sorts each node's children by their true subtree value, which is the perfect ordering the bound above assumes. The leaf values were chosen so that identity ordering achieves no cutoffs at all: that is α–β's worst case, and it is what the phrase "best-case bound" is protecting you from.</p>
+ <div class="controls">
+ <div class="control"><label>child ordering callback</label><select id="ab-order"><option value="identity">identity — children as stored</option><option value="best">best-first — perfect ordering</option></select></div>
+ </div>
+ <div class="controls">
+ <button id="ab-step">Step ▶</button>
+ <button id="ab-run" class="secondary">Run to completion</button>
+ <button id="ab-reset" class="secondary">Reset</button>
+ <span class="readout" id="ab-count"></span>
+ </div>
+ <canvas id="ab-canvas" width="900" height="330"></canvas>
+ <div class="legend"><span class="sw" style="background:#F9A825"></span>on the stack &nbsp; <span class="sw" style="background:#1F4E79"></span>returned a value &nbsp; <span class="sw" style="background:#C0392B"></span>cut off, never entered &nbsp; <span class="sw" style="background:#E8EDF2"></span>not yet reached &nbsp;·&nbsp; triangles point up at MAX nodes, down at MIN nodes</div>
+ <div class="readout" id="ab-read"></div>
+</div>
+
+<div class="why">
+ <strong>Why the ordering callback is a parameter and not two files.</strong> Three arguments, in increasing order of how much they will cost you if ignored. First, the equality test above is only meaningful if there is one recursion: if exhaustive and heuristic search are separate implementations, a discrepancy between them is ambiguous — either the ordering is wrong or one of the two searches is — and you will spend an evening finding out which. Second, the node counts become directly comparable, because they are counts of the same event in the same function; a table comparing <code>nodes_expanded</code> across two implementations is comparing two definitions of a node as much as two strategies. Third, the ordering callback is the natural place for every later improvement — killer moves, iterative deepening's previous-best-move, and in §5 a policy network's prior — none of which is a new algorithm either. The syllabus consolidates five required implementations to three for exactly this reason: two of the five were the same code.
+</div>
+
+<h2 id="s3">3. Monte Carlo tree search: the four phases</h2>
+<p>α–β solves the budget problem in one direction: it gets the same answer for fewer nodes. It does not solve the other one. A depth-limited search must call <code>evaluate()</code> at its frontier, and the quality of the move it returns is bounded by the quality of that function. For chess a material-plus-mobility evaluation is serviceable enough that depth was the binding constraint for forty years. For Go it was not: \(b \approx 250\), \(d \approx 150\), and — the part that actually blocked progress — no hand-written function that reliably ranks two Go positions. Deeper search over a bad evaluation returns a confidently wrong answer.</p>
+<p><strong>Monte Carlo tree search</strong> removes the evaluation function and replaces it with a statistic. The value of a position is estimated by playing the game out at random from it, many times, and averaging the results. Random play is a terrible policy; the estimator is nonetheless informative, because it is applied to <em>every</em> candidate equally and what is being compared is the difference between two positions under a common measurement. And it requires no domain knowledge beyond the rules and the terminal score, which is precisely the knowledge that was missing.</p>
+<p>The tree is grown asymmetrically, one node per iteration, and each iteration is four phases:</p>
+<ol>
+ <li><strong>Selection.</strong> From the root, descend by a tree policy — UCT in §4 — while the current node is fully expanded, until reaching a node with an untried move or a terminal position.</li>
+ <li><strong>Expansion.</strong> Add one child for one untried move. This is the only place the tree grows, which is why the node count equals the iteration count plus one.</li>
+ <li><strong>Simulation.</strong> From the new child, play to termination under a default policy — uniformly random in the base algorithm — and record the outcome. Nothing here is stored.</li>
+ <li><strong>Backpropagation.</strong> Walk from the new child to the root, incrementing each node's visit count \(N_i\) and adding the outcome to \(W_i\), scored from the point of view of the player who <em>moved into</em> that node.</li>
+</ol>
+<p>Two properties follow immediately and are worth naming. MCTS is <strong>anytime</strong>: the tree after \(n\) iterations is a valid, usable estimate for every \(n\), so a wall-clock or node budget can be enforced by stopping, with no partial-search artefact to repair. And it is <strong>asymmetric</strong>: iterations concentrate where the tree policy sends them, so the tree is deep along promising lines and one node thick elsewhere, which is the opposite of the uniform frontier a depth-limited search produces.</p>
+
+<div class="warn">
+ <strong>The sign convention that causes most MCTS bugs.</strong> \(W_i\) must be scored for the player who made the move <em>into</em> node \(i\), not for the player to move at \(i\) and not for the root player. Get it wrong and the search maximises the opponent's win rate at every other ply; the agent will look like it is working, because it still beats random play, and it will lose every won position. The test that catches it is not a win-rate test — construct a position with a forced win in one, run 200 iterations, and assert the chosen move is the winning move.
+</div>
+
+<div class="demo">
+ <h3>Demo · MCTS on tic-tac-toe, phase by phase <span class="tag">interactive</span></h3>
+ <p>The root is the empty board and X is to move. The top row is the nine root children; the second row is the children of whichever node the current iteration is working under — the most-visited child when nothing is in flight. Each box shows the move's cell and \(W_i/N_i\). <b>One phase ▶</b> advances a single iteration one phase at a time, so selection, expansion, simulation and backpropagation are visible in turn; the batch buttons run whole iterations. Watch two things: the visit counts concentrate long before the win rates separate, and the exploration constant \(C\) decides how sharply.</p>
+ <div class="controls">
+ <div class="control"><label>exploration constant \(C\): <b id="mc-cL">1.41</b></label><input type="range" id="mc-c" min="0" max="3" step="0.01" value="1.41"></div>
+ </div>
+ <div class="controls">
+ <button id="mc-phase">One phase ▶</button>
+ <button id="mc-iter" class="secondary">Complete this iteration</button>
+ <button id="mc-100" class="secondary">+100 iterations</button>
+ <button id="mc-1000" class="secondary">+1000 iterations</button>
+ <button id="mc-reset" class="secondary">Reset</button>
+ <span class="readout" id="mc-count"></span>
+ </div>
+ <canvas id="mc-canvas" width="900" height="340"></canvas>
+ <div class="legend"><span class="sw" style="background:#F9A825"></span>selection path &nbsp; <span class="sw" style="background:#6A3FA0"></span>expanded this iteration &nbsp; <span class="sw" style="background:#1F8B4C"></span>backpropagation path &nbsp; <span class="sw" style="background:#E8EDF2"></span>not yet in the tree</div>
+ <div class="readout" id="mc-read"></div>
+</div>
+
+<h2 id="s4">4. UCT, derived from UCB</h2>
+<p>Selection is a bandit problem, and Topic 1 already solved it. At a node with \(N\) visits whose children have \(W_i\) accumulated wins over \(N_i\) visits, treat each child as an arm with unknown mean \(\mu_i\) and empirical mean \(\hat\mu_i = W_i/N_i\). Hoeffding's inequality bounds the deviation of an average of \(N_i\) bounded samples,</p>
+\[ \Pr\!\left( \mu_i \ge \hat\mu_i + \varepsilon \right) \;\le\; \exp\!\left(-2 N_i \varepsilon^2\right), \]
+<p>and setting the right-hand side to \(N^{-4}\) — a failure probability that shrinks fast enough for the union bound over all arms and all steps to remain summable — gives \(\varepsilon = \sqrt{2\ln N / N_i}\). Adding that radius to the empirical mean is optimism under uncertainty, and it is the UCB1 rule of Topic 1 with \(t\) replaced by the parent's visit count. Applying it recursively at every node of a tree is <strong>UCT</strong>:</p>
+\[ \mathrm{UCT}_i \;=\; \underbrace{\frac{W_i}{N_i}}_{\text{exploitation}} \;+\; C\underbrace{\sqrt{\frac{\ln N}{N_i}}}_{\text{exploration}}, \qquad N = \sum_j N_j . \]
+<p>\(C = \sqrt{2}\) is the constant the derivation produces when rewards lie in \([0,1]\); it is not sacred, because the derivation assumes independent samples from a stationary distribution and the samples at an internal node of a growing tree are neither. The regret guarantee inherited from the bandit analysis is what makes the rule the right starting point: the number of pulls of a suboptimal arm is \(O(\ln N)\), so the probability of selecting a suboptimal move at the root converges to zero, and UCT's value estimates converge to the minimax value as \(N \to \infty\).</p>
+
+<h3>When exploration dominates (DQ 1c)</h3>
+<p>Set the two terms against each other. Exploration dominates when</p>
+\[ C\sqrt{\frac{\ln N}{N_i}} \;>\; \frac{W_i}{N_i} \;\Longleftrightarrow\; C\sqrt{\ln N}\,\sqrt{N_i} \;>\; W_i \;\Longleftrightarrow\; \boxed{\,N_i \;>\; \frac{W_i^{2}}{C^{2}\ln N}\,} \]
+<p>after multiplying both sides by \(N_i > 0\). Both terms decay in \(N_i\), but at different rates — \(N_i^{-1}\) against \(N_i^{-1/2}\) — so the exploitation term is the one that vanishes first and exploration dominates for <em>large</em> \(N_i\), not small. At the DQ 1 parameters \(W_i = 10\), \(N = 1000\), \(C = \sqrt{2}\), the crossing sits at \(N_i^\star = 100/(2\ln 1000) = 7.24\). Note where that falls: a node with \(W_i = 10\) must have \(N_i \ge 10\), so over the entire physically realisable range the exploration term is already the larger one. That is a statement about the DQ's parameters, not about UCT in general — a node with \(W_i = 10\) out of \(N_i = 10\) has an implausibly perfect record and a correspondingly small visit count.</p>
+<p>The reason low-visit nodes are prioritised <em>early</em> is a separate and simpler fact: \(W_i/N_i\) is confined to \([0,1]\), while \(C\sqrt{\ln N/N_i} \to \infty\) as \(N_i \to 0\). An unvisited child has infinite priority and is taken immediately, so every child is tried once before any is tried twice; among children with comparable win rates the less-visited one always wins the comparison. Exploration is therefore front-loaded by construction and decays as \(1/\sqrt{N_i}\) thereafter.</p>
+
+<div class="demo">
+ <h3>Demo · The UCT term explorer <span class="tag">interactive</span></h3>
+ <p>DQ 1(a) computed rather than asserted. The three curves are the exploitation term \(W_i/N_i\), the exploration term \(C\sqrt{\ln N/N_i}\), and their sum, plotted against the child's visit count \(N_i\). The dashed vertical is the crossing \(N_i^\star = W_i^2/(C^2\ln N)\) derived above; the shaded region to the left of \(N_i = W_i\) is unreachable, because a child cannot have more wins than visits. Sweep \(C\) to zero and the rule degenerates to greedy selection on the empirical mean.</p>
+ <div class="controls">
+ <div class="control"><label>wins \(W_i\): <b id="uc-wL">10</b></label><input type="range" id="uc-w" min="1" max="60" step="1" value="10"></div>
+ <div class="control"><label>parent visits \(N\): <b id="uc-nL">1000</b></label><input type="range" id="uc-n" min="50" max="5000" step="50" value="1000"></div>
+ <div class="control"><label>exploration \(C\): <b id="uc-cL">1.414</b></label><input type="range" id="uc-c" min="0.05" max="3" step="0.005" value="1.414"></div>
+ </div>
+ <canvas id="uc-canvas" width="900" height="290"></canvas>
+ <div class="legend"><span class="sw" style="background:#C0392B"></span>exploitation \(W_i/N_i\) &nbsp; <span class="sw" style="background:#1F8B4C"></span>exploration \(C\sqrt{\ln N/N_i}\) &nbsp; <span class="sw" style="background:#1F4E79"></span>UCT sum &nbsp; <span class="sw" style="background:#6A3FA0"></span>crossing \(N_i^\star\)</div>
+ <div class="readout" id="uc-read"></div>
+</div>
+
+<div class="deep">
+ <strong>Why \(C\) is problem-dependent, and the one-line heuristic that actually works (DQ 4c).</strong> The bound \(\varepsilon = \sqrt{2\ln N/N_i}\) is derived for rewards in \([0,1]\). Nothing else in the derivation carries scale information, so \(C\) is doing the job of a units conversion between the reward range and the confidence radius: if outcomes are scored \(\{-1,0,1\}\) instead of \(\{0,\tfrac12,1\}\) the appropriate \(C\) doubles, and no amount of tuning on the wrong scale recovers it. Beyond units, \(C\) is trading the variance of the rollout estimator against the cost of a wrong commitment — noisy rollouts and near-tied moves both call for larger \(C\). The practical heuristic is not a formula but a protocol: fix the iteration budget, sweep \(C \in \{0.1, 0.5, 1, \sqrt2, 2\}\) against a fixed reference opponent, and take the peak; then check that the peak is not at a boundary, because a peak at the edge of the sweep means the reward scale, not \(C\), is what needs fixing. Report the sweep, not the winner — a flat curve and a sharp curve carry very different information about how much your result depends on the constant.
+</div>
+
+<h2 id="s5">5. Learning the evaluation: AlphaZero and MuZero</h2>
+<p>The random rollout was a device for getting a value estimate without a value function. It works, and it is enormously wasteful: a full playout costs \(O(d)\) moves to produce one bounded sample of the outcome, and the information in it is discarded except for a single increment. Replace it with a function that returns an estimate of the same quantity in one forward pass, and the iteration cost collapses.</p>
+<p><strong>AlphaZero</strong> is that substitution, done with a network trained by self-play. A single network \(f_\theta(s) = (\mathbf{p}, v)\) outputs a prior over moves and a scalar value in \([-1,1]\). MCTS uses both: the value replaces the rollout, and the prior enters the selection rule, which becomes <strong>PUCT</strong>:</p>
+\[ a^\star = \arg\max_a \left[ Q(s,a) \;+\; c_{\text{puct}}\, P(s,a)\, \frac{\sqrt{\sum_b N(s,b)}}{1 + N(s,a)} \right]. \]
+<p>Three changes from UCT, each with a reason. The prior \(P(s,a)\) multiplies the exploration bonus, so a move the network considers implausible is not visited merely because it is unvisited — this is what makes \(b \approx 250\) tractable, since the pruning happens at selection time rather than after a wasted rollout. The numerator is \(\sqrt{N}\) rather than \(\sqrt{\ln N}\), a polynomial rather than logarithmic schedule, which explores more persistently; the logarithm's justification was an asymptotic regret bound, and a search running a few hundred simulations is nowhere near asymptopia. And the denominator is \(1 + N(s,a)\) rather than \(N(s,a)\), which keeps the bonus finite at zero visits so the prior alone breaks the first-visit tie.</p>
+<p>Training closes the loop. Each self-play move records the search's visit distribution \(\boldsymbol{\pi} \propto N(s,\cdot)^{1/\tau}\) and, at the end, the game outcome \(z\). The network is fit to both:</p>
+\[ \mathcal{L}(\theta) \;=\; (z - v_\theta)^2 \;-\; \boldsymbol{\pi}^\top \log \mathbf{p}_\theta \;+\; \lambda \lVert\theta\rVert^2. \]
+<p>The first term is regression onto the realised outcome; the second is a cross-entropy that distils the search into the network. That second term is the engine: MCTS with the current network is stronger than the network alone, so \(\boldsymbol{\pi}\) is a better policy than \(\mathbf{p}_\theta\), and training toward it is <em>policy improvement</em> with the search operator playing the role the \(\max\) plays in value iteration. The improved network makes the next search stronger still. This is the same policy-iteration structure as Topic 1, with a tree search substituted for the greedy step.</p>
+
+<h3>What MuZero learns that AlphaZero is given (DQ 6c)</h3>
+<p>AlphaZero is handed a simulator: given \(s\) and \(a\) it can compute the successor exactly, which is what lets it build a tree at all. <strong>MuZero</strong> removes that assumption and learns three functions instead:</p>
+\[ s^0 = h_\theta(o_{1:t}), \qquad (r^k, s^k) = g_\theta(s^{k-1}, a^k), \qquad (\mathbf{p}^k, v^k) = f_\theta(s^k). \]
+<p>The representation \(h\) maps observations to a latent state, the dynamics \(g\) advances the latent state under an action and predicts the immediate reward, and the prediction head \(f\) supplies the policy and value that PUCT needs. The search runs entirely inside the latent space: no board is ever reconstructed, and the rules are never written down.</p>
+<p>The point that repays attention is what these functions are trained to do. The loss constrains only three observable quantities — the predicted reward against the reward actually received, the predicted policy against the search's visit distribution, and the predicted value against the \(n\)-step bootstrapped return:</p>
+\[ \mathcal{L} = \sum_{k=0}^{K}\Big[ \ell^{r}(u_{t+k},\, r^k_t) + \ell^{p}(\boldsymbol{\pi}_{t+k},\, \mathbf{p}^k_t) + \ell^{v}(z_{t+k},\, v^k_t) \Big] + \lambda\lVert\theta\rVert^2 . \]
+<p>There is no term requiring \(s^k\) to decode back to a real position, and none requiring \(g\) to be a correct transition function. The latent state is therefore under-determined by design: it need only preserve the information that reward, value and policy depend on, and it is free to discard everything else. That is the mathematical content of "infers an optimal policy without knowing the rules." MuZero does not learn the rules and then plan; it learns whatever abstraction makes planning produce correct values, which is a strictly weaker and strictly cheaper requirement. The cost is that its model is only trustworthy on the distribution it was trained on and cannot be inspected, queried, or reused for anything but this search.</p>
+
+<div class="deep">
+ <strong>Why this is the antecedent of search at inference time, and where the analogy is load-bearing.</strong> The structural claim of this topic is that AlphaZero's loop — propose with a policy, evaluate with a learned value, search over the proposals, then train the policy on what the search found — is the same loop a reasoning model runs when it samples multiple candidate continuations, scores them with a learned verifier or reward model, and is subsequently trained on the ones that scored well. The correspondence is exact at three points: the prior \(P(s,a)\) is the base model's next-token or next-step distribution, the value \(v_\theta\) is the verifier, and the distillation term \(-\boldsymbol{\pi}^\top\log\mathbf{p}_\theta\) is the rejection-sampling or preference-training step that folds search results back into weights. It is <em>not</em> exact in one place that matters: a game has a terminal outcome \(z\) that is free, objective, and unarguable, and open-ended reasoning does not. Every difficulty in Topic 6 descends from having to learn that \(z\) from human comparisons instead of reading it off the board — which is why the reward-hacking evidence you will gather there has no analogue here.
+</div>
+
+<h2 id="s6">6. Benchmarking search honestly</h2>
+<p>Four measurements, each answering a different question, and none of them substitutable for another.</p>
+<ul>
+ <li><strong>Nodes expanded.</strong> The implementation-independent measure of work. It is the right axis for comparing search strategies, because it does not move when you change language, machine, or optimisation level. It is the wrong axis for a deployment decision, because it prices every node identically and a PUCT node carrying a network forward pass costs thousands of times a random-rollout node.</li>
+ <li><strong>Wall-clock per move.</strong> The only measurement the deployment actually feels, and the only one that catches the cost hidden inside a node. Report it alongside nodes, never instead: the ratio between them is the per-node cost, and a revision that improves one while worsening the ratio is worth knowing about.</li>
+ <li><strong>Decision quality.</strong> Win rate against a <em>fixed reference opponent</em>, over enough games for the interval to mean something.</li>
+ <li><strong>Scalability.</strong> How each of the above moves as depth, iteration budget, or board size grows. A single operating point cannot distinguish a method that is better here from one that is better everywhere, and the second claim is the one worth making.</li>
+</ul>
+
+<h3>Why the reference opponent must be fixed</h3>
+<p>The tempting alternative is the round-robin win-rate matrix on its own: play every agent against every other and rank by total score. It has two defects and the second is fatal. The first is that the numbers are not on a common scale — agent A beating agent B 60% of the time and agent B beating agent C 55% of the time places no constraint at all on A against C, because the two figures were measured against different opponents. The second is that game agents are frequently <strong>non-transitive</strong>: A beats B, B beats C, and C beats A is a stable and common configuration, produced whenever agents exploit each other's specific blind spots rather than differing in general strength. A cycle has no ordering, so "which agent is stronger" has no answer of the form the matrix is being asked for.</p>
+<p>A fixed reference opponent removes both defects by construction. Every agent is measured against the same distribution of positions and the same errors, so the scores are comparable by definition; and because the reference never changes, a score computed today is comparable with one computed after a revision. Two conditions on the reference: it must be strong enough that your agents do not all score 100% and weak enough that they do not all score 0%, since a saturated metric has no resolution; and it must be frozen, versioned, and stored — a "random opponent" reseeded differently between runs is not a fixed reference. Keep the round-robin matrix as well. It answers a genuinely different question — whether any pair is non-transitive — and if it is, that is a finding to report, not a nuisance to average away.</p>
+
+<div class="why">
+ <strong>Why a revision that makes one metric worse can still be the right revision.</strong> Adding move ordering to your α–β search will cut <code>nodes_expanded</code> by a large factor and may well <em>increase</em> wall-clock per move, because the ordering callback evaluates every child before the recursion does. Both numbers are correct and the trade is real. What makes it acceptable is that it is stated: "ordering reduced nodes expanded at depth 6 from 18 296 to 5 573, a factor of 3.3, and increased median move time from 41 ms to 55 ms; we take the trade because the node budget, not the clock, is what bounds us at depth 8 and above, where the ratio inverts." That sentence is defensible and a reader can disagree with it on the evidence. What is not acceptable is reporting only the node count. The requirement in the build step is not that your revision be a Pareto improvement — most interesting revisions are not — but that you name the axis you gave up, quantify what it cost, and say why the exchange is favourable for the operating point you are deploying at.
+</div>
+
+<div class="demo">
+ <h3>Demo · Play against the agents <span class="tag">interactive</span></h3>
+ <p>You are X and move first. Choose the opponent and watch the cost column: random considers only the legal moves; depth-limited minimax with α–β and heuristic ordering reports the nodes it entered; MCTS reports the tree nodes it created, which is one per iteration. Set minimax to depth 9 and it plays exactly — it cannot be beaten, only drawn. Set it to depth 2 and it can be. The two right-hand columns are precisely the <code>nodes_expanded</code> and <code>wall_clock_ms</code> columns of your <code>games</code> table, measured the same way.</p>
+ <div class="controls">
+ <div class="control"><label>opponent</label><select id="pl-agent">
+   <option value="random">random</option>
+   <option value="minimax" selected>minimax + α–β (depth-limited)</option>
+   <option value="mcts">MCTS with UCT</option></select></div>
+ <div class="control"><label>minimax depth: <b id="pl-dL">9</b></label><input type="range" id="pl-d" min="1" max="9" step="1" value="9"></div>
+ <div class="control"><label>MCTS iterations: <b id="pl-iL">800</b></label><input type="range" id="pl-i" min="50" max="4000" step="50" value="800"></div>
+ </div>
+ <div class="controls">
+ <button id="pl-new">New game</button>
+ <button id="pl-auto" class="secondary">Let the agent open (it plays &#9675; first)</button>
+ <span class="readout" id="pl-status"></span>
+ </div>
+ <div style="display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start">
+ <div><table class="board" id="pl-board"></table><div class="legend">Click any empty square to play X.</div></div>
+ <div style="flex:1;min-width:330px"><table class="tb" id="pl-log"></table></div>
+ </div>
+ <div class="readout" id="pl-read"></div>
+</div>
+
+<h2 id="s7">7. In practice (Search Arena)</h2>
+<p class="product"><strong>In the build.</strong> Three agents behind one <code>POST /act</code>: the shared scaffold under both orderings, MCTS with a configurable \(C\), and the AlphaZero-inspired agent whose evaluation network is trained in <code>train/</code> and exported to a NumPy archive for serving like every other policy in this course. Nothing in the serving tier imports PyTorch; a policy/value head is a handful of matrix multiplies, and the standing <code>tests/test_no_torch.py</code> guard still applies. Every game written by the harness lands in <code>games</code>, and every number in your report is a query against it — including the node counts you compare with your DQ 2 derivation.</p>
+<p>The two tables are shaped by the questions §6 asks of them. <code>games</code> is one row per game and carries the per-game cost and outcome; <code>matches</code> is the aggregate over a pairing, so the round-robin matrix is a read rather than a recomputation:</p>
+<table class="tb">
+<tr><th>table · column</th><th>type</th><th>why it is there</th></tr>
+<tr><td><code>games.agent</code> / <code>games.opponent</code></td><td>text</td><td>both sides named, so a pairing can be filtered in either direction</td></tr>
+<tr><td><code>games.result</code></td><td>text</td><td><code>win</code>/<code>loss</code>/<code>draw</code> from <code>agent</code>'s side; a draw is not half a win in tic-tac-toe and must not be stored as one</td></tr>
+<tr><td><code>games.moves</code></td><td>int</td><td>game length; separates "won fast" from "won at all", and detects a search that is timing out into random play</td></tr>
+<tr><td><code>games.nodes_expanded</code></td><td>bigint</td><td>summed over the agent's moves in that game — the implementation-independent work measure</td></tr>
+<tr><td><code>games.wall_clock_ms</code></td><td>float</td><td>the same game measured in the units the deployment feels; the ratio to the column above is the per-node cost</td></tr>
+<tr><td><code>games.search_depth</code></td><td>int</td><td>the configured depth or iteration budget — the independent variable of the scalability tab</td></tr>
+<tr><td><code>matches.wins</code>/<code>draws</code>/<code>losses</code></td><td>int</td><td>the round-robin cell, ≥ 200 games per pairing so a 5-point difference is outside the noise</td></tr>
+<tr><td><code>matches.ref_win_rate</code></td><td>float</td><td>score against the frozen reference opponent — the only column comparable across agents and across revisions</td></tr>
+</table>
+<p>Two hundred games per pairing is not a round number chosen for comfort. At a true win rate near \(0.5\) the standard error of a proportion over \(n\) games is \(\sqrt{p(1-p)/n} = 0.035\) at \(n=200\), so the 95% interval is about \(\pm 7\) points; a 5-point difference measured over 50 games is indistinguishable from nothing.</p>
+
+<h3>The node budget, and why it must appear in the response</h3>
+<p>A depth-limited search whose depth is chosen by the caller is an unbounded compute request wearing a small integer. At \(b=7\), depth 8 is \(\sum_{k \le 8} 7^k \approx 6.7\) million nodes; the free-tier instance will exhaust its memory or its request timeout, and the failure will present as a dead worker rather than as an error the caller can act on. The budget is enforced inside the scaffold, where the node counter already lives, and the amount consumed is returned in the response body — because a caller that receives a move with no indication that the search was truncated has been given a silently degraded answer:</p>
+<pre><span class="c"># search/scaffold.py — the same recursion as §2, with the two additions</span>
+<span class="k">class</span> <span class="f">BudgetExceeded</span>(<span class="f">Exception</span>): <span class="k">pass</span>
+
+<span class="k">def</span> <span class="f">search</span>(state, player, depth, alpha, beta, order, ctr):
+    ctr.nodes += 1
+    <span class="k">if</span> ctr.nodes &gt; ctr.budget: <span class="k">raise</span> <span class="f">BudgetExceeded</span>          <span class="c"># 1. checked at entry, not at the leaves</span>
+    <span class="k">if</span> (u := state.<span class="f">terminal_value</span>(player)) <span class="k">is</span> <span class="k">not</span> <span class="s">None</span>: <span class="k">return</span> u
+    <span class="k">if</span> depth == 0:                          <span class="k">return</span> state.<span class="f">evaluate</span>(player)
+    best = -math.inf
+    <span class="k">for</span> m <span class="k">in</span> <span class="f">order</span>(state.<span class="f">legal_moves</span>(), state, player):
+        v = -<span class="f">search</span>(state.<span class="f">do</span>(m), -player, depth - 1, -beta, -alpha, order, ctr)
+        best = <span class="f">max</span>(best, v); alpha = <span class="f">max</span>(alpha, best)
+        <span class="k">if</span> alpha &gt;= beta: <span class="k">break</span>
+    <span class="k">return</span> best
+
+<span class="c"># api/act.py — iterative deepening makes the budget safe to hit</span>
+<span class="k">def</span> <span class="f">act</span>(state, player, max_depth, budget=<span class="s">200_000</span>):
+    ctr = <span class="f">Counter</span>(nodes=0, budget=budget)
+    move, reached = state.<span class="f">legal_moves</span>()[0], 0
+    <span class="k">for</span> d <span class="k">in</span> <span class="f">range</span>(1, max_depth + 1):                             <span class="c"># 2. every depth leaves a usable move</span>
+        <span class="k">try</span>:
+            move = <span class="f">best_move</span>(state, player, d, heuristic, ctr); reached = d
+        <span class="k">except</span> <span class="f">BudgetExceeded</span>:
+            <span class="k">break</span>                                                <span class="c"># keep the last completed depth</span>
+    <span class="k">return</span> {<span class="s">"move"</span>: move, <span class="s">"nodes_expanded"</span>: ctr.nodes, <span class="s">"budget"</span>: budget,
+            <span class="s">"depth_reached"</span>: reached, <span class="s">"truncated"</span>: ctr.nodes &gt;= budget}</pre>
+<p>Iterative deepening is what makes the guard usable rather than merely safe. Raising the exception mid-search discards that depth's work, so without an outer loop a truncated request has no answer at all; with one, the last completed depth is always available and the response can report which depth that was. The re-search cost is small for the reason §2 gives — the tree at depth \(d\) is \(b\) times the tree at \(d-1\), so every earlier iteration together costs a \(1/(b-1)\) fraction of the last — and the previous iteration's best move is the best ordering hint available, which usually more than repays it. MCTS needs none of this: it is anytime already, and its budget is a loop bound.</p>
+
+<div class="warn">
+ <strong>The test that makes the budget real.</strong> A budget that is never hit in testing is a constant, not a guard. The build step asks for a node-budget enforcement test, and the useful form of it is a request at a depth whose node count you have computed to exceed the budget, asserting three things: the response is a 200 and not a 500, <code>truncated</code> is <code>true</code>, and <code>depth_reached</code> is strictly less than the depth requested. Assert the returned move is legal too — the failure mode where truncation returns the placeholder first legal move is correct behaviour, but a placeholder that is stale from a previous position is not.
+</div>
+
+<div class="callout">
+ <strong>What carries forward.</strong> The bandit bound of Topic 1 became the selection rule of §4 without modification, and the exploration constant is the same knob under a third name. The policy-improvement loop of §5 is value iteration with a tree search in place of the \(\max\), and it is the last place in this course where the target of improvement is available for free. Topic 6 removes that: the outcome \(z\) that a game hands you at no cost has to be learned from human comparisons, and the search-then-distil loop becomes sample-then-score-then-train. When you read that MCTS is the direct antecedent of search at inference time in a reasoning model, the claim is this specific one — the loop is the same loop, and only the source of the value signal has changed.
+</div>
+
+<div class="nav"><a href="Tutorial-Topic-4-Actor-Critic-Methods.html">← Topic 4 · Actor-Critic Methods</a><a href="Tutorial-Topic-6-RLHF-and-Multi-Agent-Reinforcement-Learning.html">Topic 6 · RLHF &amp; Multi-Agent RL →</a></div>
+</div>
+<script>
+/* ============================================================
+   Shared helpers
+   ============================================================ */
+function clear(ctx,c){ ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height); }
+function axes(ctx,x0,y0,w,h,xlab,ylab){
+  ctx.strokeStyle='#C7D2DE'; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(x0,y0-h); ctx.lineTo(x0,y0); ctx.lineTo(x0+w,y0); ctx.stroke();
+  ctx.fillStyle='#666'; ctx.font='11px -apple-system,Arial';
+  if(xlab){ ctx.textAlign='center'; ctx.fillText(xlab,x0+w/2,y0+30); }
+  if(ylab){ ctx.save(); ctx.translate(x0-42,y0-h/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText(ylab,0,0); ctx.restore(); }
+  ctx.textAlign='left';
+}
+function polyline(ctx,pts,color,width,dash){
+  if(pts.length<2) return;
+  ctx.save(); if(dash) ctx.setLineDash(dash);
+  ctx.strokeStyle=color; ctx.lineWidth=width||2; ctx.beginPath();
+  ctx.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]);
+  ctx.stroke(); ctx.restore();
+}
+function fmtBig(x){
+  if(!isFinite(x)) return '\u221e';
+  if(x<1e5) return Math.round(x).toLocaleString();
+  return x.toExponential(2).replace('e+','\u00d710^');
+}
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+}
+
+/* ============================================================
+   Tic-tac-toe, shared by demos 3 and 5
+   ============================================================ */
+const LINES=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+function ttWinner(b){                     // 0 running, 1 X, 2 O, 3 draw
+  for(const L of LINES){ const a=b[L[0]]; if(a && a===b[L[1]] && a===b[L[2]]) return a; }
+  for(let i=0;i<9;i++) if(!b[i]) return 0;
+  return 3;
+}
+function ttMoves(b){ const m=[]; for(let i=0;i<9;i++) if(!b[i]) m.push(i); return m; }
+function ttHeur(b,p){                     // the domain evaluation function, in (-1,1)
+  let s=0;
+  for(const L of LINES){
+    let mine=0, theirs=0;
+    for(const i of L){ if(b[i]===p) mine++; else if(b[i]) theirs++; }
+    if(mine&&!theirs) s += (mine===2?3:1);
+    else if(theirs&&!mine) s -= (theirs===2?3:1);
+  }
+  return s/24;
+}
+/* ---- ONE scaffold; ORDER is the only difference between the two baselines ---- */
+const ORDER = {
+  identity: (ms)=>ms,
+  heuristic: (ms,b,p)=>ms.map(m=>{ b[m]=p; const v=ttHeur(b,p); b[m]=0; return [v,m]; })
+                        .sort((x,y)=>y[0]-x[0]).map(x=>x[1])
+};
+function ttSearch(b,p,depth,alpha,beta,ctr,order){
+  ctr.n++;
+  const w=ttWinner(b);
+  if(w===3) return 0;
+  if(w!==0) return (w===p)?1:-1;
+  if(depth===0) return ttHeur(b,p);
+  let best=-Infinity;
+  for(const m of order(ttMoves(b),b,p)){
+    b[m]=p;
+    const v=-ttSearch(b,3-p,depth-1,-beta,-alpha,ctr,order);
+    b[m]=0;
+    if(v>best) best=v;
+    if(best>alpha) alpha=best;
+    if(alpha>=beta) break;
+  }
+  return best;
+}
+function chooseMinimax(b,p,depth,orderName){
+  const order=ORDER[orderName||'heuristic'], ctr={n:0};
+  const ms=order(ttMoves(b),b,p);
+  let best=-Infinity, bestM=ms[0], alpha=-Infinity;
+  for(const m of ms){
+    b[m]=p;
+    const v=-ttSearch(b,3-p,depth-1,-Infinity,-alpha,ctr,order);
+    b[m]=0;
+    if(v>best){ best=v; bestM=m; if(v>alpha) alpha=v; }
+  }
+  return {move:bestM, value:best, nodes:ctr.n};
+}
+/* ---- MCTS, incremental so the tree persists across button presses ---- */
+function mctsNewRoot(board,player){
+  return {par:null, mv:null, p:player, untried:ttMoves(board), kids:[], W:0, N:0, count:1};
+}
+function mctsSelect(root,board,player,C){
+  let nd=root, b=board.slice(), p=player;
+  const path=[root];
+  while(nd.untried.length===0 && nd.kids.length>0){
+    let best=null, bv=-Infinity;
+    for(const k of nd.kids){
+      const v = k.W/k.N + C*Math.sqrt(Math.log(nd.N)/k.N);
+      if(v>bv){ bv=v; best=k; }
+    }
+    nd=best; b[nd.mv]=p; p=3-p; path.push(nd);
+    if(ttWinner(b)!==0) break;
+  }
+  return {node:nd, b, p, path};
+}
+function mctsExpand(st,root){
+  if(ttWinner(st.b)!==0 || st.node.untried.length===0) return null;
+  const i=Math.floor(Math.random()*st.node.untried.length);
+  const m=st.node.untried.splice(i,1)[0];
+  st.b[m]=st.p;
+  const kid={par:st.node, mv:m, p:3-st.p, untried:ttMoves(st.b), kids:[], W:0, N:0};
+  st.node.kids.push(kid); root.count++;
+  st.node=kid; st.p=3-st.p; st.path.push(kid);
+  return kid;
+}
+function mctsSimulate(b,p){
+  const bb=b.slice(); let q=p, w=ttWinner(bb);
+  while(w===0){ const ms=ttMoves(bb); bb[ms[Math.floor(Math.random()*ms.length)]]=q; q=3-q; w=ttWinner(bb); }
+  return w;
+}
+function mctsBackprop(node,w){
+  let cur=node;
+  while(cur){
+    cur.N++;
+    if(cur.par){ const mover=cur.par.p; cur.W += (w===3)?0.5:(w===mover?1:0); }
+    cur=cur.par;
+  }
+}
+function mctsIterate(root,board,player,C){
+  const st=mctsSelect(root,board,player,C);
+  mctsExpand(st,root);
+  mctsBackprop(st.node, mctsSimulate(st.b, st.p));
+}
+function chooseMCTS(b,p,iters,C){
+  const root=mctsNewRoot(b,p);
+  for(let i=0;i<iters;i++) mctsIterate(root,b,p,C);
+  let best=null,bn=-1;
+  for(const k of root.kids) if(k.N>bn){ bn=k.N; best=k; }
+  return {move: best? best.mv : ttMoves(b)[0], nodes: root.count, root};
+}
+
+/* ============================================================
+   Demo 1: the node-count calculator
+   ============================================================ */
+(function(){
+  const bS=document.getElementById('nc-b'), dS=document.getElementById('nc-d'),
+        fS=document.getElementById('nc-f'), cS=document.getElementById('nc-c'),
+        tS=document.getElementById('nc-t'),
+        bL=document.getElementById('nc-bL'), dL=document.getElementById('nc-dL'),
+        fL=document.getElementById('nc-fL'), cL=document.getElementById('nc-cL'),
+        tL=document.getElementById('nc-tL'),
+        cv=document.getElementById('nc-canvas'), ctx=cv.getContext('2d'),
+        out=document.getElementById('nc-read');
+  const COL={ex:'#C0392B', lvl:'#F9A825', node:'#1F8B4C', ab:'#1F4E79', bud:'#6A3FA0'};
+
+  function geom(r,k){ return Math.abs(r-1)<1e-12 ? k+1 : (Math.pow(r,k+1)-1)/(r-1); }
+  function curves(b,f,d){
+    const ex=[],lvl=[],nd=[],ab=[];
+    for(let k=0;k<=d;k++){
+      const E=geom(b,k);
+      ex.push(E);
+      lvl.push(1 + f*(E-1));
+      nd.push(geom(f*b,k));
+      ab.push(Math.pow(b,Math.ceil(k/2)) + Math.pow(b,Math.floor(k/2)) - 1);
+    }
+    return {ex,lvl,nd,ab};
+  }
+  function lastFeasible(arr,B){
+    let last=-1;
+    for(let k=0;k<arr.length;k++) if(arr[k]<=B) last=k; else break;
+    return last;
+  }
+  function draw(){
+    const b=parseInt(bS.value), d=parseInt(dS.value), f=parseFloat(fS.value),
+          cost=parseFloat(cS.value), T=parseFloat(tS.value);
+    bL.textContent=b; dL.textContent=d; fL.textContent=f.toFixed(2);
+    cL.textContent=cost.toFixed(2); tL.textContent=T.toFixed(1);
+    const B = T/(cost*1e-6);
+    const C=curves(b,f,d);
+    clear(ctx,cv);
+    const x0=64,y0=246,w=790,h=214;
+    axes(ctx,x0,y0,w,h,'depth  d','nodes visited (log\u2081\u2080)');
+    const top=Math.max(Math.log10(Math.max(...C.ex)), Math.log10(B))+0.6;
+    const hi=Math.max(3,Math.ceil(top));
+    const X=k=>x0+w*k/Math.max(d,1);
+    const Y=v=>y0-h*Math.max(0,Math.log10(Math.max(v,1)))/hi;
+    ctx.strokeStyle='#EEF2F6'; ctx.lineWidth=1;
+    const stepE=Math.max(1,Math.ceil(hi/8));
+    for(let e=0;e<=hi;e+=stepE){
+      const y=y0-h*e/hi;
+      ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+w,y); ctx.stroke();
+      ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial';
+      ctx.fillText(e===0?'1':('1e'+e), x0-34, y+3);
+    }
+    ctx.fillStyle='#999'; ctx.textAlign='center';
+    const xs=Math.max(1,Math.ceil(d/12));
+    for(let k=0;k<=d;k+=xs) ctx.fillText(k, X(k), y0+15);
+    ctx.textAlign='left';
+    polyline(ctx,[[x0,Y(B)],[x0+w,Y(B)]],COL.bud,1.8,[6,4]);
+    ctx.fillStyle=COL.bud; ctx.font='10px -apple-system,Arial';
+    ctx.fillText('budget = '+fmtBig(B)+' nodes', x0+6, Y(B)-5);
+    const pack=[['ex',C.ex],['lvl',C.lvl],['node',C.nd],['ab',C.ab]];
+    for(const [key,arr] of pack){
+      polyline(ctx, arr.map((v,k)=>[X(k),Y(v)]), COL[key], 2.2);
+    }
+    const F={ex:lastFeasible(C.ex,B), lvl:lastFeasible(C.lvl,B),
+             nd:lastFeasible(C.nd,B), ab:lastFeasible(C.ab,B)};
+    for(const [key,arr] of pack){
+      const kk = key==='ex'?F.ex : key==='lvl'?F.lvl : key==='node'?F.nd : F.ab;
+      if(kk>=0 && kk<d){ ctx.fillStyle=COL[key]; ctx.beginPath(); ctx.arc(X(kk),Y(arr[kk]),4,0,7); ctx.fill(); }
+    }
+    const nm=k=> k<0 ? 'depth 0 already' : (k>=d ? '> '+d+' (beyond the plot)' : 'depth '+k);
+    const effb=(f*b);
+    out.innerHTML =
+      `\\(b=${b}\\), \\(f=${f.toFixed(2)}\\). Budget \\(B=T/c\\) = <b>${fmtBig(B)}</b> nodes `
+      + `(${T.toFixed(1)} s at ${cost.toFixed(2)} \u00b5s per node). Deepest search that fits: `
+      + `<b style="color:${COL.ex}">exhaustive ${nm(F.ex)}</b> &nbsp;\u00b7&nbsp; `
+      + `<b style="color:${COL.lvl}">fraction-per-level ${nm(F.lvl)}</b> &nbsp;\u00b7&nbsp; `
+      + `<b style="color:${COL.node}">fraction-per-node ${nm(F.nd)}</b> &nbsp;\u00b7&nbsp; `
+      + `<b style="color:${COL.ab}">\u03b1\u2013\u03b2 ${nm(F.ab)}</b>.<br>`
+      + `The per-level quota keeps the exponent \\(b=${b}\\) and buys \\(\\log_b(1/f)=${(Math.log(1/f)/Math.log(b)).toFixed(2)}\\) extra plies \u2014 a constant factor. `
+      + `The per-node rate changes the effective branching factor to \\(fb=${effb.toFixed(2)}\\)`
+      + (effb<=1 ? ' \u2014 at or below 1, so the pruned tree no longer grows with depth at all.' : '.')
+      + ` \u03b1\u2013\u03b2 with perfect ordering runs at \\(\\sqrt{b}=${Math.sqrt(b).toFixed(2)}\\), which is why its feasible depth is close to twice the exhaustive one.`;
+    if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([out]);
+  }
+  [bS,dS,fS,cS,tS].forEach(el=>el.oninput=draw);
+  draw();
+})();
+
+/* ============================================================
+   Demo 2: minimax with alpha-beta, stepped
+   ============================================================ */
+(function(){
+  const sel=document.getElementById('ab-order'), cv=document.getElementById('ab-canvas'),
+        ctx=cv.getContext('2d'), cnt=document.getElementById('ab-count'),
+        out=document.getElementById('ab-read');
+  const LEAVES=[10,5,12,3,10,11,8,6,7,11,1,4,8,10,3,8,4,5,5,12,3,10,4,2,6,1,11];
+
+  function build(){
+    let li=0;
+    const mk=(depth,id)=>{
+      const n={id, depth, kids:[], val:null};
+      if(depth===3){ n.val=LEAVES[li++]; return n; }
+      for(let i=0;i<3;i++) n.kids.push(mk(depth+1, id+i));
+      return n;
+    };
+    return mk(0,'r');
+  }
+  function trueVal(n,isMax){
+    if(!n.kids.length) return n.val;
+    let best=isMax?-Infinity:Infinity;
+    for(const k of n.kids){ const v=trueVal(k,!isMax); best=isMax?Math.max(best,v):Math.min(best,v); }
+    return best;
+  }
+  function kidsOf(n,isMax,best1st){
+    if(!best1st) return n.kids;
+    return n.kids.map(k=>[trueVal(k,!isMax),k]).sort((x,y)=> isMax? y[0]-x[0] : x[0]-y[0]).map(x=>x[1]);
+  }
+  function subtreeIds(n,acc){ acc.push(n.id); for(const k of n.kids) subtreeIds(k,acc); return acc; }
+
+  function record(root,best1st){
+    const ev=[];
+    (function rec(n,isMax,alpha,beta){
+      ev.push({t:'enter', id:n.id, isMax, alpha, beta});
+      if(!n.kids.length){ ev.push({t:'ret', id:n.id, v:n.val}); return n.val; }
+      const kids=kidsOf(n,isMax,best1st);
+      let v = isMax?-Infinity:Infinity, cut=-1;
+      for(let i=0;i<kids.length;i++){
+        const r=rec(kids[i], !isMax, alpha, beta);
+        if(isMax){ v=Math.max(v,r); alpha=Math.max(alpha,v); }
+        else     { v=Math.min(v,r); beta =Math.min(beta ,v); }
+        if(alpha>=beta){ cut=i; break; }
+      }
+      if(cut>=0 && cut<kids.length-1){
+        const ids=[];
+        for(let i=cut+1;i<kids.length;i++) subtreeIds(kids[i],ids);
+        ev.push({t:'cut', id:n.id, ids, alpha, beta});
+      }
+      ev.push({t:'ret', id:n.id, v});
+      return v;
+    })(root,true,-Infinity,Infinity);
+    return ev;
+  }
+  function stats(best1st){
+    const r=build(), ev=record(r,best1st);
+    let nodes=0, leaves=0;
+    for(const e of ev){ if(e.t==='enter'){ nodes++; if(e.id.length===4) leaves++; } }
+    return {nodes,leaves,value:ev[ev.length-1].v};
+  }
+  const STAT={identity:stats(false), best:stats(true)};
+  const FULL={nodes:40, leaves:27};
+
+  let root=build(), events=[], ptr=0, pos={};
+  function layout(){
+    pos={};
+    const yy=[34,110,186,268];
+    const leaves=[];
+    (function walk(n){ if(!n.kids.length){ leaves.push(n); return; } n.kids.forEach(walk); })(root);
+    leaves.forEach((n,i)=>{ pos[n.id]={x:26+i*32.4, y:yy[3], w:27, h:22, node:n}; });
+    (function up(n){
+      if(!n.kids.length) return pos[n.id].x;
+      const xs=n.kids.map(up);
+      const x=xs.reduce((a,b)=>a+b,0)/xs.length;
+      pos[n.id]={x, y:yy[n.depth], w:n.depth===0?52:44, h:26, node:n};
+      return x;
+    })(root);
+  }
+  function reset(){
+    root=build(); layout();
+    events=record(root, sel.value==='best');
+    ptr=0; render();
+  }
+  function stateMap(upto){
+    const st={}, val={};
+    for(let i=0;i<upto;i++){
+      const e=events[i];
+      if(e.t==='enter') st[e.id]='open';
+      else if(e.t==='ret'){ st[e.id]='done'; val[e.id]=e.v; }
+      else if(e.t==='cut'){ for(const id of e.ids) if(!st[id]) st[id]='cut'; }
+    }
+    return {st,val};
+  }
+  function render(){
+    const {st,val}=stateMap(ptr);
+    clear(ctx,cv);
+    // edges
+    (function edges(n){
+      for(const k of n.kids){
+        const a=pos[n.id], c=pos[k.id];
+        ctx.strokeStyle = (st[k.id]==='cut') ? '#F2C6C0' : '#CFD7DF';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y+a.h/2); ctx.lineTo(c.x, c.y-c.h/2); ctx.stroke();
+        edges(k);
+      }
+    })(root);
+    for(const id in pos){
+      const p=pos[id], n=p.node, s=st[id]||'none', isMax=(n.depth%2===0);
+      let fill='#F4F7FA', stroke='#CFD7DF', txt='#8A97A6';
+      if(s==='open'){ fill='#FDF3D6'; stroke='#F9A825'; txt='#7A5B00'; }
+      else if(s==='done'){ fill='#DCE8F3'; stroke='#1F4E79'; txt='#12365A'; }
+      else if(s==='cut'){ fill='#FBE3E0'; stroke='#C0392B'; txt='#8E2B20'; }
+      ctx.fillStyle=fill; ctx.strokeStyle=stroke; ctx.lineWidth=1.4;
+      roundRect(ctx, p.x-p.w/2, p.y-p.h/2, p.w, p.h, 4); ctx.fill(); ctx.stroke();
+      ctx.fillStyle=txt; ctx.font='11px -apple-system,Arial'; ctx.textAlign='center';
+      let label;
+      if(!n.kids.length) label = (s==='cut') ? '\u00b7' : String(n.val);
+      else label = (val[id]!==undefined) ? String(val[id]) : (s==='cut'?'\u00b7':'?');
+      ctx.fillText(label, p.x, p.y+4);
+      if(n.kids.length){
+        ctx.fillStyle = isMax ? '#1F4E79' : '#C0392B';
+        ctx.beginPath();
+        if(isMax){ ctx.moveTo(p.x-p.w/2-9, p.y+4); ctx.lineTo(p.x-p.w/2-3, p.y+4); ctx.lineTo(p.x-p.w/2-6, p.y-3); }
+        else     { ctx.moveTo(p.x-p.w/2-9, p.y-3); ctx.lineTo(p.x-p.w/2-3, p.y-3); ctx.lineTo(p.x-p.w/2-6, p.y+4); }
+        ctx.closePath(); ctx.fill();
+      }
+    }
+    ctx.textAlign='left'; ctx.fillStyle='#555'; ctx.font='11px -apple-system,Arial';
+    ctx.fillText('MAX', 6, 20); ctx.fillText('MIN', 6, 96); ctx.fillText('MAX', 6, 172); ctx.fillText('leaves', 6, 254);
+    let entered=0, cutn=0;
+    for(let i=0;i<ptr;i++){ if(events[i].t==='enter') entered++; if(events[i].t==='cut') cutn+=events[i].ids.length; }
+    cnt.textContent = `step ${ptr} / ${events.length} \u00b7 ${entered} nodes entered \u00b7 ${cutn} cut off`;
+    const cur = ptr>0 ? events[ptr-1] : null;
+    const done = ptr>=events.length;
+    const key = sel.value==='best' ? 'best' : 'identity';
+    let msg;
+    if(!cur) msg = 'Nothing has been entered yet. The root is a MAX node with \\(\\alpha=-\\infty,\\ \\beta=+\\infty\\).';
+    else if(cur.t==='enter') msg = `entered <span class="mono">${cur.id}</span> as a ${cur.isMax?'MAX':'MIN'} node with \\(\\alpha=${cur.alpha===-Infinity?'-\\infty':cur.alpha}\\), \\(\\beta=${cur.beta===Infinity?'+\\infty':cur.beta}\\).`;
+    else if(cur.t==='ret') msg = `<span class="mono">${cur.id}</span> returned <b>${cur.v}</b>.`;
+    else msg = `cutoff at <span class="mono">${cur.id}</span>: \\(\\alpha=${cur.alpha}\\ \\ge\\ \\beta=${cur.beta}\\), so <b>${cur.ids.length}</b> nodes below the remaining children are never entered.`;
+    out.innerHTML = msg
+      + `<br>Plain minimax enters <b>${FULL.nodes}</b> nodes and <b>${FULL.leaves}</b> leaves. `
+      + `\u03b1\u2013\u03b2 under <b>identity</b> ordering enters <b>${STAT.identity.nodes}</b> / <b>${STAT.identity.leaves}</b>; `
+      + `under <b>best-first</b> ordering, <b>${STAT.best.nodes}</b> / <b>${STAT.best.leaves}</b>. `
+      + `The Knuth\u2013Moore minimum for \\(b=3,\\ d=3\\) is \\(3^{2}+3^{1}-1 = 11\\) leaves, which best-first attains. `
+      + `All three return the same root value <b>${STAT.identity.value}</b>` + (done? ' \u2014 confirmed by the completed run above.' : '.')
+      + ` Currently running: <b>${key==='best'?'best-first':'identity'}</b>.`;
+    if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([out]);
+  }
+  document.getElementById('ab-step').onclick=()=>{ if(ptr<events.length){ ptr++; render(); } };
+  document.getElementById('ab-run').onclick=()=>{ ptr=events.length; render(); };
+  document.getElementById('ab-reset').onclick=reset;
+  sel.onchange=reset;
+  reset();
+})();
+
+/* ============================================================
+   Demo 3: MCTS on tic-tac-toe, phase by phase
+   ============================================================ */
+(function(){
+  const cS=document.getElementById('mc-c'), cL=document.getElementById('mc-cL'),
+        cv=document.getElementById('mc-canvas'), ctx=cv.getContext('2d'),
+        cnt=document.getElementById('mc-count'), out=document.getElementById('mc-read');
+  const EMPTY=new Array(9).fill(0);
+  let root, iters, phase, st, simResult, hi;
+  const PHASES=['selection','expansion','simulation','backpropagation'];
+
+  function reset(){
+    root=mctsNewRoot(EMPTY,1); iters=0; phase=0; st=null; simResult=null;
+    hi={sel:[], exp:null, back:[]};
+    render();
+  }
+  function stepPhase(){
+    const C=parseFloat(cS.value);
+    if(phase===0){
+      st=mctsSelect(root,EMPTY,1,C);
+      hi={sel:st.path.slice(), exp:null, back:[]}; simResult=null; phase=1;
+    } else if(phase===1){
+      const kid=mctsExpand(st,root);
+      hi.exp = kid; hi.sel = st.path.slice();
+      phase=2;
+    } else if(phase===2){
+      simResult=mctsSimulate(st.b, st.p); phase=3;
+    } else {
+      mctsBackprop(st.node, simResult);
+      hi.back = st.path.slice(); hi.sel=[]; hi.exp=null;
+      iters++; phase=0;
+    }
+    render();
+  }
+  function finishIteration(){ let guard=0; do { stepPhase(); guard++; } while(phase!==0 && guard<8); }
+  function runMany(n){
+    const C=parseFloat(cS.value);
+    if(phase!==0) finishIteration();
+    for(let i=0;i<n;i++) mctsIterate(root,EMPTY,1,C);
+    iters+=n; hi={sel:[],exp:null,back:[]}; st=null; simResult=null;
+    render();
+  }
+  function bestChild(){ let b=null,bn=-1; for(const k of root.kids) if(k.N>bn){bn=k.N;b=k;} return b; }
+  function miniBoard(x,y,cell,col){
+    for(let i=0;i<9;i++){
+      const rx=x+(i%3)*7, ry=y+Math.floor(i/3)*7;
+      ctx.fillStyle = (i===cell)? col : '#FFFFFF';
+      ctx.fillRect(rx,ry,5.8,5.8);
+      ctx.strokeStyle='#B6C1CC'; ctx.lineWidth=0.5;
+      ctx.strokeRect(rx+0.25,ry+0.25,5.3,5.3);
+    }
+  }
+  function nodeBox(x,y,w,h,node,cell,state){
+    let fill='#F4F7FA', stroke='#CFD7DF', txt='#8A97A6', mark='#B6C1CC';
+    if(state==='sel'){ fill='#FDF3D6'; stroke='#F9A825'; txt='#7A5B00'; mark='#F9A825'; }
+    else if(state==='exp'){ fill='#F1E7FB'; stroke='#6A3FA0'; txt='#4A2A73'; mark='#6A3FA0'; }
+    else if(state==='back'){ fill='#E2F1E7'; stroke='#1F8B4C'; txt='#146034'; mark='#1F8B4C'; }
+    else if(node && node.N>0){ fill='#DCE8F3'; stroke='#1F4E79'; txt='#12365A'; mark='#1F4E79'; }
+    ctx.fillStyle=fill; ctx.strokeStyle=stroke; ctx.lineWidth=1.5;
+    roundRect(ctx,x,y,w,h,5); ctx.fill(); ctx.stroke();
+    miniBoard(x+7,y+h/2-10, cell, mark);
+    ctx.fillStyle=txt; ctx.font='11px -apple-system,Arial'; ctx.textAlign='left';
+    if(node && node.N>0){
+      ctx.fillText(node.W.toFixed(1)+' / '+node.N, x+32, y+h/2-1);
+      ctx.fillStyle='#7C8894'; ctx.font='10px -apple-system,Arial';
+      ctx.fillText((100*node.W/node.N).toFixed(0)+'%', x+32, y+h/2+12);
+    } else {
+      ctx.fillText('\u2014', x+32, y+h/2+3);
+    }
+  }
+  function render(){
+    clear(ctx,cv);
+    const C=parseFloat(cS.value); cL.textContent=C.toFixed(2);
+    const selSet=new Set(hi.sel), backSet=new Set(hi.back);
+    const stOf=n=> hi.exp===n ? 'exp' : (backSet.has(n)?'back':(selSet.has(n)?'sel':''));
+    // root
+    ctx.fillStyle='#555'; ctx.font='11px -apple-system,Arial'; ctx.textAlign='left';
+    ctx.fillText('root \u2014 empty board, X to move', 12, 16);
+    const rx=390, ry=26, rw=118, rh=34;
+    let fill = backSet.has(root)?'#E2F1E7' : (selSet.has(root)?'#FDF3D6':'#DCE8F3');
+    let strk = backSet.has(root)?'#1F8B4C' : (selSet.has(root)?'#F9A825':'#1F4E79');
+    ctx.fillStyle=fill; ctx.strokeStyle=strk; ctx.lineWidth=1.6;
+    roundRect(ctx,rx,ry,rw,rh,5); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#12365A'; ctx.font='12px -apple-system,Arial'; ctx.textAlign='center';
+    ctx.fillText('N = '+root.N, rx+rw/2, ry+rh/2+4);
+    ctx.textAlign='left';
+    // level 1: nine slots
+    const kidByMove={}; for(const k of root.kids) kidByMove[k.mv]=k;
+    const y1=88, bw=92, bh=44;
+    ctx.fillStyle='#555'; ctx.font='11px -apple-system,Arial';
+    ctx.fillText('root children  (cell \u00b7 W/N)', 12, y1-8);
+    for(let c=0;c<9;c++){
+      const x=14+c*98;
+      const k=kidByMove[c];
+      ctx.strokeStyle='#E3E9EF'; ctx.lineWidth=1; ctx.beginPath();
+      ctx.moveTo(rx+rw/2, ry+rh); ctx.lineTo(x+bw/2, y1); ctx.stroke();
+      nodeBox(x,y1,bw,bh,k,c,k?stOf(k):'');
+    }
+    // level 2: the children of whichever node this iteration is working under
+    let bc;
+    if(hi.exp) bc=hi.exp.par;
+    else if(hi.sel.length>1) bc=hi.sel[hi.sel.length-1];
+    else if(hi.back.length>1) bc=hi.back[hi.back.length-2];
+    else bc=bestChild();
+    if(bc===root) bc=bestChild();
+    const chain=[]; { let c=bc; while(c && c.par){ chain.unshift(c); c=c.par; } }
+    const y2=182;
+    ctx.fillStyle='#555'; ctx.font='11px -apple-system,Arial';
+    ctx.fillText(bc? ('children of  root \u2192 '+chain.map(n=>'cell '+n.mv).join(' \u2192 ')+'   (depth '+chain.length+', N = '+bc.N+')')
+                   : 'children of the most-visited child \u2014 none yet', 12, y2-8);
+    if(bc && chain.length){
+      const kb={}; for(const k of bc.kids) kb[k.mv]=k;
+      const used=new Set(chain.map(n=>n.mv));
+      const cells=[]; for(let c=0;c<9;c++) if(!used.has(c)) cells.push(c);
+      const px=14+chain[0].mv*98+bw/2;
+      cells.forEach((c,i)=>{
+        const x=14+i*110;
+        const k=kb[c];
+        ctx.strokeStyle='#E3E9EF'; ctx.lineWidth=1; ctx.beginPath();
+        ctx.moveTo(px, y1+bh); ctx.lineTo(x+bw/2, y2); ctx.stroke();
+        nodeBox(x,y2,bw,bh,k,c,k?stOf(k):'');
+      });
+    }
+    // phase banner
+    const by=246;
+    ctx.fillStyle='#F7F9FC'; ctx.strokeStyle='#E0E5EB'; ctx.lineWidth=1;
+    roundRect(ctx,12,by,876,80,6); ctx.fill(); ctx.stroke();
+    ctx.font='12px -apple-system,Arial'; ctx.textAlign='left';
+    const labels=['1 selection','2 expansion','3 simulation','4 backpropagation'];
+    const cols=['#F9A825','#6A3FA0','#C0392B','#1F8B4C'];
+    for(let i=0;i<4;i++){
+      const x=26+i*218;
+      const active = (phase===i);
+      ctx.fillStyle = active? cols[i] : '#E8EDF2';
+      roundRect(ctx,x,by+14,196,26,13); ctx.fill();
+      ctx.fillStyle = active? '#fff' : '#8A97A6';
+      ctx.textAlign='center'; ctx.fillText(labels[i], x+98, by+31);
+    }
+    ctx.textAlign='left'; ctx.fillStyle='#555'; ctx.font='11px -apple-system,Arial';
+    let note;
+    if(iters===0 && phase===0) note='Press "One phase" to descend from the root. With no children yet, selection stops immediately at the root.';
+    else if(phase===0) note='Ready for the next iteration. The tree now holds '+root.count+' nodes \u2014 one per completed iteration, plus the root.';
+    else if(phase===1) note='Selection reached a node with untried moves after '+(hi.sel.length-1)+' edge(s). One child will be added.';
+    else if(phase===2) note='A child was added for cell '+(hi.exp? hi.exp.mv : '\u2014')+'. A uniformly random playout runs from it; nothing about the playout is stored.';
+    else note='The playout ended in '+(simResult===3?'a draw':(simResult===1?'a win for X':'a win for O'))+'. It will be added to every node on the path, scored for the player who moved into each.';
+    ctx.fillText(note, 26, by+62);
+    // readout
+    cnt.textContent = `${iters} iteration${iters===1?'':'s'} \u00b7 ${root.count} tree nodes \u00b7 next phase: ${PHASES[phase]}`;
+    const ranked=root.kids.slice().sort((a,b)=>b.N-a.N);
+    if(ranked.length<2){
+      out.innerHTML='Not enough of the tree exists yet to prefer a move. Run 100 iterations and the visit counts will separate before the win rates do \u2014 that ordering is the point of the exploration term.';
+    } else {
+      const a=ranked[0], b=ranked[1];
+      const sa=100*a.N/root.N, sb=100*b.N/root.N;
+      out.innerHTML = `MCTS prefers <b>cell ${a.mv}</b> with <b>${a.N}</b> visits (<b>${sa.toFixed(1)}%</b> of the root's ${root.N}), `
+        + `ahead of cell ${b.mv} at ${b.N} visits (${sb.toFixed(1)}%) \u2014 a margin of <b>${(sa-sb).toFixed(1)}</b> percentage points of visit share. `
+        + `Empirical win rates: <b>${(100*a.W/a.N).toFixed(1)}%</b> against ${(100*b.W/b.N).toFixed(1)}%. `
+        + `The move returned is the <em>most visited</em> child, not the highest win rate: a high mean over three visits is noise, and the visit count is the quantity the regret bound controls. `
+        + `At \\(C=${C.toFixed(2)}\\) the exploration term at the root is \\(C\\sqrt{\\ln ${root.N}/N_i}\\) = <b>${(C*Math.sqrt(Math.log(Math.max(root.N,2))/a.N)).toFixed(3)}</b> for the leader.`;
+    }
+    if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([out]);
+  }
+  document.getElementById('mc-phase').onclick=stepPhase;
+  document.getElementById('mc-iter').onclick=finishIteration;
+  document.getElementById('mc-100').onclick=()=>runMany(100);
+  document.getElementById('mc-1000').onclick=()=>runMany(1000);
+  document.getElementById('mc-reset').onclick=reset;
+  cS.oninput=()=>{ cL.textContent=parseFloat(cS.value).toFixed(2); render(); };
+  reset();
+})();
+
+/* ============================================================
+   Demo 4: the UCT term explorer
+   ============================================================ */
+(function(){
+  const wS=document.getElementById('uc-w'), nS=document.getElementById('uc-n'), cS=document.getElementById('uc-c'),
+        wL=document.getElementById('uc-wL'), nL=document.getElementById('uc-nL'), cL=document.getElementById('uc-cL'),
+        cv=document.getElementById('uc-canvas'), ctx=cv.getContext('2d'), out=document.getElementById('uc-read');
+  function draw(){
+    const W=parseInt(wS.value), N=parseInt(nS.value), C=parseFloat(cS.value);
+    wL.textContent=W; nL.textContent=N; cL.textContent=C.toFixed(3);
+    const lnN=Math.log(N);
+    const star = W*W/(C*C*lnN);
+    const xmax = Math.max(20, Math.min(N, Math.ceil(Math.max(4*star, 2.5*W))));
+    clear(ctx,cv);
+    const x0=64,y0=232,w=790,h=196;
+    axes(ctx,x0,y0,w,h,'child visit count  N\u1d62','term value');
+    const X=v=>x0+w*(v-1)/(xmax-1);
+    const f1=v=>W/v, f2=v=>C*Math.sqrt(lnN/v), f3=v=>f1(v)+f2(v);
+    let ymax=0;
+    for(let v=1;v<=xmax;v++) ymax=Math.max(ymax,f3(v));
+    ymax=Math.min(ymax, Math.max(f3(Math.max(1,Math.round(W*0.6))), 4))*1.05;
+    ymax=Math.max(ymax, 0.5);
+    const Y=v=>y0-h*Math.min(v,ymax)/ymax;
+    ctx.strokeStyle='#EEF2F6'; ctx.lineWidth=1;
+    for(let i=1;i<=4;i++){ const y=y0-h*i/4; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+w,y); ctx.stroke();
+      ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial'; ctx.fillText((ymax*i/4).toFixed(2),x0-38,y+3); }
+    ctx.fillStyle='#999'; ctx.textAlign='center';
+    const xs=Math.max(1,Math.round(xmax/10));
+    for(let v=1;v<=xmax;v+=xs) ctx.fillText(v, X(v), y0+15);
+    ctx.textAlign='left';
+    // unreachable region N_i < W
+    if(W>1){
+      ctx.fillStyle='rgba(192,57,43,0.07)';
+      ctx.fillRect(x0, y0-h, Math.max(0,X(Math.min(W,xmax))-x0), h);
+      ctx.fillStyle='#B4544A'; ctx.font='10px -apple-system,Arial';
+      ctx.fillText('N\u1d62 < W\u1d62 : unreachable', x0+5, y0-8);
+    }
+    const mk=f=>{ const p=[]; for(let v=1;v<=xmax;v+=Math.max(0.25,xmax/700)) p.push([X(v),Y(f(v))]); return p; };
+    polyline(ctx, mk(f1), '#C0392B', 2.2);
+    polyline(ctx, mk(f2), '#1F8B4C', 2.2);
+    polyline(ctx, mk(f3), '#1F4E79', 2.4);
+    if(star>=1 && star<=xmax){
+      polyline(ctx, [[X(star),y0],[X(star),y0-h]], '#6A3FA0', 1.6, [5,4]);
+      ctx.fillStyle='#6A3FA0'; ctx.font='11px -apple-system,Arial';
+      ctx.fillText('N\u1d62* = '+star.toFixed(2), X(star)+6, y0-h+34);
+      const yv=Y(f1(star));
+      ctx.beginPath(); ctx.arc(X(star), yv, 4, 0, 7); ctx.fill();
+    }
+    const dominatesAtW = f2(Math.max(W,1)) > f1(Math.max(W,1));
+    out.innerHTML = `\\(W_i=${W}\\), \\(N=${N}\\), \\(C=${C.toFixed(3)}\\), so \\(\\ln N = ${lnN.toFixed(4)}\\). `
+      + `The terms are equal at \\(N_i^\\star = W_i^2/(C^2\\ln N) = ${star.toFixed(3)}\\), where each equals <b>${(W/star).toFixed(3)}</b>. `
+      + `For \\(N_i > ${star.toFixed(2)}\\) the exploration term is the larger one; below it, exploitation. `
+      + `Because \\(N_i \\ge W_i = ${W}\\) is forced, the realisable range begins at ${W}, where exploration is `
+      + `<b>${dominatesAtW?'already dominant':'still the smaller term'}</b>`
+      + (dominatesAtW ? ' \u2014 so at these parameters the crossing has already happened before the node is physically possible.' : ' \u2014 exploitation still governs selection at the first realisable visit count.')
+      + ` Both terms fall with \\(N_i\\), at rates \\(N_i^{-1}\\) and \\(N_i^{-1/2}\\); the sum therefore decreases and every child's priority declines as it is sampled, which is what forces the search to move on.`;
+    if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([out]);
+  }
+  [wS,nS,cS].forEach(el=>el.oninput=draw);
+  draw();
+})();
+
+/* ============================================================
+   Demo 5: play against the agents
+   ============================================================ */
+(function(){
+  const agentSel=document.getElementById('pl-agent'),
+        dS=document.getElementById('pl-d'), iS=document.getElementById('pl-i'),
+        dL=document.getElementById('pl-dL'), iL=document.getElementById('pl-iL'),
+        boardEl=document.getElementById('pl-board'), logEl=document.getElementById('pl-log'),
+        status=document.getElementById('pl-status'), out=document.getElementById('pl-read');
+  const GLYPH=['','\u00d7','\u25cb'];
+  let board, over, log, busy=false;
+
+  function agentName(){
+    const v=agentSel.value;
+    if(v==='random') return 'random';
+    if(v==='minimax') return 'minimax d='+dS.value;
+    return 'MCTS '+iS.value+' iters';
+  }
+  function agentMove(){
+    const v=agentSel.value, t0=performance.now();
+    let mv, nodes;
+    if(v==='random'){
+      const ms=ttMoves(board); nodes=ms.length;
+      mv=ms[Math.floor(Math.random()*ms.length)];
+    } else if(v==='minimax'){
+      const r=chooseMinimax(board.slice(), 2, parseInt(dS.value), 'heuristic');
+      mv=r.move; nodes=r.nodes;
+    } else {
+      const r=chooseMCTS(board.slice(), 2, parseInt(iS.value), Math.SQRT2);
+      mv=r.move; nodes=r.nodes;
+    }
+    const ms=performance.now()-t0;
+    board[mv]=2;
+    log.push({who:agentName(), cell:mv, nodes, ms});
+  }
+  const cells=[];
+  (function buildBoard(){
+    let h='';
+    for(let r=0;r<3;r++){ h+='<tr>';
+      for(let c=0;c<3;c++) h+=`<td><button id="pl-c${r*3+c}" data-cell="${r*3+c}"></button></td>`;
+      h+='</tr>'; }
+    boardEl.innerHTML=h;                       // built once: the handles must stay attached
+    boardEl.querySelectorAll('button').forEach(btn=>{
+      const i=parseInt(btn.dataset.cell); cells[i]=btn;
+      btn.onclick=()=>humanMove(i);            // an illegal click is ignored, never blocked
+    });
+  })();
+  function renderBoard(){
+    for(let i=0;i<9;i++){
+      const b=cells[i];
+      b.textContent=GLYPH[board[i]];
+      b.className = (board[i]===2?'oo ':'') + (board[i]!==0||over ? 'taken' : '');
+    }
+  }
+  function renderLog(){
+    let h='<tr><th>#</th><th>agent</th><th>cell</th><th>nodes expanded</th><th>ms</th></tr>';
+    if(!log.length) h+='<tr><td colspan="5" style="color:#888">no agent move yet</td></tr>';
+    for(let i=0;i<log.length;i++){ const e=log[i];
+      h+=`<tr><td>${i+1}</td><td>${e.who}</td><td>${e.cell}</td><td>${e.nodes.toLocaleString()}</td><td>${e.ms.toFixed(1)}</td></tr>`;
+    }
+    if(log.length){
+      const tn=log.reduce((a,e)=>a+e.nodes,0), tm=log.reduce((a,e)=>a+e.ms,0);
+      h+=`<tr class="hi"><td colspan="3">game total</td><td>${tn.toLocaleString()}</td><td>${tm.toFixed(1)}</td></tr>`;
+    }
+    logEl.innerHTML=h;
+  }
+  function refresh(){
+    const w=ttWinner(board);
+    over = w!==0;
+    renderBoard(); renderLog();
+    status.textContent = w===0 ? 'your move (\u00d7)' :
+      w===3 ? 'drawn' : (w===1 ? 'you win' : 'the agent wins');
+    const n=log.length;
+    const avgN = n? log.reduce((a,e)=>a+e.nodes,0)/n : 0;
+    const avgT = n? log.reduce((a,e)=>a+e.ms,0)/n : 0;
+    out.innerHTML = n===0
+      ? 'Play a move to start. The cost columns fill in as the agent replies; switching opponent mid-game is allowed and the log will show the change.'
+      : `Opponent now: <b>${agentName()}</b> \u00b7 mean over the <b>${n}</b> agent move${n===1?'':'s'} logged: <b>${Math.round(avgN).toLocaleString()}</b> nodes and <b>${avgT.toFixed(1)}</b> ms `
+        + `\u2192 <b>${avgN>0?(1000*avgT/avgN).toFixed(2):'\u2014'}</b> \u00b5s per node. `
+        + (over ? (w===2 ? 'The agent won. ' : w===3 ? 'Drawn \u2014 against a full-depth minimax this is the best result available to either side. ' : 'You won \u2014 check the depth setting, because a full-depth search cannot lose this game. ') : '')
+        + `Compare the per-node cost across the three opponents: a minimax node is a heuristic evaluation, an MCTS node is a whole playout, and they are not interchangeable units of work.`;
+  }
+  function humanMove(i){
+    if(busy || over || board[i]!==0) return;
+    busy=true;
+    board[i]=1;
+    if(ttWinner(board)===0) agentMove();
+    busy=false;
+    refresh();
+  }
+  function reset(){ board=new Array(9).fill(0); over=false; log=[]; refresh(); }
+  document.getElementById('pl-new').onclick=reset;
+  document.getElementById('pl-auto').onclick=()=>{
+    reset();
+    if(ttWinner(board)===0) agentMove();
+    refresh();
+  };
+  dS.oninput=()=>{ dL.textContent=dS.value; refresh(); };
+  iS.oninput=()=>{ iL.textContent=iS.value; refresh(); };
+  agentSel.onchange=refresh;
+  reset();
+})();
+</script>
+</body>
+</html>

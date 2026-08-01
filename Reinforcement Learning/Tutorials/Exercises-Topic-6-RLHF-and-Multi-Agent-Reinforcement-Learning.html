@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topic 6 Exercises — Reinforcement Learning From Human Feedback and Multi-Agent Reinforcement Learning</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6;
+}
+.container { max-width: 940px; margin: 24px auto 48px; background: white;
+  padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+.score { position: sticky; top: 0; background: white; padding: 10px 14px;
+         border: 1px solid #E0E5EB; border-radius: 8px; margin-bottom: 12px;
+         color: #1F4E79; font-weight: 600; z-index: 10;
+         display: flex; justify-content: space-between; align-items: center; }
+.score .bar { background: #E0E5EB; border-radius: 999px; height: 8px;
+              width: 240px; overflow: hidden; }
+.score .bar > div { background: #1F4E79; height: 100%; transition: width 0.3s; }
+.exercise { border: 1px solid #E0E5EB; border-radius: 8px; padding: 22px 26px;
+            margin: 22px 0; background: #FCFDFE; }
+.exercise h3 { margin: 0 0 4px; color: #1F4E79; font-size: 1.1em; }
+.exercise .qtype { color: #888; font-size: 0.8em; text-transform: uppercase;
+                   letter-spacing: 0.05em; margin-bottom: 14px; }
+.stem { margin-bottom: 14px; }
+.stem code { font-family: "SF Mono", Consolas, Monaco, monospace;
+             background: #F2F4F7; padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+      overflow-x: auto; border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.92em; }
+table.tb { border-collapse:collapse; margin:12px 0; font-size:0.9em; }
+table.tb td, table.tb th { border:1px solid #D0D8E0; padding:5px 12px; text-align:center; }
+table.tb th { background:#EAF1F8; color:#1F4E79; }
+.options { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 14px; }
+.options label { cursor: pointer; padding: 10px 14px; background: white;
+                 border: 1px solid #D0D8E0; border-radius: 6px; transition: border-color 0.15s; }
+.options label:hover { border-color: #1F4E79; background: #F7FAFC; }
+.options input[type="radio"] { margin-right: 10px; }
+.numeric-row { display: flex; gap: 12px; align-items: center; margin: 10px 0 14px; }
+.numeric-row input { padding: 8px 12px; border: 1px solid #D0D8E0; border-radius: 6px;
+                     font-family: inherit; font-size: 1em; width: 160px; }
+button { background: #1F4E79; color: white; border: 0; padding: 9px 18px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.95em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+button:disabled { background: #B8C2CB; cursor: not-allowed; }
+.feedback { padding: 12px 16px; border-radius: 6px; margin-top: 10px;
+            font-size: 0.95em; display: none; }
+.feedback.show { display: block; }
+.feedback.correct { background: #E8F5E9; border-left: 4px solid #2E7D32; color: #1B5E20; }
+.feedback.incorrect { background: #FDECEA; border-left: 4px solid #C00000; color: #6E1414; }
+.feedback strong { display: block; margin-bottom: 4px; }
+.help { color: #777; font-size: 0.85em; margin-top: 6px; }
+.nav { display: flex; justify-content: space-between; margin-top: 36px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; }
+.nav a { color: #1F4E79; text-decoration: none; }
+.nav a:hover { text-decoration: underline; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">Practice exercises</div>
+<h1>Topic 6 — Reinforcement Learning From Human Feedback and Multi-Agent Reinforcement Learning</h1>
+<p class="subtitle">Ten self-graded problems. Submit each one to see immediate feedback; the score bar at the top tracks your progress. Every problem is a quantity you will compute again inside the Alignment Lab build, or a claim your README has to defend.</p>
+
+<div class="score">
+  <span id="scoreText">Score: 0 / 10</span>
+  <div class="bar"><div id="scoreBar" style="width:0%"></div></div>
+</div>
+
+<!-- Q1 -->
+<div class="exercise" data-q="1">
+  <div class="qtype">Computational · The Bradley–Terry loss</div>
+  <h3>Question 1</h3>
+  <div class="stem">A reward model scores two responses to the same prompt: <span class="eq">r(x, y<sub>w</sub>) = 2.1</span> for the response the human chose and <span class="eq">r(x, y<sub>l</sub>) = 0.8</span> for the one they rejected. What loss does this single comparison contribute under <span class="eq">−log σ(r(x,y<sub>w</sub>) − r(x,y<sub>l</sub>))</span>? Give three decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.001" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · Form the margin <span class="eq">Δ = 2.1 − 0.8</span>, evaluate <span class="eq">σ(Δ) = 1/(1 + e<sup>−Δ</sup>)</span>, then take the negative natural logarithm. Natural log, not base 10.</div>
+</div>
+
+<!-- Q2 -->
+<div class="exercise" data-q="2">
+  <div class="qtype">Theoretical · Identifiability of the reward</div>
+  <h3>Question 2</h3>
+  <div class="stem">A teammate reports that the deployed reward model gave a customer's draft email a score of <code>3.71</code> and asks whether that is good. Which statement is correct?</div>
+  <div class="options">
+    <label><input type="radio" name="q2" value="a"> It is good, because the reward model was trained so that positive scores indicate preferred responses and negative scores indicate rejected ones.</label>
+    <label><input type="radio" name="q2" value="b"> The question has no answer. Adding any constant <span class="eq">c(x)</span> to every reward for a prompt leaves every difference <span class="eq">r(x,y<sub>w</sub>) − r(x,y<sub>l</sub>)</span> — and therefore the entire training loss — exactly unchanged, so the reward is identified only up to a per-prompt additive constant. Only a difference between two responses to the same prompt carries information.</label>
+    <label><input type="radio" name="q2" value="c"> It is good if 3.71 is above the mean score of the training set, which is the calibration the Bradley–Terry loss enforces.</label>
+    <label><input type="radio" name="q2" value="d"> The score is uninterpretable only because this particular model was undertrained; a reward model fit to convergence has a well-defined absolute scale.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q3 -->
+<div class="exercise" data-q="3">
+  <div class="qtype">Computational · The KL-regularised optimum</div>
+  <h3>Question 3</h3>
+  <div class="stem">A five-token vocabulary has reference probabilities and rewards as below, and the policy maximises <span class="eq">E[r] − β·KL(π ‖ π<sub>ref</sub>)</span>.
+  <table class="tb">
+    <tr><th>token</th><th>t₁</th><th>t₂</th><th>t₃</th><th>t₄</th><th>t₅</th></tr>
+    <tr><th>π<sub>ref</sub></th><td>0.40</td><td>0.30</td><td>0.15</td><td>0.10</td><td>0.05</td></tr>
+    <tr><th>r</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td></tr>
+  </table>
+  At <span class="eq">β = 1.0</span>, what is <span class="eq">π*(t₄)</span>? Give four decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.0001" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · <span class="eq">π*(y) = π<sub>ref</sub>(y)·e<sup>r(y)/β</sup> / Z</span>. Compute the five unnormalised weights <span class="eq">π<sub>ref</sub>(t<sub>i</sub>)·e<sup>r<sub>i</sub></sup></span>, sum them to get <span class="eq">Z</span>, then divide the fourth by <span class="eq">Z</span>.</div>
+</div>
+
+<!-- Q4 -->
+<div class="exercise" data-q="4">
+  <div class="qtype">Theoretical · The two limits of β</div>
+  <h3>Question 4</h3>
+  <div class="stem">Using the same setup as Question 3, what happens to <span class="eq">π*</span> in the limits <span class="eq">β → 0</span> and <span class="eq">β → ∞</span>?</div>
+  <div class="options">
+    <label><input type="radio" name="q4" value="a"> <span class="eq">β → 0</span> gives the uniform distribution and <span class="eq">β → ∞</span> gives a point mass on t₅, because β controls how much entropy the policy retains.</label>
+    <label><input type="radio" name="q4" value="b"> <span class="eq">β → 0</span> gives a point mass on t₅, the highest-reward token — the tilt <span class="eq">e<sup>r/β</sup></span> diverges and the reference stops mattering; <span class="eq">β → ∞</span> gives <span class="eq">π<sub>ref</sub></span> itself — the tilt goes to 1 and the reward stops mattering.</label>
+    <label><input type="radio" name="q4" value="c"> Both limits give <span class="eq">π<sub>ref</sub></span>, since the KL penalty and the reward term both vanish relative to the normaliser <span class="eq">Z</span>.</label>
+    <label><input type="radio" name="q4" value="d"> <span class="eq">β → 0</span> gives a point mass on t₁, since the reference assigns t₁ the highest probability and a vanishing penalty removes any pressure to move away from it.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q5 -->
+<div class="exercise" data-q="5">
+  <div class="qtype">Theoretical · Why DPO is computable</div>
+  <h3>Question 5</h3>
+  <div class="stem">Inverting the closed form gives <span class="eq">r(x,y) = β·log(π<sub>θ</sub>(y|x)/π<sub>ref</sub>(y|x)) + β·log Z(x)</span>, and <span class="eq">Z(x)</span> is a sum over every string the model could emit. Substituting this into the Bradley–Terry loss nevertheless yields a computable objective. Why?</div>
+  <div class="options">
+    <label><input type="radio" name="q5" value="a"> Because <span class="eq">Z(x)</span> can be estimated to sufficient accuracy by importance sampling from <span class="eq">π<sub>ref</sub></span> during training.</label>
+    <label><input type="radio" name="q5" value="b"> Because <span class="eq">log Z(x)</span> is approximately constant across prompts once the model is fine-tuned, so it can safely be absorbed into the learning rate.</label>
+    <label><input type="radio" name="q5" value="c"> Because the loss depends on <span class="eq">r</span> only through the difference between two responses to the <em>same</em> prompt <span class="eq">x</span>, and <span class="eq">β·log Z(x)</span> is a function of <span class="eq">x</span> alone — so it appears once with each sign and cancels identically, for every <span class="eq">x</span> and every <span class="eq">β</span>.</label>
+    <label><input type="radio" name="q5" value="d"> Because <span class="eq">Z(x)</span> equals 1 whenever <span class="eq">π<sub>θ</sub></span> is a normalised distribution, which it is by construction.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q6 -->
+<div class="exercise" data-q="6">
+  <div class="qtype">Computational · Group-relative advantage</div>
+  <h3>Question 6</h3>
+  <div class="stem">GRPO samples six completions for one prompt and a verifier scores them <span class="eq">r = {1, 0, 0, 1, 1, 1}</span>. Using the population standard deviation (divide by <span class="eq">G</span>, not <span class="eq">G − 1</span>), what is the group-normalised advantage <span class="eq">Â<sub>i</sub> = (r<sub>i</sub> − mean(r)) / std(r)</span> of a completion that scored 1? Give four decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.0001" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · The mean is 4/6. The population variance of a binary group is <span class="eq">p(1−p)</span> with <span class="eq">p = 4/6</span>. Then divide the deviation <span class="eq">1 − 4/6</span> by the standard deviation.</div>
+</div>
+
+<!-- Q7 -->
+<div class="exercise" data-q="7">
+  <div class="qtype">Computational · Memory footprint during training</div>
+  <h3>Question 7</h3>
+  <div class="stem">You are sizing a training node. Counting the distinct models that must be resident in memory during training, how many does <em>GRPO</em> require?</div>
+  <div class="numeric-row">
+    <input type="number" step="1" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · List what PPO-based RLHF holds — the trained policy, the frozen reference that supplies the KL penalty, the frozen reward model, and the trained critic — then remove the one GRPO replaces with a group of samples.</div>
+</div>
+
+<!-- Q8 -->
+<div class="exercise" data-q="8">
+  <div class="qtype">Computational · Detecting a spurious correlate</div>
+  <h3>Question 8</h3>
+  <div class="stem">Your length-bias regression test regresses the assigned reward on response length in tokens over 500 held-out completions and reports a Pearson correlation of <span class="eq">ρ = 0.62</span>. What percentage of the variance in the reward score is accounted for by response length alone? Enter the percentage (for example, <code>12.5</code> for 12.5%).</div>
+  <div class="numeric-row">
+    <input type="number" step="0.1" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · The fraction of variance explained by a simple linear regression is the square of the correlation coefficient.</div>
+</div>
+
+<!-- Q9 -->
+<div class="exercise" data-q="9">
+  <div class="qtype">Theoretical · Non-stationarity in multi-agent learning</div>
+  <h3>Question 9</h3>
+  <div class="stem">Two independent Q-learners share an environment. From agent <span class="eq">i</span>'s point of view the effective transition function is <span class="eq">P<sub>i</sub><sup>t</sup>(s′|s,a<sub>i</sub>) = Σ<sub>a₋ᵢ</sub> (Π<sub>j≠i</sub> π<sub>j</sub><sup>t</sup>(a<sub>j</sub>|s)) · P(s′|s,a<sub>i</sub>,a₋ᵢ)</span>. Which property of the Topic 2 MDP formulation does this violate, and why does it matter?</div>
+  <div class="options">
+    <label><input type="radio" name="q9" value="a"> The Markov property, because agent <span class="eq">i</span> must now remember the history of the other agents' actions in order to predict the next state.</label>
+    <label><input type="radio" name="q9" value="b"> The stationarity of <span class="eq">P</span>: every factor <span class="eq">π<sub>j</sub><sup>t</sup></span> carries a time index because agent <span class="eq">j</span> is still learning, so <span class="eq">P<sub>i</sub><sup>t</sup></span> does too. Q-learning's convergence argument needs a fixed γ-contraction with a fixed unique fixed point, and against a moving kernel the operator changes at every step and the fixed point recedes.</label>
+    <label><input type="radio" name="q9" value="c"> The boundedness of the reward function, because the payoffs an agent receives now depend on another agent whose behaviour is unbounded.</label>
+    <label><input type="radio" name="q9" value="d"> Nothing is violated — the joint system is still a valid MDP over the joint state and joint action, so independent Q-learning inherits the usual convergence guarantee.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q10 -->
+<div class="exercise" data-q="10">
+  <div class="qtype">Application · The serving architecture</div>
+  <h3>Question 10</h3>
+  <div class="stem">A reviewer reads your README and objects: "You trained a reward model on transformer embeddings and aligned a language model with DPO, but your deployed service imports neither a transformer nor PyTorch, and it cannot generate text at all. That is a limitation you should note." Which response is correct for this build?</div>
+  <div class="options">
+    <label><input type="radio" name="q10" value="a"> The reviewer is right; the service is a reduced demonstration and the README should state that a production system would load the transformer at request time.</label>
+    <label><input type="radio" name="q10" value="b"> It is the architecture, not a limitation. The frozen sentence encoder is a pure function of the text, so it runs once offline in the training tier and its outputs are cached; the reward model is a small head over those vectors that exports to a NumPy archive like every policy in this course; and generation is performed offline with the completions persisted, so the deployed tier <em>scores</em> text rather than generating it and answers requests with two matrix multiplies under a fixed memory guarantee.</label>
+    <label><input type="radio" name="q10" value="c"> The reviewer is right about generation but wrong about PyTorch — the service must import <code>torch</code> in order to load the reward-model weights correctly.</label>
+    <label><input type="radio" name="q10" value="d"> It is a limitation only for the TF-IDF head; the embedding head does run in the serving tier, which is why two heads are trained.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="nav"><a href="index.html">← All tutorials</a><a href="Tutorial-Topic-6-RLHF-and-Multi-Agent-Reinforcement-Learning.html">Topic 6 tutorial →</a></div>
+</div>
+
+<script>
+/* ---- Answer key + feedback content ---- */
+const KEY = {
+  1: { type: 'numeric', accept: 0.241, tol: 0.006,
+       ok: 'Δ = 1.3, σ(1.3) = 0.7858, and −ln(0.7858) = 0.2410. Read the number as an information content: the model already assigns this comparison a 78.6% chance of being labelled the way it was, so it is charged only 0.24 nats. The gradient weight on this pair is σ(−Δ) = 0.214, so it contributes little — the loss concentrates on the pairs the model ranks backwards.',
+       no: 'Compute Δ = 2.1 − 0.8 = 1.3, then σ(Δ) = 1/(1 + e^(−1.3)) = 0.7858, then −ln(0.7858) = 0.241. Two common slips: using base-10 logarithms, and forgetting the minus sign — the loss is positive because σ is less than 1.' },
+  2: { type: 'mc', accept: 'b',
+       ok: 'Shifting every reward for a prompt by a constant leaves every difference, and therefore every term of the loss, exactly unchanged — the Hessian is singular along the all-ones direction within each prompt. So an isolated score is not a statement about quality, and scores are not comparable across prompts either, since the offset is per-prompt. This is why POST /compare exists alongside POST /score: only the former returns an identifiable quantity.',
+       no: 'Ask what the training loss would do if you added 100 to every reward for that prompt. If the answer is "nothing at all", then no amount of training can pin down the absolute level, and the sign of a score is as arbitrary as its magnitude.' },
+  3: { type: 'numeric', accept: 0.2844, tol: 0.006,
+       ok: 'The unnormalised weights are 0.4, 0.8155, 1.1084, 2.0085, 2.7299, giving Z = 7.0623 and π*(t₄) = 2.0085/7.0623 = 0.2844. Note that the reference gave t₄ only 0.10, so the tilt has nearly tripled it — and that Z here is a sum of five terms, while for a language model it is a sum over every string, which is exactly why DPO is built to make it cancel rather than to evaluate it.',
+       no: 'Use π*(y) ∝ π_ref(y)·e^(r(y)/β) with β = 1, so the weight for t₄ is 0.10·e³ = 2.0085. You must divide by the sum of all five weights, Z = 7.0623 — a common error is normalising by π_ref alone, or forgetting that the reference multiplies rather than adds.' },
+  4: { type: 'mc', accept: 'b',
+       ok: 'As β → 0 the exponent r/β diverges, the largest reward dominates the sum in Z, and π* becomes the argmax — unconstrained reward maximisation, which is exactly the regime in which the reward model\'s errors are selected for. As β → ∞ the exponent goes to 0, every tilt factor goes to 1, and π* → π_ref — no learning at all. β is the price in reward of one nat of divergence from the reference, exactly as α was the price of one nat of entropy in the actor-critic topic.',
+       no: 'Look at where β sits in the closed form: π* ∝ π_ref·exp(r/β). A small β makes the exponential enormous and dominated by the largest reward; a large β makes the exponential flat at 1. Then ask which of the two factors, π_ref or exp(r/β), survives in each limit.' },
+  5: { type: 'mc', accept: 'c',
+       ok: 'The cancellation is algebraic, not approximate: the Bradley–Terry logit is r(x,y_w) − r(x,y_l), both terms share the same x, and β·log Z(x) therefore appears once positively and once negatively. Notice the condition this exposes — compare two responses to *different* prompts and β·log Z(x₁) − β·log Z(x₂) survives, and is exactly as intractable as before. Only within-prompt differences are ever available, which is the same identifiability fact as Question 2.',
+       no: 'The point is not that Z(x) is small, estimable, or constant — it is astronomically large and varies with the prompt. Ask instead what the loss actually consumes: it never sees r on its own, only a difference between two responses that share the conditioning variable.' },
+  6: { type: 'numeric', accept: 0.7071, tol: 0.012,
+       ok: 'mean = 4/6 = 0.6667, population variance = p(1−p) = (4/6)(2/6) = 0.2222, std = 0.4714, so Â = 0.3333/0.4714 = 0.7071 for each success and −1.4142 for each failure. Check the sum: 4(0.7071) + 2(−1.4142) = 0 exactly, as it must be, because Σ(rᵢ − r̄) = 0 by the definition of the mean. That is why GRPO can only reallocate probability within a group and can never conclude that all six completions were good.',
+       no: 'Compute the mean (4/6), then the population standard deviation — for a binary group that is √(p(1−p)) with p = 4/6, giving 0.4714. Dividing by G − 1 instead of G gives 0.5164 and an advantage of 0.6455; the question specifies the population form, which is what the standard implementations use.' },
+  7: { type: 'numeric', accept: 3, tol: 0.4,
+       ok: 'Three: the trained policy, the frozen reference that supplies the KL penalty, and the frozen reward model. PPO-based RLHF holds four, the extra one being the critic — and the saving is larger than 4-to-3 suggests, because the critic is *trained*, so it carries gradients and optimiser moments as well as weights. What you give up is per-token credit assignment (one scalar advantage is applied to every token of a completion) and amortisation, since a value function generalises to new prompts while a group mean must be re-estimated with G fresh generations for every one.',
+       no: 'Count what has to be in memory at once: the policy being trained, the frozen reference used for the KL term, the frozen reward model that scores completions, and — in PPO only — the critic. GRPO replaces the critic with the mean of a sampled group, so it drops exactly one model.' },
+  8: { type: 'numeric', accept: 38.4, tol: 0.6,
+       ok: 'ρ² = 0.62² = 0.3844, so 38.4% of the variance in the reward score is explained by length alone. That is a large enough share to justify failing the regression test, but the number by itself does not prove bias — length may genuinely correlate with quality in your data. The experiment that settles it: rebuild the held-out comparisons so that the chosen and rejected responses are matched on length, and re-measure pairwise accuracy. If it collapses toward the 50% chance baseline, the head was ranking by length; if it holds up, length was a proxy for something the head also learned.',
+       no: 'The proportion of variance explained by a simple linear regression is ρ², not ρ. Squaring 0.62 gives 0.3844, which as a percentage is 38.4 — reporting 62% overstates the finding by a wide margin, and that overstatement is itself a reason the README must quote ρ² rather than ρ.' },
+  9: { type: 'mc', accept: 'b',
+       ok: 'The time index on π_j propagates to P_i, so the kernel agent i faces is a different function at every step. That is a failure of stationarity, not of the Markov property — the process may still be Markov in the joint state. It matters because the Bellman optimality operator is only a fixed γ-contraction when P is fixed; against a moving kernel the operator and its fixed point both move, and no convergence theorem survives. Replay buffers make it worse, since stored transitions describe the opponents\' *old* policies.',
+       no: 'Distinguish the two assumptions carefully. The Markov property says the kernel conditions on (s, a) and not on history; stationarity says the kernel is the same function at every t. Here the kernel is well-defined at each step but differs between steps, because the other agents\' policies appear inside it and are still being updated.' },
+  10:{ type: 'mc', accept: 'b',
+       ok: 'The encoder is frozen, so running it at request time would recompute a pure function of text that was already computed offline — pure cost, no benefit. The same split has governed every product in this course: the expensive, GPU-shaped, non-deterministic work becomes a batch job whose outputs are artifacts, and the tier that must answer in milliseconds under a fixed memory guarantee holds arrays. Document it as design and let tests/test_no_torch.py enforce it; a reviewer who reads it as a limitation has not been shown the reasoning.',
+       no: 'Ask what importing the transformer at request time would buy. The encoder is never fine-tuned, so its output for a given string never changes, and the generated completions are a fixed library persisted in Supabase. The serving tier scores text; the two matrix multiplies that do so need NumPy and nothing else.' },
+};
+
+const state = {}; let solved = new Set();
+
+document.querySelectorAll('.exercise').forEach(ex => {
+  const qid = +ex.dataset.q;
+  const btn = ex.querySelector('[data-check]');
+  const fb = ex.querySelector('[data-feedback]');
+  btn.addEventListener('click', () => {
+    const k = KEY[qid]; let user;
+    if (k.type === 'numeric') {
+      const inp = ex.querySelector('[data-input]');
+      user = parseFloat(inp.value);
+      if (Number.isNaN(user)) {
+        fb.className = 'feedback incorrect show';
+        fb.innerHTML = '<strong>Please enter a number.</strong>';
+        return;
+      }
+    } else {
+      const picked = ex.querySelector('input[type=radio]:checked');
+      if (!picked) {
+        fb.className = 'feedback incorrect show';
+        fb.innerHTML = '<strong>Please select an option.</strong>';
+        return;
+      }
+      user = picked.value;
+    }
+    const ok = (k.type === 'numeric')
+      ? Math.abs(user - k.accept) <= k.tol
+      : user === k.accept;
+    if (ok) {
+      fb.className = 'feedback correct show';
+      fb.innerHTML = '<strong>Correct.</strong>' + k.ok;
+      if (!solved.has(qid)) { solved.add(qid); updateScore(); }
+      btn.disabled = true;
+    } else {
+      fb.className = 'feedback incorrect show';
+      fb.innerHTML = '<strong>Not quite.</strong>' + k.no;
+    }
+  });
+});
+
+function updateScore() {
+  const total = Object.keys(KEY).length;
+  document.getElementById('scoreText').textContent = `Score: ${solved.size} / ${total}`;
+  document.getElementById('scoreBar').style.width = `${(solved.size / total * 100).toFixed(0)}%`;
+}
+</script>
+</body>
+</html>

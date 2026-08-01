@@ -1,6 +1,6 @@
 # Resources for AI Courses
 
-A collection of teaching resources. The repository holds **three courses**, each
+A collection of teaching resources. The repository holds **four courses**, each
 with its own tutorials and hands-on resources, plus a course-agnostic survey of
 cloud deployment architectures:
 
@@ -9,6 +9,7 @@ cloud deployment architectures:
 | 📘 **[Deep Learning](#deep-learning)** | Course tutorials + full-stack **project templates** (Streamlit + FastAPI + Supabase). |
 | 📗 **[Intro to Machine Learning](#intro-to-machine-learning)** | Course tutorials **and single-tier project templates** (Streamlit + SQLite + pandas + scikit-learn) covering the classical ML toolkit. |
 | 📕 **[Natural Language Processing](#natural-language-processing)** | Course lecture notes, exercises, and **starter skeletons** on the same three-cloud stack — infrastructure finished, the NLP layer left to build. |
+| 📙 **[Reinforcement Learning](#reinforcement-learning)** | Course tutorials, exercises, and **complete agent templates** on a two-cloud, three-tier stack — train in PyTorch, serve in NumPy. |
 | ☁️ **[Cloud Deployment](#cloud-deployment-survey)** | A survey of different deployment stacks (Azure, Vercel, Render, Railway, TF.js). Not tied to any one course. |
 
 > Each course folder groups the tutorials and resources for one subject area. The
@@ -267,6 +268,71 @@ API deploy, Supabase migrations, and a pytest suite split into `contract` and
 
 ---
 
+## Reinforcement Learning
+
+The [`Reinforcement Learning/`](./Reinforcement%20Learning) course pairs two
+subfolders, one set per topic:
+
+- **[`Project templates/`](./Reinforcement%20Learning/Project%20templates)** —
+  **6 complete, forkable agent templates**, one per topic, plus a bare
+  [`agent-template-base/`](./Reinforcement%20Learning/Project%20templates/agent-template-base/README.md)
+  scaffold they all reuse.
+- **[`Tutorials/`](./Reinforcement%20Learning/Tutorials)** — the matching
+  **tutorials and exercises** (HTML), with an
+  [index page](./Reinforcement%20Learning/Tutorials/index.html) linking all twelve.
+
+### Architecture — two clouds, three tiers
+
+Unlike the three-cloud courses, the RL templates deploy on **two** managed
+clouds but keep **three** tiers separate in the code:
+
+- **Presentation**: Streamlit on Streamlit Community Cloud
+- **Service**: FastAPI + Pydantic contracts — run under uvicorn locally and
+  imported in-process in production (`SERVICE_MODE` is the only switch)
+- **Data**: Supabase Postgres — every episode of every run is a row, so the
+  learning-curve comparisons are a `GROUP BY`, not a screenshot
+- **Training**: PyTorch, on a laptop or in Colab. **Never deployed.**
+
+> **The no-PyTorch-in-serving rule.** `import torch` alone costs ~490 MB against
+> Streamlit Community Cloud's 690 MB guarantee. So training exports weights to a
+> NumPy `.npz` and the serving path evaluates the forward pass in NumPy — the
+> whole deployed stack measures ~82 MB. `tests/test_no_torch.py` asserts
+> `"torch" not in sys.modules` after importing the app, and the build fails if it
+> ever does. See [`docs/no-torch.md`](./Reinforcement%20Learning/Project%20templates/agent-template-base/docs/no-torch.md).
+
+Every template ships the same six standing endpoints (`/act`, `/rollout`,
+`/policies`, `/runs`, `/healthz`, `/version`), Supabase migrations, committed
+`.npz` policy artifacts, a GitHub Actions CI workflow, and a pytest + ruff gate.
+
+### Project Templates
+
+| Topic | Template | What it does |
+|-------|----------|--------------|
+| — | [agent-template-base](./Reinforcement%20Learning/Project%20templates/agent-template-base/README.md) | The bare scaffold — tiers, contracts, store, and the no-torch guard, with the agent left out. **Start here to see the pattern.** |
+| 1 | [Lake Pilot](./Reinforcement%20Learning/Project%20templates/topic-1-lake-pilot/README.md) | Q-learning on a slippery FrozenLake, with a trained agent and a random one behind the same endpoint — what "learning from experience" actually buys. |
+| 2 | [Policy Lab](./Reinforcement%20Learning/Project%20templates/topic-2-policy-lab/README.md) | Value iteration and Monte Carlo control on one 5×5 routing grid — the exact answer and the learned one, with the gap reported as a confidence interval. |
+| 3 | [Gradient Works](./Reinforcement%20Learning/Project%20templates/topic-3-gradient-works/README.md) | Policy gradients on CartPole trained four ways (±baseline × on/off-policy), reporting the **variance of the gradient estimate**, not just the score. |
+| 4 | [Control Bench](./Reinforcement%20Learning/Project%20templates/topic-4-control-bench/README.md) | An actor-critic bake-off — A2C on CartPole, PPO on Acrobot, SAC on continuous Pendulum — three agents behind one API contract. |
+| 5 | [Search Arena](./Reinforcement%20Learning/Project%20templates/topic-5-search-arena/README.md) | A playable Connect Four service holding six agents (exhaustive, alpha–beta, beam, MCTS/UCT, revised MCTS, PUCT self-play) under an enforced node budget. |
+| 6 | [Alignment Lab](./Reinforcement%20Learning/Project%20templates/topic-6-alignment-lab/README.md) | A reward model trained from human comparisons, base vs aligned outputs, a KL sweep, the point where optimising the proxy stops helping, and a multi-agent finale. |
+
+### Tutorials
+
+| Topic | Subject |
+|-------|---------|
+| 1 | Introduction to Reinforcement Learning — [Tutorial](./Reinforcement%20Learning/Tutorials/Tutorial-Topic-1-Introduction-to-Reinforcement-Learning.html) · [Exercises](./Reinforcement%20Learning/Tutorials/Exercises-Topic-1-Introduction-to-Reinforcement-Learning.html) |
+| 2 | Markov Decision Processes and Monte Carlo Learning — [Tutorial](./Reinforcement%20Learning/Tutorials/Tutorial-Topic-2-Markov-Decision-Process-and-Monte-Carlo-Learning.html) · [Exercises](./Reinforcement%20Learning/Tutorials/Exercises-Topic-2-Markov-Decision-Process-and-Monte-Carlo-Learning.html) |
+| 3 | Policy Gradient Methods — [Tutorial](./Reinforcement%20Learning/Tutorials/Tutorial-Topic-3-Policy-Gradient-Methods.html) · [Exercises](./Reinforcement%20Learning/Tutorials/Exercises-Topic-3-Policy-Gradient-Methods.html) |
+| 4 | Actor-Critic Methods — [Tutorial](./Reinforcement%20Learning/Tutorials/Tutorial-Topic-4-Actor-Critic-Methods.html) · [Exercises](./Reinforcement%20Learning/Tutorials/Exercises-Topic-4-Actor-Critic-Methods.html) |
+| 5 | Tree Search — [Tutorial](./Reinforcement%20Learning/Tutorials/Tutorial-Topic-5-Tree-Search.html) · [Exercises](./Reinforcement%20Learning/Tutorials/Exercises-Topic-5-Tree-Search.html) |
+| 6 | RLHF and Multi-Agent Reinforcement Learning — [Tutorial](./Reinforcement%20Learning/Tutorials/Tutorial-Topic-6-RLHF-and-Multi-Agent-Reinforcement-Learning.html) · [Exercises](./Reinforcement%20Learning/Tutorials/Exercises-Topic-6-RLHF-and-Multi-Agent-Reinforcement-Learning.html) |
+
+> GitHub renders `.html` files as source. Clone or download the folder (or enable
+> GitHub Pages) to view them as formatted pages in a browser — or open
+> [`Tutorials/index.html`](./Reinforcement%20Learning/Tutorials/index.html) locally.
+
+---
+
 ## Cloud Deployment (survey)
 
 The [`Cloud deployment models/`](./Cloud%20deployment%20models) folder is a
@@ -371,6 +437,12 @@ Handwritten digit recognition running entirely in the browser using TensorFlow.j
 | **entityfinder** 📕 | Streamlit Cloud | Render (FastAPI) + Supabase | *yours to choose* | Named Entities (EntityFinder) | Medium |
 | **tagwise** 📕 | Streamlit Cloud | Render (FastAPI) + Supabase | *yours to choose* | POS Tagging (TagWise) | Medium |
 | **askmydocs** 📕 | Streamlit Cloud | Render (FastAPI) + Supabase (pgvector) | Embeddings + retrieval | RAG Q&A (AskMyDocs) | Hard |
+| **lake-pilot** 📙 | Streamlit Cloud | FastAPI (in-process) + Supabase | NumPy serving (tabular Q) | Q-Learning (Lake Pilot) | Medium |
+| **policy-lab** 📙 | Streamlit Cloud | FastAPI (in-process) + Supabase | NumPy serving (tabular) | MDP + Monte Carlo (Policy Lab) | Medium |
+| **gradient-works** 📙 | Streamlit Cloud | FastAPI (in-process) + Supabase | PyTorch → NumPy `.npz` | Policy Gradients (Gradient Works) | Medium |
+| **control-bench** 📙 | Streamlit Cloud | FastAPI (in-process) + Supabase | PyTorch → NumPy `.npz` | Actor-Critic: A2C/PPO/SAC (Control Bench) | Hard |
+| **search-arena** 📙 | Streamlit Cloud | FastAPI (in-process) + Supabase | NumPy + PUCT self-play net | Tree Search (Search Arena) | Hard |
+| **alignment-lab** 📙 | Streamlit Cloud | FastAPI (in-process) + Supabase | PyTorch → NumPy `.npz` | RLHF + Multi-Agent (Alignment Lab) | Hard |
 | React-Azure | Azure Static Web Apps | Azure Container Apps | None | Todo App | Medium |
 | React-Render | Render | Render | PyTorch/TensorFlow | Image Classification | Medium |
 | React-Vercel | Vercel | Railway | TensorFlow | Image Classification | Medium |
@@ -379,7 +451,8 @@ Handwritten digit recognition running entirely in the browser using TensorFlow.j
 
 > ⭐ = complete, working template. 📕 = starter skeleton — infrastructure
 > finished, the NLP layer left to implement (hence *yours to choose* where the
-> model is an open decision).
+> model is an open decision). 📙 = complete RL agent template — two clouds, three
+> tiers, with training kept out of the deployed app (PyTorch trains, NumPy serves).
 
 ---
 
@@ -522,6 +595,26 @@ Resources-for-AI-courses/
 │   │   ├── Topic_6_tagwise/          # Part-of-speech tagging
 │   │   └── Topic_7_askmydocs/        # RAG Q&A (Supabase pgvector)
 │   └── Tutorials/                    # Lecture notes + exercises (Topics 1-7)
+│
+├── Reinforcement Learning/            # 📙 Course: agent templates + tutorials
+│   ├── Project templates/            # Streamlit + FastAPI + Supabase, NumPy serving
+│   │   ├── agent-template-base/      # The bare scaffold every topic reuses
+│   │   │   ├── ui/                   # Streamlit thin client
+│   │   │   ├── api/                  # FastAPI service — NumPy only, never torch
+│   │   │   ├── train/                # PyTorch training tier — never deployed
+│   │   │   ├── envs/                 # Environment definitions
+│   │   │   ├── policies/             # Exported .npz policy artifacts (committed)
+│   │   │   ├── db/                   # Supabase migrations + seed
+│   │   │   ├── shared/               # Pydantic contract, config, store
+│   │   │   ├── tests/                # pytest suite (incl. the no-torch guard)
+│   │   │   └── docs/no-torch.md      # Why serving must not import PyTorch
+│   │   ├── topic-1-lake-pilot/       # Q-learning on slippery FrozenLake
+│   │   ├── topic-2-policy-lab/       # Value iteration vs Monte Carlo control
+│   │   ├── topic-3-gradient-works/   # Policy gradients + gradient variance
+│   │   ├── topic-4-control-bench/    # A2C · PPO · SAC behind one contract
+│   │   ├── topic-5-search-arena/     # Connect Four: minimax → MCTS → PUCT
+│   │   └── topic-6-alignment-lab/    # RLHF, KL sweep, multi-agent
+│   └── Tutorials/                    # HTML tutorials + exercises (Topics 1-6)
 │
 └── Cloud deployment models/           # ☁️ Course-agnostic deployment survey
     ├── react-azure/                  # Azure Static Web Apps + Container Apps

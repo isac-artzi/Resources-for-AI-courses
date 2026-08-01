@@ -1,0 +1,18 @@
+.env
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+venv/
+.venv/
+*.egg-info/
+runs/
+# Policy artifacts ARE committed — they are the deployed model and must be
+# reviewable. If one exceeds ~50 MB you have built the wrong thing.
+!policies/*.npz
+
+# reports/convergence.json is committed too, for the same reason: it is what
+# GET /convergence falls back to on a clone with no database credentials, so a
+# reviewer sees the chart instead of an empty panel. Regenerate it with
+# `python -m train.compare` — never edit it by hand.
+!reports/convergence.json

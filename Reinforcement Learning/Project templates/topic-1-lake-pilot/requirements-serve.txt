@@ -1,0 +1,28 @@
+# ---------------------------------------------------------------------------
+# SERVING REQUIREMENTS — installed by Streamlit Community Cloud and by the
+# service tier. PyTorch is deliberately absent. See docs/no-torch.md.
+#
+# Measured footprint of this set in one process: ~82 MB.
+# `import torch` alone would add ~490 MB against a 690 MB guarantee.
+#
+# TOPIC 1 ADDS ONE LINE: gymnasium. It is here, not in the training file only,
+# because POST /rollout runs evaluation episodes SERVER-SIDE and therefore
+# needs the environment. This is a deliberate exception and it is a cheap one:
+# FrozenLake is toy-text and pure Python, gymnasium itself is a few hundred
+# kilobytes on top of NumPy, and no renderer is ever instantiated (see
+# envs/make_env). Gymnasium is an environment library, not a training
+# framework — the no-torch rule is about the 490 MB, not about the word "RL".
+# If a later topic needs a Box2D or MuJoCo environment, /rollout moves to the
+# training tier rather than this line growing.
+# ---------------------------------------------------------------------------
+streamlit==1.42.0
+fastapi==0.115.8
+uvicorn[standard]==0.34.0
+pydantic==2.10.6
+pydantic-settings==2.7.1
+numpy==2.2.2
+gymnasium[classic-control]==1.0.0    # environment only — see the note above
+supabase==2.13.0
+pandas==2.2.3
+altair==5.5.0
+httpx==0.28.1

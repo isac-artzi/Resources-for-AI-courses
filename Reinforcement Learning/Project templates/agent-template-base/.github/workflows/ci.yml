@@ -1,0 +1,31 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"     # pin: Box2D wheels stop at 3.13, so never 3.14
+
+      # NOTE: CI installs the SERVING requirements plus a test runner, and
+      # nothing else. If a serving module ever grows a training-tier import,
+      # this step fails before the no-torch guard even runs. That is intended.
+      - name: Install serving requirements only
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-serve.txt
+          pip install pytest ruff
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Test (includes the no-torch guard)
+        run: pytest -q
+
+      - name: Migration check — every migration must be checked in and ordered
+        run: |
+          test -d db/migrations
+          ls db/migrations/*.sql

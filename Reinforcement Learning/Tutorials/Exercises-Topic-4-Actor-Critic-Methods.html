@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topic 4 Exercises — Actor-Critic Methods</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6;
+}
+.container { max-width: 940px; margin: 24px auto 48px; background: white;
+  padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+.score { position: sticky; top: 0; background: white; padding: 10px 14px;
+         border: 1px solid #E0E5EB; border-radius: 8px; margin-bottom: 12px;
+         color: #1F4E79; font-weight: 600; z-index: 10;
+         display: flex; justify-content: space-between; align-items: center; }
+.score .bar { background: #E0E5EB; border-radius: 999px; height: 8px;
+              width: 240px; overflow: hidden; }
+.score .bar > div { background: #1F4E79; height: 100%; transition: width 0.3s; }
+.exercise { border: 1px solid #E0E5EB; border-radius: 8px; padding: 22px 26px;
+            margin: 22px 0; background: #FCFDFE; }
+.exercise h3 { margin: 0 0 4px; color: #1F4E79; font-size: 1.1em; }
+.exercise .qtype { color: #888; font-size: 0.8em; text-transform: uppercase;
+                   letter-spacing: 0.05em; margin-bottom: 14px; }
+.stem { margin-bottom: 14px; }
+.stem code { font-family: "SF Mono", Consolas, Monaco, monospace;
+             background: #F2F4F7; padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+      overflow-x: auto; border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.92em; }
+table.tb { border-collapse:collapse; margin:12px 0; font-size:0.9em; }
+table.tb td, table.tb th { border:1px solid #D0D8E0; padding:5px 12px; text-align:center; }
+table.tb th { background:#EAF1F8; color:#1F4E79; }
+.options { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 14px; }
+.options label { cursor: pointer; padding: 10px 14px; background: white;
+                 border: 1px solid #D0D8E0; border-radius: 6px; transition: border-color 0.15s; }
+.options label:hover { border-color: #1F4E79; background: #F7FAFC; }
+.options input[type="radio"] { margin-right: 10px; }
+.numeric-row { display: flex; gap: 12px; align-items: center; margin: 10px 0 14px; }
+.numeric-row input { padding: 8px 12px; border: 1px solid #D0D8E0; border-radius: 6px;
+                     font-family: inherit; font-size: 1em; width: 160px; }
+button { background: #1F4E79; color: white; border: 0; padding: 9px 18px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.95em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+button:disabled { background: #B8C2CB; cursor: not-allowed; }
+.feedback { padding: 12px 16px; border-radius: 6px; margin-top: 10px;
+            font-size: 0.95em; display: none; }
+.feedback.show { display: block; }
+.feedback.correct { background: #E8F5E9; border-left: 4px solid #2E7D32; color: #1B5E20; }
+.feedback.incorrect { background: #FDECEA; border-left: 4px solid #C00000; color: #6E1414; }
+.feedback strong { display: block; margin-bottom: 4px; }
+.help { color: #777; font-size: 0.85em; margin-top: 6px; }
+.nav { display: flex; justify-content: space-between; margin-top: 36px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; }
+.nav a { color: #1F4E79; text-decoration: none; }
+.nav a:hover { text-decoration: underline; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">Practice exercises</div>
+<h1>Topic 4 — Actor-Critic Methods</h1>
+<p class="subtitle">Ten self-graded problems. Submit each one to see immediate feedback; the score bar at the top tracks your progress. Every problem is a quantity you will compute again inside your Topic 4 product — in a loss function, in an entropy sweep, or in a validation error.</p>
+
+<div class="score">
+  <span id="scoreText">Score: 0 / 10</span>
+  <div class="bar"><div id="scoreBar" style="width:0%"></div></div>
+</div>
+
+<!-- Q1 -->
+<div class="exercise" data-q="1">
+  <div class="qtype">Computational · The advantage function</div>
+  <h3>Question 1</h3>
+  <div class="stem">In state <span class="eq">s</span> a policy assigns probabilities <span class="eq">π = (0.5, 0.3, 0.2)</span> to its three actions, and the critic's action values are <span class="eq">Q(s, a₁) = 2.0</span>, <span class="eq">Q(s, a₂) = 5.0</span>, <span class="eq">Q(s, a₃) = −1.0</span>. What is the advantage <span class="eq">A(s, a₂)</span>? Round to two decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.01" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · <span class="eq">A(s,a) = Q(s,a) − V(s)</span>, and under this policy <span class="eq">V(s) = Σ<sub>a</sub> π(a|s)Q(s,a)</span>. The baseline is the policy-weighted average, not the maximum and not the unweighted mean.</div>
+</div>
+
+<!-- Q2 -->
+<div class="exercise" data-q="2">
+  <div class="qtype">Computational · n-step returns</div>
+  <h3>Question 2</h3>
+  <div class="stem">A rollout from state <span class="eq">s₀</span> produces rewards <span class="eq">R₁ = 1</span>, <span class="eq">R₂ = 0</span>, <span class="eq">R₃ = 2</span> and then arrives in a non-terminal state <span class="eq">s₃</span> where the critic estimates <span class="eq">V<sub>φ</sub>(s₃) = 5.0</span>. With <span class="eq">γ = 0.9</span>, what is the 3-step return <span class="eq">G<sup>(3)</sup><sub>0</sub></span>? Round to three decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.001" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · <span class="eq">G<sup>(n)</sup><sub>t</sub> = Σ<sub>k&lt;n</sub> γ<sup>k</sup>R<sub>t+k+1</sub> + γ<sup>n</sup>V<sub>φ</sub>(s<sub>t+n</sub>)</span>. Three sampled rewards carry exponents 0, 1, 2; the bootstrap term carries exponent 3, not 2.</div>
+</div>
+
+<!-- Q3 -->
+<div class="exercise" data-q="3">
+  <div class="qtype">Computational · The clipped surrogate, both signs</div>
+  <h3>Question 3</h3>
+  <div class="stem">PPO uses <span class="eq">L<sup>CLIP</sup> = min(ρA, clip(ρ, 1−ε, 1+ε)·A)</span> with <span class="eq">ε = 0.20</span>. Evaluate it for two samples in the same batch:
+  <table class="tb">
+    <tr><th>sample</th><th>ratio <span class="eq">ρ</span></th><th>advantage <span class="eq">A</span></th></tr>
+    <tr><td>(i)</td><td>1.5</td><td>+3.0</td></tr>
+    <tr><td>(ii)</td><td>0.7</td><td>−2.0</td></tr>
+  </table>
+  Which pair of values is correct?</div>
+  <div class="options">
+    <label><input type="radio" name="q3" value="a"> (i) 4.50 and (ii) −1.40 — the clip never binds, because both ratios lie within a factor of 2 of 1.</label>
+    <label><input type="radio" name="q3" value="b"> (i) 3.60 and (ii) −1.60 — the clip binds in both cases, on opposite sides of the band.</label>
+    <label><input type="radio" name="q3" value="c"> (i) 3.60 and (ii) −1.40 — the clip binds only for the positive advantage.</label>
+    <label><input type="radio" name="q3" value="d"> (i) 4.50 and (ii) −1.60 — the clip binds only for the negative advantage.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q4 -->
+<div class="exercise" data-q="4">
+  <div class="qtype">Conceptual · PPO's clip versus TRPO's constraint</div>
+  <h3>Question 4</h3>
+  <div class="stem">Both TRPO and PPO are motivated by the same surrogate objective and both are described as "trust region" methods. What is the actual difference in what they enforce?</div>
+  <div class="options">
+    <label><input type="radio" name="q4" value="a"> They are equivalent: <span class="eq">ε</span> is simply TRPO's <span class="eq">δ</span> written in the geometry of probability ratios rather than of KL divergence.</label>
+    <label><input type="radio" name="q4" value="b"> TRPO solves a constrained optimisation with a hard bound <span class="eq">D̄<sub>KL</sub> ≤ δ</span> checked by a line search after every step; PPO enforces no bound at all and instead removes the gradient incentive to push the ratio past <span class="eq">1 ± ε</span>, so the realised KL is an outcome to be measured rather than a guarantee.</label>
+    <label><input type="radio" name="q4" value="c"> TRPO clips the probability ratio and PPO constrains the KL divergence; the names are commonly stated the wrong way round.</label>
+    <label><input type="radio" name="q4" value="d"> PPO's clip guarantees that the KL divergence between successive policies never exceeds <span class="eq">ε</span>, which is why no line search is needed.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q5 -->
+<div class="exercise" data-q="5">
+  <div class="qtype">Computational · The soft value backup</div>
+  <h3>Question 5</h3>
+  <div class="stem">In a three-action state the soft action values are <span class="eq">Q = (1.0, 2.0, 1.5)</span> and the temperature is <span class="eq">α = 0.5</span>. Compute the soft state value <span class="eq">V(s) = α·log Σ<sub>a</sub> exp(Q(s,a)/α)</span>. Round to three decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.001" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · Divide each <span class="eq">Q</span> by <span class="eq">α</span> first, exponentiate, sum, take the natural log, and multiply by <span class="eq">α</span> at the end. Sanity-check your answer against the bound <span class="eq">max<sub>a</sub>Q ≤ V ≤ max<sub>a</sub>Q + α·log 3</span>.</div>
+</div>
+
+<!-- Q6 -->
+<div class="exercise" data-q="6">
+  <div class="qtype">Theoretical · The two temperature limits</div>
+  <h3>Question 6</h3>
+  <div class="stem">Consider the soft backup <span class="eq">V(s) = α·log Σ<sub>a</sub> exp(Q(s,a)/α)</span> and the Boltzmann policy <span class="eq">π(a|s) ∝ exp(Q(s,a)/α)</span> over a finite action set. Which description of the two limits is correct?</div>
+  <div class="options">
+    <label><input type="radio" name="q6" value="a"> As <span class="eq">α → 0⁺</span> the operator is squeezed onto <span class="eq">max<sub>a</sub>Q(s,a)</span> and the policy onto the greedy one, recovering ordinary value iteration; as <span class="eq">α → ∞</span> the policy tends to uniform and the action values stop influencing it, so the agent is paid for randomness and ignores the task.</label>
+    <label><input type="radio" name="q6" value="b"> As <span class="eq">α → 0⁺</span> the operator tends to the unweighted mean of the action values; as <span class="eq">α → ∞</span> it tends to the maximum.</label>
+    <label><input type="radio" name="q6" value="c"> Both limits give the greedy policy; <span class="eq">α</span> only rescales the value function and never changes the argmax.</label>
+    <label><input type="radio" name="q6" value="d"> As <span class="eq">α → 0⁺</span> the soft value diverges to <span class="eq">+∞</span> for every state, which is why implementations must keep <span class="eq">α</span> above 0.1.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q7 -->
+<div class="exercise" data-q="7">
+  <div class="qtype">Computational · Entropy and the KL-to-uniform identity</div>
+  <h3>Question 7</h3>
+  <div class="stem">A four-action policy in some state is <span class="eq">π = (0.4, 0.3, 0.2, 0.1)</span>. Compute <span class="eq">D<sub>KL</sub>(π ‖ uniform)</span> in nats, and confirm for yourself that you get the same number from <span class="eq">−H(π) + log|𝒜|</span>. Round to three decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.001" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · Use natural logarithms throughout. Either <span class="eq">Σ<sub>a</sub>π(a)·log(π(a)/0.25)</span> directly, or compute <span class="eq">H(π) = −Σ π log π</span> and subtract it from <span class="eq">log 4 = 1.3863</span>. Both routes must agree exactly.</div>
+</div>
+
+<!-- Q8 -->
+<div class="exercise" data-q="8">
+  <div class="qtype">Computational · Automatic temperature tuning</div>
+  <h3>Question 8</h3>
+  <div class="stem">SAC tunes <span class="eq">α</span> by descending the dual objective <span class="eq">J(α) = α·(H(π) − H̄)</span>, whose gradient is <span class="eq">H(π) − H̄</span>. You are training on Pendulum-v1, so the target entropy is the standard heuristic <span class="eq">H̄ = −dim(𝒜) = −1.0</span> nat. The current temperature is <span class="eq">α = 0.20</span>, the measured mean policy entropy over the batch is <span class="eq">H(π) = 0.40</span> nats, and the temperature learning rate is <span class="eq">λ = 0.05</span>. What is <span class="eq">α</span> after one gradient step? Round to three decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.001" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · <span class="eq">α ← α − λ·(H(π) − H̄)</span>. Watch the sign of the target: it is negative, so the bracket is larger than <span class="eq">H(π)</span> alone, not smaller.</div>
+</div>
+
+<!-- Q9 -->
+<div class="exercise" data-q="9">
+  <div class="qtype">Application · The service contract</div>
+  <h3>Question 9</h3>
+  <div class="stem">Your service hosts three policies with observation dimensions 4 (CartPole-v1), 6 (Acrobot-v1) and 3 (Pendulum-v1). A caller posts <code>{"policy": "sac_pendulum", "state": [0.1, 0.2, 0.0, -0.4]}</code> to <code>POST /act</code>. What must the service do, and why?</div>
+  <div class="options">
+    <label><input type="radio" name="q9" value="a"> Truncate the state to the first three elements and proceed, since the extra element is probably padding.</label>
+    <label><input type="radio" name="q9" value="b"> Let the NumPy matrix multiply raise, and return the resulting 500 with the traceback in the body so the caller can debug it.</label>
+    <label><input type="radio" name="q9" value="c"> Validate the shape at the request boundary and return <code>422</code> naming both the expected and the received dimension. The request is malformed, not the server: a 500 tells the caller to retry something that will fail identically every time, and a traceback in a response body is an information leak as well as a bad contract.</label>
+    <label><input type="radio" name="q9" value="d"> Return <code>404</code>, because no policy exists that accepts a four-dimensional state under that name.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q10 -->
+<div class="exercise" data-q="10">
+  <div class="qtype">Conceptual · Limitations of the evidence</div>
+  <h3>Question 10</h3>
+  <div class="stem">Your entropy sweep runs three seeds for each of <span class="eq">α = 0.5</span>, <span class="eq">α = 0.01</span>, and automatic tuning, and <code>auto</code> has the highest mean return. Which statement about what three seeds establish is correct?</div>
+  <div class="options">
+    <label><input type="radio" name="q10" value="a"> Three seeds establish that <code>auto</code> is the better setting on Pendulum-v1, since averaging over seeds removes the randomness.</label>
+    <label><input type="radio" name="q10" value="b"> Three seeds give an interval wide enough that ordinary seed variation will often overlap it, so they can show that a difference is large relative to seed noise or fail to, and they can expose an outright failure mode such as a run that collapses. They cannot establish a small difference, and none of it transfers to a different environment or reward scale, because the temperature is compared directly against rewards.</label>
+    <label><input type="radio" name="q10" value="c"> Three seeds are sufficient for a claim about <code>auto</code> in general, because automatic tuning removes the hyperparameter that seeds interact with.</label>
+    <label><input type="radio" name="q10" value="d"> Seed count is irrelevant here: what matters is that the sweep used the same number of environment steps for every configuration.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="nav"><a href="index.html">← All tutorials</a><a href="Tutorial-Topic-4-Actor-Critic-Methods.html">Topic 4 tutorial →</a></div>
+</div>
+
+<script>
+/* ---- Answer key + feedback content ---- */
+const KEY = {
+  1: { type: 'numeric', accept: 2.7, tol: 0.005,
+       ok: 'V(s) = 0.5(2.0) + 0.3(5.0) + 0.2(−1.0) = 2.3, so A(s,a₂) = 5.0 − 2.3 = 2.7. The baseline is the policy-weighted mean because that is what makes the advantage average to zero under π — which is exactly the property that leaves the policy gradient unbiased while shrinking the quantity multiplying the score.',
+       no: 'V(s) here is the expectation of Q under the current policy, Σ π(a|s)Q(s,a) = 2.3 — not the maximum (5.0) and not the unweighted mean (2.0). Subtract that from Q(s,a₂).' },
+  2: { type: 'numeric', accept: 6.265, tol: 0.005,
+       ok: 'G⁽³⁾ = 1 + 0.9(0) + 0.81(2) + 0.729(5) = 1 + 0 + 1.62 + 3.645 = 6.265. The bootstrap term carries γ³ because the critic is being consulted three steps after t — the same exponent that attenuates the critic\'s error, which is why the bias of an n-step return is γⁿ times the critic\'s error and vanishes as n grows.',
+       no: 'Three sampled rewards use exponents 0, 1 and 2. The bootstrap V(s₃) is three steps away, so it carries γ³ = 0.729, not γ² = 0.81. Adding one term too few or discounting the first reward are the two usual slips.' },
+  3: { type: 'mc', accept: 'b',
+       ok: 'For (i) A > 0, so the objective is A·min(ρ, 1+ε) = 3(1.2) = 3.60 — the clip binds above the band. For (ii) A < 0, the negative multiplier turns the min into a max, giving A·max(ρ, 1−ε) = −2(0.8) = −1.60 — the clip binds below the band. Both samples sit in a flat region, so both contribute zero gradient in the direction they were already moving.',
+       no: 'Work the two signs separately. For A > 0 the min picks the smaller of ρA and clip(ρ)A, which is the clipped one when ρ > 1+ε. For A < 0 multiplying by a negative number reverses the order, so the min picks the more negative value — here clip(0.7) = 0.8 gives −1.60, which is below −1.40.' },
+  4: { type: 'mc', accept: 'b',
+       ok: 'TRPO gives a certificate and pays for it in conjugate gradients, Fisher-vector products and a backtracking line search. PPO gives a scalar objective one line of autograd can differentiate, and gives up the guarantee: several epochs on a clipped loss can still move the policy a long way. That is precisely why your product logs the realised mean KL per update — the number PPO cannot promise is the number you must measure.',
+       no: 'One of the two solves a constrained problem and verifies the constraint; the other modifies the objective so that the incentive to violate it disappears. Removing an incentive is not the same as enforcing a bound, and asking which of the two PPO does will identify the answer.' },
+  5: { type: 'numeric', accept: 2.204, tol: 0.01,
+       ok: 'exp(2) + exp(4) + exp(3) = 7.389 + 54.598 + 20.086 = 82.073; 0.5·ln(82.073) = 2.204. Compare with max Q = 2.0: the soft value exceeds the hard maximum by 0.204, comfortably inside the guaranteed gap α·log 3 = 0.549. That excess is the entropy bonus the agent collects for not committing.',
+       no: 'The α appears twice and both occurrences matter: once dividing inside the exponential and once multiplying outside the log. Your answer should land between max Q = 2.0 and max Q + α·log 3 = 2.549; if it is below 2.0 or above 2.549, one of the two α factors has been dropped.' },
+  6: { type: 'mc', accept: 'a',
+       ok: 'The squeeze is exact: max Q ≤ α·log Σ exp(Q/α) ≤ max Q + α·log|𝒜|, so the gap closes as α → 0 and the soft Bellman equation becomes the ordinary Bellman optimality equation. At the other end, expanding exp(Q/α) ≈ 1 + Q/α leaves α·log|𝒜| plus the mean of Q, and the differences between actions have been priced out. These are the two ends your entropy sweep is looking for.',
+       no: 'Bound the operator from both sides: keeping only the largest term gives a lower bound of max Q, and replacing every term by the largest gives an upper bound of max Q + α·log|𝒜|. That tells you immediately which limit produces the maximum. The other limit follows from expanding the exponential for large α.' },
+  7: { type: 'numeric', accept: 0.106, tol: 0.005,
+       ok: 'H(π) = 1.2799 nats, so −H(π) + log 4 = −1.2799 + 1.3863 = 0.1064, and Σ π log(π/0.25) gives the same 0.1064. The identity is exact everywhere on the simplex, which means maximising r + αH(π) and maximising r − α·D_KL(π‖uniform) differ only by the constant α·log|𝒜| and therefore have the same optimum. Topic 6 keeps the KL and replaces "uniform" with a learned reference policy — that substitution is the whole step.',
+       no: 'Use natural logs, not base 2 — an answer near 0.154 means you computed in bits. The two routes are Σ π log(π/0.25) and log 4 − H(π); if they disagree, check that H(π) = −Σ π log π came out near 1.28 nats, which is slightly below the uniform maximum of 1.3863.' },
+  8: { type: 'numeric', accept: 0.13, tol: 0.005,
+       ok: 'α ← 0.20 − 0.05(0.40 − (−1.0)) = 0.20 − 0.05(1.40) = 0.130. The policy is more random than the target, so the price of entropy falls and the objective tilts back toward reward. Note what this makes α: a dual variable on an entropy constraint, not a hyperparameter, which is why it can be trained and why it adapts automatically when the reward scale changes.',
+       no: 'The bracket is H(π) − H̄ = 0.40 − (−1.0) = 1.40, not 0.40 − 1.0 = −0.60. Subtracting a negative target adds. Getting the sign wrong makes α rise when the policy is already too random, which in a real run drives the entropy up until the task reward stops mattering.' },
+  9: { type: 'mc', accept: 'c',
+       ok: '422 is the status code for a well-formed request whose content the server cannot process, which is exactly this case. Validating at the boundary also keeps the failure message useful: "expects 3 dims, got 4" tells the caller what to fix, whereas a ValueError from inside a matmul names a matrix shape the caller has never seen. Your pytest suite asserts this specific behaviour.',
+       no: 'Ask who made the mistake. A 5xx status says the server failed and the request may succeed on retry; this request will fail identically forever, so the error belongs in the 4xx range. Silently reshaping the input is worse still: it returns a confident torque computed from the wrong state.' },
+  10:{ type: 'mc', accept: 'b',
+       ok: 'Three seeds is the minimum that yields an interval at all, and the interval is wide: it can support a claim about a large effect, expose a configuration that fails outright on some seeds, and support nothing else. The reward-scale point is specific to this topic — α is compared directly against rewards inside the soft backup, so a temperature tuned on Pendulum\'s roughly [−16, 0] range carries no information about a task rewarded in [0, 1].',
+       no: 'Averaging over seeds does not remove seed variance; it estimates a mean whose uncertainty falls only as 1/√n. State both halves: what three seeds can support (a large difference, an outright failure) and what they cannot (a small difference, or any claim about a different environment or reward scale).' },
+};
+
+const state = {}; let solved = new Set();
+
+document.querySelectorAll('.exercise').forEach(ex => {
+  const qid = +ex.dataset.q;
+  const btn = ex.querySelector('[data-check]');
+  const fb = ex.querySelector('[data-feedback]');
+  btn.addEventListener('click', () => {
+    const k = KEY[qid]; let user;
+    if (k.type === 'numeric') {
+      const inp = ex.querySelector('[data-input]');
+      user = parseFloat(inp.value);
+      if (Number.isNaN(user)) {
+        fb.className = 'feedback incorrect show';
+        fb.innerHTML = '<strong>Please enter a number.</strong>';
+        return;
+      }
+    } else {
+      const picked = ex.querySelector('input[type=radio]:checked');
+      if (!picked) {
+        fb.className = 'feedback incorrect show';
+        fb.innerHTML = '<strong>Please select an option.</strong>';
+        return;
+      }
+      user = picked.value;
+    }
+    const ok = (k.type === 'numeric')
+      ? Math.abs(user - k.accept) <= k.tol
+      : user === k.accept;
+    if (ok) {
+      fb.className = 'feedback correct show';
+      fb.innerHTML = '<strong>Correct.</strong>' + k.ok;
+      if (!solved.has(qid)) { solved.add(qid); updateScore(); }
+      btn.disabled = true;
+    } else {
+      fb.className = 'feedback incorrect show';
+      fb.innerHTML = '<strong>Not quite.</strong>' + k.no;
+    }
+  });
+});
+
+function updateScore() {
+  const total = Object.keys(KEY).length;
+  document.getElementById('scoreText').textContent = `Score: ${solved.size} / ${total}`;
+  document.getElementById('scoreBar').style.width = `${(solved.size / total * 100).toFixed(0)}%`;
+}
+</script>
+</body>
+</html>

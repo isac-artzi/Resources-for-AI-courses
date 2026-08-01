@@ -1,0 +1,213 @@
+{
+  "offline": true,
+  "quick": false,
+  "budgets": {
+    "pairs": 2400,
+    "epochs": 25,
+    "sft_steps": 300,
+    "dpo_steps": 600,
+    "gen_prompts": 60,
+    "betas": [
+      0.002,
+      0.005,
+      0.01,
+      0.02,
+      0.05,
+      0.1,
+      0.5
+    ],
+    "ma_episodes": 3000,
+    "ma_coop_episodes": 4000,
+    "pennies_steps": 60000
+  },
+  "stages": {
+    "data": {
+      "source": "synthetic-offline",
+      "train": {
+        "pairs": 1920,
+        "prompts": 231,
+        "mean_chosen_len": 18.240104166666665,
+        "mean_rejected_len": 15.68125,
+        "longer_chosen_rate": 0.6213541666666667,
+        "label_length_pearson_r": 0.265648862349032
+      },
+      "test": {
+        "pairs": 480,
+        "prompts": 60,
+        "mean_chosen_len": 18.397916666666667,
+        "mean_rejected_len": 15.683333333333334,
+        "longer_chosen_rate": 0.65,
+        "label_length_pearson_r": 0.2894069671441729
+      },
+      "seconds": 0.6
+    },
+    "embed": {
+      "encoder": "hashing-offline",
+      "total_seconds": 0.0,
+      "cache_megabytes": 4.558,
+      "dim": 256
+    },
+    "reward_heads": {
+      "tfidf": {
+        "held_out_accuracy": 0.8688,
+        "accuracy_stderr": 0.0154,
+        "length_bias_r": 0.353,
+        "length_decodability_r2": 0.7569,
+        "length_matched_accuracy": 0.8626,
+        "artifact_bytes": 20127
+      },
+      "embedding": {
+        "held_out_accuracy": 0.8958,
+        "accuracy_stderr": 0.0139,
+        "length_bias_r": 0.3283,
+        "length_decodability_r2": 0.1042,
+        "length_matched_accuracy": 0.8931,
+        "artifact_bytes": 62356
+      },
+      "deployed": "tfidf",
+      "tfidf_vs_embedding_paired": {
+        "accuracy_difference": 0.0271,
+        "paired_stderr": 0.0091,
+        "z": 2.9824,
+        "b_only_first_head_right": 3,
+        "c_only_second_head_right": 16,
+        "n_pairs": 480,
+        "n_discordant": 19
+      },
+      "seconds": 14.6
+    },
+    "alignment": {
+      "base_mean_reward": 0.8892035383073097,
+      "base_mean_true_quality": 0.17124793572806157,
+      "dpo_loss_monotone_in_margin": true,
+      "runs": [
+        {
+          "beta": 0.002,
+          "final_loss": 0.6319985389709473,
+          "implicit_reward_margin": 0.9553534984588623,
+          "implicit_reward_accuracy": 0.7833333611488342,
+          "kl_from_reference": 43.43171077221632,
+          "mean_reward_model_score": 3.6156677360785063,
+          "mean_true_quality": 0.3662414965986394,
+          "steps": 600,
+          "seed": 0,
+          "notes": "tiny-lm offline fallback",
+          "win_rate_vs_base": 0.9666666666666667
+        },
+        {
+          "beta": 0.005,
+          "final_loss": 0.619299590587616,
+          "implicit_reward_margin": 1.0013221502304077,
+          "implicit_reward_accuracy": 0.7833333611488342,
+          "kl_from_reference": 34.233202911913395,
+          "mean_reward_model_score": 3.5969321468919593,
+          "mean_true_quality": 0.3736116670095609,
+          "steps": 600,
+          "seed": 0,
+          "notes": "tiny-lm offline fallback",
+          "win_rate_vs_base": 0.9666666666666667
+        },
+        {
+          "beta": 0.01,
+          "final_loss": 0.5960947275161743,
+          "implicit_reward_margin": 1.0230013132095337,
+          "implicit_reward_accuracy": 0.7875000238418579,
+          "kl_from_reference": 30.219232380390167,
+          "mean_reward_model_score": 3.6376898146055083,
+          "mean_true_quality": 0.38496315192743763,
+          "steps": 600,
+          "seed": 0,
+          "notes": "tiny-lm offline fallback",
+          "win_rate_vs_base": 0.9833333333333333
+        },
+        {
+          "beta": 0.02,
+          "final_loss": 0.5440601706504822,
+          "implicit_reward_margin": 1.040866494178772,
+          "implicit_reward_accuracy": 0.768750011920929,
+          "kl_from_reference": 25.44549060612917,
+          "mean_reward_model_score": 3.62645252070008,
+          "mean_true_quality": 0.3984631225325668,
+          "steps": 600,
+          "seed": 0,
+          "notes": "tiny-lm offline fallback",
+          "win_rate_vs_base": 0.9833333333333333
+        },
+        {
+          "beta": 0.05,
+          "final_loss": 0.4344944357872009,
+          "implicit_reward_margin": 1.088396430015564,
+          "implicit_reward_accuracy": 0.7645833492279053,
+          "kl_from_reference": 20.870914861559868,
+          "mean_reward_model_score": 3.598915626336459,
+          "mean_true_quality": 0.40262506511379165,
+          "steps": 600,
+          "seed": 0,
+          "notes": "tiny-lm offline fallback",
+          "win_rate_vs_base": 1.0
+        },
+        {
+          "beta": 0.1,
+          "final_loss": 0.3220583200454712,
+          "implicit_reward_margin": 1.1732228994369507,
+          "implicit_reward_accuracy": 0.75,
+          "kl_from_reference": 16.49850506335497,
+          "mean_reward_model_score": 3.5292668018573203,
+          "mean_true_quality": 0.3833857237339379,
+          "steps": 600,
+          "seed": 0,
+          "notes": "tiny-lm offline fallback",
+          "win_rate_vs_base": 0.9666666666666667
+        },
+        {
+          "beta": 0.5,
+          "final_loss": 0.07547852396965027,
+          "implicit_reward_margin": 1.845044493675232,
+          "implicit_reward_accuracy": 0.7270833253860474,
+          "kl_from_reference": 6.4072014056146145,
+          "mean_reward_model_score": 3.1003823269414683,
+          "mean_true_quality": 0.3524411057454532,
+          "steps": 600,
+          "seed": 0,
+          "notes": "tiny-lm offline fallback",
+          "win_rate_vs_base": 0.9333333333333333
+        }
+      ],
+      "seconds": 73.4
+    },
+    "reward_hacking": {
+      "decoupling_beta": 0.05,
+      "peak_true_quality_beta": 0.05,
+      "peak_proxy_beta": 0.01,
+      "proxy_change_past_peak": 0.016752109742047328,
+      "true_quality_change_past_peak": -0.03638356851515223,
+      "goodhart_observed": true,
+      "corr_low_pressure_half": 0.9662900649428642,
+      "corr_high_pressure_half": 0.5693622181669348,
+      "seconds": 0.5
+    },
+    "multiagent": {
+      "ipd_final_reward": [
+        1.574,
+        1.642
+      ],
+      "ipd_cooperation_rate": 0.284,
+      "ipd_mutual_defection_payoff": 1.0,
+      "nonstationarity_verdict": {
+        "policy_switch_ratio": 161.0,
+        "late_reward_std_ratio": 11.838,
+        "q_drift_ratio": 1179532.705
+      },
+      "cooperative_final": -1.046,
+      "cooperative_random_floor": -5.785,
+      "pennies_time_average": [
+        0.499,
+        0.498
+      ],
+      "pennies_late_over_early_std": 0.989,
+      "seconds": 21.3
+    }
+  },
+  "experiment_id": "exp-0001",
+  "total_seconds": 110.8
+}

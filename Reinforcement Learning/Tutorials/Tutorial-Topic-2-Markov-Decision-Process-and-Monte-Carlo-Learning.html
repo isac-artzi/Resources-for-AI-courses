@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topic 2 Tutorial — Markov Decision Process and Monte Carlo Learning</title>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] }, svg: { fontCache: 'global' } };
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif; margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.62; }
+.container { max-width: 1000px; margin: 24px auto 48px; background: white; padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79; padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.34em; margin-top: 42px; border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 7px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+pre { background: #1f2733; color:#e6edf3; padding: 14px 18px; border-radius: 6px; overflow-x: auto; border-left: 4px solid #1F4E79; font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.86em; line-height:1.55; }
+pre .c { color:#8b98a9; } pre .k { color:#ff7b72; } pre .s { color:#a5d6ff; } pre .f { color:#d2a8ff; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79; padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.why { background:#F0FaF3; border-left:4px solid #1F8B4C; padding:14px 18px; margin:16px 0; border-radius:4px; }
+.why strong { color:#1F8B4C; }
+.deep { background:#FBF7FF; border-left:4px solid #6A3FA0; padding:14px 18px; margin:16px 0; border-radius:4px; }
+.deep strong { color:#6A3FA0; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px; margin: 14px 0; border-radius: 4px; font-size: 0.95em; }
+.product { background:#FCF6FF; border-left:4px solid #7B3FA0; padding:14px 18px; margin:16px 0; border-radius:4px; }
+.product strong { color:#7B3FA0; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px; padding: 22px; margin: 24px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.demo .tag { font-size:0.7em; background:#1F4E79; color:white; padding:2px 8px; border-radius:10px; vertical-align:middle; margin-left:8px; letter-spacing:0.04em;}
+.controls { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 200px; }
+.control input[type="text"], .control input[type="number"], .control select { padding:6px 8px; border:1px solid #CFD7DF; border-radius:4px; font-family:inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px; border-radius: 6px; font-size: 0.9em; }
+.mono { font-family:"SF Mono",Consolas,monospace; }
+textarea { width:100%; min-height:60px; padding:10px; border:1px solid #CFD7DF; border-radius:6px; font-family:"SF Mono",Consolas,monospace; font-size:0.9em; resize:vertical; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.9em; }
+button:hover { background: #2D5C8C; } button.secondary { background: #E0E5EB; color: #1A1A1A; } button.secondary:hover { background:#CFD7DF; }
+button:disabled { background:#CBD5E0; cursor:not-allowed; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; max-width:100%; }
+.tok { display:inline-block; background:#EAF1F8; border:1px solid #BcceE0; color:#1F4E79; padding:2px 7px; margin:2px; border-radius:10px; font-family:"SF Mono",Consolas,monospace; font-size:0.82em; }
+table.grid { border-collapse:collapse; font-family:"SF Mono",Consolas,monospace; font-size:0.8em; margin:8px 0; }
+table.grid td { border:1px solid #C7D2DE; width:64px; height:52px; text-align:center; padding:0; vertical-align:middle; line-height:1.25; }
+table.grid td .v { font-weight:bold; display:block; font-size:1.08em; }
+table.grid td .a { color:#1F4E79; font-size:1.15em; display:block; }
+table.grid td.hole { background:#3A4A5C; color:#fff; } table.grid td.goal { background:#1F8B4C; color:#fff; }
+table.grid td.start { outline:3px solid #F9A825; outline-offset:-3px; }
+table.tb { border-collapse:collapse; margin:12px 0; font-size:0.88em; } table.tb td, table.tb th { border:1px solid #D0D8E0; padding:5px 10px; text-align:center; } table.tb th { background:#EAF1F8; color:#1F4E79; }
+table.tb tr.hi td { background:#D6EAD9; font-weight:bold; }
+.nav { display: flex; justify-content: space-between; margin-top: 44px; padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { columns:2; font-size:0.92em; } .toc a { color:#1F4E79; text-decoration:none; } .toc a:hover{text-decoration:underline;}
+.legend { font-size:0.82em; color:#555; margin-top:6px; }
+.sw { display:inline-block; width:11px; height:11px; border-radius:2px; margin-right:4px; vertical-align:-1px; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">Tutorial · ~ 90 min · formal</div>
+<h1>Topic 2 — Markov Decision Process and Monte Carlo Learning</h1>
+<p class="subtitle">Topic 1 handed value iteration a transition kernel and then took it away again for Q-learning. This topic makes that hand-off the subject. We derive the Bellman expectation equation, prove the policy improvement theorem, run value iteration and policy iteration side by side on the same 5×5 grid and count what each actually costs, then delete the model and estimate the same value function from sampled returns alone — first-visit and every-visit, on-policy and off-policy — and measure how many episodes it takes for the estimate to become indistinguishable from the exact answer.</p>
+
+<div class="callout">
+ <strong>Roadmap.</strong>
+ <div class="toc">
+ <a href="#s1">1. The MDP, restated with the model in hand</a><br>
+ <a href="#s2">2. Evaluation, improvement, and the improvement theorem</a><br>
+ <a href="#s3">3. Value iteration vs. policy iteration</a><br>
+ <a href="#s4">4. Monte Carlo policy evaluation</a><br>
+ <a href="#s5">5. Monte Carlo control</a><br>
+ <a href="#s6">6. Off-policy Monte Carlo and importance sampling</a><br>
+ <a href="#s7">7. In practice (Policy Lab)</a>
+ </div>
+</div>
+
+<h2 id="s1">1. The MDP, restated with the model in hand</h2>
+<p>The object under study is unchanged from Topic 1 — the five-tuple</p>
+\[ \mathcal{M} = \langle \mathcal{S},\, \mathcal{A},\, P,\, R,\, \gamma \rangle, \qquad P(s'\mid s,a) = \Pr(S_{t+1}=s' \mid S_t=s, A_t=a), \]
+<p>with \(R(s,a,s')\) the reward received on the transition and \(\gamma \in [0,1)\) the discount factor. What changes in this topic is <em>possession</em>. In Topic 1 the tuple was a description of a problem the agent had to learn about. Here you own \(P\) and \(R\) as arrays in memory: <code>envs/gridworld.py</code> exposes an explicit transition-probability matrix, and the planner reads it.</p>
+<p>Start from the definition of the state-value function and split the return at its first term. This is the entire derivation; everything else is bookkeeping.</p>
+\[ v_\pi(s) \;=\; \mathbb{E}_\pi\!\left[ G_t \mid S_t = s\right], \qquad G_t \;=\; R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \cdots \]
+<p>Factor \(\gamma\) out of everything after the first reward:</p>
+\[ G_t \;=\; R_{t+1} + \gamma\big( R_{t+2} + \gamma R_{t+3} + \cdots \big) \;=\; R_{t+1} + \gamma\, G_{t+1}. \]
+<p>That identity is exact and holds sample by sample, not merely in expectation. Substituting it and using linearity of expectation,</p>
+\[ v_\pi(s) \;=\; \mathbb{E}_\pi\!\left[ R_{t+1} + \gamma G_{t+1} \mid S_t = s\right]. \]
+<p>Now expand the expectation over the two things that happen next: the policy draws an action, and the kernel draws a successor. Conditioning on \(S_{t+1}=s'\) and using the Markov property — which says \(\mathbb{E}_\pi[G_{t+1}\mid S_t=s, A_t=a, S_{t+1}=s'] = \mathbb{E}_\pi[G_{t+1}\mid S_{t+1}=s'] = v_\pi(s')\), because nothing before \(s'\) carries information about what follows it — gives the <strong>Bellman expectation equation</strong>:</p>
+\[ \boxed{\;v_\pi(s) \;=\; \sum_{a} \pi(a\mid s) \sum_{s'} P(s'\mid s,a)\Big[ R(s,a,s') + \gamma\, v_\pi(s') \Big].\;} \]
+<p>Read the three factors in order: \(\pi(a\mid s)\) is the agent's choice, \(P(s'\mid s,a)\) is the environment's, and the bracket is one step of reward plus the discounted value of where you land. The action-value form drops the outer average, since the action is given:</p>
+\[ q_\pi(s,a) \;=\; \sum_{s'} P(s'\mid s,a)\Big[ R(s,a,s') + \gamma\, v_\pi(s') \Big], \qquad v_\pi(s) = \sum_a \pi(a\mid s)\, q_\pi(s,a). \]
+<p>For a finite MDP this is a system of \(|\mathcal{S}|\) linear equations in \(|\mathcal{S}|\) unknowns, \(v_\pi = r_\pi + \gamma P_\pi v_\pi\), whose solution is \(v_\pi = (I - \gamma P_\pi)^{-1} r_\pi\). The matrix is invertible for every \(\gamma < 1\) because \(\gamma P_\pi\) has spectral radius at most \(\gamma\). So policy evaluation is, in principle, a single linear solve.</p>
+
+<div class="why">
+ <strong>Why we iterate a fixed point instead of inverting the matrix we just wrote down.</strong> The closed form is \(O(|\mathcal{S}|^3)\) and requires \(P_\pi\) to be materialised as a dense \(|\mathcal{S}|\times|\mathcal{S}|\) array. On the 25-state grid in this topic that is trivial and you could genuinely use <code>np.linalg.solve</code>. It stops being trivial one topic later: a coarse discretisation of CartPole with six bins per dimension is \(6^4 = 1296\) states, and the same kernel written densely is 1.7 million entries of which almost all are zero. Iterative evaluation costs \(O(\text{nonzeros})\) per sweep and never forms the inverse, it warm-starts from the previous answer — which is exactly what makes policy iteration cheap after its first round — and it degrades gracefully into the sampled updates of §4, which the linear solve does not. The closed form is the better <em>proof</em>; the iteration is the better <em>algorithm</em>, and the reason is sparsity and reuse rather than arithmetic count.
+</div>
+
+<h3>What owning \(P\) actually buys</h3>
+<p>Q-learning in Topic 1 replaced the inner sum \(\sum_{s'} P(s'\mid s,a)[\cdot]\) with a single sampled successor and took a small step toward it. Compare the two updates term by term and three differences fall out.</p>
+<ul>
+ <li><strong>Exact expectations, hence no sampling variance.</strong> A planning backup evaluates the full sum over successors. Its only error is the error already sitting in \(V\); it introduces none of its own. A sampled backup carries the variance of \(R + \gamma V(S')\), which is why it needs a step size \(\alpha\) and why the Robbins–Monro conditions exist at all. A planner has no learning rate because it does not need one.</li>
+ <li><strong>Backups anywhere, in any order.</strong> Experience arrives in trajectories: to update a state you must first reach it. A planner updates any state at any moment, so it can sweep in whatever order converges fastest and can reach states no policy would ever visit. That freedom is the whole content of §3.</li>
+ <li><strong>Counterfactuals for free.</strong> \(q_\pi(s,a)\) for an action the policy never takes is one sum away. Without \(P\), the only way to learn about an untaken action is to take it — which is why exploration is a topic in model-free control and not in planning.</li>
+</ul>
+<p>The cost is that \(P\) must be correct. A planner returns the optimal policy <em>for the model it was given</em>, and it does so with total confidence and no diagnostic that would reveal the model to be wrong. That asymmetry is the client's question in the Policy Lab brief, and it is not settled by preferring one method: it is settled by measuring the gap on the environment you actually face.</p>
+
+<div class="deep">
+ <strong>Why the five-tuple is a modelling commitment and not a transcription of reality.</strong> Writing \(P\) down forces three decisions that a model-free agent leaves implicit and therefore never has to defend. First, the state <em>alphabet</em>: the 5×5 grid has 25 states because you decided position is sufficient, and that decision is what makes the kernel Markov. Second, the <em>support</em>: every successor you failed to enumerate has been assigned probability zero, and a planner will exploit a zero-probability catastrophe with no hesitation whatever. Third, the <em>reward</em>: \(R\) is not measured, it is authored, and the optimal policy is optimal only with respect to what you wrote. The Monte Carlo learner in §4 inherits the first commitment and escapes the second and third — it can only be as wrong as the environment it sampled. This is the honest form of the "plan or learn" argument, and it is stronger than either consultant's version of it in the product brief.
+</div>
+
+<h2 id="s2">2. Evaluation, improvement, and the improvement theorem</h2>
+<p>Two operations generate every dynamic-programming algorithm in this topic.</p>
+<p><strong>Policy evaluation</strong> turns the Bellman expectation equation into an assignment and iterates it:</p>
+\[ V_{k+1}(s) \;\leftarrow\; \sum_a \pi(a\mid s) \sum_{s'} P(s'\mid s,a)\big[ R(s,a,s') + \gamma V_k(s') \big]. \]
+<p>The operator \(T_\pi\) is a \(\gamma\)-contraction in the max norm — \(\lVert T_\pi V - T_\pi U\rVert_\infty \le \gamma \lVert V - U \rVert_\infty\), because the difference passes through a convex combination of successor values and is then multiplied by \(\gamma\) — so \(V_k \to v_\pi\) geometrically from any start.</p>
+<p><strong>Policy improvement</strong> reads a new policy off the values just computed:</p>
+\[ \pi'(s) \;=\; \arg\max_a\, q_\pi(s,a) \;=\; \arg\max_a \sum_{s'} P(s'\mid s,a)\big[R(s,a,s') + \gamma v_\pi(s')\big]. \]
+
+<h3>The policy improvement theorem</h3>
+<p><strong>Theorem.</strong> Let \(\pi\) and \(\pi'\) be deterministic policies such that</p>
+\[ q_\pi(s, \pi'(s)) \;\ge\; v_\pi(s) \qquad \text{for every } s \in \mathcal{S}. \]
+<p>Then \(v_{\pi'}(s) \ge v_\pi(s)\) for every \(s\). If the first inequality is strict at some state, the second is strict at that state.</p>
+<p><strong>Proof.</strong> The premise compares one step of \(\pi'\) followed by \(\pi\) forever against \(\pi\) from the start. Apply it repeatedly, peeling one more step of \(\pi'\) off the front each time:</p>
+\[
+\begin{aligned}
+v_\pi(s) &\le q_\pi(s,\pi'(s)) \\
+ &= \mathbb{E}_{\pi'}\!\big[ R_{t+1} + \gamma\, v_\pi(S_{t+1}) \,\big|\, S_t = s \big] \\
+ &\le \mathbb{E}_{\pi'}\!\big[ R_{t+1} + \gamma\, q_\pi(S_{t+1}, \pi'(S_{t+1})) \,\big|\, S_t = s \big] \\
+ &= \mathbb{E}_{\pi'}\!\big[ R_{t+1} + \gamma R_{t+2} + \gamma^2 v_\pi(S_{t+2}) \,\big|\, S_t = s \big] \\
+ &\;\;\vdots \\
+ &\le \mathbb{E}_{\pi'}\!\big[ R_{t+1} + \gamma R_{t+2} + \cdots + \gamma^{n-1} R_{t+n} + \gamma^{n} v_\pi(S_{t+n}) \,\big|\, S_t = s \big].
+\end{aligned}
+\]
+<p>Each inequality is the premise applied at the state reached at that step; each equality is one Bellman expansion under \(\pi'\). The subscript on the expectation is \(\pi'\) throughout because every action that has been peeled off was chosen by \(\pi'\). Now let \(n \to \infty\). With bounded rewards, \(|\gamma^n v_\pi(S_{t+n})| \le \gamma^n R_{\max}/(1-\gamma) \to 0\), and the truncated sum converges to \(G_t\) under \(\pi'\), so the right-hand side converges to \(\mathbb{E}_{\pi'}[G_t \mid S_t=s] = v_{\pi'}(s)\). Hence \(v_\pi(s) \le v_{\pi'}(s)\). \(\;\blacksquare\)</p>
+<p>The greedy policy of the definition above satisfies the premise automatically, since \(\max_a q_\pi(s,a) \ge \sum_a \pi(a\mid s) q_\pi(s,a) = v_\pi(s)\) — a maximum is at least an average. And if greedification changes nothing, then \(v_\pi(s) = \max_a q_\pi(s,a)\) for all \(s\), which is the Bellman <em>optimality</em> equation; its unique solution is \(v_*\), so \(\pi\) is optimal. Policy iteration therefore stops only at an optimal policy, and since there are finitely many deterministic policies and each round strictly improves at least one state, it stops after finitely many rounds.</p>
+
+<div class="why">
+ <strong>Why the theorem has to be proved by telescoping rather than by the obvious one-step argument.</strong> The premise is a statement about \(q_\pi\) — the value of deviating <em>once</em> and then reverting to \(\pi\). The conclusion is a statement about \(v_{\pi'}\) — the value of deviating <em>forever</em>. Those are different quantities, and the gap between them is exactly where the intuition "each state got better, so the policy got better" fails in general: changing the policy changes the state distribution, and a change that helps at \(s\) could in principle route the agent into states where it does worse. The telescoping argument closes that gap by never assuming anything about the new state distribution; it re-applies the same one-step premise at whichever state \(\pi'\) actually reaches, so the induction survives the distribution shift it creates. This is the same structural difficulty that policy-gradient methods in Topic 3 handle with a trust region, for the same reason.
+</div>
+
+<h3>Why the ordering is only partial</h3>
+<p>Define \(\pi \succeq \pi'\) to mean \(v_\pi(s) \ge v_{\pi'}(s)\) for <em>every</em> \(s\). This relation is reflexive, transitive, and antisymmetric on value functions, but it is not <strong>total</strong>: there exist \(\pi, \pi'\) with \(v_\pi(s_1) > v_{\pi'}(s_1)\) and \(v_\pi(s_2) < v_{\pi'}(s_2)\), and then neither \(\pi \succeq \pi'\) nor \(\pi' \succeq \pi\). Such policies are <strong>incomparable</strong>: no amount of further evaluation will rank them, because the ranking does not exist.</p>
+<p>A two-state example suffices. Let \(s_1\) and \(s_2\) be two doors leading to two different terminal payoffs, with actions <em>left</em> and <em>right</em>. Suppose from \(s_1\), <em>left</em> is worth 5 and <em>right</em> 2; from \(s_2\), <em>left</em> is worth 1 and <em>right</em> 4. The policy "always left" beats "always right" at \(s_1\) and loses at \(s_2\). They are incomparable, and the partial order is silent.</p>
+<p>This does not obstruct policy iteration, and the reason is worth stating precisely: greedification never produces an incomparable policy. It produces a policy that satisfies the premise of the theorem at <em>every</em> state simultaneously, so the conclusion holds at every state simultaneously, so \(\pi' \succeq \pi\) by construction. The algorithm walks a chain in the partial order, never a branch. Incomparability matters instead when you are comparing two policies that were <em>not</em> produced from one another this way — two students' agents, two hyperparameter settings, a planner against a learner. Then "which is better" is not a well-posed question until you say better <em>where</em>, which in practice means committing to a start-state distribution \(\mu\) and comparing the scalar \(\sum_s \mu(s) v_\pi(s)\). Every existence theorem for an optimal policy is a statement that the greedy chain terminates, not a statement that the partial order is total.</p>
+
+<h2 id="s3">3. Value iteration and policy iteration: two schedules over one backup</h2>
+<p><strong>Policy iteration</strong> alternates the two operations to convergence:</p>
+\[ \pi_0 \xrightarrow{\;E\;} v_{\pi_0} \xrightarrow{\;I\;} \pi_1 \xrightarrow{\;E\;} v_{\pi_1} \xrightarrow{\;I\;} \pi_2 \;\cdots\; \pi_* \xrightarrow{\;E\;} v_*. \]
+<p><strong>Value iteration</strong> refuses to wait for \(E\) to finish. It performs exactly one evaluation sweep and folds the improvement step into it, which is algebraically the same as applying the Bellman <em>optimality</em> operator:</p>
+\[ V_{k+1}(s) \;\leftarrow\; \max_a \sum_{s'} P(s'\mid s,a)\big[R(s,a,s') + \gamma V_k(s')\big]. \]
+<p>The two are endpoints of one family. Truncate policy evaluation at \(m\) sweeps: \(m = \infty\) is policy iteration, \(m = 1\) is value iteration, and any \(m\) in between is <strong>modified policy iteration</strong>, which converges for all of them. What differs is only the <em>schedule</em> on which the same backups are applied — this is the content of the phrase "generalised policy iteration."</p>
+<p>The cost accounting has two units and they point in opposite directions, which is why the comparison confuses people.</p>
+<ul>
+ <li><strong>Outer iterations.</strong> Policy iteration terminates in a number of rounds bounded by the number of deterministic policies, but in practice needs a handful — typically three to six even on large problems. Value iteration needs enough sweeps for the contraction to grind the residual down: \(\gamma^k \lVert V_0 - v_*\rVert_\infty < \varepsilon\), so \(k \approx \ln \varepsilon / \ln \gamma\), which grows like \(1/(1-\gamma)\).</li>
+ <li><strong>Elementary backups.</strong> Count one evaluation of \(q(s,a)\) as the unit. A value-iteration sweep costs \(|\mathcal{S}||\mathcal{A}|\) of them. A policy-<em>evaluation</em> sweep for a deterministic policy costs only \(|\mathcal{S}|\), since there is one action per state — but a policy-iteration round runs many such sweeps and then pays \(|\mathcal{S}||\mathcal{A}|\) for the improvement. The cheap iterations are the ones you need many of.</li>
+</ul>
+<p>Run both and count. The demo below does exactly that, on the grid your Policy Lab implements.</p>
+
+<div class="demo">
+ <h3>Demo · One MDP, two planners: value iteration against policy iteration <span class="tag">interactive</span></h3>
+ <p>A 5×5 grid. <span class="sw" style="background:#1F8B4C"></span>The goal at the bottom-right is terminal with reward \(+1\); <span class="sw" style="background:#3A4A5C"></span>two penalty cells are terminal with reward \(-1\); every other transition costs \(-0.04\). Movement is stochastic: the intended direction succeeds with probability \(0.8\) and slips to each perpendicular direction with probability \(0.1\). Both planners solve the <em>same</em> MDP to the <em>same</em> accuracy \(\varepsilon = 10^{-6}\), using the standard stopping rule \(\lVert V_{k+1}-V_k\rVert_\infty < \varepsilon(1-\gamma)/\gamma\), which is what makes \(\varepsilon\) mean the same thing at every \(\gamma\). Read the counter, not the pictures: the value functions and the arrows agree, because they are solutions to the same equations.</p>
+ <div class="controls">
+  <div class="control"><label>discount \(\gamma\): <b id="p-gL">0.95</b></label><input type="range" id="p-g" min="0.50" max="0.995" step="0.005" value="0.95"></div>
+  <div class="control"><label>policy-iteration evaluation depth</label><select id="p-m"><option value="0">to convergence (true policy iteration)</option><option value="1">1 sweep (this is value iteration)</option><option value="5">5 sweeps (modified PI)</option><option value="20">20 sweeps (modified PI)</option></select></div>
+ </div>
+ <div class="controls">
+  <button id="p-run">Solve with both planners</button>
+  <span class="readout" id="p-count"></span>
+ </div>
+ <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+  <div><div class="legend"><b>Value iteration</b></div><div id="p-vgrid"></div></div>
+  <div><div class="legend"><b>Policy iteration</b></div><div id="p-pgrid"></div></div>
+ </div>
+ <canvas id="p-canvas" width="900" height="255"></canvas>
+ <div class="legend"><span class="sw" style="background:#1F4E79"></span>value iteration &nbsp; <span class="sw" style="background:#7B3FA0"></span>policy iteration &nbsp;— cumulative elementary backups \(q(s,a)\) against outer iteration, both axes to scale.</div>
+ <div class="readout" id="p-read"></div>
+</div>
+
+<div class="why">
+ <strong>Why "policy iteration converges in fewer iterations" is true and almost always quoted misleadingly.</strong> The counter above shows policy iteration finishing in a small number of outer rounds against value iteration's tens — and simultaneously spending <em>more</em> elementary backups to get there, because its first evaluation solves \(v_{\pi_0}\) to full accuracy for a policy that is about to be thrown away. Two consequences follow. The first is that "fewer iterations" is a claim about a unit of work that is not constant across the two algorithms, and any cost comparison that does not normalise it is empty. The second is the practical fix: set the evaluation depth to 5 in the selector. Modified policy iteration keeps the small round count and drops most of the wasted precision, and on this MDP it beats both endpoints on total backups. That is why the sensible default in a production planner is neither \(m=1\) nor \(m=\infty\), and why your engineering report should quote backups rather than iterations when it compares the planner's computational profile against the linear-programming formulation.
+</div>
+
+<p>Discounting is not only a modelling choice; it is the algorithm's condition number. The contraction bound predicts \(k \approx \ln\varepsilon/\ln\gamma\) sweeps, so it forecasts that moving \(\gamma\) from \(0.9\) to \(0.99\) multiplies the sweep count by \(\ln 0.9 / \ln 0.99 \approx 10.5\) — the same factor by which the effective horizon \(1/(1-\gamma)\) grows. Two things are worth testing rather than believing. The bound is worst-case over all MDPs with that \(\gamma\), and on an <em>episodic</em> problem it is loose by an order of magnitude, because the \(k\)-step operator contracts by \(\gamma^k\) multiplied by the probability of not yet having been absorbed. And \(\gamma\) changes the <em>answer</em>, not only the time taken to compute it: at a critical \(\gamma\) the \(\arg\max\) flips in some state and the optimal policy changes shape. Both effects are visible below.</p>
+
+<div class="demo">
+ <h3>Demo · What \(\gamma\) costs you: sweeps to convergence, and the policy it selects <span class="tag">interactive</span></h3>
+ <p>Value iteration is run to the same accuracy at each \(\gamma\) on a grid of values, and the sweep count is plotted against the contraction bound. The lower panel counts how many of the 22 non-terminal states have a different greedy action from the far-sighted policy at \(\gamma = 0.995\). The curve is not smooth, and the jumps are the point: they sit exactly where the optimal policy changes. A patient agent walks the long way around the penalty cell; an impatient one takes the short risky route because the detour's cost is discounted less heavily than the risk.</p>
+ <div class="controls">
+  <div class="control"><label>inspect \(\gamma\): <b id="h-gL">0.700</b></label><input type="range" id="h-g" min="0.50" max="0.995" step="0.005" value="0.70"></div>
+ </div>
+ <div class="controls"><button id="h-run">Recompute the \(\gamma\) sweep</button><span class="readout" id="h-count"></span></div>
+ <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+  <div style="flex:1;min-width:420px"><canvas id="h-canvas" width="560" height="300"></canvas>
+   <div class="legend"><span class="sw" style="background:#1F4E79"></span>measured sweeps &nbsp; <span class="sw" style="background:#C0392B"></span>contraction bound \(\ln\varepsilon/\ln\gamma\) &nbsp; <span class="sw" style="background:#F9A825"></span>states whose greedy action differs from the \(\gamma=0.995\) policy</div></div>
+  <div><div class="legend">greedy policy at the inspected \(\gamma\)</div><div id="h-grid"></div></div>
+ </div>
+ <div class="readout" id="h-read"></div>
+</div>
+
+<div class="deep">
+ <strong>Why linear programming is the third way to solve this, and what it costs.</strong> The Bellman optimality equation is equivalent to a linear program: minimise \(\sum_s \mu(s) V(s)\) subject to \(V(s) \ge \sum_{s'} P(s'|s,a)[R(s,a,s') + \gamma V(s')]\) for every pair \((s,a)\), with any strictly positive \(\mu\). The constraints force \(V \ge T V\), the objective pushes \(V\) down, and the unique point satisfying both is \(v_*\); the optimal dual variables are the discounted state-visitation frequencies of §6. The LP has \(|\mathcal{S}|\) variables and \(|\mathcal{S}||\mathcal{A}|\) constraints and is solvable in polynomial time in those — which is a genuinely stronger guarantee than value iteration has, since value iteration's sweep count depends on \(\gamma\) and on the required accuracy, and is only <em>weakly</em> polynomial. In practice the LP is far slower on any MDP large enough to matter, because interior-point and simplex methods do not exploit the sparse, structured backups that a sweep is made of and cannot warm-start from the previous policy the way policy iteration does. The reason to know the formulation is not that you will run it: it is that constraints and duals are how you add side conditions — safety budgets, throughput floors — that no Bellman backup can express. Your engineering report is asked for exactly this comparison.
+</div>
+
+<h2 id="s4">4. Monte Carlo policy evaluation</h2>
+<p>Delete \(P\). The definition \(v_\pi(s) = \mathbb{E}_\pi[G_t \mid S_t = s]\) is still a statement about an expectation, and an expectation can be estimated by an average. That is the whole of Monte Carlo policy evaluation: run complete episodes under \(\pi\), compute the realised return from each visit to \(s\), and average.</p>
+<p>Two accounting rules are available when a state occurs more than once in an episode.</p>
+<ul>
+ <li><strong>First-visit MC.</strong> Use only the return following the first occurrence of \(s\) in each episode. Each episode contributes at most one sample per state.</li>
+ <li><strong>Every-visit MC.</strong> Use the return following every occurrence. One episode may contribute several samples for the same state.</li>
+</ul>
+<p>Both are consistent, but for different reasons, and the difference is exactly the bias–variance question.</p>
+<p><strong>First-visit.</strong> Fix \(s\). Across episodes, the first-visit returns \(G^{(1)}, G^{(2)}, \dots\) are independent — different episodes share no randomness — and each is distributed as \(G_t \mid S_t = s\) under \(\pi\), whose mean is \(v_\pi(s)\) by definition. So the sample mean of \(n\) of them is an <em>unbiased</em> estimator at every \(n\), and by the strong law of large numbers it converges almost surely to \(v_\pi(s)\). Its standard error is \(\sigma(s)/\sqrt{n}\) with \(\sigma^2(s) = \operatorname{Var}_\pi(G_t \mid S_t = s)\). This is the cleanest consistency argument in reinforcement learning: it is just the LLN, with no contraction, no step size, and no bootstrapping.</p>
+<p><strong>Every-visit.</strong> The returns from the second and later visits within one episode are <em>not</em> independent of the first — they share the same tail of the same trajectory — and, worse, the <em>number</em> of samples an episode contributes is itself random and correlated with the returns. A state that happens to be revisited many times is a state the trajectory lingered in, and lingering is not independent of the return. So the every-visit average is a ratio of two dependent random quantities and is <strong>biased at finite \(n\)</strong>. The bias is \(O(1/n)\) in the number of episodes while the standard error is \(O(1/\sqrt{n})\), so the bias is dominated asymptotically and vanishes; every-visit MC is consistent, converging almost surely to \(v_\pi(s)\), but it is not unbiased at any finite sample size. In exchange it extracts more samples per episode, which usually lowers variance — most visibly in long episodes with heavy revisiting.</p>
+<p>Neither dominates. Which is better on <em>your</em> problem is an empirical question about episode length, revisit structure and return variance, and it is the question the next demo is built to answer honestly.</p>
+
+<div class="demo">
+ <h3>Demo · First-visit against every-visit, with a seed band <span class="tag">interactive</span></h3>
+ <p>The policy being evaluated is the \(\varepsilon\)-soft version of the optimal policy from §3, and the exact \(v_\pi\) is computed by iterative policy evaluation on the true kernel — so the target on the \(y\)-axis is the right one: the value of <em>this</em> policy, not \(v_*\). Episodes use exploring starts, so every state receives data. <b>Both estimators are computed from the identical trajectories</b>, which makes the comparison paired and is the only reason a difference this small can be detected at all. Ten seeds; the shaded band is the seed-wise minimum to maximum, the line is the mean. Both axes are logarithmic, so the \(-\tfrac12\) slope of \(\sigma/\sqrt{n}\) is a straight line.</p>
+ <div class="controls">
+  <div class="control"><label>softness \(\varepsilon\) of the evaluated policy: <b id="m-eL">0.40</b></label><input type="range" id="m-e" min="0.05" max="0.90" step="0.05" value="0.40"></div>
+  <div class="control"><label>episode budget: <b id="m-nL">2000</b></label><input type="range" id="m-n" min="400" max="5000" step="200" value="2000"></div>
+ </div>
+ <div class="controls"><button id="m-run">Run 10 seeds</button><span class="readout" id="m-count"></span></div>
+ <canvas id="m-canvas" width="900" height="300"></canvas>
+ <div class="legend"><span class="sw" style="background:#1F4E79"></span>first-visit &nbsp; <span class="sw" style="background:#7B3FA0"></span>every-visit &nbsp;— RMSE over the 22 non-terminal states against the exact \(v_\pi\).</div>
+ <table class="tb" id="m-table"></table>
+ <div class="readout" id="m-read"></div>
+</div>
+
+<div class="why">
+ <strong>Why the band is the result and the two lines are not.</strong> The gap between the two mean curves is smaller than the height of either band almost everywhere on this problem. Read naively that says "the estimators are indistinguishable" — and if you had run one seed each and reported the winner, you would have been reporting the seed. But the paired statistic in the readout frequently <em>does</em> reject at settings where the unpaired intervals overlap, because the two estimators consumed the same trajectories and the seed-to-seed variation cancels in the difference. Move the sliders and watch the verdict change: raising \(\varepsilon\) lengthens episodes and multiplies revisits, which is exactly the regime where every-visit's within-episode correlation bites. The general lesson is the one your rubric enforces: an unpaired comparison across noisy runs needs a number of seeds that scales with the variance you failed to control, while a paired design controls it by construction and needs far fewer. When you write Step 7 of the product, say which of the two you did — and if you compare the planner against the learner, note that the planner has no seed, so that comparison is one-sample and the test is different again.
+</div>
+
+<h2 id="s5">5. Monte Carlo control</h2>
+<p>Evaluation is not the goal; improvement is. Generalised policy iteration works without a model, with one forced change: <strong>you must estimate \(q_\pi\), not \(v_\pi\).</strong> Greedification from \(v\) requires \(\arg\max_a \sum_{s'} P(s'|s,a)[\cdot]\), which needs the kernel. Greedification from \(q\) is \(\arg\max_a Q(s,a)\), which needs nothing. Removing \(P\) therefore promotes the action-value function from a convenience to a necessity.</p>
+<p>That change creates a problem the planner did not have. \(Q\) has \(|\mathcal{S}||\mathcal{A}|\) entries and a deterministic policy generates data for exactly \(|\mathcal{S}|\) of them. The remaining entries keep whatever they were initialised to, and \(\arg\max\) over a row that is mostly stale initialisation is not an improvement step — it is noise. The Monte Carlo control loop needs every state–action pair to keep receiving data, and there are exactly two on-policy ways to arrange it.</p>
+<ul>
+ <li><strong>Exploring starts.</strong> Begin each episode at a pair \((s_0,a_0)\) drawn with non-zero probability over all pairs, then follow \(\pi\). Every pair is then visited infinitely often in the limit, and the policy may stay deterministic. This is the assumption under which Monte Carlo ES is proved to converge, and it is what <code>train/monte_carlo.py</code> implements for the Policy Lab.</li>
+ <li><strong>Soft policies.</strong> Require \(\pi(a\mid s) &gt; 0\) for all \(a\) and \(s\). The canonical family is \(\varepsilon\)-greedy: \(\pi(a\mid s) = 1-\varepsilon+\varepsilon/|\mathcal{A}|\) for the greedy action and \(\varepsilon/|\mathcal{A}|\) otherwise. Exploration is then carried by the policy itself rather than by the reset, and no special start distribution is needed.</li>
+</ul>
+<p>The improvement theorem still applies to the soft case, with the maximum replaced by the best \(\varepsilon\)-soft mixture. Writing \(\pi'\) for the \(\varepsilon\)-greedy policy with respect to \(q_\pi\),</p>
+\[ q_\pi(s,\pi'(s)) \;=\; \frac{\varepsilon}{|\mathcal{A}|}\sum_a q_\pi(s,a) \;+\; (1-\varepsilon)\max_a q_\pi(s,a) \;\ge\; \frac{\varepsilon}{|\mathcal{A}|}\sum_a q_\pi(s,a) + (1-\varepsilon)\sum_a \frac{\pi(a\mid s) - \varepsilon/|\mathcal{A}|}{1-\varepsilon}\, q_\pi(s,a) \;=\; v_\pi(s), \]
+<p>where the inequality replaces the maximum by an average against the non-negative weights \((\pi(a|s)-\varepsilon/|\mathcal{A}|)/(1-\varepsilon)\), which sum to one precisely because \(\pi\) is \(\varepsilon\)-soft. The premise of the theorem holds, so \(v_{\pi'} \ge v_\pi\), and the fixed point of this scheme is the best \(\varepsilon\)-soft policy — not \(\pi_*\). That last clause is the price: with a fixed \(\varepsilon\) you converge to the optimum <em>of a constrained policy class</em>, and the gap does not close unless \(\varepsilon \to 0\) on a schedule that still visits everything infinitely often. This is the GLIE condition, and it is the same schedule Topic 1 imposed on \(\varepsilon\)-greedy Q-learning.</p>
+
+<div class="deep">
+ <strong>Why exploring starts is the assumption you cannot ship, and what that implies.</strong> Exploring starts requires the ability to reset the environment into an arbitrary state and force an arbitrary first action. A simulator grants this — <code>env.reset(options={"state": s})</code> is three lines in a custom Gymnasium environment, which is why it is the right choice for a laboratory whose purpose is to isolate the estimator from the exploration problem. Nothing else grants it. You cannot place a physical robot in an arbitrary pose, you cannot start a recommender session from an arbitrary user history, and in a logged-data setting there is no reset at all. The assumption's real function is theoretical: it separates "does this algorithm converge given coverage?" from "how do we obtain coverage?", and answering the first cleanly is what allows the second to be attacked separately — by soft policies here, and by off-policy correction in §6, which is the only one of the three that survives contact with data you did not collect.
+</div>
+
+<h2 id="s6">6. Off-policy Monte Carlo and importance sampling</h2>
+<p>Both mechanisms in §5 change the behaviour of the agent in order to learn. Off-policy methods refuse to: a <strong>behaviour policy</strong> \(b\) generates the data, a <strong>target policy</strong> \(\pi\) is the one being evaluated, and the estimate is corrected mathematically rather than by acting differently. The requirement is <em>coverage</em>: \(\pi(a\mid s) &gt; 0 \implies b(a\mid s) &gt; 0\).</p>
+<p>The correction is a change of measure. The probability of a trajectory \(A_t, S_{t+1}, A_{t+1}, \dots, S_T\) starting from \(S_t=s\) is</p>
+\[ \Pr\{\,\cdot\, \mid S_t, \pi\} = \prod_{k=t}^{T-1} \pi(A_k\mid S_k)\, P(S_{k+1}\mid S_k, A_k), \]
+<p>so the ratio of the two trajectory probabilities is</p>
+\[ \rho_{t:T-1} \;=\; \frac{\prod_{k=t}^{T-1} \pi(A_k\mid S_k)\,P(S_{k+1}\mid S_k,A_k)}{\prod_{k=t}^{T-1} b(A_k\mid S_k)\,P(S_{k+1}\mid S_k,A_k)} \;=\; \prod_{k=t}^{T-1} \frac{\pi(A_k\mid S_k)}{b(A_k\mid S_k)}. \]
+<p>Every transition probability cancels, because both policies act in the same environment. The ratio is computable from the two policies and the observed actions alone — the model is not needed, which is what makes the technique available to a model-free learner at all.</p>
+<p>Because \(\mathbb{E}_b[\rho_{t:T-1} G_t \mid S_t=s] = \mathbb{E}_\pi[G_t \mid S_t = s] = v_\pi(s)\), the <strong>ordinary importance-sampling</strong> estimator over \(n\) episodes is unbiased:</p>
+\[ V_{\text{OIS}}(s) \;=\; \frac{1}{n}\sum_{i=1}^{n} \rho^{(i)} G^{(i)}. \]
+<p>The <strong>weighted importance-sampling</strong> estimator normalises by the ratios instead of by the count:</p>
+\[ V_{\text{WIS}}(s) \;=\; \frac{\sum_{i=1}^n \rho^{(i)} G^{(i)}}{\sum_{i=1}^n \rho^{(i)}}. \]
+<p>The trade is sharp. \(V_{\text{OIS}}\) is unbiased but its variance is unbounded: it is a product of \(T\) ratios, so it is log-normal-ish in \(T\) and a single episode with a large \(\rho\) dominates the average. In the extreme, if the return has finite variance but \(\rho\) does not, the estimator's variance is literally infinite and its sample mean has no central limit theorem. \(V_{\text{WIS}}\) is a weighted average of observed returns with weights summing to one, so it is a convex combination of the \(G^{(i)}\) and can never leave their range; its variance is bounded and in practice dramatically smaller. It is biased — from one episode it returns \(G^{(1)}\) regardless of \(\rho^{(1)}\), i.e. \(\mathbb{E}_b[V_{\text{WIS}}] = v_b\) at \(n=1\) — but the bias falls as \(O(1/n)\) and it is consistent. Weighted IS is the default in every practical off-policy estimator for this reason.</p>
+<p>The diagnostic that predicts trouble before it appears in the estimate is the <strong>effective sample size</strong></p>
+\[ n_{\text{eff}} \;=\; \frac{\left(\sum_i \rho^{(i)}\right)^2}{\sum_i \left(\rho^{(i)}\right)^2} \;\in\; [1, n], \]
+<p>the number of equally-weighted episodes carrying the same information as your \(n\) unequally-weighted ones. It equals \(n\) when \(b = \pi\) and collapses toward 1 as they separate.</p>
+
+<div class="demo">
+ <h3>Demo · Importance sampling: unbiased, and unusable <span class="tag">interactive</span></h3>
+ <p>A single state with three actions and deterministic per-action rewards \((+1, 0, -0.5)\), \(T = 4\) steps, \(\gamma = 0.9\). The target is \(\pi = (0.50,\,0.30,\,0.20)\) and \(v_\pi = 1.3756\) exactly. The slider moves the behaviour policy from \(b = \pi\) toward \(b = (0.15,\,0.30,\,0.55)\), which under-samples exactly the action \(\pi\) prefers. Each of 600 independent replications forms both estimates from its own \(n\) episodes; the histograms are the <em>sampling distributions</em> of the two estimators, and the dashed line is the truth. Watch the ordinary histogram stay centred while its right tail leaves the plot, and the weighted histogram stay tight while its centre drifts left.</p>
+ <div class="controls">
+  <div class="control"><label>behaviour–target separation \(\lambda\): <b id="i-lL">0.50</b></label><input type="range" id="i-l" min="0" max="1" step="0.02" value="0.5"></div>
+  <div class="control"><label>episodes per estimate \(n\): <b id="i-nL">30</b></label><input type="range" id="i-n" min="5" max="120" step="5" value="30"></div>
+ </div>
+ <div class="controls"><button id="i-run">Resample all 600 replications</button><span class="readout" id="i-count"></span></div>
+ <canvas id="i-canvas" width="900" height="270"></canvas>
+ <div class="legend"><span class="sw" style="background:#1F4E79"></span>ordinary IS &nbsp; <span class="sw" style="background:#7B3FA0"></span>weighted IS &nbsp; <span class="sw" style="background:#C0392B"></span>true \(v_\pi\)</div>
+ <table class="tb" id="i-table"></table>
+ <div class="readout" id="i-read"></div>
+</div>
+
+<div class="why">
+ <strong>Why the estimator with the guaranteed-correct expectation is the one you must not ship.</strong> Unbiasedness is a statement about an average over infinitely many replications of the whole experiment. You will run the experiment once. What governs the error of that single run is the variance, and ordinary importance sampling trades a bias of exactly zero for a variance that grows multiplicatively in the horizon — a four-step problem with a ratio bounded by \(10/3\) per step already admits weights above 100. Weighted importance sampling accepts a bias that shrinks like \(1/n\) in return for a variance that cannot exceed the spread of the returns themselves, because the estimate is a convex combination of them. Mean squared error is bias squared plus variance, and on any realistic budget the second term is the one with the exponent in it. The general principle is the one that also justifies clipping in Topic 4's PPO and reward-model normalisation in Topic 6: a bounded, slightly wrong estimator beats an unbounded, exactly-right one whenever the sample is finite — and it is always finite.
+</div>
+
+<h3>Where your data actually comes from</h3>
+<p>Importance sampling reweights <em>trajectories</em>. The corresponding statement about <em>states</em> is the <strong>discounted state-visitation frequency</strong>: for a start distribution \(\mu\),</p>
+\[ d^\pi_\gamma(s) \;=\; (1-\gamma)\sum_{t=0}^{\infty} \gamma^{t}\, \Pr\{S_t = s \mid S_0 \sim \mu, \pi\}, \qquad \sum_s d^\pi_\gamma(s) = 1. \]
+<p>The factor \((1-\gamma)\) normalises it into a probability distribution. It is the measure under which every discounted objective is secretly an average: \(\sum_s \mu(s) v_\pi(s) = \frac{1}{1-\gamma}\, \mathbb{E}_{s \sim d^\pi_\gamma,\, a\sim\pi}[R(s,a)]\), and it is the distribution that appears in the policy gradient theorem in Topic 3 and as the dual variables of the linear program in §3. Two readings of \(\gamma\) meet here. Interpreting \(1-\gamma\) as a per-step termination probability makes \(d^\pi_\gamma\) literally the distribution of the state you are standing in when the episode is cut off — which is how the demo below simulates it, without any discounting arithmetic at all.</p>
+
+<div class="demo">
+ <h3>Demo · Discounted state visitation on a random walk <span class="tag">interactive</span></h3>
+ <p>A five-state chain. From each state the walk steps right with probability \(0.6\) and left with probability \(0.4\), reflecting at both ends, and always starts at state 0. The bars are \(d_\gamma\) computed exactly by summing \((1-\gamma)\gamma^t \Pr\{S_t=s\}\); the black markers are a Monte Carlo estimate obtained by running episodes that terminate with probability \(1-\gamma\) at every step and histogramming the states visited — the two agree because those are the same object. The dashed outline is the stationary distribution \((0.076,\,0.114,\,0.171,\,0.256,\,0.384)\), which is what \(d_\gamma\) approaches as \(\gamma \to 1\).</p>
+ <div class="controls">
+  <div class="control"><label>simulate at \(\gamma\): <b id="d-gL">0.90</b></label><input type="range" id="d-g" min="0.30" max="0.995" step="0.005" value="0.90"></div>
+ </div>
+ <div class="controls"><button id="d-run">Run 4,000 simulated episodes</button><span class="readout" id="d-count"></span></div>
+ <canvas id="d-canvas" width="900" height="280"></canvas>
+ <div class="legend"><span class="sw" style="background:#BCCEE0"></span>\(\gamma=0.5\) &nbsp; <span class="sw" style="background:#7FA6CC"></span>\(\gamma=0.8\) &nbsp; <span class="sw" style="background:#3D6E9E"></span>\(\gamma=0.95\) &nbsp; <span class="sw" style="background:#1F4E79"></span>\(\gamma=0.99\) &nbsp; <span class="sw" style="background:#111"></span>simulated at the slider's \(\gamma\)</div>
+ <div class="readout" id="d-read"></div>
+</div>
+
+<div class="deep">
+ <strong>Why this diagram is the exploration–exploitation trade-off drawn in state space.</strong> At \(\gamma = 0.5\) roughly two-thirds of all discounted weight sits on the start state: the agent is being scored almost entirely on what it does in the first two steps, so anything it could learn about the far end of the chain is worth almost nothing to the objective, and an optimiser will not pay to explore there. At \(\gamma = 0.99\) the weight has spread out to nearly the stationary distribution and the far states carry real mass — the objective now rewards long-run positioning, and exploration that reaches distant states pays for itself. This is why raising \(\gamma\) does not merely "make the agent more patient" as a matter of preference: it moves the measure your gradient, your Bellman residual and your reported return are all averages against. It is also the reason off-policy evaluation degrades faster than the per-step ratios suggest. If \(b\) and \(\pi\) induce different visitation distributions, the states where you have the most data are not the states where \(\pi\) spends its time, and no reweighting can create samples in a region \(b\) never entered.
+</div>
+
+<h2 id="s7">7. In practice (Policy Lab)</h2>
+<p class="product"><strong>In the build.</strong> The Policy Lab ships one service holding both agents of this tutorial. <code>train/value_iteration.py</code> runs §3 against the explicit kernel in <code>envs/gridworld.py</code> and writes one row to <code>episodes</code> per sweep carrying the Bellman residual, so the convergence curve of Demo 1 is reconstructable from your data rather than from a screenshot. <code>train/monte_carlo.py</code> runs §4 and §5 and writes one row per episode. <code>POST /act</code> takes a <code>policy_source</code> of <code>"value_iteration"</code> or <code>"monte_carlo"</code> and reads the corresponding artifact — the whole comparison exists behind one endpoint, over one schema, which is what makes it honest.</p>
+
+<h3>Why one preprocessing module, and why the two learners use different parts of it</h3>
+<p><code>shared/preprocess.py</code> owns every transformation between raw environment output and learner input: one-hot state encoding, the discretisation scheme for a continuous observation, reward clipping, and return normalisation. Every learner imports from it; nothing transforms inline. The reason the module exists is not tidiness — it is that a planner and a sampler consume different objects, and the differences are not cosmetic.</p>
+<ul>
+ <li><strong>The planner never sees a sample.</strong> Value iteration consumes \(P\) and \(R\) as arrays indexed by an integer state id. One-hot encoding buys it nothing: \(\arg\max_a\) over a table is an integer index, and expanding 25 states into 25-dimensional basis vectors would only add a matrix multiply to a lookup. Discretisation, by contrast, it needs <em>before</em> it can exist at all — a continuous observation space has no transition matrix, so the bin edges chosen in <code>discretize()</code> literally define the MDP the planner solves.</li>
+ <li><strong>Reward clipping changes the MDP, not the pipeline.</strong> Clipping to \([-1,1]\) is a variance-control measure for a sampled learner. Applied to the planner it changes \(R\), and therefore changes \(v_*\) and possibly \(\arg\max_a q_*\). So it must be applied to <em>both</em> or to <em>neither</em>: clip for the Monte Carlo learner and not for the planner, and your RMSE curve is measuring the distance between solutions to two different problems and will not converge to zero no matter how many episodes you run. This is the single most common way the Topic 2 convergence plot comes out wrong.</li>
+ <li><strong>Return normalisation is meaningless for the planner and invertible for the learner.</strong> The planner never forms a return. The Monte Carlo learner does, and standardising returns stabilises the running averages — but the normalised estimate is on a different scale from \(v_*\), so the transformation must be inverted before the RMSE against the exact solution is computed. Keep the mean and standard deviation used; store them next to the artifact.</li>
+ <li><strong>One-hot is for Topic 3.</strong> It is in the module now because a linear or neural policy will need it, and because a transformation that trains on one encoding and serves on another is a bug that no unit test on the model can catch. The transformation applied at training must provably be the one applied at serving; that provability is what a single imported module gives you and inline code does not.</li>
+</ul>
+
+<pre><span class="c"># shared/preprocess.py — every transformation between environment and learner lives here</span>
+<span class="k">import</span> numpy <span class="k">as</span> np
+N_STATES, N_ACTIONS = 25, 4
+
+<span class="k">def</span> <span class="f">one_hot</span>(s: int) -&gt; np.ndarray:                <span class="c"># Topic 3 needs this; the planner never calls it</span>
+    x = np.<span class="f">zeros</span>(N_STATES, dtype=np.float32); x[s] = 1.0
+    <span class="k">return</span> x
+
+<span class="k">def</span> <span class="f">discretize</span>(obs, edges) -&gt; int:                <span class="c"># continuous obs -> tabular index; DEFINES the MDP</span>
+    idx = [int(np.<span class="f">digitize</span>(o, e)) <span class="k">for</span> o, e <span class="k">in</span> zip(obs, edges)]
+    <span class="k">return</span> int(np.<span class="f">ravel_multi_index</span>(idx, [len(e) + 1 <span class="k">for</span> e <span class="k">in</span> edges]))
+
+<span class="k">def</span> <span class="f">clip_reward</span>(r: float, lo=-1.0, hi=1.0) -&gt; float:
+    <span class="k">return</span> float(np.<span class="f">clip</span>(r, lo, hi))          <span class="c"># CHANGES R: apply to planner AND learner, or neither</span>
+
+<span class="k">def</span> <span class="f">normalize_returns</span>(G: np.ndarray):
+    mu, sd = float(G.<span class="f">mean</span>()), float(G.<span class="f">std</span>() + 1e-8)
+    <span class="k">return</span> (G - mu) / sd, (mu, sd)             <span class="c"># return the constants; RMSE needs the inverse</span></pre>
+
+<h3>Two clouds, three tiers — and what this topic adds to them</h3>
+<p>The architecture is unchanged from Topic 1: a Streamlit presentation tier on Streamlit Community Cloud; a typed FastAPI service tier that owns the policy, written as a real application, run under <code>uvicorn</code>, tested through an HTTP client, and imported in-process by Streamlit in production; and a Supabase Postgres data tier holding <code>experiments</code>, <code>episodes</code>, <code>evaluations</code>, <code>policies</code> and <code>audit_log</code>. Two hosts, three tiers. What Topic 2 adds is volume: ten seeds times several thousand episodes is tens of thousands of rows per configuration, which is why this topic's required reading includes database functions and indexes. Log per-episode rows, never per-step rows; put an index on <code>(experiment_id, episode)</code>; and compute the RMSE-versus-episodes curve as an aggregate view rather than by pulling every row into the browser.</p>
+<p>The off-policy demo makes a schema demand of its own. For a reader to recompute your importance-sampling variance from your data alone — DQ 3(d) — the episode row must carry enough to reconstruct \(\rho\): the behaviour policy's parameters in force, the target policy identifier, the realised return, and the episode's ratio or the per-step action log-probabilities under both policies. A stored return alone is not sufficient, because \(\rho\) is not recoverable from it.</p>
+
+<div class="warn">
+ <strong>The two constraints that will actually bite you this week.</strong> Reuse your existing Supabase project — the free tier permits two active projects per person and you will need the headroom in later topics — and namespace this product's tables rather than provisioning a second project. Free projects pause after one week of inactivity, so touch it weekly; a paused project at grading time is an ungraded product, and the resume procedure in your README is what a grader will follow before marking a deployment unreachable. Separately, the standing rule holds unchanged: <code>tests/test_no_torch.py</code> asserts <code>"torch" not in sys.modules</code> after importing the app. Nothing in this topic could tempt you to break it — both artifacts here are small NumPy arrays and serving is an array lookup — but the guard is what keeps the deployed footprint at 82 MB against a 690 MB guarantee all the way to Topic 6.
+</div>
+
+<div class="callout">
+ <strong>What carries forward.</strong> The Bellman expectation equation of §1 becomes the critic's regression target in Topic 4. The improvement theorem of §2 is the object that policy-gradient methods approximate: Topic 3 optimises a surrogate that agrees with it to first order, and Topic 4's trust region exists precisely because that agreement is local. The importance ratio of §6 reappears in the PPO objective, clipped rather than weighted — a third point on the same bias–variance line as ordinary and weighted IS. The discounted visitation measure of §6 is the distribution in the policy gradient theorem. And the paired seed-band methodology of §4 is how every "A beats B" claim in every remaining product will have to be defended.
+</div>
+
+<div class="nav"><a href="Tutorial-Topic-1-Introduction-to-Reinforcement-Learning.html">← Topic 1 · Introduction to Reinforcement Learning</a><a href="Tutorial-Topic-3-Policy-Gradient-Methods.html">Topic 3 · Policy Gradient Methods →</a></div>
+</div>
+<script>
+/* ============================================================
+   Shared helpers
+   ============================================================ */
+function clear(ctx,c){ ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height); }
+function axes(ctx,x0,y0,w,h,xlab,ylab,yoff){
+  ctx.strokeStyle='#C7D2DE'; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(x0,y0-h); ctx.lineTo(x0,y0); ctx.lineTo(x0+w,y0); ctx.stroke();
+  ctx.fillStyle='#666'; ctx.font='11px -apple-system,Arial';
+  if(xlab){ ctx.textAlign='center'; ctx.fillText(xlab,x0+w/2,y0+30); }
+  if(ylab){ ctx.save(); ctx.translate(x0-(yoff||42),y0-h/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText(ylab,0,0); ctx.restore(); }
+  ctx.textAlign='left';
+}
+function kfmt(v){ return v>=10000 ? (v/1000).toFixed(1)+'k' : Math.round(v).toLocaleString(); }
+function polyline(ctx,pts,color,width,dash){
+  if(pts.length<2) return;
+  ctx.save(); if(dash) ctx.setLineDash(dash);
+  ctx.strokeStyle=color; ctx.lineWidth=width||2; ctx.beginPath();
+  ctx.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]);
+  ctx.stroke(); ctx.restore();
+}
+function band(ctx,lo,hi,color){
+  if(lo.length<2) return;
+  ctx.save(); ctx.globalAlpha=0.16; ctx.fillStyle=color; ctx.beginPath();
+  ctx.moveTo(lo[0][0],lo[0][1]);
+  for(let i=1;i<lo.length;i++) ctx.lineTo(lo[i][0],lo[i][1]);
+  for(let i=hi.length-1;i>=0;i--) ctx.lineTo(hi[i][0],hi[i][1]);
+  ctx.closePath(); ctx.fill(); ctx.restore();
+}
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a);
+  t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+const T95=[0,12.706,4.303,3.182,2.776,2.571,2.447,2.365,2.306,2.262,2.228,2.201,2.179,2.160,2.145,
+           2.131,2.120,2.110,2.101,2.093,2.086,2.080,2.074,2.069,2.064,2.060,2.056,2.052,2.048,2.045,2.042];
+function tcrit(df){ return df<=0?0:(df<T95.length?T95[df]:1.96+1.4/df); }
+function mean(x){ return x.reduce((a,b)=>a+b,0)/x.length; }
+function sdev(x){ const m=mean(x); return x.length>1? Math.sqrt(x.reduce((a,b)=>a+(b-m)*(b-m),0)/(x.length-1)) : 0; }
+
+/* ============================================================
+   Environment: 5x5 gridworld with an explicit transition kernel.
+   Shared by demos 1, 2 and 3.
+   actions 0=left 1=down 2=right 3=up
+   ============================================================ */
+const G_N=5, G_NS=25, G_NA=4;
+const GOAL=24, PEN=[6,18], START=0, STEP_R=-0.04, SLIP=0.1;
+const G_ARROW=['\u2190','\u2193','\u2192','\u2191'];
+const gTerm = s => s===GOAL || PEN.indexOf(s)>=0;
+const NONTERM=[]; for(let s=0;s<G_NS;s++) if(!gTerm(s)) NONTERM.push(s);
+function gMove(s,d){
+  let r=Math.floor(s/G_N), c=s%G_N;
+  if(d===0) c=Math.max(c-1,0);
+  else if(d===1) r=Math.min(r+1,G_N-1);
+  else if(d===2) c=Math.min(c+1,G_N-1);
+  else r=Math.max(r-1,0);
+  return r*G_N+c;
+}
+const gReward = ns => ns===GOAL ? 1 : (PEN.indexOf(ns)>=0 ? -1 : STEP_R);
+const GT=[];                                   // GT[s][a] = [[p, s', r, done], ...]
+(function(){
+  for(let s=0;s<G_NS;s++){ GT.push([]);
+    for(let a=0;a<G_NA;a++){
+      if(gTerm(s)){ GT[s].push([[1,s,0,true]]); continue; }
+      const dirs=[[a,1-2*SLIP],[(a+1)%4,SLIP],[(a+3)%4,SLIP]], m={};
+      for(const [d,p] of dirs){ const ns=gMove(s,d); m[ns]=(m[ns]||0)+p; }
+      GT[s].push(Object.keys(m).map(k=>{ const ns=+k; return [m[k],ns,gReward(ns),gTerm(ns)]; }));
+    }
+  }
+})();
+function qval(V,s,a,g){ let q=0; for(const t of GT[s][a]) q+=t[0]*(t[2]+g*V[t[1]]); return q; }
+function greedyPolicy(V,g){
+  const p=new Array(G_NS).fill(0);
+  for(const s of NONTERM){ let best=-Infinity, ba=0;
+    for(let a=0;a<G_NA;a++){ const q=qval(V,s,a,g); if(q>best+1e-12){best=q;ba=a;} }
+    p[s]=ba; }
+  return p;
+}
+function valueIteration(g,tol){
+  let V=new Array(G_NS).fill(0), sweeps=0, qb=0; const hist=[], resid=[];
+  for(let k=0;k<40000;k++){
+    const nV=V.slice(); let d=0;
+    for(const s of NONTERM){
+      let best=-Infinity;
+      for(let a=0;a<G_NA;a++){ const q=qval(V,s,a,g); qb++; if(q>best) best=q; }
+      nV[s]=best; d=Math.max(d,Math.abs(best-V[s]));
+    }
+    V=nV; sweeps++; hist.push([sweeps,qb]); resid.push(Math.max(d,1e-18));
+    if(d<tol) break;
+  }
+  // empirical per-sweep contraction modulus, measured over the geometric tail
+  let rate=g;
+  if(resid.length>4){ const a=Math.floor(resid.length/3);
+    rate=Math.pow(resid[resid.length-1]/resid[a], 1/(resid.length-1-a)); }
+  return {V, pi:greedyPolicy(V,g), iters:sweeps, qb, hist, resid, rate, evalSweeps:sweeps};
+}
+function policyIteration(g,tol,depth){
+  let pi=new Array(G_NS).fill(2), V=new Array(G_NS).fill(0);
+  let iters=0, qb=0, evalSweeps=0; const hist=[];
+  for(let it=0; it<400; it++){
+    let es=0;
+    const cap = depth>0 ? depth : 40000;
+    for(let k=0;k<cap;k++){
+      const nV=V.slice(); let d=0;
+      for(const s of NONTERM){ const q=qval(V,s,pi[s],g); qb++; nV[s]=q; d=Math.max(d,Math.abs(q-V[s])); }
+      V=nV; es++; if(d<tol) break;
+    }
+    evalSweeps+=es;
+    let stable=true, resid=0;
+    for(const s of NONTERM){
+      let best=-Infinity, ba=0;
+      for(let a=0;a<G_NA;a++){ const q=qval(V,s,a,g); qb++; if(q>best+1e-12){best=q;ba=a;} }
+      resid=Math.max(resid,Math.abs(best-V[s]));
+      if(ba!==pi[s]){ pi[s]=ba; stable=false; }
+    }
+    iters++; hist.push([iters,qb]);
+    if(stable && resid<tol) break;
+  }
+  return {V,pi,iters,qb,hist,evalSweeps};
+}
+function softPolicy(pi,eps){
+  const P=[]; for(let s=0;s<G_NS;s++){ const r=new Array(G_NA).fill(eps/G_NA); r[pi[s]]+=1-eps; P.push(r); }
+  return P;
+}
+function evalPolicyExact(P,g){
+  let V=new Array(G_NS).fill(0);
+  for(let k=0;k<60000;k++){
+    const nV=V.slice(); let d=0;
+    for(const s of NONTERM){ let v=0; for(let a=0;a<G_NA;a++) v+=P[s][a]*qval(V,s,a,g);
+      nV[s]=v; d=Math.max(d,Math.abs(v-V[s])); }
+    V=nV; if(d<1e-13) break;
+  }
+  return V;
+}
+function heat(v,lo,hi){
+  if(v>=0){ const f=hi>1e-9? Math.max(0,Math.min(1,v/hi)):0;
+    return 'rgb('+Math.round(255-190*f)+','+Math.round(255-110*f)+','+Math.round(255-45*f)+')'; }
+  const f=lo<-1e-9? Math.max(0,Math.min(1,v/lo)):0;
+  return 'rgb(255,'+Math.round(255-95*f)+','+Math.round(255-100*f)+')';
+}
+function renderGrid5(el,V,pol,showPolicy){
+  let lo=0, hi=0;
+  for(const s of NONTERM){ if(V[s]<lo) lo=V[s]; if(V[s]>hi) hi=V[s]; }
+  let h='<table class="grid">';
+  for(let r=0;r<G_N;r++){ h+='<tr>';
+    for(let c=0;c<G_N;c++){ const s=r*G_N+c;
+      if(s===GOAL){ h+='<td class="goal"><span class="v">goal</span><span class="a">+1</span></td>'; continue; }
+      if(PEN.indexOf(s)>=0){ h+='<td class="hole"><span class="v">penalty</span><span class="a">\u22121</span></td>'; continue; }
+      const cls = s===START ? 'start' : '';
+      const inner='<span class="v">'+V[s].toFixed(3)+'</span>'+(showPolicy?'<span class="a">'+G_ARROW[pol[s]]+'</span>':'');
+      h+='<td class="'+cls+'" style="background:'+heat(V[s],lo,hi)+'">'+inner+'</td>';
+    } h+='</tr>'; }
+  el.innerHTML=h+'</table>';
+}
+
+/* ============================================================
+   Demo 1: value iteration vs policy iteration
+   ============================================================ */
+(function(){
+  const gS=document.getElementById('p-g'), gL=document.getElementById('p-gL'),
+        mSel=document.getElementById('p-m'),
+        vg=document.getElementById('p-vgrid'), pg=document.getElementById('p-pgrid'),
+        cv=document.getElementById('p-canvas'), ctx=cv.getContext('2d'),
+        cnt=document.getElementById('p-count'), out=document.getElementById('p-read');
+  const EPS=1e-6;
+  function drawCost(vi,pi){
+    clear(ctx,cv);
+    const x0=92,y0=205,w=760,h=165;
+    axes(ctx,x0,y0,w,h,'outer iteration','cumulative q(s,a) backups',72);
+    const maxIt=Math.max(vi.hist.length, pi.hist.length, 2);
+    const maxQb=Math.max(vi.qb, pi.qb, 10);
+    ctx.strokeStyle='#EEF2F6';
+    for(let i=1;i<=4;i++){ const y=y0-h*i/4; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+w,y); ctx.stroke();
+      ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial'; ctx.fillText(kfmt(maxQb*i/4),x0-46,y+3); }
+    ctx.fillStyle='#999'; ctx.textAlign='center';
+    for(let i=0;i<=4;i++) ctx.fillText(Math.round(maxIt*i/4),x0+w*i/4,y0+15);
+    ctx.textAlign='left';
+    const map=hst=>hst.map(p=>[x0+w*p[0]/maxIt, y0-h*p[1]/maxQb]);
+    polyline(ctx,map(vi.hist),'#1F4E79',2);
+    polyline(ctx,map(pi.hist),'#7B3FA0',2.4);
+    pi.hist.forEach(p=>{ ctx.fillStyle='#7B3FA0'; ctx.beginPath();
+      ctx.arc(x0+w*p[0]/maxIt, y0-h*p[1]/maxQb, 3.5, 0, 7); ctx.fill(); });
+    ctx.textAlign='right'; ctx.font='11px -apple-system,Arial';
+    ctx.fillStyle='#1F4E79';
+    ctx.fillText('value iteration: '+vi.iters+' sweeps, '+vi.qb.toLocaleString()+' backups', x0+w-8, y0-40);
+    ctx.fillStyle='#7B3FA0';
+    ctx.fillText('policy iteration: '+pi.iters+' rounds ('+pi.evalSweeps+' evaluation sweeps), '+pi.qb.toLocaleString()+' backups', x0+w-8, y0-24);
+    ctx.textAlign='left';
+  }
+  function run(){
+    const g=parseFloat(gS.value), depth=parseInt(mSel.value);
+    gL.textContent=g.toFixed(3);
+    const tol=EPS*(1-g)/g;
+    const vi=valueIteration(g,tol), pi=policyIteration(g,tol,depth);
+    renderGrid5(vg, vi.V, vi.pi, true);
+    renderGrid5(pg, pi.V, pi.pi, true);
+    drawCost(vi,pi);
+    let diff=0, vmax=0;
+    for(const s of NONTERM){ if(vi.pi[s]!==pi.pi[s]) diff++; vmax=Math.max(vmax,Math.abs(vi.V[s]-pi.V[s])); }
+    cnt.textContent = 'VI '+vi.iters+' sweeps / '+vi.qb.toLocaleString()+' backups  \u00b7  PI '+pi.iters+' rounds / '+pi.qb.toLocaleString()+' backups';
+    const ratio = pi.qb/vi.qb;
+    out.innerHTML = 'Both solutions agree: \\(\\lVert V_{\\text{VI}} - V_{\\text{PI}}\\rVert_\\infty\\) = <b>'+vmax.toExponential(2)+'</b>, '
+      + '<b>'+diff+'</b> of '+NONTERM.length+' greedy actions differ, \\(V(\\text{start})\\) = <b>'+vi.V[START].toFixed(4)+'</b>. '
+      + 'Policy iteration used <b>'+pi.iters+'</b> outer rounds against value iteration\u2019s <b>'+vi.iters+'</b> \u2014 a factor of '
+      + (vi.iters/pi.iters).toFixed(1)+' fewer \u2014 while spending <b>'+ratio.toFixed(2)+'\u00d7</b> as many elementary backups'
+      + (ratio>=1? ', because each round evaluates to full precision a policy it is about to discard.'
+                 : '; truncating the evaluation is what removed that waste.')
+      + ' The contraction bound predicts \\(\\ln\\varepsilon/\\ln\\gamma\\) = <b>'+(Math.log(EPS)/Math.log(g)).toFixed(0)+'</b> sweeps for value iteration, '
+      + 'and the measured per-sweep decay is <b>'+vi.rate.toFixed(3)+'</b> rather than \\(\\gamma\\): absorption at the terminal cells contracts the operator faster than discounting alone does.';
+    if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([out]);
+  }
+  gS.oninput=run; mSel.onchange=run;
+  document.getElementById('p-run').onclick=run;
+  run();
+})();
+
+/* ============================================================
+   Demo 2: gamma, sweeps to convergence, and the selected policy
+   ============================================================ */
+(function(){
+  const gS=document.getElementById('h-g'), gL=document.getElementById('h-gL'),
+        cv=document.getElementById('h-canvas'), ctx=cv.getContext('2d'),
+        gridEl=document.getElementById('h-grid'), cnt=document.getElementById('h-count'),
+        out=document.getElementById('h-read');
+  const EPS=1e-6, NG=34;
+  let pts=[], refPi=null;
+  function build(){
+    refPi = valueIteration(0.995, EPS*(1-0.995)/0.995*0.01).pi;
+    pts=[];
+    for(let i=0;i<NG;i++){
+      const g=0.50+(0.995-0.50)*i/(NG-1);
+      const r=valueIteration(g, EPS*(1-g)/g);
+      let d=0; for(const s of NONTERM) if(r.pi[s]!==refPi[s]) d++;
+      pts.push({g, sweeps:r.iters, diff:d, bound:Math.log(EPS)/Math.log(g), rate:r.rate, v0:r.V[START]});
+    }
+  }
+  function draw(){
+    const gsel=parseFloat(gS.value); gL.textContent=gsel.toFixed(3);
+    clear(ctx,cv);
+    const x0=66,y0=200,w=458,h=160;
+    axes(ctx,x0,y0,w,h,'discount \u03b3','sweeps to \u03b5 = 1e\u22126 (log scale)',54);
+    const ylo=1, yhi=3.6;                       // 10 .. ~4000 sweeps
+    ctx.strokeStyle='#EEF2F6';
+    for(let e=1;e<=3;e++){ const y=y0-h*(e-ylo)/(yhi-ylo);
+      ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+w,y); ctx.stroke();
+      ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial'; ctx.fillText('1e'+e,x0-32,y+3); }
+    ctx.fillStyle='#999'; ctx.textAlign='center';
+    [0.5,0.6,0.7,0.8,0.9,0.995].forEach(g=>ctx.fillText(g.toFixed(2),x0+w*(g-0.5)/0.495,y0+15));
+    ctx.textAlign='left';
+    const X=g=>x0+w*(g-0.5)/0.495;
+    const Y=v=>y0-h*(Math.max(ylo,Math.min(yhi,Math.log10(Math.max(v,1))))-ylo)/(yhi-ylo);
+    polyline(ctx, pts.map(p=>[X(p.g),Y(p.bound)]), '#C0392B', 1.6, [5,4]);
+    polyline(ctx, pts.map(p=>[X(p.g),Y(p.sweeps)]), '#1F4E79', 2);
+    pts.forEach(p=>{ ctx.fillStyle='#1F4E79'; ctx.beginPath(); ctx.arc(X(p.g),Y(p.sweeps),2.4,0,7); ctx.fill(); });
+    // lower strip: policy disagreement count
+    const sy0=272, sh=48;
+    ctx.fillStyle='#666'; ctx.font='10px -apple-system,Arial';
+    ctx.fillText('states differing from the \u03b3 = 0.995 policy',x0,sy0-sh-4);
+    const dmax=Math.max(1,...pts.map(p=>p.diff));
+    pts.forEach((p,i)=>{ const bw=w/NG;
+      ctx.fillStyle='#F9A825'; ctx.fillRect(X(p.g)-bw/2+1, sy0-sh*p.diff/dmax, bw-2, sh*p.diff/dmax); });
+    ctx.strokeStyle='#C7D2DE'; ctx.beginPath(); ctx.moveTo(x0,sy0); ctx.lineTo(x0+w,sy0); ctx.stroke();
+    // marker for selected gamma
+    ctx.strokeStyle='#1F8B4C'; ctx.lineWidth=1.5; ctx.beginPath();
+    ctx.moveTo(X(gsel),y0); ctx.lineTo(X(gsel),y0-h); ctx.stroke();
+    // selected-gamma solve
+    const r=valueIteration(gsel, EPS*(1-gsel)/gsel);
+    let diff=0; for(const s of NONTERM) if(r.pi[s]!==refPi[s]) diff++;
+    renderGrid5(gridEl, r.V, r.pi, true);
+    cnt.textContent = '\u03b3 = '+gsel.toFixed(3)+'  \u00b7  '+r.iters+' sweeps  \u00b7  '+diff+' greedy actions differ from the far-sighted policy';
+    let jump=null, drop=1;
+    for(let i=1;i<pts.length;i++){
+      const q=pts[i].sweeps/pts[i-1].sweeps;
+      if(q<drop && pts[i].diff!==pts[i-1].diff){ drop=q; jump=pts[i].g; }
+    }
+    const changes=[];
+    for(let i=1;i<pts.length;i++) if(pts[i].diff!==pts[i-1].diff) changes.push(pts[i].g.toFixed(2));
+    out.innerHTML = 'Effective horizon \\(1/(1-\\gamma)\\) = <b>'+(1/(1-gsel)).toFixed(1)+'</b> steps &nbsp;\u00b7&nbsp; '
+      + '\\(V(\\text{start})\\) = <b>'+r.V[START].toFixed(4)+'</b> &nbsp;\u00b7&nbsp; measured sweeps <b>'+r.iters+'</b> against a contraction bound of <b>'
+      + (Math.log(EPS)/Math.log(gsel)).toFixed(0)+'</b>, a factor of <b>'+((Math.log(EPS)/Math.log(gsel))/r.iters).toFixed(1)+'</b> too pessimistic. '
+      + 'The measured per-sweep decay of \\(\\lVert V_{k+1}-V_k\\rVert_\\infty\\) is <b>'+r.rate.toFixed(3)+'</b>, not \\(\\gamma=\\)'+gsel.toFixed(3)+': '
+      + 'in an episodic MDP the \\(k\\)-step operator contracts by \\(\\gamma^k\\) <em>times the probability of surviving \\(k\\) steps without absorbing</em>, and on this grid absorption is fast. '
+      + 'That is why the measured curve rises far more slowly than the bound. It is also not monotone \u2014 it steps down '
+      + (jump!==null? 'near \\(\\gamma \\approx '+jump.toFixed(2)+'\\)':'at a critical \\(\\gamma\\)')
+      + ', and the optimal policy changes at \\(\\gamma \\approx\\) '+changes.join(', ')+' \u2014 the same places. The fixed point being converged to changes there, so the rate does too. '
+      + 'Convergence speed is a property of the pair \\((\\gamma, \\mathcal{M})\\), not of \\(\\gamma\\) alone.';
+    if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([out]);
+  }
+  gS.oninput=draw;
+  document.getElementById('h-run').onclick=()=>{ build(); draw(); };
+  build(); draw();
+})();
+
+/* ============================================================
+   Demo 3: first-visit vs every-visit Monte Carlo, 10 seeds
+   ============================================================ */
+(function(){
+  const eS=document.getElementById('m-e'), eL=document.getElementById('m-eL'),
+        nS=document.getElementById('m-n'), nL=document.getElementById('m-nL'),
+        cv=document.getElementById('m-canvas'), ctx=cv.getContext('2d'),
+        tbl=document.getElementById('m-table'), cnt=document.getElementById('m-count'),
+        out=document.getElementById('m-read');
+  const GAMMA=0.95, SEEDS=10;
+  function checkpoints(n){
+    const set=new Set();
+    for(let i=0;i<30;i++) set.add(Math.max(10,Math.round(10*Math.pow(n/10,i/29))));
+    return [...set].sort((a,b)=>a-b);
+  }
+  function rmse(sum,cnts,Vex){
+    let acc=0;
+    for(const s of NONTERM){ const est=cnts[s]>0? sum[s]/cnts[s] : 0; acc+=(est-Vex[s])*(est-Vex[s]); }
+    return Math.sqrt(acc/NONTERM.length);
+  }
+  function runSeed(seed,nEp,P,Vex,cps){
+    const rnd=mulberry32(seed);
+    const fS=new Array(G_NS).fill(0), fN=new Array(G_NS).fill(0),
+          eSm=new Array(G_NS).fill(0), eN=new Array(G_NS).fill(0);
+    const fv=[], ev=[]; let ci=0, steps=0;
+    for(let e=0;e<nEp;e++){
+      let s=NONTERM[Math.floor(rnd()*NONTERM.length)];
+      const traj=[];
+      for(let t=0;t<300;t++){
+        let u=rnd(), acc=0, a=G_NA-1;
+        for(let k=0;k<G_NA;k++){ acc+=P[s][k]; if(u<=acc){ a=k; break; } }
+        let u2=rnd(), acc2=0, tr=GT[s][a][GT[s][a].length-1];
+        for(const cand of GT[s][a]){ acc2+=cand[0]; if(u2<=acc2){ tr=cand; break; } }
+        traj.push([s,tr[2]]); s=tr[1];
+        if(tr[3]) break;
+      }
+      steps+=traj.length;
+      const Gs=new Array(traj.length); let Gr=0;
+      for(let t=traj.length-1;t>=0;t--){ Gr=traj[t][1]+GAMMA*Gr; Gs[t]=Gr; }
+      for(let t=0;t<traj.length;t++){ const st=traj[t][0]; eSm[st]+=Gs[t]; eN[st]++; }
+      const seen={};
+      for(let t=0;t<traj.length;t++){ const st=traj[t][0];
+        if(!seen[st]){ seen[st]=1; fS[st]+=Gs[t]; fN[st]++; } }
+      if(ci<cps.length && e+1===cps[ci]){ fv.push(rmse(fS,fN,Vex)); ev.push(rmse(eSm,eN,Vex)); ci++; }
+    }
+    return {fv,ev,steps};
+  }
+  function draw(res,cps,info){
+    clear(ctx,cv);
+    const x0=76,y0=235,w=778,h=190;
+    axes(ctx,x0,y0,w,h,'episodes (log scale)','RMSE against exact v\u03c0 (log scale)',54);
+    const xlo=Math.log10(cps[0]), xhi=Math.log10(cps[cps.length-1]);
+    const ylo=-2.0, yhi=Math.log10(1.2);
+    const X=n=>x0+w*(Math.log10(n)-xlo)/(xhi-xlo);
+    const Y=v=>y0-h*(Math.max(Math.log10(Math.max(v,1e-4)),ylo)-ylo)/(yhi-ylo);
+    ctx.strokeStyle='#EEF2F6';
+    for(let e=0;e>=-2;e--){ const y=Y(Math.pow(10,e));
+      ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+w,y); ctx.stroke();
+      ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial'; ctx.fillText('1e'+e,x0-32,y+3); }
+    ctx.fillStyle='#999'; ctx.textAlign='center';
+    [10,30,100,300,1000,3000].forEach(n=>{ if(n>=cps[0]&&n<=cps[cps.length-1]) ctx.fillText(n,X(n),y0+15); });
+    ctx.textAlign='left';
+    const series={};
+    [['ev','#7B3FA0'],['fv','#1F4E79']].forEach(([key,col])=>{
+      const lo=[],hi=[],mu=[];
+      for(let i=0;i<cps.length;i++){
+        const vals=res.map(r=>r[key][i]).filter(v=>v!==undefined);
+        if(!vals.length) continue;
+        lo.push([X(cps[i]),Y(Math.min(...vals))]);
+        hi.push([X(cps[i]),Y(Math.max(...vals))]);
+        mu.push([X(cps[i]),Y(mean(vals))]);
+      }
+      band(ctx,lo,hi,col); series[key]=[mu,col];
+    });
+    polyline(ctx,series.ev[0],series.ev[1],2.2);
+    polyline(ctx,series.fv[0],series.fv[1],2.2);
+    // reference slope -1/2
+    const xa=X(cps[Math.floor(cps.length*0.35)]), xb=X(cps[cps.length-1]);
+    const va=mean(res.map(r=>r.fv[Math.floor(cps.length*0.35)]));
+    const ya=Y(va), yb=Y(va*Math.sqrt(cps[Math.floor(cps.length*0.35)]/cps[cps.length-1]));
+    polyline(ctx,[[xa,ya],[xb,yb]],'#999',1.2,[4,4]);
+    ctx.fillStyle='#777'; ctx.font='10px -apple-system,Arial';
+    ctx.fillText('slope \u22121/2  (\u03c3/\u221an)', xb-100, yb+16);
+    ctx.fillStyle='#1F4E79'; ctx.font='11px -apple-system,Arial';
+    ctx.fillText('first-visit', x0+12, y0-h+16);
+    ctx.fillStyle='#7B3FA0'; ctx.fillText('every-visit', x0+90, y0-h+16);
+    ctx.fillStyle='#555'; ctx.fillText(info, x0+180, y0-h+16);
+  }
+  function run(){
+    const eps=parseFloat(eS.value), nEp=parseInt(nS.value);
+    eL.textContent=eps.toFixed(2); nL.textContent=nEp;
+    const vi=valueIteration(GAMMA, 1e-10);
+    const P=softPolicy(vi.pi,eps);
+    const Vex=evalPolicyExact(P,GAMMA);
+    const cps=checkpoints(nEp);
+    const res=[]; let steps=0;
+    for(let k=0;k<SEEDS;k++){ const r=runSeed(1000003+k*7919, nEp, P, Vex, cps); res.push(r); steps+=r.steps; }
+    const last=cps.length-1;
+    const fvF=res.map(r=>r.fv[last]), evF=res.map(r=>r.ev[last]);
+    const d=fvF.map((v,i)=>evF[i]-v);
+    const seD=sdev(d)/Math.sqrt(SEEDS), tstat=seD>0? mean(d)/seD : 0;
+    draw(res,cps,'\u03b3 = 0.95, \u03b5 = '+eps.toFixed(2)+', '+SEEDS+' seeds, mean episode length '+(steps/(SEEDS*nEp)).toFixed(1));
+    const rows=[Math.max(0,Math.round(cps.length*0.25)), Math.max(0,Math.round(cps.length*0.6)), last];
+    let h='<tr><th>episodes</th><th>first-visit RMSE (95% CI, 10 seeds)</th><th>every-visit RMSE (95% CI)</th><th>paired mean difference</th></tr>';
+    for(const i of rows){
+      const a=res.map(r=>r.fv[i]), b=res.map(r=>r.ev[i]);
+      const dd=a.map((v,j)=>b[j]-v);
+      h+='<tr><td>'+cps[i]+'</td>'
+       + '<td>'+mean(a).toFixed(4)+' \u00b1 '+(tcrit(SEEDS-1)*sdev(a)/Math.sqrt(SEEDS)).toFixed(4)+'</td>'
+       + '<td>'+mean(b).toFixed(4)+' \u00b1 '+(tcrit(SEEDS-1)*sdev(b)/Math.sqrt(SEEDS)).toFixed(4)+'</td>'
+       + '<td>'+(mean(dd)>=0?'+':'')+mean(dd).toFixed(5)+'</td></tr>';
+    }
+    tbl.innerHTML=h;
+    cnt.textContent = SEEDS+' seeds \u00d7 '+nEp.toLocaleString()+' episodes = '+steps.toLocaleString()+' simulated steps';
+    const sig = Math.abs(tstat) > tcrit(SEEDS-1);
+    const ciF=tcrit(SEEDS-1)*sdev(fvF)/Math.sqrt(SEEDS), ciE=tcrit(SEEDS-1)*sdev(evF)/Math.sqrt(SEEDS);
+    const overlap = !(mean(fvF)+ciF < mean(evF)-ciE || mean(evF)+ciE < mean(fvF)-ciF);
+    out.innerHTML = 'At '+nEp.toLocaleString()+' episodes: first-visit RMSE <b>'+mean(fvF).toFixed(4)+' \u00b1 '+ciF.toFixed(4)
+      + '</b>, every-visit <b>'+mean(evF).toFixed(4)+' \u00b1 '+ciE.toFixed(4)+'</b> (95% intervals across '+SEEDS+' seeds). '
+      + 'The intervals '+(overlap?'<b>overlap</b>, so the unpaired comparison supports no claim':'<b>separate</b>')+'. '
+      + 'Paired on identical trajectories, the mean difference is <b>'+(mean(d)>=0?'+':'')+mean(d).toFixed(5)
+      + '</b> with \\(t_{9}\\) = <b>'+tstat.toFixed(2)+'</b> against a 5% critical value of '+tcrit(SEEDS-1).toFixed(3)+' \u2014 '
+      + (sig? '<b>significant</b>: the pairing recovers a difference the unpaired intervals cannot resolve.'
+            : 'not significant at this budget; raise the episode budget or the softness and watch it emerge.')
+      + ' Both curves fall on the \\(-\\tfrac12\\) reference slope, which is the \\(\\sigma/\\sqrt{n}\\) rate and the reason halving the RMSE costs four times the episodes.';
+    if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([out]);
+  }
+  eS.oninput=()=>{ eL.textContent=parseFloat(eS.value).toFixed(2); };
+  nS.oninput=()=>{ nL.textContent=nS.value; };
+  document.getElementById('m-run').onclick=run;
+  run();
+})();
+
+/* ============================================================
+   Demo 4: importance sampling variance
+   ============================================================ */
+(function(){
+  const lS=document.getElementById('i-l'), lL=document.getElementById('i-lL'),
+        nS=document.getElementById('i-n'), nL=document.getElementById('i-nL'),
+        cv=document.getElementById('i-canvas'), ctx=cv.getContext('2d'),
+        tbl=document.getElementById('i-table'), cnt=document.getElementById('i-count'),
+        out=document.getElementById('i-read');
+  const TGT=[0.50,0.30,0.20], FAR=[0.15,0.30,0.55], RWD=[1.0,0.0,-0.5], GA=0.9, T=4, REPS=600;
+  const DISC=(function(){ let s=0; for(let t=0;t<T;t++) s+=Math.pow(GA,t); return s; })();
+  const VTRUE=DISC*TGT.reduce((a,p,i)=>a+p*RWD[i],0);
+  let seed=20240201;
+  function experiment(lam,n){
+    const b=TGT.map((p,i)=>(1-lam)*p+lam*FAR[i]);
+    const rnd=mulberry32(seed);
+    const ord=[], wis=[], ess=[], maxRho=[];
+    for(let r=0;r<REPS;r++){
+      let sw=0, swg=0, sw2=0, mx=0;
+      for(let e=0;e<n;e++){
+        let rho=1, G=0;
+        for(let t=0;t<T;t++){
+          let u=rnd(), acc=0, a=2;
+          for(let k=0;k<3;k++){ acc+=b[k]; if(u<=acc){ a=k; break; } }
+          rho*=TGT[a]/b[a]; G+=Math.pow(GA,t)*RWD[a];
+        }
+        sw+=rho; swg+=rho*G; sw2+=rho*rho; if(rho>mx) mx=rho;
+      }
+      ord.push(swg/n); wis.push(sw>0? swg/sw : 0); ess.push(sw*sw/sw2); maxRho.push(mx);
+    }
+    return {b,ord,wis,ess,maxRho};
+  }
+  function draw(R,n){
+    clear(ctx,cv);
+    const x0=76,y0=205,w=778,h=160, LO=-1, HI=5, BINS=64;
+    axes(ctx,x0,y0,w,h,'value of the estimate','replications out of '+REPS,52);
+    const ho=new Array(BINS).fill(0), hw=new Array(BINS).fill(0);
+    let outO=0, outW=0;
+    const put=(arr,v,which)=>{ if(v<LO||v>=HI){ if(which===0) outO++; else outW++; return; }
+      arr[Math.floor((v-LO)/(HI-LO)*BINS)]++; };
+    R.ord.forEach(v=>put(ho,v,0)); R.wis.forEach(v=>put(hw,v,1));
+    const ymax=Math.max(4,...ho,...hw);
+    ctx.strokeStyle='#EEF2F6';
+    for(let i=1;i<=4;i++){ const y=y0-h*i/4; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+w,y); ctx.stroke();
+      ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial'; ctx.fillText(Math.round(ymax*i/4),x0-32,y+3); }
+    ctx.fillStyle='#999'; ctx.textAlign='center';
+    for(let v=LO;v<=HI;v++) ctx.fillText(v,x0+w*(v-LO)/(HI-LO),y0+15);
+    ctx.textAlign='left';
+    const bw=w/BINS;
+    for(let i=0;i<BINS;i++){
+      ctx.globalAlpha=0.55; ctx.fillStyle='#7B3FA0';
+      ctx.fillRect(x0+i*bw, y0-h*hw[i]/ymax, bw-0.5, h*hw[i]/ymax);
+      ctx.fillStyle='#1F4E79';
+      ctx.fillRect(x0+i*bw, y0-h*ho[i]/ymax, bw-0.5, h*ho[i]/ymax);
+      ctx.globalAlpha=1;
+    }
+    const xv=x0+w*(VTRUE-LO)/(HI-LO);
+    polyline(ctx,[[xv,y0],[xv,y0-h]],'#C0392B',2,[6,4]);
+    ctx.fillStyle='#C0392B'; ctx.font='11px -apple-system,Arial';
+    ctx.fillText('v\u03c0 = '+VTRUE.toFixed(4), xv+6, y0-h+12);
+    ctx.fillStyle='#555'; ctx.font='10px -apple-system,Arial'; ctx.textAlign='right';
+    ctx.fillText(outO+' ordinary and '+outW+' weighted estimates fell outside the plotted range', x0+w-8, y0-h+14);
+    ctx.textAlign='left';
+    return {outO,outW};
+  }
+  function run(){
+    const lam=parseFloat(lS.value), n=parseInt(nS.value);
+    lL.textContent=lam.toFixed(2); nL.textContent=n;
+    const R=experiment(lam,n);
+    const off=draw(R,n);
+    const mo=mean(R.ord), vo=sdev(R.ord)**2, mw=mean(R.wis), vw=sdev(R.wis)**2;
+    const mseO=vo+(mo-VTRUE)*(mo-VTRUE), mseW=vw+(mw-VTRUE)*(mw-VTRUE);
+    let h='<tr><th>estimator</th><th>empirical mean</th><th>bias</th><th>variance</th><th>MSE</th><th>outside plot</th></tr>';
+    h+='<tr'+(mseO<=mseW?' class="hi"':'')+'><td style="color:#1F4E79;font-weight:600">ordinary IS</td><td>'+mo.toFixed(4)+'</td><td>'
+      +(mo-VTRUE>=0?'+':'')+(mo-VTRUE).toFixed(4)+'</td><td>'+vo.toFixed(4)+'</td><td>'+mseO.toFixed(4)+'</td><td>'+off.outO+'</td></tr>';
+    h+='<tr'+(mseW<mseO?' class="hi"':'')+'><td style="color:#7B3FA0;font-weight:600">weighted IS</td><td>'+mw.toFixed(4)+'</td><td>'
+      +(mw-VTRUE>=0?'+':'')+(mw-VTRUE).toFixed(4)+'</td><td>'+vw.toFixed(4)+'</td><td>'+mseW.toFixed(4)+'</td><td>'+off.outW+'</td></tr>';
+    tbl.innerHTML=h;
+    cnt.textContent='b = ['+R.b.map(x=>x.toFixed(2)).join(', ')+']  vs  \u03c0 = [0.50, 0.30, 0.20]';
+    out.innerHTML='Effective sample size <b>'+mean(R.ess).toFixed(1)+'</b> of '+n+' episodes ('
+      +(100*mean(R.ess)/n).toFixed(0)+'% of the data is doing the work); the largest single ratio seen in a replication averages <b>'
+      +mean(R.maxRho).toFixed(1)+'</b>. Ordinary IS carries a bias of <b>'+(mo-VTRUE).toFixed(4)
+      +'</b> \u2014 zero up to sampling noise, as the theory requires \u2014 with variance <b>'+vo.toFixed(4)
+      +'</b>. Weighted IS carries a bias of <b>'+(mw-VTRUE).toFixed(4)+'</b> with variance <b>'+vw.toFixed(4)+'</b>, a factor of <b>'
+      +(vo>0&&vw>0?(vo/vw).toFixed(1):'1.0')+'\u00d7</b> smaller. On mean squared error the winner is <b>'
+      +(mseW<mseO?'weighted':'ordinary')+' IS</b> at this separation. Push \\(\\lambda\\) to 1 and watch the ordinary histogram\u2019s right tail leave the axis while its mean stays put: '
+      +'that is unbiasedness with unbounded variance, and it is not a usable estimator.';
+    if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([out]);
+  }
+  lS.oninput=run; nS.oninput=run;
+  document.getElementById('i-run').onclick=()=>{ seed=(seed*1664525+1013904223)>>>0; run(); };
+  run();
+})();
+
+/* ============================================================
+   Demo 5: discounted state visitation on a 5-state random walk
+   ============================================================ */
+(function(){
+  const gS=document.getElementById('d-g'), gL=document.getElementById('d-gL'),
+        cv=document.getElementById('d-canvas'), ctx=cv.getContext('2d'),
+        cnt=document.getElementById('d-count'), out=document.getElementById('d-read');
+  const NS=5, PR=0.6, GAMS=[0.5,0.8,0.95,0.99], COLS=['#BCCEE0','#7FA6CC','#3D6E9E','#1F4E79'];
+  function P(i,j){
+    if(j===i+1) return i<NS-1?PR:0;
+    if(j===i-1) return i>0?1-PR:0;
+    if(j===i) return (i===0?1-PR:0)+(i===NS-1?PR:0);
+    return 0;
+  }
+  function dGamma(g){
+    let mu=new Array(NS).fill(0); mu[0]=1;
+    const d=new Array(NS).fill(0); let w=1;
+    for(let t=0;t<20000;t++){
+      for(let s=0;s<NS;s++) d[s]+=w*mu[s];
+      w*=g; if(w<1e-15) break;
+      const nm=new Array(NS).fill(0);
+      for(let i=0;i<NS;i++) for(let j=0;j<NS;j++) if(mu[i]>0) nm[j]+=mu[i]*P(i,j);
+      mu=nm;
+    }
+    return d.map(x=>x*(1-g));
+  }
+  const STAT=(function(){
+    const w=[]; let x=1, s=0;
+    for(let i=0;i<NS;i++){ w.push(x); s+=x; x*=PR/(1-PR); }
+    return w.map(v=>v/s);
+  })();
+  const EXACT=GAMS.map(dGamma);
+  let sim=null, simG=null;
+  function simulate(g,episodes){
+    const rnd=mulberry32(987654321);
+    const c=new Array(NS).fill(0); let tot=0, len=0;
+    for(let e=0;e<episodes;e++){
+      let s=0;
+      for(let t=0;t<20000;t++){
+        c[s]++; tot++; len++;
+        if(rnd()>=g) break;
+        s = rnd()<PR ? Math.min(s+1,NS-1) : Math.max(s-1,0);
+      }
+    }
+    return {d:c.map(v=>v/tot), meanLen:len/episodes};
+  }
+  function draw(){
+    const g=parseFloat(gS.value); gL.textContent=g.toFixed(3);
+    clear(ctx,cv);
+    const x0=78,y0=215,w=776,h=170;
+    axes(ctx,x0,y0,w,h,'state of the chain','discounted visitation  d\u03b3(s)',58);
+    const ymax=Math.max(0.75,...EXACT.map(d=>Math.max(...d)))*1.1;
+    ctx.strokeStyle='#EEF2F6';
+    for(let i=1;i<=4;i++){ const y=y0-h*i/4; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+w,y); ctx.stroke();
+      ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial'; ctx.fillText((ymax*i/4).toFixed(2),x0-34,y+3); }
+    const gw=w/NS, bw=gw/(GAMS.length+1.6);
+    for(let s=0;s<NS;s++){
+      const gx=x0+s*gw;
+      GAMS.forEach((gg,k)=>{
+        const v=EXACT[k][s];
+        ctx.fillStyle=COLS[k];
+        ctx.fillRect(gx+bw*(k+0.5), y0-h*v/ymax, bw-2, h*v/ymax);
+      });
+      // stationary outline
+      ctx.strokeStyle='#C0392B'; ctx.setLineDash([4,3]); ctx.lineWidth=1.4;
+      const ys=y0-h*STAT[s]/ymax;
+      ctx.beginPath(); ctx.moveTo(gx+bw*0.5,ys); ctx.lineTo(gx+bw*(GAMS.length+0.5),ys); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle='#555'; ctx.font='11px -apple-system,Arial'; ctx.textAlign='center';
+      ctx.fillText('s = '+s, gx+gw/2, y0+15); ctx.textAlign='left';
+      if(sim){
+        const v=sim.d[s], cx=gx+bw*(GAMS.length+0.9), cy=y0-h*v/ymax;
+        ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(cx,cy,4.5,0,7); ctx.fill();
+        ctx.strokeStyle='#111'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(cx,y0); ctx.lineTo(cx,cy); ctx.stroke();
+      }
+    }
+    ctx.fillStyle='#C0392B'; ctx.font='11px -apple-system,Arial';
+    ctx.fillText('dashed: stationary distribution (the \u03b3 \u2192 1 limit)', x0+12, y0-h+16);
+    const dsel=dGamma(g);
+    const tv=0.5*dsel.reduce((a,x,i)=>a+Math.abs(x-STAT[i]),0);
+    cnt.textContent='\u03b3 = '+g.toFixed(3)+'  \u00b7  effective horizon '+(1/(1-g)).toFixed(1)+' steps'
+      + (sim? '  \u00b7  simulated at \u03b3 = '+simG.toFixed(3)+', mean episode length '+sim.meanLen.toFixed(1) : '');
+    let err='';
+    if(sim){ let m=0; for(let s=0;s<NS;s++) m=Math.max(m,Math.abs(sim.d[s]-dGamma(simG)[s]));
+      err=' The simulated markers (episodes cut off with probability \\(1-\\gamma\\) per step, no discounting arithmetic anywhere) match the exact bars to within <b>'
+        +m.toFixed(4)+'</b> \u2014 the two are the same object.'; }
+    out.innerHTML='At \\(\\gamma\\) = '+g.toFixed(3)+' the discounted visitation is ['+dsel.map(x=>x.toFixed(3)).join(', ')
+      +'], and it puts <b>'+(100*dsel[0]).toFixed(0)+'%</b> of its mass on the start state against <b>'+(100*STAT[0]).toFixed(0)
+      +'%</b> under the stationary distribution; the total-variation distance to stationarity is <b>'+tv.toFixed(3)+'</b>. '
+      +'A low \\(\\gamma\\) makes the objective an average over a neighbourhood of the start, so states the agent could only reach late contribute almost nothing and exploration toward them is not rewarded. '
+      +'A high \\(\\gamma\\) spreads the measure toward stationarity and the far states begin to pay.'+err;
+    if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([out]);
+  }
+  gS.oninput=draw;
+  document.getElementById('d-run').onclick=()=>{ simG=parseFloat(gS.value); sim=simulate(simG,4000); draw(); };
+  simG=0.90; sim=simulate(0.90,4000); draw();
+})();
+</script>
+</body>
+</html>

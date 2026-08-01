@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topic 3 Exercises — Policy Gradient Methods</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6;
+}
+.container { max-width: 940px; margin: 24px auto 48px; background: white;
+  padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+.score { position: sticky; top: 0; background: white; padding: 10px 14px;
+         border: 1px solid #E0E5EB; border-radius: 8px; margin-bottom: 12px;
+         color: #1F4E79; font-weight: 600; z-index: 10;
+         display: flex; justify-content: space-between; align-items: center; }
+.score .bar { background: #E0E5EB; border-radius: 999px; height: 8px;
+              width: 240px; overflow: hidden; }
+.score .bar > div { background: #1F4E79; height: 100%; transition: width 0.3s; }
+.exercise { border: 1px solid #E0E5EB; border-radius: 8px; padding: 22px 26px;
+            margin: 22px 0; background: #FCFDFE; }
+.exercise h3 { margin: 0 0 4px; color: #1F4E79; font-size: 1.1em; }
+.exercise .qtype { color: #888; font-size: 0.8em; text-transform: uppercase;
+                   letter-spacing: 0.05em; margin-bottom: 14px; }
+.stem { margin-bottom: 14px; }
+.stem code { font-family: "SF Mono", Consolas, Monaco, monospace;
+             background: #F2F4F7; padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+      overflow-x: auto; border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.92em; }
+table.tb { border-collapse:collapse; margin:12px 0; font-size:0.9em; }
+table.tb td, table.tb th { border:1px solid #D0D8E0; padding:5px 12px; text-align:center; }
+table.tb th { background:#EAF1F8; color:#1F4E79; }
+.options { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 14px; }
+.options label { cursor: pointer; padding: 10px 14px; background: white;
+                 border: 1px solid #D0D8E0; border-radius: 6px; transition: border-color 0.15s; }
+.options label:hover { border-color: #1F4E79; background: #F7FAFC; }
+.options input[type="radio"] { margin-right: 10px; }
+.numeric-row { display: flex; gap: 12px; align-items: center; margin: 10px 0 14px; }
+.numeric-row input { padding: 8px 12px; border: 1px solid #D0D8E0; border-radius: 6px;
+                     font-family: inherit; font-size: 1em; width: 160px; }
+button { background: #1F4E79; color: white; border: 0; padding: 9px 18px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.95em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+button:disabled { background: #B8C2CB; cursor: not-allowed; }
+.feedback { padding: 12px 16px; border-radius: 6px; margin-top: 10px;
+            font-size: 0.95em; display: none; }
+.feedback.show { display: block; }
+.feedback.correct { background: #E8F5E9; border-left: 4px solid #2E7D32; color: #1B5E20; }
+.feedback.incorrect { background: #FDECEA; border-left: 4px solid #C00000; color: #6E1414; }
+.feedback strong { display: block; margin-bottom: 4px; }
+.help { color: #777; font-size: 0.85em; margin-top: 6px; }
+.nav { display: flex; justify-content: space-between; margin-top: 36px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; }
+.nav a { color: #1F4E79; text-decoration: none; }
+.nav a:hover { text-decoration: underline; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">Practice exercises</div>
+<h1>Topic 3 — Policy Gradient Methods</h1>
+<p class="subtitle">Ten self-graded problems. Submit each one to see immediate feedback; the score bar at the top tracks your progress. Every problem is a quantity you will compute again inside your Topic 3 product — in the training loop, in the <span class="eq">gradient_stats</span> table, or in the test suite.</p>
+
+<div class="score">
+  <span id="scoreText">Score: 0 / 10</span>
+  <div class="bar"><div id="scoreBar" style="width:0%"></div></div>
+</div>
+
+<!-- Q1 -->
+<div class="exercise" data-q="1">
+  <div class="qtype">Theoretical · The log-derivative trick</div>
+  <h3>Question 1</h3>
+  <div class="stem">In deriving the policy gradient we replace <span class="eq">∇<sub>θ</sub> p<sub>θ</sub>(τ)</span> with <span class="eq">p<sub>θ</sub>(τ) ∇<sub>θ</sub> log p<sub>θ</sub>(τ)</span>, expand the log of the trajectory density, and discard two of the three resulting sums. What does that step establish?</div>
+  <div class="options">
+    <label><input type="radio" name="q1" value="a"> It establishes that the estimator has low variance, because taking a logarithm compresses the scale of the returns.</label>
+    <label><input type="radio" name="q1" value="b"> It turns the gradient of an integral into an expectation that can be sampled, and — because <span class="eq">ρ₀</span> and <span class="eq">P</span> do not depend on <span class="eq">θ</span> — leaves only <span class="eq">Σ<sub>t</sub> ∇<sub>θ</sub> log π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>)</span>, so the gradient needs no model of the dynamics.</label>
+    <label><input type="radio" name="q1" value="c"> It proves that the environment is Markov, which is what allows the trajectory density to factorise in the first place.</label>
+    <label><input type="radio" name="q1" value="d"> It removes the need to compute returns, because the transition probabilities already encode the reward structure.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q2 -->
+<div class="exercise" data-q="2">
+  <div class="qtype">Computational · The softmax score by hand</div>
+  <h3>Question 2</h3>
+  <div class="stem">A policy is a softmax over three actions with logits <span class="eq">z = (1, 0, −1)</span>. The agent samples action <span class="eq">a₂</span> (the one with logit 0). Compute <span class="eq">∂ log π(a₂) / ∂ z₂</span>, the component of the score with respect to the logit of the action that was actually taken. Give three decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.001" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · For a softmax, <span class="eq">∂ log π(a) / ∂ z<sub>j</sub> = δ<sub>aj</sub> − π<sub>j</sub></span>. Compute <span class="eq">π</span> first: the exponentials are <span class="eq">e¹, e⁰, e⁻¹</span>.</div>
+</div>
+
+<!-- Q3 -->
+<div class="exercise" data-q="3">
+  <div class="qtype">Theoretical · Why a baseline is free</div>
+  <h3>Question 3</h3>
+  <div class="stem">Subtracting a state-dependent baseline <span class="eq">b(s)</span> from the return leaves <span class="eq">∇<sub>θ</sub>J</span> unchanged. Which statement is the actual proof?</div>
+  <div class="options">
+    <label><input type="radio" name="q3" value="a"> Over many episodes the positive and negative values of <span class="eq">G − b(s)</span> cancel, so the average of the subtracted term tends to zero.</label>
+    <label><input type="radio" name="q3" value="b"> <span class="eq">E<sub>a∼π</sub>[∇<sub>θ</sub>log π(a|s) b(s)] = b(s) Σ<sub>a</sub> ∇<sub>θ</sub>π(a|s) = b(s) ∇<sub>θ</sub>1 = 0</span>, because <span class="eq">b</span> does not depend on <span class="eq">a</span> and the action probabilities sum to a constant.</label>
+    <label><input type="radio" name="q3" value="c"> The baseline is subtracted from every action equally, so it cancels inside the softmax normalisation and never reaches the gradient.</label>
+    <label><input type="radio" name="q3" value="d"> It holds only when <span class="eq">b(s) = V(s)</span>, because that is the unique value for which the advantage has mean zero.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q4 -->
+<div class="exercise" data-q="4">
+  <div class="qtype">Computational · Advantage from a return and a value</div>
+  <h3>Question 4</h3>
+  <div class="stem">During a CartPole run, the trajectory passing through state <span class="eq">s</span> at time <span class="eq">t</span> went on to collect a discounted return of <span class="eq">G<sub>t</sub> = 42</span>. Your value network predicts <span class="eq">V<sub>φ</sub>(s<sub>t</sub>) = 55</span>. What advantage <span class="eq">Â<sub>t</sub></span> does the update use for that timestep?</div>
+  <div class="numeric-row">
+    <input type="number" step="0.1" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · <span class="eq">Â<sub>t</sub> = G<sub>t</sub> − V<sub>φ</sub>(s<sub>t</sub>)</span>. Note that the sign, not the magnitude of <span class="eq">G</span>, decides the direction of the update.</div>
+</div>
+
+<!-- Q5 -->
+<div class="exercise" data-q="5">
+  <div class="qtype">Computational · An importance ratio</div>
+  <h3>Question 5</h3>
+  <div class="stem">A two-step fragment was collected under a behaviour policy <span class="eq">b</span> and you want to reuse it to update the current policy <span class="eq">π</span>. The probabilities assigned to the two actions that were actually taken are:
+  <table class="tb">
+    <tr><th>step</th><th><span class="eq">b(a<sub>t</sub>|s<sub>t</sub>)</span></th><th><span class="eq">π(a<sub>t</sub>|s<sub>t</sub>)</span></th></tr>
+    <tr><td>0</td><td>0.12</td><td>0.30</td></tr>
+    <tr><td>1</td><td>0.50</td><td>0.40</td></tr>
+  </table>
+  What is the importance weight <span class="eq">ρ(τ)</span> for this two-step fragment? Give two decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.01" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · <span class="eq">ρ(τ) = Π<sub>t</sub> π(a<sub>t</sub>|s<sub>t</sub>) / b(a<sub>t</sub>|s<sub>t</sub>)</span>. The transition probabilities appear in both numerator and denominator and cancel, so they never enter the calculation.</div>
+</div>
+
+<!-- Q6 -->
+<div class="exercise" data-q="6">
+  <div class="qtype">Computational · Effective sample size</div>
+  <h3>Question 6</h3>
+  <div class="stem">A batch of four trajectories is reweighted and produces the importance weights <span class="eq">ρ = (0.2, 0.4, 1.0, 2.4)</span>. Compute the effective sample size <span class="eq">ESS = (Σρ<sub>i</sub>)² / Σρ<sub>i</sub>²</span>. Give two decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.01" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · The weights sum to 4.0 and their squares sum to 6.96. The answer lies between 1 and 4; it equals 4 only when all four weights are identical.</div>
+</div>
+
+<!-- Q7 -->
+<div class="exercise" data-q="7">
+  <div class="qtype">Computational · Entropy of a discrete policy</div>
+  <h3>Question 7</h3>
+  <div class="stem">In some state your policy over four actions is <span class="eq">π = (0.5, 0.25, 0.25, 0)</span>. Compute the Shannon entropy <span class="eq">H(π) = −Σ<sub>a</sub> π(a) log π(a)</span> <strong>in nats</strong> (natural logarithm). Give three decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.001" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · Terms with <span class="eq">π(a) = 0</span> contribute 0, since <span class="eq">x log x → 0</span> as <span class="eq">x → 0</span>. Use <span class="eq">ln</span>, not <span class="eq">log₂</span>: the answer in bits is 1.5, and this is not it.</div>
+</div>
+
+<!-- Q8 -->
+<div class="exercise" data-q="8">
+  <div class="qtype">Conceptual · The entropy coefficient λ</div>
+  <h3>Question 8</h3>
+  <div class="stem">Your CartPole run uses the objective <span class="eq">J(θ) + λH(π<sub>θ</sub>)</span>. In <code>gradient_stats</code> you observe that policy entropy stops falling after about 40 updates and settles just under <span class="eq">log 2</span>, while mean return rises and then flattens far below 500. Which diagnosis fits, and what does it imply?</div>
+  <div class="options">
+    <label><input type="radio" name="q8" value="a"> λ is too small: the policy has collapsed to a deterministic action and can no longer explore, so the return has stalled.</label>
+    <label><input type="radio" name="q8" value="b"> λ is too large: the entropy term is dominating, so the regularised optimum <span class="eq">π* = softmax(r/λ)</span> is close to uniform and the policy converges to that — a wrong fixed point, not slow progress, so training longer will not help.</label>
+    <label><input type="radio" name="q8" value="c"> The learning rate is too large, because entropy plateaus only when the gradient step overshoots the optimum.</label>
+    <label><input type="radio" name="q8" value="d"> Nothing is wrong: entropy always converges to <span class="eq">log|A|</span> at the optimum, and the return is limited by CartPole's episode cap.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q9 -->
+<div class="exercise" data-q="9">
+  <div class="qtype">Application · The NumPy/PyTorch equivalence test</div>
+  <h3>Question 9</h3>
+  <div class="stem">Your required equivalence test compares the exported NumPy forward pass against the trained PyTorch module on random observations and fails with a maximum absolute difference of 0.31 in the action probabilities. Which response is correct?</div>
+  <div class="options">
+    <label><input type="radio" name="q9" value="a"> Raise the tolerance to 0.5 and document it, since float32 accumulation differs between NumPy and PyTorch.</label>
+    <label><input type="radio" name="q9" value="b"> A discrepancy of that size is a wiring bug, not numerical error: almost always a transposed weight matrix (<code>nn.Linear</code> stores <code>weight</code> as <code>(out_features, in_features)</code> because it computes <span class="eq">xWᵀ + b</span>) or a dropped bias term. Genuine float32 disagreement is of order 1e−7.</label>
+    <label><input type="radio" name="q9" value="c"> Compare the selected action instead of the probabilities; if the argmax agrees the export is correct and the test is over-strict.</label>
+    <label><input type="radio" name="q9" value="d"> Re-export with float64, since the discrepancy comes from casting the weights to float32 during export.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q10 -->
+<div class="exercise" data-q="10">
+  <div class="qtype">Application · Why the service must not import PyTorch</div>
+  <h3>Question 10</h3>
+  <div class="stem">Topic 3 is the first product whose deployed policy is a neural network rather than a lookup table. A teammate proposes loading the trained module in <code>api/main.py</code> with <code>torch.load</code> "because the network is tiny — a few thousand parameters." Which response is correct for this course?</div>
+  <div class="options">
+    <label><input type="radio" name="q10" value="a"> Acceptable, because the memory cost of a model scales with its parameter count and a few thousand float32 weights are a few tens of kilobytes.</label>
+    <label><input type="radio" name="q10" value="b"> The parameter count is irrelevant: <code>import torch</code> alone costs roughly 490 MB of resident memory against a 690 MB guarantee on the deployed tier, spent on bundled CUDA libraries a CPU service never calls, and <code>tests/test_no_torch.py</code> fails the build. The exported <code>.npz</code> plus two matmuls, a ReLU and a softmax serve the same policy inside the 82 MB the whole stack measures.</label>
+    <label><input type="radio" name="q10" value="c"> Acceptable if the import is placed inside the request handler rather than at module scope, since the memory is then only allocated per request.</label>
+    <label><input type="radio" name="q10" value="d"> Acceptable for Topic 3 only, since the rule exists to protect the large models of Topic 6.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="nav"><a href="index.html">← All tutorials</a><a href="Tutorial-Topic-3-Policy-Gradient-Methods.html">Topic 3 tutorial →</a></div>
+</div>
+
+<script>
+/* ---- Answer key + feedback content ---- */
+const KEY = {
+  1: { type: 'mc', accept: 'b',
+       ok: 'The score-function identity converts ∇∫p·R into E[∇log p · R], which is samplable, and the factorisation of log p sends ∇log ρ₀ and ∇log P to exactly zero. That is the precise sense in which policy gradients are model-free: the estimator never touches the dynamics, only the actions you chose and the returns you observed.',
+       no: 'The step is about what survives differentiation, not about variance or about the Markov property. Ask which of the three sums in log p<sub>θ</sub>(τ) = log ρ₀ + Σ log π + Σ log P still depends on θ.' },
+  2: { type: 'numeric', accept: 0.755, tol: 0.006,
+       ok: 'π = (0.6652, 0.2447, 0.0900), so ∂log π(a₂)/∂z₂ = 1 − π₂ = 0.755. Note the magnitude: the less likely the action you sampled, the larger its own score component, so a rare action that happens to pay off produces a large update — which is a source of variance as well as of learning.',
+       no: 'Use δ<sub>aj</sub> − π<sub>j</sub> with a = j, which gives 1 − π₂. First normalise: e¹ = 2.7183, e⁰ = 1, e⁻¹ = 0.3679, summing to 4.0862, so π₂ = 1/4.0862 = 0.2447.' },
+  3: { type: 'mc', accept: 'b',
+       ok: 'The mean score of any distribution is zero, because Σ_a π ∇log π = Σ_a ∇π = ∇Σ_a π = ∇1 = 0. The proof is exact and holds for every b that is not a function of the action — including a constant, a learned V(s), or a badly fitted one. A baseline that depends on the action, however, does introduce bias, which is why the advantage subtracts V(s) and not Q(s,a).',
+       no: 'The claim is an exact identity, not an averaging argument, and it holds for any b(s) rather than only for V(s). Look for the step that uses Σ_a π(a|s) = 1.' },
+  4: { type: 'numeric', accept: -13, tol: 0.05,
+       ok: 'Â = 42 − 55 = −13. The return was large and positive and the update still pushes probability away from that action, because the state was worth more than the trajectory realised. This is exactly what the baseline buys: without it every action in a positive-reward environment is reinforced, and learning depends entirely on the differences between large numbers.',
+       no: 'Subtract the value estimate from the observed return: Â = G − V(s). A positive return does not imply a positive advantage — the comparison is against what that state was already worth.' },
+  5: { type: 'numeric', accept: 2.0, tol: 0.02,
+       ok: 'ρ = (0.30/0.12) × (0.40/0.50) = 2.5 × 0.8 = 2.0. The ratio is a product over steps, which is why its variance compounds geometrically with the horizon — twenty steps of a per-step ratio averaging 1.3 is a weight near 190, and a batch of such weights is dominated by one trajectory.',
+       no: 'Multiply the per-step ratios π/b, do not add or average them. Step 0 contributes 0.30/0.12 and step 1 contributes 0.40/0.50.' },
+  6: { type: 'numeric', accept: 2.299, tol: 0.02,
+       ok: 'Σρ = 4.0, Σρ² = 0.04 + 0.16 + 1.00 + 5.76 = 6.96, so ESS = 16/6.96 = 2.30. Four trajectories are worth about two and a third: the weights average exactly 1, so nothing looks wrong in the mean, and the batch has still lost 43% of its statistical content. Log ESS/N every update — it is the number that warns you before the return curve does.',
+       no: 'Square the sum of the weights, then divide by the sum of their squares: (4.0)² / 6.96. A common slip is summing the squares of the weights in the numerator; the numerator is the square of the sum.' },
+  7: { type: 'numeric', accept: 1.0397, tol: 0.006,
+       ok: 'H = −(0.5 ln 0.5 + 2 × 0.25 ln 0.25) = 0.3466 + 0.6931 = 1.040 nats. Compare it with the maximum for four actions, ln 4 = 1.386: the policy has already given up a quarter of its available entropy, and the zero-probability action is unrecoverable by a score-function update because it will never be sampled again.',
+       no: 'Two likely causes. Either you computed in bits — the base-2 answer is exactly 1.5, and this course reports nats — or you tried to evaluate 0 × ln 0; that term is defined to be 0 by continuity.' },
+  8: { type: 'mc', accept: 'b',
+       ok: 'The signature is entropy that stops falling while return stops rising. Since the regularised optimum is softmax(r/λ), a large λ flattens it toward uniform and the policy converges correctly — to the wrong objective. The distinction that matters for your report is that this is a wrong fixed point, so more episodes cannot fix it; the collapse caused by too small a λ has the opposite signature, entropy falling to near zero within a few dozen updates.',
+       no: 'Read the direction of the entropy. A collapsed policy has entropy near zero; this one is holding entropy high and refusing to commit. Then ask which term of J + λH is winning.' },
+  9: { type: 'mc', accept: 'b',
+       ok: 'Float32 disagreement between two implementations of the same arithmetic is of order 1e−7; 0.31 is a different computation. The two usual causes are the transpose (nn.Linear computes xWᵀ + b, so the exported array must be transposed exactly once) and a dropped bias, which a softmax partially absorbs. Raising the tolerance or comparing only the argmax would let a policy that is quietly wrong pass — which is why the test compares full distributions on random observations.',
+       no: 'Ask what magnitude of error float32 can actually produce for a two-layer network: about 1e−7, not 0.31. Loosening a tolerance to make a test pass converts a failing test into a silent one.' },
+  10:{ type: 'mc', accept: 'b',
+       ok: 'The cost is the import, not the weights, and it is paid the moment the module is loaded — including from inside a request handler, where it is paid on the first request and never released. This is the topic where the discipline first does real work: Topics 1 and 2 shipped lookup tables, so the rule was free; here the policy is a network and you still ship four NumPy arrays.',
+       no: 'Separate the size of the model from the size of the framework. Then consider what a deferred import actually defers — the allocation still happens, and the process still holds it afterwards.' },
+};
+
+const state = {}; let solved = new Set();
+
+document.querySelectorAll('.exercise').forEach(ex => {
+  const qid = +ex.dataset.q;
+  const btn = ex.querySelector('[data-check]');
+  const fb = ex.querySelector('[data-feedback]');
+  btn.addEventListener('click', () => {
+    const k = KEY[qid]; let user;
+    if (k.type === 'numeric') {
+      const inp = ex.querySelector('[data-input]');
+      user = parseFloat(inp.value);
+      if (Number.isNaN(user)) {
+        fb.className = 'feedback incorrect show';
+        fb.innerHTML = '<strong>Please enter a number.</strong>';
+        return;
+      }
+    } else {
+      const picked = ex.querySelector('input[type=radio]:checked');
+      if (!picked) {
+        fb.className = 'feedback incorrect show';
+        fb.innerHTML = '<strong>Please select an option.</strong>';
+        return;
+      }
+      user = picked.value;
+    }
+    const ok = (k.type === 'numeric')
+      ? Math.abs(user - k.accept) <= k.tol
+      : user === k.accept;
+    if (ok) {
+      fb.className = 'feedback correct show';
+      fb.innerHTML = '<strong>Correct.</strong>' + k.ok;
+      if (!solved.has(qid)) { solved.add(qid); updateScore(); }
+      btn.disabled = true;
+    } else {
+      fb.className = 'feedback incorrect show';
+      fb.innerHTML = '<strong>Not quite.</strong>' + k.no;
+    }
+  });
+});
+
+function updateScore() {
+  const total = Object.keys(KEY).length;
+  document.getElementById('scoreText').textContent = `Score: ${solved.size} / ${total}`;
+  document.getElementById('scoreBar').style.width = `${(solved.size / total * 100).toFixed(0)}%`;
+}
+</script>
+</body>
+</html>

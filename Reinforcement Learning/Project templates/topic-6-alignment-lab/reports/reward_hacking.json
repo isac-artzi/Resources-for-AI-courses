@@ -1,0 +1,120 @@
+{
+  "rows": [
+    {
+      "beta": Infinity,
+      "label": "base (beta -> inf)",
+      "kl_from_reference": 0.0,
+      "mean_reward_model_score": 0.8892035383073097,
+      "mean_true_quality": 0.17124793572806157,
+      "repetition_rate": 0.09564858337338931,
+      "mean_tokens": 15.15
+    },
+    {
+      "beta": 0.002,
+      "label": "beta=0.002",
+      "kl_from_reference": 43.43171077221632,
+      "mean_reward_model_score": 3.6156677360785063,
+      "mean_true_quality": 0.3662414965986394,
+      "implicit_reward_accuracy": 0.7833333611488342,
+      "repetition_rate": 0.3178571428571428,
+      "mean_tokens": 26.7
+    },
+    {
+      "beta": 0.005,
+      "label": "beta=0.005",
+      "kl_from_reference": 34.233202911913395,
+      "mean_reward_model_score": 3.5969321468919593,
+      "mean_true_quality": 0.3736116670095609,
+      "implicit_reward_accuracy": 0.7833333611488342,
+      "repetition_rate": 0.28128205128205125,
+      "mean_tokens": 27.366666666666667
+    },
+    {
+      "beta": 0.01,
+      "label": "beta=0.01",
+      "kl_from_reference": 30.219232380390167,
+      "mean_reward_model_score": 3.6376898146055083,
+      "mean_true_quality": 0.38496315192743763,
+      "implicit_reward_accuracy": 0.7875000238418579,
+      "repetition_rate": 0.2916666666666667,
+      "mean_tokens": 27.633333333333333
+    },
+    {
+      "beta": 0.02,
+      "label": "beta=0.02",
+      "kl_from_reference": 25.44549060612917,
+      "mean_reward_model_score": 3.62645252070008,
+      "mean_true_quality": 0.3984631225325668,
+      "implicit_reward_accuracy": 0.768750011920929,
+      "repetition_rate": 0.28228830227743273,
+      "mean_tokens": 26.816666666666666
+    },
+    {
+      "beta": 0.05,
+      "label": "beta=0.05",
+      "kl_from_reference": 20.870914861559868,
+      "mean_reward_model_score": 3.598915626336459,
+      "mean_true_quality": 0.40262506511379165,
+      "implicit_reward_accuracy": 0.7645833492279053,
+      "repetition_rate": 0.2727062289562289,
+      "mean_tokens": 25.916666666666668
+    },
+    {
+      "beta": 0.1,
+      "label": "beta=0.1",
+      "kl_from_reference": 16.49850506335497,
+      "mean_reward_model_score": 3.5292668018573203,
+      "mean_true_quality": 0.3833857237339379,
+      "implicit_reward_accuracy": 0.75,
+      "repetition_rate": 0.2664484126984127,
+      "mean_tokens": 26.633333333333333
+    },
+    {
+      "beta": 0.5,
+      "label": "beta=0.5",
+      "kl_from_reference": 6.4072014056146145,
+      "mean_reward_model_score": 3.1003823269414683,
+      "mean_true_quality": 0.3524411057454532,
+      "implicit_reward_accuracy": 0.7270833253860474,
+      "repetition_rate": 0.21838977072310403,
+      "mean_tokens": 26.116666666666667
+    }
+  ],
+  "decoupling": {
+    "decoupling_beta": 0.05,
+    "peak_true_quality_beta": 0.05,
+    "peak_proxy_beta": 0.01,
+    "proxy_change_past_peak": 0.016752109742047328,
+    "true_quality_change_past_peak": -0.03638356851515223,
+    "goodhart_observed": true,
+    "corr_low_pressure_half": 0.9662900649428642,
+    "corr_high_pressure_half": 0.5693622181669348,
+    "betas_decreasing": [
+      0.5,
+      0.1,
+      0.05,
+      0.02,
+      0.01,
+      0.005,
+      0.002
+    ],
+    "proxy": [
+      3.1003823269414683,
+      3.5292668018573203,
+      3.598915626336459,
+      3.62645252070008,
+      3.6376898146055083,
+      3.5969321468919593,
+      3.6156677360785063
+    ],
+    "truth": [
+      0.3524411057454532,
+      0.3833857237339379,
+      0.40262506511379165,
+      0.3984631225325668,
+      0.38496315192743763,
+      0.3736116670095609,
+      0.3662414965986394
+    ]
+  }
+}

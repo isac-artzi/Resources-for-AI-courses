@@ -1,0 +1,59 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"     # pin: Box2D wheels stop at 3.13, so never 3.14
+
+      # NOTE: CI installs the SERVING requirements plus a test runner, and
+      # nothing else. If a serving module ever grows a training-tier import,
+      # this step fails before the no-torch guard even runs. That is intended.
+      #
+      # In this topic that check does more work than in any previous one. The
+      # serving tier re-implements a scikit-learn transform in NumPy, and the
+      # obvious "fix" for any disagreement is to import scikit-learn in
+      # api/reward.py. It is not in this file, so that fix does not build.
+      - name: Install serving requirements only
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-serve.txt
+          pip install pytest ruff
+
+      - name: Lint
+        run: ruff check .
+
+      # Torch and scikit-learn are genuinely absent here, so the equivalence
+      # test and the DPO-loss test SKIP rather than fail — see the
+      # `requires_torch` fixture in tests/conftest.py. That is not a hole: the
+      # tests CI does run are the ones that protect the deployment, and the
+      # ones it skips run on your machine and in the training job.
+      - name: Test (includes the no-torch guard)
+        run: pytest -q
+
+      - name: Migration check — every migration must be checked in and ordered
+        run: |
+          test -d db/migrations
+          ls db/migrations/*.sql
+          test -f db/migrations/002_topic6.sql
+
+      # The number the README claims, measured rather than asserted. If a
+      # dependency creeps into the serving set this rises visibly, in the same
+      # pull request that caused it.
+      - name: Report the deployed footprint
+        run: |
+          python - <<'PY'
+          import os, resource, api.main   # noqa: F401
+          kb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+          print(f"resident after importing the service tier: {kb/1024:.0f} MB")
+          import sys
+          assert "torch" not in sys.modules
+          assert "sklearn" not in sys.modules, (
+              "scikit-learn reached the serving tier — api/reward.py must "
+              "re-implement the TF-IDF transform, not import it"
+          )
+          PY

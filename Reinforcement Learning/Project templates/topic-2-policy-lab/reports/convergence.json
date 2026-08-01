@@ -1,0 +1,182 @@
+{
+  "env_id": "GridWorld5x5-v1",
+  "gamma": 0.95,
+  "seeds": 10,
+  "budgets": [
+    100,
+    300,
+    1000,
+    3000,
+    10000,
+    30000
+  ],
+  "v_star_span_non_terminal": 0.6657660176352422,
+  "delta": 0.013315320352704845,
+  "delta_fraction_of_span": 0.02,
+  "alpha": 0.05,
+  "test": "One-sided one-sample Student t-test on the per-seed RMSE against a pre-declared equivalence margin delta (the upper arm of a two one-sided tests / TOST equivalence procedure; the lower arm is vacuous because RMSE is non-negative by construction).",
+  "assumptions": [
+    "The per-seed RMSE values are independent. This is guaranteed by construction \u2014 each seed drives its own generator and its own environment stream \u2014 and not inferred from the data.",
+    "The per-seed RMSE is approximately normally distributed ACROSS seeds. RMSE is a non-negative, right-skewed statistic, so this is the weakest assumption here; with 10 seeds the t-test is tolerant of mild skew, and the drop-in replacement if you doubt it is a bootstrap percentile interval over the same seed-level values.",
+    "The variance is unknown and estimated from the same 10 values, which is why this is a t-test and not a z-test. At 9 degrees of freedom the critical value is 1.833 rather than 1.645 \u2014 a 11% wider interval that a normal approximation would quietly omit.",
+    "delta was fixed before the study ran (2% of the span of V* over non-terminal states). An equivalence margin chosen after seeing the RMSE curve is not a hypothesis test, it is a description.",
+    "Every seed ran the same budget grid, and no seed was dropped. Snapshots within one seed are from ONE run, so the points on a single curve are not independent of each other; only the across-seed comparison at a FIXED budget is.",
+    "The test is applied at each budget on a monotone curve and the smallest budget that passes is reported. That is one claim about where a curve crosses a line, not six independent discoveries \u2014 no multiplicity correction is applied, and none would be meaningful, but the distinction belongs in the report rather than in a footnote."
+  ],
+  "backend": "scipy",
+  "episodes_to_indistinguishable": 30000,
+  "per_budget": [
+    {
+      "episodes": 100,
+      "seeds": 10,
+      "mean_rmse": 0.1637485226037325,
+      "sd_rmse": 0.04126144609273118,
+      "stderr_rmse": 0.013048014920528565,
+      "ci95_low": 0.13423186219096095,
+      "ci95_high": 0.19326518301650403,
+      "upper_95_bound": 0.18766700750004495,
+      "t_statistic": 11.52920219414753,
+      "p_value": 0.9999994590013946,
+      "equivalent_at_5pct": false
+    },
+    {
+      "episodes": 300,
+      "seeds": 10,
+      "mean_rmse": 0.10172580849092787,
+      "sd_rmse": 0.043753969254777814,
+      "stderr_rmse": 0.013836219951807798,
+      "ci95_low": 0.07042610442089442,
+      "ci95_high": 0.13302551256096132,
+      "upper_95_bound": 0.127089162223663,
+      "t_statistic": 6.3897862599872575,
+      "p_value": 0.9999366067776454,
+      "equivalent_at_5pct": false
+    },
+    {
+      "episodes": 1000,
+      "seeds": 10,
+      "mean_rmse": 0.05458460172174464,
+      "sd_rmse": 0.017167022034340618,
+      "stderr_rmse": 0.005428689027081365,
+      "ci95_low": 0.04230405395452851,
+      "ci95_high": 0.06686514948896077,
+      "upper_95_bound": 0.06453600178465649,
+      "t_statistic": 7.602071358879709,
+      "p_value": 0.9999834024079126,
+      "equivalent_at_5pct": false
+    },
+    {
+      "episodes": 3000,
+      "seeds": 10,
+      "mean_rmse": 0.031934019879579,
+      "sd_rmse": 0.005887526287961537,
+      "stderr_rmse": 0.0018617992854074832,
+      "ci95_low": 0.027722337290401883,
+      "ci95_high": 0.03614570246875612,
+      "upper_95_bound": 0.0353469082276696,
+      "t_statistic": 10.000379564437942,
+      "p_value": 0.9999982114464302,
+      "equivalent_at_5pct": false
+    },
+    {
+      "episodes": 10000,
+      "seeds": 10,
+      "mean_rmse": 0.01632106721416064,
+      "sd_rmse": 0.003864795047381739,
+      "stderr_rmse": 0.0012221555039464665,
+      "ci95_low": 0.013556359386854889,
+      "ci95_high": 0.01908577504146639,
+      "upper_95_bound": 0.018561416274161906,
+      "t_statistic": 2.459381684040964,
+      "p_value": 0.9819023280678929,
+      "equivalent_at_5pct": false
+    },
+    {
+      "episodes": 30000,
+      "seeds": 10,
+      "mean_rmse": 0.009164706179101418,
+      "sd_rmse": 0.002288858238112591,
+      "stderr_rmse": 0.0007238005273675802,
+      "ci95_low": 0.007527355631679728,
+      "ci95_high": 0.010802056726523106,
+      "upper_95_bound": 0.010491514286482333,
+      "t_statistic": -5.734472436347851,
+      "p_value": 0.00014087931094597383,
+      "equivalent_at_5pct": true
+    }
+  ],
+  "raw_rmse_by_budget": {
+    "100": [
+      0.13992632368404262,
+      0.1603633672450895,
+      0.15462549942882572,
+      0.1346710401378206,
+      0.1297981936039889,
+      0.23930280059273532,
+      0.15221585735855064,
+      0.22209047857103975,
+      0.11254449317528964,
+      0.19194717223994193
+    ],
+    "300": [
+      0.0741864214169658,
+      0.08189079910749683,
+      0.08867831762766401,
+      0.13277387773286445,
+      0.08672223803631511,
+      0.08930456276243166,
+      0.08461167346857715,
+      0.21665427533776524,
+      0.07069087401684257,
+      0.09174504540235594
+    ],
+    "1000": [
+      0.048920954125671656,
+      0.03300358472566982,
+      0.06819591958452254,
+      0.04378932539224286,
+      0.04950161680253441,
+      0.05662786857567496,
+      0.05591062294050627,
+      0.09588095985030384,
+      0.04762199564868733,
+      0.04639316957163271
+    ],
+    "3000": [
+      0.034351990429392534,
+      0.034354119014854814,
+      0.04064587878440584,
+      0.028287821321541465,
+      0.03632021559179818,
+      0.022733124898829716,
+      0.03068453608770227,
+      0.0370318311033127,
+      0.02301058348387287,
+      0.03192009808007964
+    ],
+    "10000": [
+      0.016274555546991754,
+      0.01043579432569583,
+      0.023830649655158263,
+      0.01920564855566883,
+      0.01905264293348826,
+      0.012683361625034147,
+      0.01576582456487455,
+      0.013041403990724886,
+      0.015180002814551922,
+      0.017740788129417942
+    ],
+    "30000": [
+      0.006073232821215237,
+      0.006507890234084078,
+      0.010665568533760035,
+      0.007551659198364259,
+      0.01185637538178705,
+      0.009882017841236468,
+      0.008775735710937375,
+      0.012962914191667575,
+      0.009886567663793753,
+      0.007485100214168349
+    ]
+  }
+}

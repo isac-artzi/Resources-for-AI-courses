@@ -1,0 +1,17 @@
+# ---------------------------------------------------------------------------
+# SERVING REQUIREMENTS — installed by Streamlit Community Cloud and by the
+# service tier. PyTorch is deliberately absent. See docs/no-torch.md.
+#
+# Measured footprint of this set in one process: ~82 MB.
+# `import torch` alone would add ~490 MB against a 690 MB guarantee.
+# ---------------------------------------------------------------------------
+streamlit==1.42.0
+fastapi==0.115.8
+uvicorn[standard]==0.34.0
+pydantic==2.10.6
+pydantic-settings==2.7.1
+numpy==2.2.2
+supabase==2.13.0
+pandas==2.2.3
+altair==5.5.0
+httpx==0.28.1

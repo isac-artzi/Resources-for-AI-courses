@@ -1,0 +1,13 @@
+# ---------------------------------------------------------------------------
+# TRAINING REQUIREMENTS — installed on your laptop or in Colab ONLY.
+# Never installed by the deployed app. Includes everything in
+# requirements-serve.txt so one environment can do both locally.
+# ---------------------------------------------------------------------------
+-r requirements-serve.txt
+
+torch==2.6.0                 # training tier only — never imported by api/ or ui/
+gymnasium[classic-control]==1.0.0
+matplotlib==3.10.0
+pytest==8.3.4
+ruff==0.9.4
+python-dotenv==1.0.1

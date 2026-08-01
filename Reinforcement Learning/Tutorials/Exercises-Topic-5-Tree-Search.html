@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topic 5 Exercises — Tree Search</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6;
+}
+.container { max-width: 940px; margin: 24px auto 48px; background: white;
+  padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+.score { position: sticky; top: 0; background: white; padding: 10px 14px;
+         border: 1px solid #E0E5EB; border-radius: 8px; margin-bottom: 12px;
+         color: #1F4E79; font-weight: 600; z-index: 10;
+         display: flex; justify-content: space-between; align-items: center; }
+.score .bar { background: #E0E5EB; border-radius: 999px; height: 8px;
+              width: 240px; overflow: hidden; }
+.score .bar > div { background: #1F4E79; height: 100%; transition: width 0.3s; }
+.exercise { border: 1px solid #E0E5EB; border-radius: 8px; padding: 22px 26px;
+            margin: 22px 0; background: #FCFDFE; }
+.exercise h3 { margin: 0 0 4px; color: #1F4E79; font-size: 1.1em; }
+.exercise .qtype { color: #888; font-size: 0.8em; text-transform: uppercase;
+                   letter-spacing: 0.05em; margin-bottom: 14px; }
+.stem { margin-bottom: 14px; }
+.stem code { font-family: "SF Mono", Consolas, Monaco, monospace;
+             background: #F2F4F7; padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+      overflow-x: auto; border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.92em; }
+table.tb { border-collapse:collapse; margin:12px 0; font-size:0.9em; }
+table.tb td, table.tb th { border:1px solid #D0D8E0; padding:5px 12px; text-align:center; }
+table.tb th { background:#EAF1F8; color:#1F4E79; }
+.options { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 14px; }
+.options label { cursor: pointer; padding: 10px 14px; background: white;
+                 border: 1px solid #D0D8E0; border-radius: 6px; transition: border-color 0.15s; }
+.options label:hover { border-color: #1F4E79; background: #F7FAFC; }
+.options input[type="radio"] { margin-right: 10px; }
+.numeric-row { display: flex; gap: 12px; align-items: center; margin: 10px 0 14px; }
+.numeric-row input { padding: 8px 12px; border: 1px solid #D0D8E0; border-radius: 6px;
+                     font-family: inherit; font-size: 1em; width: 160px; }
+button { background: #1F4E79; color: white; border: 0; padding: 9px 18px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.95em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+button:disabled { background: #B8C2CB; cursor: not-allowed; }
+.feedback { padding: 12px 16px; border-radius: 6px; margin-top: 10px;
+            font-size: 0.95em; display: none; }
+.feedback.show { display: block; }
+.feedback.correct { background: #E8F5E9; border-left: 4px solid #2E7D32; color: #1B5E20; }
+.feedback.incorrect { background: #FDECEA; border-left: 4px solid #C00000; color: #6E1414; }
+.feedback strong { display: block; margin-bottom: 4px; }
+.help { color: #777; font-size: 0.85em; margin-top: 6px; }
+.nav { display: flex; justify-content: space-between; margin-top: 36px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; }
+.nav a { color: #1F4E79; text-decoration: none; }
+.nav a:hover { text-decoration: underline; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">Practice exercises</div>
+<h1>Topic 5 — Tree Search</h1>
+<p class="subtitle">Ten self-graded problems. Submit each one to see immediate feedback; the score bar at the top tracks your progress. Every problem is a quantity you will compute again inside your Topic 5 product — in a node count, in a selection rule, or in a benchmark table.</p>
+
+<div class="score">
+  <span id="scoreText">Score: 0 / 10</span>
+  <div class="bar"><div id="scoreBar" style="width:0%"></div></div>
+</div>
+
+<!-- Q1 -->
+<div class="exercise" data-q="1">
+  <div class="qtype">Computational · Exhaustive node count</div>
+  <h3>Question 1</h3>
+  <div class="stem">A game tree has branching factor <span class="eq">b = 3</span> and depth <span class="eq">d = 5</span>. Exhaustive minimax visits every node, including the root. How many nodes does it visit in total?</div>
+  <div class="numeric-row">
+    <input type="number" step="1" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · Level <span class="eq">k</span> holds <span class="eq">b<sup>k</sup></span> nodes, and the levels run from <span class="eq">k = 0</span> to <span class="eq">k = d</span>. The geometric sum is <span class="eq">(b<sup>d+1</sup> − 1)/(b − 1)</span>.</div>
+</div>
+
+<!-- Q2 -->
+<div class="exercise" data-q="2">
+  <div class="qtype">Computational · A per-level heuristic quota</div>
+  <h3>Question 2</h3>
+  <div class="stem">Same tree: <span class="eq">b = 3</span>, <span class="eq">d = 5</span>. A heuristic search visits only 30% of the nodes at each level below the root, and always expands the root itself. How many nodes does it visit in total? Give one decimal place.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.1" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · The root is one node. Below it, levels 1 through 5 hold <span class="eq">3 + 9 + 27 + 81 + 243</span> nodes, and the search touches 30% of that.</div>
+</div>
+
+<!-- Q3 -->
+<div class="exercise" data-q="3">
+  <div class="qtype">Computational · The α–β best case</div>
+  <h3>Question 3</h3>
+  <div class="stem">A search has branching factor <span class="eq">b = 9</span> and searches to depth <span class="eq">d = 6</span>. Under perfect move ordering, α–β pruning examines approximately <span class="eq">b<sup>d/2</sup></span> leaves. How many leaves is that?</div>
+  <div class="numeric-row">
+    <input type="number" step="1" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · The effective branching factor falls to <span class="eq">√b</span>, so the leaf count is <span class="eq">(√9)<sup>6</sup> = 9<sup>3</sup></span>. Compare it with the unpruned <span class="eq">9<sup>6</sup></span>.</div>
+</div>
+
+<!-- Q4 -->
+<div class="exercise" data-q="4">
+  <div class="qtype">Computational · A UCT value by hand</div>
+  <h3>Question 4</h3>
+  <div class="stem">A child node in an MCTS tree has <span class="eq">W<sub>i</sub> = 7</span> accumulated wins over <span class="eq">N<sub>i</sub> = 20</span> visits. Its parent has been visited <span class="eq">N = 400</span> times and the exploration constant is <span class="eq">C = √2</span>. Compute the child's UCT value to three decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.001" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · <span class="eq">UCT = W<sub>i</sub>/N<sub>i</sub> + C·√(ln N / N<sub>i</sub>)</span>. Note that the logarithm is natural, not base 10: <span class="eq">ln 400 ≈ 5.9915</span>.</div>
+</div>
+
+<!-- Q5 -->
+<div class="exercise" data-q="5">
+  <div class="qtype">Theoretical · When exploration dominates</div>
+  <h3>Question 5</h3>
+  <div class="stem">For the UCT rule <span class="eq">W<sub>i</sub>/N<sub>i</sub> + C√(ln N / N<sub>i</sub>)</span>, which condition on <span class="eq">N<sub>i</sub></span> makes the exploration term strictly larger than the exploitation term?</div>
+  <div class="options">
+    <label><input type="radio" name="q5" value="a"> <span class="eq">N<sub>i</sub> &lt; W<sub>i</sub>² / (C² ln N)</span> — exploration dominates at small visit counts, because that is when the bonus is largest.</label>
+    <label><input type="radio" name="q5" value="b"> <span class="eq">N<sub>i</sub> &gt; W<sub>i</sub>² / (C² ln N)</span></label>
+    <label><input type="radio" name="q5" value="c"> <span class="eq">N<sub>i</sub> &gt; C² ln N / W<sub>i</sub>²</span></label>
+    <label><input type="radio" name="q5" value="d"> <span class="eq">N<sub>i</sub> &gt; W<sub>i</sub> / (C√(ln N))</span>, obtained by cancelling one factor of <span class="eq">N<sub>i</sub></span> from both sides.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q6 -->
+<div class="exercise" data-q="6">
+  <div class="qtype">Conceptual · Deep-narrow versus shallow-wide</div>
+  <h3>Question 6</h3>
+  <div class="stem">Two decision problems: tree A has <span class="eq">b = 2</span> and <span class="eq">d = 10</span>; tree B has <span class="eq">b = 10</span> and <span class="eq">d = 5</span>. Which assignment of methods is correct, and for the right reason?</div>
+  <div class="options">
+    <label><input type="radio" name="q6" value="a"> Both favour MCTS, because MCTS is anytime and can be stopped at any budget.</label>
+    <label><input type="radio" name="q6" value="b"> Tree A favours exhaustive or α–β search — 2<sup>10</sup> = 1 024 leaves unpruned and 63 under perfect ordering, so it can be solved exactly; tree B favours MCTS, because its 10<sup>5</sup> leaves grow as <span class="eq">b<sup>d</sup></span> while MCTS's cost per iteration is <span class="eq">O(d)</span> and independent of <span class="eq">b</span>.</label>
+    <label><input type="radio" name="q6" value="c"> Tree B favours exhaustive search because it is shallow, and depth is the only quantity that drives the cost of search.</label>
+    <label><input type="radio" name="q6" value="d"> Tree A favours MCTS, because its longer rollouts reach terminal positions and therefore return more informative samples.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q7 -->
+<div class="exercise" data-q="7">
+  <div class="qtype">Conceptual · Why MCTS needed no evaluation function</div>
+  <h3>Question 7</h3>
+  <div class="stem">Depth-limited α–β required a hand-written <code>evaluate()</code> for non-terminal positions, and no usable one existed for Go. What did MCTS substitute, and why did the substitution work?</div>
+  <div class="options">
+    <label><input type="radio" name="q7" value="a"> Random playouts, which work because uniformly random play is a reasonable approximation of optimal play in most games.</label>
+    <label><input type="radio" name="q7" value="b"> Nothing — MCTS expands the tree all the way to terminal nodes, so every node in the tree already carries an exact minimax value.</label>
+    <label><input type="radio" name="q7" value="c"> Random playouts to termination. The terminal score is an unbiased sample of the outcome under the rollout policy, so the only domain knowledge needed is the rules and the terminal scoring, and every candidate move is compared under the same measurement rather than scored on an absolute scale.</label>
+    <label><input type="radio" name="q7" value="d"> The UCT confidence bound, which corrects the bias introduced by the random rollout so that the estimate becomes exact.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q8 -->
+<div class="exercise" data-q="8">
+  <div class="qtype">Conceptual · What MuZero learns that AlphaZero is given</div>
+  <h3>Question 8</h3>
+  <div class="stem">MuZero plays without being told the rules. Which statement describes the actual difference from AlphaZero?</div>
+  <div class="options">
+    <label><input type="radio" name="q8" value="a"> MuZero learns the policy network by self-play, whereas AlphaZero uses a hand-written prior over moves.</label>
+    <label><input type="radio" name="q8" value="b"> MuZero learns a latent dynamics function <span class="eq">g(s, a) → (r, s′)</span> that AlphaZero is handed as an exact simulator. Its loss constrains only predicted reward, value and policy, so the latent state is never required to decode back to a real position.</label>
+    <label><input type="radio" name="q8" value="c"> MuZero learns the exploration constant <span class="eq">c<sub>puct</sub></span> from data, whereas AlphaZero fixes it by hand.</label>
+    <label><input type="radio" name="q8" value="d"> MuZero first reconstructs the rules of the game from observation, then plans with them exactly as AlphaZero does.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q9 -->
+<div class="exercise" data-q="9">
+  <div class="qtype">Application · The per-request node budget</div>
+  <h3>Question 9</h3>
+  <div class="stem">Your <code>POST /act</code> endpoint enforces a per-request budget of 50 000 nodes. On Connect Four you model the branching factor as <span class="eq">b = 7</span>, so an exhaustive search to depth <span class="eq">d</span> visits <span class="eq">(7<sup>d+1</sup> − 1)/6</span> nodes. What is the greatest depth <span class="eq">d</span> that fits inside the budget?</div>
+  <div class="numeric-row">
+    <input type="number" step="1" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · Evaluate the sum for increasing <span class="eq">d</span> and stop at the last one below 50 000: the totals run 1, 8, 57, 400, 2 801, …</div>
+</div>
+
+<!-- Q10 -->
+<div class="exercise" data-q="10">
+  <div class="qtype">Application · The comparable quality metric</div>
+  <h3>Question 10</h3>
+  <div class="stem">Your benchmark harness produces a round-robin win-rate matrix over your three agents. The build step nevertheless requires decision quality to be reported as win rate against a <em>fixed reference opponent</em>. Why is the round-robin matrix alone insufficient?</div>
+  <div class="options">
+    <label><input type="radio" name="q10" value="a"> Because playing every pairing takes longer than playing each agent against a single reference, and the tournament would not fit in the compute budget.</label>
+    <label><input type="radio" name="q10" value="b"> Because head-to-head win rates are each measured against a different opponent and so share no common scale, and game agents are frequently non-transitive — A beats B, B beats C, C beats A — so the matrix can contain cycles that admit no ordering. A frozen reference gives every agent, and every later revision, the same measuring stick.</label>
+    <label><input type="radio" name="q10" value="c"> Because a fixed reference opponent is by construction stronger than any of your agents, which gives the metric more resolution at the top of the range.</label>
+    <label><input type="radio" name="q10" value="d"> Because head-to-head win rate is biased by which agent moves first, whereas win rate against a fixed reference is not.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="nav"><a href="index.html">← All tutorials</a><a href="Tutorial-Topic-5-Tree-Search.html">Topic 5 tutorial →</a></div>
+</div>
+
+<script>
+/* ---- Answer key + feedback content ---- */
+const KEY = {
+  1: { type: 'numeric', accept: 364, tol: 0.6,
+       ok: 'Σ 3ᵏ for k = 0…5 = (3⁶ − 1)/2 = 728/2 = 364. Notice that 243 of those 364 nodes — 67% — are the leaves alone, and the ratio tends to (b−1)/b as d grows. That is why the cost of a tree search is quoted as bᵈ and the interior nodes are ignored: they are a bounded constant factor, never more than 2×.',
+       no: 'You are summing a geometric series, not evaluating a single power. Level k contributes bᵏ nodes and there are d+1 levels including the root, so the total is (b^{d+1} − 1)/(b − 1), not b^d.' },
+  2: { type: 'numeric', accept: 109.9, tol: 0.6,
+       ok: '1 + 0.3 × (3 + 9 + 27 + 81 + 243) = 1 + 0.3 × 363 = 109.9. The important observation is what this did not change: the exponent. A fixed quota per level is a constant factor f on a bᵈ curve, and it buys log_b(1/f) ≈ 1.1 extra plies here. Real pruning declines to expand a node and therefore discards its whole subtree, which changes the effective branching factor to fb — a different curve, not a shifted one.',
+       no: 'Take 30% of the nodes below the root, not 30% of the whole tree, and add the root back. The levels below the root hold 3 + 9 + 27 + 81 + 243 = 363 nodes.' },
+  3: { type: 'numeric', accept: 729, tol: 1,
+       ok: '9³ = 729, against 9⁶ = 531 441 unpruned — a factor of 729. The exact Knuth–Moore count is b^⌈d/2⌉ + b^⌊d/2⌋ − 1 = 729 + 729 − 1 = 1 457 leaves, about 2b^{d/2}. Read the identity in the other direction and it is more useful still: for a fixed leaf budget, perfect ordering doubles the depth you can reach.',
+       no: 'The effective branching factor under perfect ordering is √b, not b/2. Raise √9 = 3 to the power d = 6, or equivalently compute 9^{6/2} = 9³.' },
+  4: { type: 'numeric', accept: 1.124, tol: 0.01,
+       ok: 'Exploitation 7/20 = 0.350; exploration √2 · √(5.9915/20) = √2 × 0.5473 = 0.774; the sum is 1.124. The exploration term is more than twice the exploitation term here, which is the ordinary state of affairs at 20 visits out of 400 — and it is why a node\'s early win rate has very little influence on whether it is visited again.',
+       no: 'Check two things. The logarithm is natural: ln 400 = 5.9915, not log₁₀ 400 = 2.602. And the square root covers the whole ratio ln N / N_i, with C multiplying the result: √2 · √(5.9915/20).' },
+  5: { type: 'mc', accept: 'b',
+       ok: 'Multiply both sides of C√(ln N/N_i) > W_i/N_i by N_i > 0 to get C√(ln N)·√N_i > W_i, then square. Both terms fall with N_i, but at rates N_i^{−1} and N_i^{−1/2}, so exploitation is the one that vanishes first and exploration dominates for large N_i. The separate fact that unvisited children are taken first comes from W_i/N_i being confined to [0,1] while the bonus diverges as N_i → 0 — a different argument about a different limit.',
+       no: 'Multiply both sides by N_i before comparing, and watch which term decays faster: W_i/N_i falls like N_i^{−1} while the bonus falls like N_i^{−1/2}. The faster-decaying term is the one that loses at large N_i.' },
+  6: { type: 'mc', accept: 'b',
+       ok: 'The exponent lives on b, so a wide tree is where an exhaustive method breaks and a sampling method does not: MCTS spends one rollout of length O(d) per iteration regardless of how many siblings exist, and it simply never visits most of them. A narrow deep tree is the opposite case — it is small enough to solve exactly, and an exact minimax value beats any estimate. The second reason to prefer α–β on tree A is that it returns a proof, not a statistic.',
+       no: 'Compare the two leaf counts: 2¹⁰ = 1 024 against 10⁵ = 100 000. One of these trees can be searched exactly and the other cannot, and the branching factor rather than the depth is what decides it.' },
+  7: { type: 'mc', accept: 'c',
+       ok: 'The claim is not that random play is good — it is terrible. The claim is that a terminal score is a sample of a well-defined quantity, that the same estimator is applied to every candidate, and that what the search compares is a difference between two positions measured the same way. That is what let MCTS work on Go, where b ≈ 250 and no reliable positional evaluation existed. Option (a) is the standard misreading and it predicts, wrongly, that a stronger rollout policy always makes MCTS stronger.',
+       no: 'MCTS does not expand the tree to termination — it expands one node per iteration and plays the rest out without storing it. And random play is not being claimed to be good. Ask instead what quantity the rollout returns a sample of, and what domain knowledge producing that sample requires.' },
+  8: { type: 'mc', accept: 'b',
+       ok: 'The precise point is what the loss does not contain: no term requires the latent state to decode to a board, and none requires g to be a correct transition function. The latent state need only preserve whatever reward, value and policy depend on, so MuZero learns an abstraction sufficient for planning rather than a model of the environment. That is strictly weaker and strictly cheaper than learning the rules — and it is why the learned model cannot be inspected or reused for anything except this search.',
+       no: 'AlphaZero already has both a learned policy and a learned value network; that is not the difference. The thing AlphaZero is handed for free is the ability to compute the successor of a position, which is exactly what MuZero has to replace.' },
+  9: { type: 'numeric', accept: 5, tol: 0.4,
+       ok: 'At d = 5 the count is (7⁶ − 1)/6 = 19 608, inside the budget; at d = 6 it is 137 257, nearly three times over it. One extra ply costs a factor of b, so a budget is a depth limit with a very short lever. This is why the guard must be enforced in the recursion rather than trusted to the caller, and why the consumed count and the depth actually reached must be returned in the response — a caller who receives a move with no indication that the search was truncated has been handed a silently degraded answer.',
+       no: 'Add up the levels: 1, 1+7 = 8, +49 = 57, +343 = 400, +2 401 = 2 801, +16 807 = 19 608, +117 649 = 137 257. Find the last total that is still below 50 000 and report its depth.' },
+  10:{ type: 'mc', accept: 'b',
+       ok: 'Two defects, and the second is the fatal one. Different denominators mean the numbers are not on one scale; non-transitivity means no scale exists that reproduces the matrix, because a cycle has no ordering. A frozen, versioned reference fixes both by measuring every agent against identical positions and identical mistakes, which is also what makes a post-revision score comparable with a pre-revision one. Keep the matrix as well — if it does contain a cycle, that is a finding worth reporting rather than a nuisance to average away.',
+       no: 'Cost is not the issue, and neither is first-move advantage, which is handled by alternating who opens. Think about what it means to compare two win rates whose denominators were different opponents, and about whether "stronger than" is guaranteed to be a transitive relation among game agents.' },
+};
+
+const state = {}; let solved = new Set();
+
+document.querySelectorAll('.exercise').forEach(ex => {
+  const qid = +ex.dataset.q;
+  const btn = ex.querySelector('[data-check]');
+  const fb = ex.querySelector('[data-feedback]');
+  btn.addEventListener('click', () => {
+    const k = KEY[qid]; let user;
+    if (k.type === 'numeric') {
+      const inp = ex.querySelector('[data-input]');
+      user = parseFloat(inp.value);
+      if (Number.isNaN(user)) {
+        fb.className = 'feedback incorrect show';
+        fb.innerHTML = '<strong>Please enter a number.</strong>';
+        return;
+      }
+    } else {
+      const picked = ex.querySelector('input[type=radio]:checked');
+      if (!picked) {
+        fb.className = 'feedback incorrect show';
+        fb.innerHTML = '<strong>Please select an option.</strong>';
+        return;
+      }
+      user = picked.value;
+    }
+    const ok = (k.type === 'numeric')
+      ? Math.abs(user - k.accept) <= k.tol
+      : user === k.accept;
+    if (ok) {
+      fb.className = 'feedback correct show';
+      fb.innerHTML = '<strong>Correct.</strong>' + k.ok;
+      if (!solved.has(qid)) { solved.add(qid); updateScore(); }
+      btn.disabled = true;
+    } else {
+      fb.className = 'feedback incorrect show';
+      fb.innerHTML = '<strong>Not quite.</strong>' + k.no;
+    }
+  });
+});
+
+function updateScore() {
+  const total = Object.keys(KEY).length;
+  document.getElementById('scoreText').textContent = `Score: ${solved.size} / ${total}`;
+  document.getElementById('scoreBar').style.width = `${(solved.size / total * 100).toFixed(0)}%`;
+}
+</script>
+</body>
+</html>

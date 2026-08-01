@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+venv/
+.venv/
+*.egg-info/
+runs/
+# Policy artifacts ARE committed — they are the deployed model and must be
+# reviewable. If one exceeds ~50 MB you have built the wrong thing.
+!policies/*.npz

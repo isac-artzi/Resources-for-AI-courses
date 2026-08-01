@@ -1,0 +1,56 @@
+# ---------------------------------------------------------------------------
+# TRAINING REQUIREMENTS — installed on your laptop or in Colab ONLY.
+# Never installed by the deployed app. Includes everything in
+# requirements-serve.txt so one environment can do both locally.
+#
+# This is the heaviest training environment in the course, and the contrast is
+# the lesson: roughly 3 GB installed here, against the ~82 MB that ships.
+# Almost everything below exists to produce two .npz files.
+# ---------------------------------------------------------------------------
+-r requirements-serve.txt
+
+torch==2.6.0                 # training tier only — never imported by api/ or ui/
+scikit-learn==1.6.1          # TfidfVectorizer (fitting only) and the Ridge length probe.
+                             # NOT a serving dependency: api/reward.py re-implements the
+                             # transform in ~15 lines of NumPy so that the deployed
+                             # artifact carries its own featuriser.
+matplotlib==3.10.0
+pytest==8.3.4
+ruff==0.9.4
+python-dotenv==1.0.1
+
+# ---- The language-model half of the pipeline ------------------------------
+# Needed for the REQUIRED path only. `--offline` runs every stage without any
+# of these, using the deterministic fallbacks in train/data.py, train/embed.py
+# and train/dpo.py.
+transformers==4.49.0
+datasets==3.3.2
+accelerate==1.4.0
+trl==1.9.0                   # DPOTrainer, RewardTrainer, SFTTrainer and GRPOTrainer are
+                             # stable at 1.9.x. PPOTrainer is EXPERIMENTAL, which is the
+                             # practical reason this product builds on DPO rather than
+                             # reproducing the InstructGPT pipeline directly.
+sentence-transformers==3.4.1 # optional convenience wrapper over the frozen encoder.
+                             # train/embed.py uses transformers directly and mean-pools
+                             # by hand, so this is not required — it is listed because
+                             # you will want it if you swap encoders.
+
+# ---- Multi-agent ----------------------------------------------------------
+# READ THIS BEFORE YOU INSTALL. The multi-particle environments MOVED OUT of
+# PettingZoo in release 1.26.0 and now live in the separate `mpe2` package.
+#
+#     pip install 'pettingzoo[mpe]'      <-- DOES NOT EXIST any more
+#     pip install mpe2                   <-- correct
+#
+# Every tutorial written before that release tells you to use the first form.
+# `pettingzoo[butterfly]` is still correct, and is what pistonball_v6 needs if
+# you choose that as your cooperative environment instead of simple_spread_v3.
+mpe2==0.1.0
+pettingzoo[butterfly]==1.26.0
+
+# Deliberately ABSENT: gymnasium. This topic's environment (envs/__init__.py)
+# is a five-state table written by hand, and pulling in a framework to wrap it
+# would cost more than the environment does. The rule from earlier topics still
+# stands if you add one: `gymnasium[classic-control]`, never `gymnasium[all]`,
+# which still declares the obsolete swig-dependent Box2D package and fails to
+# install.

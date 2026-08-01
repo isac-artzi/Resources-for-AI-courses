@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topic 3 Tutorial — Policy Gradient Methods</title>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] }, svg: { fontCache: 'global' } };
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif; margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.62; }
+.container { max-width: 1000px; margin: 24px auto 48px; background: white; padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79; padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.34em; margin-top: 42px; border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 7px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+pre { background: #1f2733; color:#e6edf3; padding: 14px 18px; border-radius: 6px; overflow-x: auto; border-left: 4px solid #1F4E79; font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.86em; line-height:1.55; }
+pre .c { color:#8b98a9; } pre .k { color:#ff7b72; } pre .s { color:#a5d6ff; } pre .f { color:#d2a8ff; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79; padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.why { background:#F0FaF3; border-left:4px solid #1F8B4C; padding:14px 18px; margin:16px 0; border-radius:4px; }
+.why strong { color:#1F8B4C; }
+.deep { background:#FBF7FF; border-left:4px solid #6A3FA0; padding:14px 18px; margin:16px 0; border-radius:4px; }
+.deep strong { color:#6A3FA0; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px; margin: 14px 0; border-radius: 4px; font-size: 0.95em; }
+.product { background:#FCF6FF; border-left:4px solid #7B3FA0; padding:14px 18px; margin:16px 0; border-radius:4px; }
+.product strong { color:#7B3FA0; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px; padding: 22px; margin: 24px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.demo .tag { font-size:0.7em; background:#1F4E79; color:white; padding:2px 8px; border-radius:10px; vertical-align:middle; margin-left:8px; letter-spacing:0.04em;}
+.controls { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 200px; }
+.control input[type="text"], .control input[type="number"], .control select { padding:6px 8px; border:1px solid #CFD7DF; border-radius:4px; font-family:inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px; border-radius: 6px; font-size: 0.9em; }
+.mono { font-family:"SF Mono",Consolas,monospace; }
+textarea { width:100%; min-height:60px; padding:10px; border:1px solid #CFD7DF; border-radius:6px; font-family:"SF Mono",Consolas,monospace; font-size:0.9em; resize:vertical; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.9em; }
+button:hover { background: #2D5C8C; } button.secondary { background: #E0E5EB; color: #1A1A1A; } button.secondary:hover { background:#CFD7DF; }
+button:disabled { background:#CBD5E0; cursor:not-allowed; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; max-width:100%; }
+.tok { display:inline-block; background:#EAF1F8; border:1px solid #BcceE0; color:#1F4E79; padding:2px 7px; margin:2px; border-radius:10px; font-family:"SF Mono",Consolas,monospace; font-size:0.82em; }
+table.grid { border-collapse:collapse; font-family:"SF Mono",Consolas,monospace; font-size:0.8em; margin:8px 0; }
+table.grid td { border:1px solid #C7D2DE; width:64px; height:52px; text-align:center; padding:0; vertical-align:middle; line-height:1.25; }
+table.grid td .v { font-weight:bold; display:block; font-size:1.08em; }
+table.grid td .a { color:#1F4E79; font-size:1.15em; display:block; }
+table.grid td.hole { background:#3A4A5C; color:#fff; } table.grid td.goal { background:#1F8B4C; color:#fff; }
+table.grid td.start { outline:3px solid #F9A825; outline-offset:-3px; }
+table.tb { border-collapse:collapse; margin:12px 0; font-size:0.88em; } table.tb td, table.tb th { border:1px solid #D0D8E0; padding:5px 10px; text-align:center; } table.tb th { background:#EAF1F8; color:#1F4E79; }
+table.tb tr.hi td { background:#D6EAD9; font-weight:bold; }
+.nav { display: flex; justify-content: space-between; margin-top: 44px; padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { columns:2; font-size:0.92em; } .toc a { color:#1F4E79; text-decoration:none; } .toc a:hover{text-decoration:underline;}
+.legend { font-size:0.82em; color:#555; margin-top:6px; }
+.sw { display:inline-block; width:11px; height:11px; border-radius:2px; margin-right:4px; vertical-align:-1px; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">Tutorial · ~ 85 min · formal</div>
+<h1>Topic 3 — Policy Gradient Methods</h1>
+<p class="subtitle">The policy stops being something you read off a value table and becomes the thing you differentiate. We show what an \(\arg\max\) over \(Q\) structurally cannot express, derive the policy gradient theorem from the definition of expected return, prove that the environment dynamics vanish from the gradient, read the result as a weighted maximum-likelihood loss, prove that a baseline is free, measure how much variance it actually removes, follow importance weights until they explode, and end at the entropy term that turns out to be the same regulariser you will meet twice more in this course.</p>
+
+<div class="callout">
+ <strong>Roadmap.</strong>
+ <div class="toc">
+ <a href="#s1">1. Why parameterise the policy at all</a><br>
+ <a href="#s2">2. The policy gradient theorem, derived</a><br>
+ <a href="#s3">3. Policy gradients as weighted maximum likelihood</a><br>
+ <a href="#s4">4. Baselines, and the variance you actually pay</a><br>
+ <a href="#s5">5. Importance sampling for off-policy updates</a><br>
+ <a href="#s6">6. Entropy regularisation</a><br>
+ <a href="#s7">7. In practice (Gradient Works)</a>
+ </div>
+</div>
+
+<h2 id="s1">1. Why parameterise the policy at all</h2>
+<p>Topics 1 and 2 built agents whose policy was a derived quantity: learn \(Q\), then act by \(\pi(s) = \arg\max_a Q(s,a)\). That construction is not a stylistic choice — it is a commitment, and it makes two things impossible rather than merely difficult.</p>
+
+<h3>The \(\arg\max\) cannot be taken over a continuous action space</h3>
+<p>If \(\mathcal{A} = \mathbb{R}^d\) — a joint torque, a steering angle, a dosage — then \(\arg\max_a Q(s,a)\) is an optimisation problem in \(d\) continuous variables, and \(Q\) is a neural network, so it is a non-convex one. Solving it <em>once per environment step</em>, at training time and at serving time, is the entire cost. Discretising into \(B\) bins per dimension replaces it with a search over \(B^d\) actions: eleven bins on a seven-joint arm is nineteen million actions per decision. A parameterised policy \(\pi_\theta(a \mid s)\) inverts the problem. The network emits the action (or the parameters of a distribution over actions) in one forward pass, and the optimisation happens once, offline, over \(\theta\).</p>
+
+<h3>The \(\arg\max\) is deterministic, and sometimes the optimum is not</h3>
+<p>The second failure is sharper, because it survives even when \(\mathcal{A}\) is small and discrete. An \(\arg\max\) returns one action per state. Whenever the optimal policy must genuinely randomise, no value function of the observed state can represent it. This happens as soon as the agent's observation aliases two states that require different actions.</p>
+<p>Take a corridor of five cells, numbered 1 to 5 left to right. Cell 3 is the goal, worth \(+1\) and terminal. Cells 1 and 5 are dead ends: moving further outward bumps a wall and leaves the agent where it is. The agent does not see its index; it sees only its immediate surroundings, and cells 2 and 4 produce <em>identical observations</em> — wall above, wall below, open left, open right. The agent starts in cell 2 or cell 4 with equal probability.</p>
+<p>A policy is a function of what the agent observes, so it must assign the same action distribution to cells 2 and 4. Suppose it is deterministic and chooses <em>left</em>. From cell 4 it reaches the goal in one step. From cell 2 it reaches cell 1, then returns to cell 2 (cell 1 is not aliased, so the policy may correctly move right there), then goes left again — an infinite loop that never reaches the goal. Choosing <em>right</em> fails symmetrically from cell 4. <strong>Every deterministic policy over this observation earns zero return from one of the two starting cells, forever.</strong> The best deterministic policy is worth half of what the environment offers.</p>
+<p>Now let the policy randomise: \(\pi(\text{left}) = \pi(\text{right}) = \tfrac12\) in the aliased observation. The agent performs a random walk that is absorbed at the goal with probability 1, and the expected number of steps from cell 2 satisfies</p>
+\[ E_2 = 1 + \tfrac12 \cdot 0 + \tfrac12 E_1, \qquad E_1 = 1 + \tfrac12 E_1 + \tfrac12 E_2 \;\Longrightarrow\; E_1 = 2 + E_2 \;\Longrightarrow\; E_2 = 4. \]
+<p>Four steps in expectation, from either start, with certainty of arrival. A stochastic policy is not a hedge here and it is not exploration; it is <em>strictly better than every deterministic policy</em>, and the amount of randomisation — one half, by symmetry — is a quantity that has to be learned. A policy parameterisation gives that quantity a gradient. An \(\arg\max\) gives it nothing.</p>
+
+<div class="why">
+ <strong>Why this is not solved by \(\varepsilon\)-greedy, which is also stochastic.</strong> An \(\varepsilon\)-greedy policy randomises too, so the obvious objection is that value-based methods already cover this case. They do not, for two reasons. First, the randomisation is <em>uniform over all actions</em> and identical in every state: the corridor needs exactly \(\tfrac12/\tfrac12\) over two actions in the aliased cells and needs full determinism in cells 1 and 5, and a single global \(\varepsilon\) cannot be both. Second, \(\varepsilon\) is a hyperparameter you tune from outside, whereas the corridor's optimal randomisation is a property of the optimal policy — it should be an output of learning, not an input. The distinction generalises: exploration noise is added <em>to</em> a policy you believe in; a stochastic optimum <em>is</em> the policy you believe in. Policy gradient methods are the family in which the second sentence can even be written down.
+</div>
+
+<h2 id="s2">2. The policy gradient theorem, derived</h2>
+<p>Fix a parameterised, differentiable policy \(\pi_\theta(a \mid s)\) — for CartPole-v1, a two-layer network mapping the four-dimensional observation to a softmax over two actions. Let \(\tau = (s_0,a_0,r_1,s_1,\dots,s_{T})\) be a trajectory and \(R(\tau) = \sum_{t=0}^{T-1}\gamma^{t} r_{t+1}\) its return. The objective is the expected return under the distribution the policy induces over trajectories:</p>
+\[ J(\theta) \;=\; \mathbb{E}_{\tau \sim \pi_\theta}\!\left[ R(\tau) \right] \;=\; \int p_\theta(\tau)\, R(\tau)\, d\tau, \qquad p_\theta(\tau) = \rho_0(s_0)\prod_{t=0}^{T-1} \pi_\theta(a_t \mid s_t)\, P(s_{t+1}\mid s_t,a_t). \]
+<p>We want \(\nabla_\theta J\). The difficulty is that \(\theta\) appears in the <em>distribution</em> being integrated over, not in the integrand \(R(\tau)\) — and \(R(\tau)\) is produced by a simulator that may not be differentiable at all. The resolution is one line of calculus, the <strong>log-derivative</strong> or <strong>score-function</strong> identity. For any positive density,</p>
+\[ \nabla_\theta \log p_\theta(\tau) = \frac{\nabla_\theta p_\theta(\tau)}{p_\theta(\tau)} \qquad\Longleftrightarrow\qquad \nabla_\theta p_\theta(\tau) = p_\theta(\tau)\, \nabla_\theta \log p_\theta(\tau). \]
+<p>Differentiate under the integral and substitute:</p>
+\[ \nabla_\theta J = \int \nabla_\theta p_\theta(\tau)\, R(\tau)\, d\tau = \int p_\theta(\tau)\, \nabla_\theta \log p_\theta(\tau)\, R(\tau)\, d\tau = \mathbb{E}_{\tau\sim\pi_\theta}\!\left[ \nabla_\theta \log p_\theta(\tau)\, R(\tau) \right]. \]
+<p>An expectation over trajectories is something we can sample. Now expand the log of the trajectory density, which turns the product into a sum:</p>
+\[ \log p_\theta(\tau) = \underbrace{\log \rho_0(s_0)}_{\text{no }\theta} + \sum_{t=0}^{T-1} \log \pi_\theta(a_t\mid s_t) + \underbrace{\sum_{t=0}^{T-1}\log P(s_{t+1}\mid s_t,a_t)}_{\text{no }\theta}. \]
+<p><strong>This is the step that matters.</strong> The initial-state distribution and the transition kernel do not depend on \(\theta\), so their gradients are exactly zero and they disappear:</p>
+\[ \nabla_\theta \log p_\theta(\tau) = \sum_{t=0}^{T-1} \nabla_\theta \log \pi_\theta(a_t\mid s_t), \qquad\text{hence}\qquad \nabla_\theta J = \mathbb{E}\!\left[ \Big(\sum_{t} \nabla_\theta \log \pi_\theta(a_t\mid s_t)\Big) R(\tau) \right]. \]
+<p>The gradient of the expected return contains no \(P\) and no \(R\) — only the score of the policy, evaluated at actions we actually took, multiplied by returns we actually observed. That is precisely the definition of a model-free method, and it is why the estimator is computable at all: we never need the simulator's derivative, only its samples.</p>
+
+<h3>Causality: replacing \(R(\tau)\) with \(G_t\)</h3>
+<p>The estimator above weights every action in the episode by the <em>whole</em> episode's return, including reward collected before the action was taken. That is legitimate but wasteful, and the fix is exact rather than approximate. For \(t' \le t\), the reward \(r_{t'}\) is a function of the trajectory up to time \(t'\), so conditioning on the history \(\mathcal{F}_t\) up to \(s_t\),</p>
+\[ \mathbb{E}\!\left[ \nabla_\theta \log \pi_\theta(a_t\mid s_t)\, r_{t'} \right] = \mathbb{E}\!\left[ r_{t'} \; \mathbb{E}\big[ \nabla_\theta \log \pi_\theta(a_t\mid s_t) \mid \mathcal{F}_t \big] \right] = 0, \]
+<p>because the inner expectation is the mean score of a distribution, which is zero (the identity \(\mathbb{E}_{a\sim\pi}[\nabla\log\pi(a\mid s)] = \sum_a \nabla \pi(a\mid s) = \nabla \sum_a \pi(a\mid s) = \nabla 1 = 0\) — we will use it again in §4). Dropping those terms leaves each action weighted only by the return that followed it, and gives the <strong>policy gradient theorem</strong> in the form the algorithm implements:</p>
+\[ \boxed{\;\nabla_\theta J(\theta) \;=\; \mathbb{E}_{\pi_\theta}\!\left[\, \sum_{t=0}^{T-1} \nabla_\theta \log \pi_\theta(a_t \mid s_t)\; G_t \,\right],\qquad G_t = \sum_{k=t}^{T-1}\gamma^{\,k-t} r_{k+1}. \;} \]
+<p><strong>REINFORCE</strong> is the Monte Carlo estimator of that expectation, used in stochastic gradient <em>ascent</em>: sample \(B\) trajectories, compute \(\hat{g} = \frac1B\sum_{i}\sum_t \nabla_\theta\log\pi_\theta(a^i_t\mid s^i_t)G^i_t\), and set \(\theta \leftarrow \theta + \alpha \hat{g}\). In an autograd framework you do not write \(\hat g\); you minimise the surrogate loss \(-\frac1B\sum_i\sum_t G^i_t \log\pi_\theta(a^i_t\mid s^i_t)\) with \(G_t\) treated as a constant, and the framework produces exactly \(-\hat g\).</p>
+<p>Because \(\hat g\) is unbiased, the classical Robbins–Monro conditions \(\sum_k \alpha_k = \infty,\ \sum_k \alpha_k^2 < \infty\) give convergence to a stationary point of \(J\). With a constant \(\alpha\) the iterates instead converge to a neighbourhood whose radius grows like \(\alpha\,\sigma^2\), where \(\sigma^2\) is the variance of the gradient estimate; and if the objective is \(L\)-smooth, stability additionally requires roughly \(\alpha < 2/L\). Both halves of that sentence are visible in the next demo: too small an \(\alpha\) crawls, too large an \(\alpha\) leaves the stable region, and in between the residual noise floor is set by \(\alpha\sigma^2\). Everything else in this tutorial is an attempt to shrink \(\sigma^2\) so that a usable \(\alpha\) exists.</p>
+
+<div class="demo">
+ <h3>Demo · REINFORCE, live, at three learning rates <span class="tag">interactive</span></h3>
+ <p>A three-armed bandit with mean rewards \(\mu = (5.0,\ 5.6,\ 4.4)\) and Gaussian noise, and a softmax policy over three logits initialised to zero. Note the common offset of about 5 in those means: it cannot change the true gradient, for the reason §4 proves, but with no baseline it is carried into every update. Each update samples a batch of 16 pulls and applies \(\theta \leftarrow \theta + \alpha\,\widehat{\nabla_\theta J}\) with the estimator above, unbaselined. Press <em>Train</em> and watch the bars.</p>
+ <p>The right-hand panel already shows three fixed learning rates, each averaged over sixteen seeds. \(\alpha=0.01\) is correct but has not arrived by update 300. \(\alpha=0.15\) converges. \(\alpha=5.0\) is past the stable region: on roughly two seeds in five the first few noisy batches move the logits far enough that the best arm stops being sampled, no corrective gradient is ever generated, and the run finishes committed to the wrong arm — so the averaged curve rises fastest at first and then settles <em>below</em> the \(\alpha=0.15\) curve rather than merely oscillating around it. Your live run is drawn over them in blue; press <em>Train</em> several times at \(\alpha=5.0\) and count the failures.</p>
+ <div class="controls">
+ <div class="control"><label>learning rate \(\alpha\): <b id="rf-aL">0.15</b></label><input type="range" id="rf-a" min="0.005" max="5.0" step="0.005" value="0.15"></div>
+ <div class="control"><label>reward noise \(\sigma\): <b id="rf-sL">0.5</b></label><input type="range" id="rf-s" min="0" max="2" step="0.05" value="0.5"></div>
+ </div>
+ <div class="controls">
+ <button id="rf-run">Train ▶ 300 updates</button>
+ <button id="rf-reset" class="secondary">Reset policy</button>
+ <span class="readout" id="rf-count">0 updates</span>
+ </div>
+ <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+ <div><canvas id="rf-bars" width="380" height="230"></canvas><div class="legend">\(\pi_\theta(a)\) after the current update. The dashed line is the uniform starting point, \(1/3\).</div></div>
+ <div style="flex:1;min-width:340px"><canvas id="rf-curve" width="480" height="230"></canvas>
+ <div class="legend"><span class="sw" style="background:#C0392B"></span>\(\alpha=5.0\) (unstable) &nbsp; <span class="sw" style="background:#1F8B4C"></span>\(\alpha=0.15\) &nbsp; <span class="sw" style="background:#F9A825"></span>\(\alpha=0.01\) (slow) &nbsp; <span class="sw" style="background:#1F4E79"></span>your run</div></div>
+ </div>
+ <div class="readout" id="rf-read"></div>
+</div>
+
+<div class="deep">
+ <strong>Why the dynamics dropping out is a licence, not a convenience.</strong> The obvious alternative to the score-function estimator is to differentiate the return with respect to the actions and push that gradient back through the policy — the pathwise or reparameterisation gradient, \(\nabla_\theta \mathbb{E}[R] = \mathbb{E}[\nabla_a R \cdot \nabla_\theta a]\). It is a far lower-variance estimator when it exists, and it is what the reparameterisation trick in Topic 4's soft actor-critic uses. But it requires \(\nabla_a R\): a derivative of the environment. CartPole's dynamics are a numerical integrator with a discrete termination test; a robot is a physical object; a user clicking or not clicking is not differentiable in any sense. The score-function estimator asks the environment for nothing but samples, which is exactly why it applies where the pathwise estimator cannot — and the price for that generality is the variance that occupies the rest of this tutorial. Topic 4 buys some of it back by replacing the sampled \(G_t\) with a learned critic, which <em>is</em> differentiable.
+</div>
+
+<h2 id="s3">3. Policy gradients as weighted maximum likelihood</h2>
+<p>Write the two objectives next to each other. A supervised classifier trained by maximum likelihood on labelled pairs \((x_i,y_i)\) minimises</p>
+\[ \mathcal{L}_{\text{MLE}}(\theta) = -\frac1n\sum_{i=1}^{n} \log \pi_\theta(y_i \mid x_i), \qquad \nabla_\theta \mathcal{L}_{\text{MLE}} = -\frac1n\sum_i \nabla_\theta \log \pi_\theta(y_i\mid x_i). \]
+<p>The REINFORCE surrogate on sampled pairs \((s_i,a_i)\) with returns \(G_i\) minimises</p>
+\[ \mathcal{L}_{\text{PG}}(\theta) = -\frac1n\sum_{i=1}^{n} G_i \, \log \pi_\theta(a_i \mid s_i), \qquad \nabla_\theta \mathcal{L}_{\text{PG}} = -\frac1n\sum_i G_i \,\nabla_\theta \log \pi_\theta(a_i\mid s_i). \]
+<p>The two expressions differ in exactly one place: a scalar \(G_i\) multiplying each term. <strong>A policy gradient is maximum likelihood on the agent's own samples, weighted by how well each sample turned out.</strong> For a softmax over logits \(z = f_\theta(s)\) the arithmetic makes this concrete. Since \(\partial \log \pi(a)/\partial z_j = \delta_{aj} - \pi_j\),</p>
+\[ \nabla_z \log \pi_\theta(y\mid x) = e_y - \pi \quad\text{(MLE, label } y), \qquad \nabla_z \big[G\log \pi_\theta(a\mid s)\big] = G\,(e_a - \pi) \quad\text{(PG, sampled } a). \]
+<p>Three consequences follow, and each is a real difference in behaviour rather than a restatement.</p>
+<ul>
+ <li><strong>\(G = 1\) on the taken action reduces PG to MLE exactly.</strong> If every sampled action receives reward 1, the update is indistinguishable from supervised training on \((s_i, a_i)\) as if \(a_i\) were the correct label. The policy sharpens around whatever it already does. This is the formal reason a reward function that is constant teaches nothing: it converts learning into self-imitation.</li>
+ <li><strong>\(G\) can be negative, and a label cannot.</strong> A negative weight flips the sign of the update and pushes probability mass <em>away</em> from the action that was taken, redistributing it over the alternatives in proportion to \(\pi\). Maximum likelihood has no operation of this shape; the closest supervised analogue, training on a "wrong" label, is a different and worse thing.</li>
+ <li><strong>The data distribution is not exogenous.</strong> In MLE the samples come from a fixed dataset; the objective is stationary and the gradient is an average over a fixed measure. In PG the samples come from \(\pi_\theta\) itself, so every update changes the distribution the next gradient is computed under. This non-stationarity is what makes learning rates in RL so much more delicate than in supervised learning, and it is the reason the trust-region machinery of §5 exists.</li>
+</ul>
+
+<div class="demo">
+ <h3>Demo · The same softmax, two gradients <span class="tag">interactive</span></h3>
+ <p>Three classes, logits \(z=(0.4,\,0.1,\,-0.6)\), and one example. The supervised view says the correct label is class 2 and computes \(e_y - \pi\). The reinforcement view says the agent <em>sampled</em> class 2 and received reward \(G\), and computes \(G\,(e_a - \pi)\). The bars are the gradient with respect to each logit. Set \(G = 1\) and the two are identical to the last digit. Set \(G = 0\) and the update vanishes. Set \(G<0\) and the reinforcement gradient reverses — it removes probability from class 2 and returns it to classes 1 and 3 in proportion to their current probabilities.</p>
+ <div class="controls">
+ <div class="control"><label>reward \(G\) on the sampled action: <b id="ml-rL">1.00</b></label><input type="range" id="ml-r" min="-2" max="3" step="0.05" value="1"></div>
+ <div class="control"><label>logit \(z_1\): <b id="ml-zL">0.40</b></label><input type="range" id="ml-z" min="-2" max="2" step="0.05" value="0.4"></div>
+ </div>
+ <canvas id="ml-canvas" width="900" height="240"></canvas>
+ <div class="readout" id="ml-read"></div>
+</div>
+
+<h3>When reinforcement learning is preferable, and when it is not</h3>
+<p>The comparison is not about which is more powerful; it is about what supervision you actually possess.</p>
+<p><strong>Use maximum likelihood whenever the correct action is known.</strong> A label carries strictly more information than a scalar score: it names the right answer, whereas a reward only grades the one answer you tried. That difference is quantitative. The MLE gradient requires no sampling of the action, so it carries none of the sampling variance that §4 is devoted to reducing, and it involves no credit assignment across time. If you have demonstrations, cloning them is faster, more stable, and cheaper than any policy gradient — and behaviour cloning is precisely \(\mathcal{L}_{\text{MLE}}\) applied to expert trajectories.</p>
+<p><strong>Use reinforcement learning when one of three conditions holds.</strong> (i) The correct action is unknown but outcomes can be scored — the usual case in control, in recommendation, and in preference-based alignment, where nobody can write down the optimal action but everyone can rank two results. (ii) The quantity you care about is not a differentiable function of the output — episode length, a success flag, a BLEU score, a human preference. (iii) Errors compound: the agent's own mistakes take it to states the demonstration data never visited, and a cloned policy has no training signal there. This last is the classical failure of behaviour cloning, and it is a distributional argument, not a capacity argument — the cloned policy is accurate on the expert's distribution and undefined on its own.</p>
+
+<div class="why">
+ <strong>Why not simply keep the best trajectories and clone them?</strong> "Run the policy, throw away everything below the 90th percentile of return, and do supervised learning on the rest" is a real and widely used method, and the reason it works is that it is a policy gradient in disguise: it is \(\mathcal{L}_{\text{PG}}\) with the weight \(G_i\) replaced by the indicator \(\mathbf{1}[G_i > \text{threshold}]\). Seeing it that way tells you exactly what it costs. It discards the magnitude of the return, so a trajectory that scored 500 and one that scored 200 are given the same weight; it discards every failed trajectory, which is most of the data early in training; and because its weights are non-negative it can only ever push probability <em>up</em>, never down, so a bad action is unlearned only by the normalisation of the softmax. That is a biased, low-variance estimator of the same gradient. It is a defensible trade in some settings and it is what you should say when a reviewer asks why you did not do it — not that it fails, but that you priced it.
+</div>
+
+<h2 id="s4">4. Baselines, and the variance you actually pay</h2>
+<p>The estimator of §2 is unbiased and nearly unusable on its own: the weight \(G_t\) is a sum of sampled rewards, so its scale and its noise both enter the gradient directly. The single most effective repair is to subtract a function of the state before weighting. Let \(b(s)\) be any function of the state that does not depend on the action. Then</p>
+\[ \mathbb{E}_{a\sim\pi_\theta(\cdot\mid s)}\!\left[\nabla_\theta\log\pi_\theta(a\mid s)\, b(s)\right] = b(s)\sum_a \pi_\theta(a\mid s)\,\frac{\nabla_\theta \pi_\theta(a\mid s)}{\pi_\theta(a\mid s)} = b(s)\,\nabla_\theta \sum_a \pi_\theta(a\mid s) = b(s)\,\nabla_\theta 1 = 0. \]
+<p>The subtracted term has expectation exactly zero, so for every choice of \(b\),</p>
+\[ \nabla_\theta J = \mathbb{E}\!\left[\sum_t \nabla_\theta\log\pi_\theta(a_t\mid s_t)\big(G_t - b(s_t)\big)\right] \]
+<p>remains <strong>unbiased</strong>. The freedom is total in the mean and consequential in the variance. Consider one scalar component \(\theta_j\), write \(u = \partial_{\theta_j}\log\pi_\theta(a\mid s)\), and minimise</p>
+\[ \operatorname{Var}\big[u(G-b)\big] = \mathbb{E}\big[u^2 (G-b)^2\big] - (\nabla_{\theta_j} J)^2 \]
+<p>over \(b\). Only the first term depends on \(b\); differentiating it and setting the derivative to zero gives the <strong>variance-minimising baseline</strong></p>
+\[ b^\star = \frac{\mathbb{E}\!\left[u^2\,G\right]}{\mathbb{E}\!\left[u^2\right]}, \]
+<p>a score-squared-weighted average of the return. In practice we use the unweighted version, \(b(s) = V^{\pi}(s) = \mathbb{E}[G_t \mid s_t = s]\), which is the conditional mean of exactly the quantity whose fluctuation is causing the trouble. Subtracting it centres the weight at zero in every state, so actions are pushed up or down according to whether they did better or worse <em>than that state's own average</em> rather than according to the absolute scale of the reward. The centred weight is the <strong>advantage</strong>,</p>
+\[ A^{\pi}(s,a) = Q^{\pi}(s,a) - V^{\pi}(s), \qquad \hat{A}_t = G_t - V_\phi(s_t), \]
+<p>and \(V_\phi\) is fit by regression on the observed returns, \(\min_\phi \frac1n\sum (V_\phi(s_t) - G_t)^2\). That is exactly the value network your product builds in <code>train/baseline.py</code>.</p>
+
+<div class="demo">
+ <h3>Demo · The score-function estimator, and what a baseline does to it <span class="tag">interactive</span></h3>
+ <p>Three actions, fixed logits \(\theta=(0,\ 0.5,\ -0.5)\), so \(\pi\) is known and the true gradient is available in closed form: \(\partial J/\partial\theta_j = \pi_j\,(m_j - \bar m)\) with \(m\) the mean rewards and \(\bar m = \sum_a \pi_a m_a\). Rewards are \(r(a) = c + m_a + \sigma\varepsilon\) with \(m=(1,2,0)\). We draw 1,200 independent batch estimates of \(\partial J/\partial\theta_2\), once with \(b=0\) and once with \(b=V=\sum_a\pi_a(c+m_a)\), and histogram them against the true value.</p>
+ <p>Two readings. Both histograms are centred on the same vertical line — the baseline changes nothing in the mean, as the proof requires. And the constant \(c\), which is added to every reward and therefore cannot change the true gradient at all, inflates the variance of the un-baselined estimator without limit while leaving the baselined one untouched. Drag \(c\) to 20 and read the variance ratio.</p>
+ <div class="controls">
+ <div class="control"><label>batch size \(N\): <b id="sf-nL">8</b></label><input type="range" id="sf-n" min="1" max="64" step="1" value="8"></div>
+ <div class="control"><label>reward offset \(c\): <b id="sf-cL">5.0</b></label><input type="range" id="sf-c" min="0" max="20" step="0.5" value="5"></div>
+ <div class="control"><label>reward noise scale \(\sigma\): <b id="sf-sL">1.0</b></label><input type="range" id="sf-s" min="0" max="4" step="0.05" value="1"></div>
+ </div>
+ <div class="controls"><button id="sf-run">Resample 1,200 batches</button></div>
+ <canvas id="sf-canvas" width="900" height="270"></canvas>
+ <div class="legend"><span class="sw" style="background:#F9A825"></span>no baseline, \(b=0\) &nbsp; <span class="sw" style="background:#1F8B4C"></span>with baseline, \(b=V(s)\) &nbsp; <span class="sw" style="background:#C0392B"></span>true gradient</div>
+ <table class="tb" id="sf-table"></table>
+ <div class="readout" id="sf-read"></div>
+</div>
+
+<div class="deep">
+ <strong>Why \(V(s)\) and not the variance-minimising \(b^\star\).</strong> The optimal baseline is genuinely optimal, and almost nobody uses it. Three reasons, in order of weight. It is <em>per-parameter</em>: \(b^\star\) depends on \(u = \partial_{\theta_j}\log\pi\), so a network with 10,000 parameters has 10,000 different optimal baselines, and the estimator is no longer a single scalar subtraction. It is <em>estimated from the same samples</em>: both numerator and denominator are Monte Carlo averages, and their noise propagates back into the very estimator they are meant to stabilise, which in small batches can cost more variance than it removes. And \(V(s)\) has a second job — it becomes the critic in Topic 4, where the same network that centres the weight also supplies the bootstrapped target \(r + \gamma V(s')\) that replaces \(G_t\) entirely. One function, fit by one regression, serving two purposes, at a variance close to optimal, is the better engineering trade. One warning that costs students real marks: if you fit \(V_\phi\) on the same batch you then use it to centre, \(b\) is correlated with \(G\) and the estimator acquires a small bias. Fit on the previous batch, or fit after computing the advantages.
+</div>
+
+<h2 id="s5">5. Importance sampling for off-policy updates</h2>
+<p>Everything so far assumed the data was generated by the policy being updated. That is on-policy learning, and it means every batch is discarded after one gradient step. To reuse a batch — or to learn from a log written by an older policy — we need to evaluate an expectation under \(\pi\) from samples drawn under a behaviour policy \(b\). The identity is elementary:</p>
+\[ \mathbb{E}_{x\sim \pi}[f(x)] = \int \pi(x) f(x)\,dx = \int b(x)\,\frac{\pi(x)}{b(x)}\,f(x)\,dx = \mathbb{E}_{x\sim b}\!\left[ \rho(x) f(x)\right], \qquad \rho(x) = \frac{\pi(x)}{b(x)}. \]
+<p>The estimator \(\frac1N\sum_i \rho(x_i) f(x_i)\) with \(x_i \sim b\) is therefore <strong>unbiased for the expectation under \(\pi\)</strong>, provided the support condition \(b(x) > 0\) wherever \(\pi(x)f(x) \neq 0\) holds. Applied to a trajectory, the ratio is a product, and the dynamics cancel for the same reason they vanished in §2:</p>
+\[ \rho(\tau) = \frac{p_\pi(\tau)}{p_b(\tau)} = \frac{\rho_0(s_0)\prod_t \pi(a_t\mid s_t)P(s_{t+1}\mid s_t,a_t)}{\rho_0(s_0)\prod_t b(a_t\mid s_t)P(s_{t+1}\mid s_t,a_t)} = \prod_{t=0}^{T-1}\frac{\pi(a_t\mid s_t)}{b(a_t\mid s_t)}. \]
+<p>Note also \(\mathbb{E}_b[\rho] = 1\) identically: the weights are a normalised likelihood ratio, and a sample mean far from 1 is a diagnostic that something is wrong before it is a statistic. The off-policy policy gradient is then \(\nabla_\theta J(\pi) = \mathbb{E}_{b}\big[\rho(\tau)\sum_t \nabla_\theta\log\pi_\theta(a_t\mid s_t)\hat A_t\big]\).</p>
+
+<h3>Why it fails, and how far</h3>
+<p>Unbiasedness says nothing about variance, and here the variance is the whole story. For a single step,</p>
+\[ \operatorname{Var}_b[\rho] = \mathbb{E}_b\!\left[\rho^2\right] - 1 = \sum_a \frac{\pi(a)^2}{b(a)} - 1 = \exp\big(D_2(\pi\,\|\,b)\big) - 1, \]
+<p>the exponential of the Rényi divergence of order 2. Over \(T\) steps the second moments multiply, so the variance of \(\rho(\tau)\) grows <em>geometrically in the horizon</em>. Concretely, with two actions, \(b\) uniform and \(\pi = (0.9, 0.1)\), one step gives \(\mathbb{E}[\rho^2] = 2(0.81+0.01) = 1.64\); at \(T=20\) that is \(1.64^{20} \approx 1.2\times 10^{4}\), a standard deviation over a hundred times the mean of the quantity being estimated. The estimator remains unbiased and is worthless: almost all trajectories receive a weight near zero and a handful carry the entire estimate.</p>
+<p>The right diagnostic is the <strong>effective sample size</strong>, which reports how many equally-weighted samples the weighted batch is worth:</p>
+\[ \mathrm{ESS} = \frac{\big(\sum_{i=1}^N \rho_i\big)^2}{\sum_{i=1}^N \rho_i^2} \in [1, N]. \]
+<p>It equals \(N\) when all weights are equal and 1 when a single sample dominates. An \(\mathrm{ESS}/N\) below roughly 0.3 means the batch is no longer telling you about \(\pi\), regardless of what the loss curve does — and it is one line of NumPy, so log it every update.</p>
+<p><strong>Clipping</strong> is the standard mitigation and the core of PPO. Instead of the unbounded ratio, optimise</p>
+\[ \mathcal{L}^{\text{CLIP}} = \mathbb{E}\!\left[\min\Big(\rho\,\hat A,\;\ \mathrm{clip}(\rho,\,1-\epsilon,\,1+\epsilon)\,\hat A\Big)\right]. \]
+<p>Two properties are worth stating precisely, because they are routinely misdescribed. First, the estimator is now <strong>biased</strong> — deliberately. Second, the \(\min\) makes the objective a <em>pessimistic</em> lower bound: when \(\hat A > 0\) and \(\rho > 1+\epsilon\), the clipped branch is smaller and is selected, so its gradient with respect to \(\theta\) is zero and the update stops rewarding further increases; but when \(\rho\) has moved the wrong way, the unclipped branch is selected and the gradient is <em>not</em> removed, so the policy can always correct itself back toward the trust region. Clipping does not bound the weights; it removes the incentive to leave a neighbourhood of \(b\), which keeps \(\rho\) near 1 and therefore keeps the ESS high. You trade a bias you can bound for a variance you could not.</p>
+
+<div class="demo">
+ <h3>Demo · Importance weights as the policies diverge <span class="tag">interactive</span></h3>
+ <p>Two actions. The behaviour policy \(b\) is uniform; the target policy is \(\pi = \big(\varsigma(\Delta),\,1-\varsigma(\Delta)\big)\) with \(\varsigma\) the logistic function, so \(\Delta = 0\) means \(\pi = b\) and the weights are all exactly 1. We draw 4,000 trajectories of length \(T\) from \(b\) and histogram \(\rho(\tau) = \prod_t \pi(a_t)/b(a_t)\). The sample mean stays pinned near 1 at every setting — that is unbiasedness, and it is the reason the mean is useless as a warning. Watch the ESS instead: it falls off a cliff well before anything else looks wrong.</p>
+ <div class="controls">
+ <div class="control"><label>divergence \(\Delta\): <b id="is-dL">1.00</b></label><input type="range" id="is-d" min="0" max="4" step="0.05" value="1"></div>
+ <div class="control"><label>horizon \(T\): <b id="is-tL">8</b></label><input type="range" id="is-t" min="1" max="30" step="1" value="8"></div>
+ <div class="control"><label>clip \(\epsilon\): <b id="is-eL">0.20</b></label><input type="range" id="is-e" min="0.05" max="1.0" step="0.05" value="0.2"></div>
+ <div class="control"><label>&nbsp;</label><label><input type="checkbox" id="is-clip"> apply clipping</label></div>
+ </div>
+ <canvas id="is-canvas" width="900" height="260"></canvas>
+ <table class="tb" id="is-table"></table>
+ <div class="readout" id="is-read"></div>
+</div>
+
+<div class="why">
+ <strong>Why bother, when staying on-policy is free in CartPole?</strong> It is free in CartPole: a batch of trajectories costs milliseconds, so throwing each one away after a single gradient step is a rounding error, and the on-policy arm of your 2×2 ablation will probably be the better one. The reason to build the off-policy arm anyway is that the environments where this matters — a physical robot, a clinical protocol, a recommender whose logs you already own — are exactly the ones where you cannot run the experiment to find out. More immediately: importance sampling is what converts the question "how large a policy update is safe?" from a hyperparameter you guess into a quantity you measure. Without \(\rho\) there is no ESS, no clipping fraction, and no way to know whether your update went too far except that the return collapsed two hundred episodes later. On-policy learning is the special case \(\rho \equiv 1\); knowing the general case is how you know what the special case assumed.
+</div>
+
+<h2 id="s6">6. Entropy regularisation</h2>
+<p>The failure mode this addresses is specific. Because the update is \(\nabla_\theta\log\pi(a\mid s)\hat A\) evaluated only at <em>sampled</em> actions, an action whose probability has fallen to \(10^{-4}\) is essentially never sampled, so it receives essentially no gradient, so its probability does not recover. A policy that collapses early to a mediocre action has no mechanism to discover it was wrong. We therefore add a term that pays for uncertainty.</p>
+<p>For a discrete policy, the <strong>Shannon entropy</strong> is the expected surprisal of the agent's own action:</p>
+\[ H(\pi(\cdot\mid s)) = \mathbb{E}_{a\sim\pi}\big[-\log\pi(a\mid s)\big] = -\sum_{a\in\mathcal{A}} \pi(a\mid s)\,\log \pi(a\mid s), \]
+<p>measured in nats when the logarithm is natural. Two boundary values fix the scale. If \(\pi\) is deterministic, one term is \(1\log 1 = 0\) and the rest are \(0\log 0 = 0\) by continuity, so \(H = 0\). If \(\pi\) is uniform over \(|\mathcal{A}|\) actions, \(H = \log|\mathcal{A}|\), which is the maximum by Jensen's inequality — \(\log 3 \approx 1.0986\) nats for three actions. The regularised objective is</p>
+\[ J_\lambda(\theta) = J(\theta) + \lambda\,\mathbb{E}_{s\sim d^\pi}\big[H(\pi_\theta(\cdot\mid s))\big], \]
+<p>and in a softmax parameterisation its gradient contribution is available in closed form: from \(\partial\pi_a/\partial z_j = \pi_a(\delta_{aj}-\pi_j)\),</p>
+\[ \frac{\partial H}{\partial z_j} = -\sum_a \pi_a(\delta_{aj}-\pi_j)\big(\log\pi_a + 1\big) = -\pi_j\big(\log \pi_j + H\big), \]
+<p>which is positive for actions less probable than the entropy scale and negative for the dominant one: the term flattens the distribution, weighted by how far each action already is from the mean surprisal.</p>
+
+<h3>What \(\lambda\) buys and what it costs</h3>
+<p>The trade is visible in closed form on a single state. Maximise \(\sum_a \pi_a r_a + \lambda H(\pi)\) subject to \(\sum_a \pi_a = 1\). The Lagrangian stationarity condition \(r_a - \lambda(\log\pi_a + 1) - \mu = 0\) gives \(\pi_a \propto \exp(r_a/\lambda)\), that is</p>
+\[ \pi^\star = \mathrm{softmax}(r/\lambda). \]
+<p>The regularised optimum is a softmax over rewards at temperature \(\lambda\), which makes both limits exact rather than intuitive. As \(\lambda \to 0\), \(\pi^\star\) tends to the greedy \(\arg\max\) — no exploration pressure at all, and the collapse described above becomes the expected outcome rather than a risk. As \(\lambda \to \infty\), \(\pi^\star\) tends to uniform: the entropy term dominates the reward term entirely, the policy never commits, and the return plateaus at the value of acting at random no matter how long you train. A \(\lambda\) that is too high is not "slow learning" — it is convergence to the wrong fixed point, and the giveaway in your <code>gradient_stats</code> table is a policy entropy that stops falling while the return stops rising. A \(\lambda\) that is too low shows the opposite signature: entropy dropping to near zero within the first few dozen updates, followed by a flat return curve at a suboptimal value.</p>
+
+<div class="demo">
+ <h3>Demo · Entropy on the simplex, and the optimum \(\lambda\) selects <span class="tag">interactive</span></h3>
+ <p>The left panel is the space of all three-action policies — the probability simplex, drawn as a triangle whose corners are the deterministic policies and whose centre is uniform. The shading is \(H(\pi)\), from 0 at every corner and every edge midpoint's neighbourhood to \(\log 3\) at the centre; this is the heat map of "entropy as the policy becomes deterministic," and the point to take from it is that entropy collapses toward <em>every</em> boundary, not only toward the corner you want. The white marker is the policy set by your logit sliders; the ringed marker is \(\pi^\star = \mathrm{softmax}(r/\lambda)\) for the fixed reward vector \(r=(1.0,\,0.6,\,0.2)\). The right panel sweeps \(\lambda\) and shows what the regulariser costs: the entropy of the optimum rises toward \(\log 3\) while its expected reward falls toward the value of a uniform policy.</p>
+ <div class="controls">
+ <div class="control"><label>logit \(z_1\): <b id="en-1L">0.60</b></label><input type="range" id="en-1" min="-4" max="4" step="0.05" value="0.6"></div>
+ <div class="control"><label>logit \(z_2\): <b id="en-2L">0.00</b></label><input type="range" id="en-2" min="-4" max="4" step="0.05" value="0"></div>
+ <div class="control"><label>logit \(z_3\): <b id="en-3L">-0.60</b></label><input type="range" id="en-3" min="-4" max="4" step="0.05" value="-0.6"></div>
+ <div class="control"><label>coefficient \(\lambda\): <b id="en-lL">0.20</b></label><input type="range" id="en-l" min="-2" max="1" step="0.02" value="-0.7"></div>
+ </div>
+ <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+ <div><canvas id="en-simplex" width="400" height="330"></canvas><div class="legend">Corners: deterministic. Centre: uniform, \(H=\log 3\). <span class="sw" style="background:#fff;border:1px solid #999"></span>your \(\pi\) &nbsp; <span class="sw" style="background:#C0392B"></span>\(\pi^\star=\mathrm{softmax}(r/\lambda)\)</div></div>
+ <div style="flex:1;min-width:340px"><canvas id="en-curve" width="460" height="330"></canvas>
+ <div class="legend"><span class="sw" style="background:#6A3FA0"></span>\(H(\pi^\star)\), nats &nbsp; <span class="sw" style="background:#1F8B4C"></span>\(\mathbb{E}_{\pi^\star}[r]\) &nbsp; the vertical line is your \(\lambda\); the \(\lambda\) axis is logarithmic</div></div>
+ </div>
+ <div class="readout" id="en-read"></div>
+</div>
+
+<div class="callout">
+ <strong>The through-line, stated once and used three times.</strong> Write the general regularised objective as \( \max_\pi\ \mathbb{E}_\pi[r] - \lambda\,\mathrm{KL}\big(\pi \,\|\, \pi_0\big)\). Its solution is \(\pi^\star(a) \propto \pi_0(a)\exp(r(a)/\lambda)\) — an exponential tilt of the reference distribution \(\pi_0\) by the reward. The entropy bonus of this section is that objective with \(\pi_0\) uniform, since \(-\mathrm{KL}(\pi\|\text{unif}) = H(\pi) - \log|\mathcal{A}|\) and the constant does not affect the argmax. The <strong>maximum-entropy objective of Topic 4</strong>, which soft actor-critic folds into the value function as \(\mathbb{E}[\sum_t r_t + \lambda H(\pi(\cdot|s_t))]\), is the same objective applied at every step rather than as an additive bonus. The <strong>KL penalty of Topic 6</strong>, which keeps an aligned policy near a pretrained reference, is the same objective with \(\pi_0 = \pi_{\text{ref}}\) — a specific, informative distribution instead of a uniform one. Three mechanisms, three topics, one formula: what changes between them is only the reference distribution you are unwilling to move far from, and \(\lambda\) is always the price of moving.
+</div>
+
+<h2 id="s7">7. In practice (Gradient Works)</h2>
+<p class="product"><strong>In the build.</strong> The product trains the same CartPole-v1 policy four ways — baseline on/off crossed with importance sampling on/off — for at least 1,000 episodes and at least three seeds per arm. That is twelve runs and twelve rows in <code>experiments</code>. The client's question is not whether policy gradients work; it is why they are noisy and what fixes it, so the headline chart is not the return curve. It is the gradient variance against update index, four arms, log scale, from the <code>gradient_stats</code> table you add to the schema: <code>(experiment_id, update_index, grad_norm, grad_var, policy_entropy)</code>. Each of those three numbers is a section of this tutorial made into a column — \(\lVert\hat g\rVert\) tells you the scale of the step, \(\widehat{\operatorname{Var}}[\hat g]\) is the quantity §4 exists to reduce, and the entropy is the early-warning signal from §6.</p>
+<p>The variance column needs a definition, because "the variance of the gradient" is ambiguous until you say what the sample unit is. Compute the per-trajectory gradient vectors \(g_i\) within a batch, then report the trace of their covariance:</p>
+\[ \widehat{\operatorname{Var}}[\hat g] = \frac{1}{B-1}\sum_{i=1}^{B} \big\lVert g_i - \bar g \big\rVert_2^2 . \]
+<p>This is one number per update, comparable across arms, and it falls by the factor \(B\) when you average — which is why the batch size must be held fixed across the four arms or the comparison measures the batch size instead of the treatment.</p>
+
+<h3>Export and serve: the split that starts doing real work here</h3>
+<p>Topics 1 and 2 deployed a lookup table, so the no-PyTorch rule cost nothing and proved nothing. This is the first topic whose policy is a neural network, and therefore the first where the discipline is load-bearing. The training tier keeps PyTorch. The serving tier receives four arrays.</p>
+<pre><span class="c"># train/export.py — the artifact you deploy is not the training graph</span>
+<span class="k">import</span> numpy <span class="k">as</span> np, hashlib, pathlib, torch
+
+<span class="k">def</span> <span class="f">export_policy</span>(net, path=<span class="s">"policies/pg_cartpole_v1.npz"</span>):
+    sd = net.<span class="f">state_dict</span>()
+    <span class="c"># nn.Linear stores weight with shape (out_features, in_features).</span>
+    <span class="c"># Transpose ONCE, here, so api/forward.py can write obs @ W1 and never think about it.</span>
+    W1 = sd[<span class="s">"fc1.weight"</span>].<span class="f">detach</span>().<span class="f">cpu</span>().<span class="f">numpy</span>().T.<span class="f">astype</span>(np.float32)
+    W2 = sd[<span class="s">"fc2.weight"</span>].<span class="f">detach</span>().<span class="f">cpu</span>().<span class="f">numpy</span>().T.<span class="f">astype</span>(np.float32)
+    b1 = sd[<span class="s">"fc1.bias"</span>].<span class="f">detach</span>().<span class="f">cpu</span>().<span class="f">numpy</span>().<span class="f">astype</span>(np.float32)
+    b2 = sd[<span class="s">"fc2.bias"</span>].<span class="f">detach</span>().<span class="f">cpu</span>().<span class="f">numpy</span>().<span class="f">astype</span>(np.float32)
+    p = pathlib.<span class="f">Path</span>(path); p.parent.<span class="f">mkdir</span>(parents=<span class="s">True</span>, exist_ok=<span class="s">True</span>)
+    np.<span class="f">savez_compressed</span>(p, W1=W1, b1=b1, W2=W2, b2=b2)
+    <span class="k">return</span> {<span class="s">"path"</span>: str(p), <span class="s">"bytes"</span>: p.<span class="f">stat</span>().st_size,
+            <span class="s">"sha256"</span>: hashlib.<span class="f">sha256</span>(p.<span class="f">read_bytes</span>()).<span class="f">hexdigest</span>()}</pre>
+<pre><span class="c"># api/forward.py — the entire serving-side policy. No torch, ten lines.</span>
+<span class="k">import</span> numpy <span class="k">as</span> np
+
+<span class="k">def</span> <span class="f">policy_probs</span>(P, obs):                      <span class="c"># obs: shape (4,) float32</span>
+    h = np.<span class="f">maximum</span>(0.0, obs @ P[<span class="s">"W1"</span>] + P[<span class="s">"b1"</span>])   <span class="c"># matmul + ReLU</span>
+    z = h @ P[<span class="s">"W2"</span>] + P[<span class="s">"b2"</span>]                    <span class="c"># matmul -> logits</span>
+    z = z - z.<span class="f">max</span>()                              <span class="c"># stabilise before exp</span>
+    e = np.<span class="f">exp</span>(z)
+    <span class="k">return</span> e / e.<span class="f">sum</span>()                             <span class="c"># softmax</span>
+
+<span class="k">def</span> <span class="f">act</span>(P, obs) -> int:
+    <span class="k">return</span> int(<span class="f">policy_probs</span>(P, obs).<span class="f">argmax</span>())     <span class="c"># greedy at serving time</span></pre>
+<pre><span class="c"># tests/test_equivalence.py — required, and it is the test that catches the shape bug</span>
+<span class="k">def</span> <span class="f">test_numpy_matches_torch</span>(trained_net, exported):
+    rng = np.random.<span class="f">default_rng</span>(0)
+    obs = rng.<span class="f">normal</span>(size=(256, 4)).<span class="f">astype</span>(np.float32)
+    <span class="k">with</span> torch.<span class="f">no_grad</span>():
+        ref = torch.<span class="f">softmax</span>(<span class="f">trained_net</span>(torch.<span class="f">from_numpy</span>(obs)), dim=-1).<span class="f">numpy</span>()
+    got = np.<span class="f">stack</span>([<span class="f">policy_probs</span>(exported, o) <span class="k">for</span> o <span class="k">in</span> obs])
+    <span class="k">assert</span> np.<span class="f">abs</span>(ref - got).<span class="f">max</span>() &lt; 1e-5</pre>
+
+<div class="warn">
+ <strong>When that test fails, it is one of two things.</strong> A <strong>transposed weight matrix</strong> — <code>nn.Linear</code> stores <code>weight</code> as <code>(out_features, in_features)</code> because it computes \(xW^\top + b\), so <code>obs @ W1</code> without the transpose is either a shape error (if the layer is not square) or, worse, silently valid and numerically wrong (if it is). Or a <strong>missing bias</strong> — a forgotten <code>+ b2</code> shifts every logit, which a softmax partially absorbs, so the argmax often still agrees and only the probabilities differ. That is why the test compares full distributions on 256 random observations rather than checking that the chosen action matches: an action-only test passes on a policy that is quietly wrong. Test with random observations, not with observations from a rollout, or you will only ever exercise the region of the state space where the policy is already confident.
+</div>
+<div class="warn">
+ <strong>And the standing rule.</strong> <code>tests/test_no_torch.py</code> imports the FastAPI app and asserts <code>"torch" not in sys.modules</code>. <code>import torch</code> alone costs roughly 490 MB of resident memory against a 690 MB guarantee on the deployed tier, spent before a single weight is loaded, on bundled CUDA libraries a CPU service never calls. The measured footprint of the full stack in this course is 82 MB. A two-layer policy is four arrays and six lines of arithmetic; there is nothing PyTorch would contribute to serving it except the 490 MB.
+</div>
+
+<div class="callout">
+ <strong>What carries forward.</strong> The advantage \(\hat A_t = G_t - V_\phi(s_t)\) of §4 is the object Topic 4 keeps while replacing the Monte Carlo \(G_t\) with a bootstrapped critic target — the actor is this tutorial, the critic is that baseline promoted to a first-class estimator. The importance ratio and clipped objective of §5 are the whole of PPO, and the ESS you log here is the diagnostic you will still be reading in Topic 6. The entropy term of §6 becomes the maximum-entropy objective in Topic 4 and the KL-to-reference penalty in Topic 6 — one regulariser, three reference distributions. And the export-and-serve split of §7, which cost nothing when the policy was a table, is from here onward the only reason the deployed application fits in the memory it was promised.
+</div>
+
+<div class="nav"><a href="Tutorial-Topic-2-Markov-Decision-Process-and-Monte-Carlo-Learning.html">← Topic 2 · Markov Decision Process &amp; Monte Carlo Learning</a><a href="Tutorial-Topic-4-Actor-Critic-Methods.html">Topic 4 · Actor-Critic Methods →</a></div>
+</div>
+<script>
+/* ============================================================
+   Shared helpers
+   ============================================================ */
+function clear(ctx,c){ ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height); }
+function axes(ctx,x0,y0,w,h,xlab,ylab){
+  ctx.strokeStyle='#C7D2DE'; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(x0,y0-h); ctx.lineTo(x0,y0); ctx.lineTo(x0+w,y0); ctx.stroke();
+  ctx.fillStyle='#666'; ctx.font='11px -apple-system,Arial';
+  if(xlab){ ctx.textAlign='center'; ctx.fillText(xlab,x0+w/2,y0+30); }
+  if(ylab){ ctx.save(); ctx.translate(x0-40,y0-h/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText(ylab,0,0); ctx.restore(); }
+  ctx.textAlign='left';
+}
+function polyline(ctx,pts,color,width){
+  if(pts.length<2) return;
+  ctx.strokeStyle=color; ctx.lineWidth=width||2; ctx.beginPath();
+  ctx.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]);
+  ctx.stroke();
+}
+function gauss(){ let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+function softmax(z){ const m=Math.max.apply(null,z); const e=z.map(v=>Math.exp(v-m));
+  const s=e.reduce((a,b)=>a+b,0); return e.map(v=>v/s); }
+function sampleCat(p){ let u=Math.random(), acc=0;
+  for(let i=0;i<p.length;i++){ acc+=p[i]; if(u<=acc) return i; } return p.length-1; }
+function entropy(p){ let h=0; for(const q of p) if(q>1e-12) h-=q*Math.log(q); return h; }
+function typeset(el){ if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([el]); }
+function histogram(vals,nbins,lo,hi){
+  const b=new Array(nbins).fill(0), w=(hi-lo)/nbins;
+  for(const v of vals){ let k=Math.floor((v-lo)/w); if(k<0)k=0; if(k>=nbins)k=nbins-1; b[k]++; }
+  return {bins:b, w:w, lo:lo, hi:hi};
+}
+function stats(v){
+  const n=v.length; let m=0; for(const x of v) m+=x; m/=n;
+  let s=0; for(const x of v) s+=(x-m)*(x-m);
+  return {n:n, mean:m, varr: n>1? s/(n-1) : 0};
+}
+
+/* ============================================================
+   Demo A (§2): live REINFORCE on a three-armed bandit
+   ============================================================ */
+(function(){
+  const aS=document.getElementById('rf-a'), aL=document.getElementById('rf-aL'),
+        sS=document.getElementById('rf-s'), sL=document.getElementById('rf-sL'),
+        bars=document.getElementById('rf-bars'), bctx=bars.getContext('2d'),
+        cvv=document.getElementById('rf-curve'), cctx=cvv.getContext('2d'),
+        cnt=document.getElementById('rf-count'), out=document.getElementById('rf-read');
+  const MU=[5.0,5.6,4.4], B=16, UPD=300;
+  const LRS=[{a:5.0,c:'#C0392B'},{a:0.15,c:'#1F8B4C'},{a:0.01,c:'#F9A825'}];
+  let theta=[0,0,0], live=[], updates=0, timer=null, ref=[];
+
+  function oneUpdate(th,alpha,sig){
+    const p=softmax(th), g=[0,0,0]; let mr=0;
+    for(let i=0;i<B;i++){
+      const a=sampleCat(p), r=MU[a]+sig*gauss(); mr+=r;
+      for(let j=0;j<3;j++) g[j]+=((a===j?1:0)-p[j])*r;
+    }
+    for(let j=0;j<3;j++) th[j]+=alpha*g[j]/B;
+    return mr/B;
+  }
+  function runSeries(alpha,sig,seeds){
+    const acc=new Array(UPD).fill(0);
+    for(let s=0;s<seeds;s++){
+      const th=[0,0,0];
+      for(let u=0;u<UPD;u++) acc[u]+=oneUpdate(th,alpha,sig);
+    }
+    return acc.map(v=>v/seeds);
+  }
+  function buildRef(){ const sig=parseFloat(sS.value); ref=LRS.map(L=>({c:L.c,a:L.a,y:runSeries(L.a,sig,16)})); }
+
+  function drawBars(){
+    clear(bctx,bars);
+    const p=softmax(theta), x0=54,y0=180,w=290,h=140;
+    axes(bctx,x0,y0,w,h,'action','\u03c0(a)');
+    bctx.strokeStyle='#C7D2DE'; bctx.setLineDash([4,3]); bctx.beginPath();
+    bctx.moveTo(x0,y0-h/3); bctx.lineTo(x0+w,y0-h/3); bctx.stroke(); bctx.setLineDash([]);
+    const cols=['#8FA9C4','#1F8B4C','#C9A227'];
+    for(let a=0;a<3;a++){
+      const bx=x0+w*(a+0.5)/3-30;
+      bctx.fillStyle=cols[a]; bctx.fillRect(bx,y0-h*p[a],60,h*p[a]);
+      bctx.fillStyle='#333'; bctx.font='11px -apple-system,Arial'; bctx.textAlign='center';
+      bctx.fillText(p[a].toFixed(3), bx+30, y0-h*p[a]-6);
+      bctx.fillText('a'+(a+1)+'  \u03bc='+MU[a].toFixed(1), bx+30, y0+15);
+    }
+    bctx.textAlign='left';
+    bctx.fillStyle='#666'; bctx.font='10px -apple-system,Arial';
+    bctx.fillText('1/3', x0-24, y0-h/3+3);
+    bctx.fillStyle='#333'; bctx.font='11px -apple-system,Arial';
+    bctx.fillText('H(\u03c0) = '+entropy(p).toFixed(3)+' nats', x0, 22);
+  }
+  function drawCurve(){
+    clear(cctx,cvv);
+    const x0=54,y0=185,w=390,h=150;
+    axes(cctx,x0,y0,w,h,'update','mean batch reward');
+    const lo=4.8, hi=5.7;
+    cctx.strokeStyle='#EEF2F6';
+    for(let i=0;i<=4;i++){ const y=y0-h*i/4; cctx.beginPath(); cctx.moveTo(x0,y); cctx.lineTo(x0+w,y); cctx.stroke();
+      cctx.fillStyle='#999'; cctx.font='10px -apple-system,Arial'; cctx.fillText((lo+(hi-lo)*i/4).toFixed(2),x0-32,y+3); }
+    cctx.strokeStyle='#CFD7DF'; cctx.setLineDash([3,3]); cctx.beginPath();
+    const yb=y0-h*(MU[1]-lo)/(hi-lo); cctx.moveTo(x0,yb); cctx.lineTo(x0+w,yb); cctx.stroke(); cctx.setLineDash([]);
+    cctx.fillStyle='#999'; cctx.font='10px -apple-system,Arial'; cctx.fillText('best arm '+MU[1].toFixed(2), x0+6, yb-5);
+    const smooth=(y)=>{ const o=[]; let m=y[0];
+      for(let i=0;i<y.length;i++){ m=0.92*m+0.08*y[i]; o.push(m); } return o; };
+    ref.forEach(R=>{
+      const y=smooth(R.y);
+      polyline(cctx, y.map((v,i)=>[x0+w*i/(UPD-1), y0-h*Math.max(0,Math.min(1,(v-lo)/(hi-lo)))]), R.c, 1.8);
+    });
+    if(live.length>2){
+      const y=smooth(live);
+      polyline(cctx, y.map((v,i)=>[x0+w*i/(UPD-1), y0-h*Math.max(0,Math.min(1,(v-lo)/(hi-lo)))]), '#1F4E79', 2.4);
+    }
+    cctx.fillStyle='#999'; cctx.font='10px -apple-system,Arial'; cctx.textAlign='center';
+    cctx.fillText('0',x0,y0+15); cctx.fillText(String(UPD),x0+w,y0+15); cctx.textAlign='left';
+  }
+  function refresh(){
+    drawBars(); drawCurve();
+    cnt.textContent = updates+' updates';
+    const p=softmax(theta), best=p.indexOf(Math.max.apply(null,p));
+    const alpha=parseFloat(aS.value);
+    out.innerHTML = 'Current policy: <b class="mono">'+p.map(v=>v.toFixed(3)).join(' / ')+'</b>'
+      + ' &nbsp;\u00b7&nbsp; mass on the best arm a2 = <b>'+p[1].toFixed(3)+'</b>'
+      + ' &nbsp;\u00b7&nbsp; entropy = <b>'+entropy(p).toFixed(3)+'</b> nats'
+      + ' &nbsp;\u00b7&nbsp; \\(\\alpha\\) = <b>'+alpha.toFixed(3)+'</b>. '
+      + (updates===0 ? 'All three logits start at zero, so \\(\\pi\\) is uniform and every score \\(e_a-\\pi\\) has the same magnitude \u2014 the first update is pure reward comparison.'
+        : (best===1 ? 'The policy has found arm 2. Note that it keeps moving after it is correct: the score-function update never stops, it only shrinks as \\(\\pi_2 \\to 1\\) drives \\(1-\\pi_2\\) to zero.'
+                    : 'The policy is committed to the <b>wrong</b> arm. At this \\(\\alpha\\) an early run of lucky draws moved the logits far enough that the correct arm is now sampled too rarely to generate a corrective gradient \u2014 the collapse described in \u00a76.'));
+    typeset(out);
+  }
+  function stop(){ if(timer){ clearInterval(timer); timer=null; } }
+  document.getElementById('rf-run').onclick=function(){
+    stop(); theta=[0,0,0]; live=[]; updates=0;
+    const alpha=parseFloat(aS.value), sig=parseFloat(sS.value);
+    timer=setInterval(function(){
+      for(let k=0;k<6 && updates<UPD;k++){ live.push(oneUpdate(theta,alpha,sig)); updates++; }
+      refresh();
+      if(updates>=UPD) stop();
+    },25);
+  };
+  document.getElementById('rf-reset').onclick=function(){ stop(); theta=[0,0,0]; live=[]; updates=0; refresh(); };
+  aS.oninput=function(){ aL.textContent=parseFloat(aS.value).toFixed(3); refresh(); };
+  sS.oninput=function(){ sL.textContent=parseFloat(sS.value).toFixed(2); stop(); buildRef(); theta=[0,0,0]; live=[]; updates=0; refresh(); };
+  buildRef(); refresh();
+})();
+
+/* ============================================================
+   Demo B (§3): MLE gradient vs PG gradient on the same softmax
+   ============================================================ */
+(function(){
+  const rS=document.getElementById('ml-r'), rL=document.getElementById('ml-rL'),
+        zS=document.getElementById('ml-z'), zL=document.getElementById('ml-zL'),
+        cv=document.getElementById('ml-canvas'), ctx=cv.getContext('2d'),
+        out=document.getElementById('ml-read');
+  const IDX=1; // class 2 is both the label and the sampled action
+  function draw(){
+    const G=parseFloat(rS.value), z1=parseFloat(zS.value);
+    rL.textContent=G.toFixed(2); zL.textContent=z1.toFixed(2);
+    const z=[z1,0.1,-0.6], p=softmax(z);
+    const gm=[0,1,2].map(j=>((j===IDX?1:0)-p[j]));
+    const gp=gm.map(v=>G*v);
+    clear(ctx,cv);
+    const y0=185,h=120,mid=y0-h/2;
+    function panel(x0,w,title,g,col){
+      ctx.strokeStyle='#C7D2DE'; ctx.lineWidth=1; ctx.beginPath();
+      ctx.moveTo(x0,mid); ctx.lineTo(x0+w,mid); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x0,y0-h); ctx.lineTo(x0,y0); ctx.stroke();
+      ctx.fillStyle='#1F4E79'; ctx.font='bold 12px -apple-system,Arial'; ctx.fillText(title,x0,y0-h-14);
+      const scale=(h/2)/3.2;
+      for(let j=0;j<3;j++){
+        const bx=x0+w*(j+0.5)/3-26, bh=g[j]*scale;
+        ctx.fillStyle=col; ctx.globalAlpha=(j===IDX)?1:0.55;
+        ctx.fillRect(bx, bh>=0? mid-bh : mid, 52, Math.abs(bh)); ctx.globalAlpha=1;
+        ctx.fillStyle='#333'; ctx.font='11px -apple-system,Arial'; ctx.textAlign='center';
+        ctx.fillText(g[j].toFixed(4), bx+26, bh>=0? mid-bh-6 : mid+Math.abs(bh)+14);
+        ctx.fillText('z'+(j+1), bx+26, y0+16);
+        ctx.textAlign='left';
+      }
+      ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial'; ctx.fillText('0', x0-12, mid+3);
+    }
+    panel(60,360,'MLE:  \u2207z log \u03c0(y=2)  =  e_y \u2212 \u03c0', gm, '#1F4E79');
+    panel(500,360,'PG:  \u2207z [ G\u00b7log \u03c0(a=2) ]  =  G\u00b7(e_a \u2212 \u03c0)', gp, '#7B3FA0');
+    const same = Math.max.apply(null,[0,1,2].map(j=>Math.abs(gm[j]-gp[j])));
+    ctx.fillStyle='#666'; ctx.font='11px -apple-system,Arial';
+    ctx.fillText('\u03c0 = ('+p.map(v=>v.toFixed(4)).join(', ')+')', 60, 24);
+    out.innerHTML = '\\(\\pi = ('+p.map(v=>v.toFixed(4)).join(',\\,')+')\\) &nbsp;\u00b7&nbsp; '
+      + 'MLE gradient <b class="mono">['+gm.map(v=>v.toFixed(4)).join(', ')+']</b> &nbsp;\u00b7&nbsp; '
+      + 'PG gradient <b class="mono">['+gp.map(v=>v.toFixed(4)).join(', ')+']</b> &nbsp;\u00b7&nbsp; '
+      + 'largest componentwise difference = <b>'+same.toExponential(2)+'</b>. '
+      + (Math.abs(G-1)<1e-9 ? '<b style="color:#1F8B4C">At \\(G=1\\) the two gradients are the same vector</b> \u2014 policy gradient on a unit reward <em>is</em> maximum likelihood treating the sampled action as the label.'
+         : (G>0 ? 'With \\(G='+G.toFixed(2)+'\\) the PG update points in the same direction as MLE but is scaled by \\(G\\): the reward sets the step length, not the direction.'
+                : 'With \\(G='+G.toFixed(2)+'<0\\) the PG update is the MLE direction <em>reversed</em>: probability leaves the sampled action and is redistributed over the others in proportion to \\(\\pi\\). Maximum likelihood cannot express this update.'));
+    typeset(out);
+  }
+  rS.oninput=draw; zS.oninput=draw; draw();
+})();
+
+/* ============================================================
+   Demo C (§4): score-function estimator with and without a baseline
+   ============================================================ */
+(function(){
+  const nS=document.getElementById('sf-n'), nL=document.getElementById('sf-nL'),
+        cS=document.getElementById('sf-c'), cL=document.getElementById('sf-cL'),
+        sS=document.getElementById('sf-s'), sL=document.getElementById('sf-sL'),
+        cv=document.getElementById('sf-canvas'), ctx=cv.getContext('2d'),
+        tbl=document.getElementById('sf-table'), out=document.getElementById('sf-read');
+  const TH=[0,0.5,-0.5], M=[1,2,0], J=1, MB=1200;
+  const PI=softmax(TH);
+  function draw(){
+    const N=parseInt(nS.value), c=parseFloat(cS.value), sig=parseFloat(sS.value);
+    nL.textContent=N; cL.textContent=c.toFixed(1); sL.textContent=sig.toFixed(2);
+    let mbar=0; for(let a=0;a<3;a++) mbar+=PI[a]*M[a];
+    const trueG = PI[J]*(M[J]-mbar);
+    const V = mbar + c;
+    const g0=new Array(MB), g1=new Array(MB);
+    for(let k=0;k<MB;k++){
+      let s0=0,s1=0;
+      for(let n=0;n<N;n++){
+        const a=sampleCat(PI), r=c+M[a]+sig*gauss(), sc=((a===J)?1:0)-PI[J];
+        s0+=sc*r; s1+=sc*(r-V);
+      }
+      g0[k]=s0/N; g1[k]=s1/N;
+    }
+    const S0=stats(g0), S1=stats(g1);
+    const lo=Math.min(Math.min.apply(null,g0),Math.min.apply(null,g1),trueG)-0.05;
+    const hi=Math.max(Math.max.apply(null,g0),Math.max.apply(null,g1),trueG)+0.05;
+    const NB=56, H0=histogram(g0,NB,lo,hi), H1=histogram(g1,NB,lo,hi);
+    clear(ctx,cv);
+    const x0=60,y0=205,w=800,h=165;
+    axes(ctx,x0,y0,w,h,'estimate of \u2202J/\u2202\u03b8\u2082  (one batch of N)','count');
+    const ymax=Math.max(Math.max.apply(null,H0.bins),Math.max.apply(null,H1.bins))*1.08 || 1;
+    const bw=w/NB;
+    for(let i=0;i<NB;i++){
+      ctx.fillStyle='#F9A825'; ctx.globalAlpha=0.65;
+      ctx.fillRect(x0+i*bw, y0-h*H0.bins[i]/ymax, bw-1, h*H0.bins[i]/ymax);
+      ctx.fillStyle='#1F8B4C'; ctx.globalAlpha=0.65;
+      ctx.fillRect(x0+i*bw, y0-h*H1.bins[i]/ymax, bw-1, h*H1.bins[i]/ymax);
+    }
+    ctx.globalAlpha=1;
+    const xt=x0+w*(trueG-lo)/(hi-lo);
+    ctx.strokeStyle='#C0392B'; ctx.lineWidth=2; ctx.beginPath();
+    ctx.moveTo(xt,y0-h); ctx.lineTo(xt,y0); ctx.stroke();
+    ctx.fillStyle='#C0392B'; ctx.font='11px -apple-system,Arial'; ctx.textAlign='center';
+    ctx.fillText('true '+trueG.toFixed(4), xt, y0-h-6); ctx.textAlign='left';
+    ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial'; ctx.textAlign='center';
+    for(let i=0;i<=4;i++){ const v=lo+(hi-lo)*i/4; ctx.fillText(v.toFixed(2), x0+w*i/4, y0+15); }
+    ctx.textAlign='left';
+    const ratio = S1.varr>0 ? S0.varr/S1.varr : Infinity;
+    tbl.innerHTML = '<tr><th>estimator</th><th>empirical mean</th><th>bias vs. true</th><th>variance</th><th>std. dev.</th></tr>'
+      + '<tr><td style="color:#B8860B;font-weight:600">no baseline</td><td>'+S0.mean.toFixed(4)+'</td><td>'+(S0.mean-trueG).toFixed(4)+'</td><td>'+S0.varr.toFixed(4)+'</td><td>'+Math.sqrt(S0.varr).toFixed(4)+'</td></tr>'
+      + '<tr class="hi"><td>with baseline b = V</td><td>'+S1.mean.toFixed(4)+'</td><td>'+(S1.mean-trueG).toFixed(4)+'</td><td>'+S1.varr.toFixed(4)+'</td><td>'+Math.sqrt(S1.varr).toFixed(4)+'</td></tr>';
+    out.innerHTML = 'True gradient \\(\\partial J/\\partial\\theta_2 = \\pi_2(m_2-\\bar m)\\) = <b>'+trueG.toFixed(4)+'</b>, and it does not depend on \\(c\\) at all. '
+      + 'Both estimators are centred on it (biases '+(S0.mean-trueG).toFixed(4)+' and '+(S1.mean-trueG).toFixed(4)+', both Monte Carlo noise at '+MB+' batches). '
+      + '<b>Variance ratio = '+(isFinite(ratio)?ratio.toFixed(1):'\u221e')+'\u00d7</b> \u2014 the baseline removes that factor for free, and the factor grows without bound in \\(c\\) '
+      + 'because the un-baselined weight carries the reward\u2019s offset into every score. Raising \\(N\\) shrinks both variances by \\(1/N\\); only the baseline changes their <em>ratio</em>.';
+    typeset(out);
+  }
+  document.getElementById('sf-run').onclick=draw;
+  nS.oninput=draw; cS.oninput=draw; sS.oninput=draw;
+  draw();
+})();
+
+/* ============================================================
+   Demo D (§5): importance weights, ESS and clipping
+   ============================================================ */
+(function(){
+  const dS=document.getElementById('is-d'), dL=document.getElementById('is-dL'),
+        tS=document.getElementById('is-t'), tL=document.getElementById('is-tL'),
+        eS=document.getElementById('is-e'), eL=document.getElementById('is-eL'),
+        clipCB=document.getElementById('is-clip'),
+        cv=document.getElementById('is-canvas'), ctx=cv.getContext('2d'),
+        tbl=document.getElementById('is-table'), out=document.getElementById('is-read');
+  const NS=4000;
+  function draw(){
+    const D=parseFloat(dS.value), T=parseInt(tS.value), eps=parseFloat(eS.value), doClip=clipCB.checked;
+    dL.textContent=D.toFixed(2); tL.textContent=T; eL.textContent=eps.toFixed(2);
+    const p1=1/(1+Math.exp(-D)), PI=[p1,1-p1], BP=[0.5,0.5];
+    const rho=new Array(NS);
+    for(let i=0;i<NS;i++){
+      let r=1;
+      for(let t=0;t<T;t++){ const a=sampleCat(BP); r*=PI[a]/BP[a]; }
+      rho[i]=r;
+    }
+    const clipped=rho.map(r=>Math.max(1-eps,Math.min(1+eps,r)));
+    const shown = doClip? clipped : rho;
+    const S=stats(rho), SC=stats(clipped);
+    const sum=rho.reduce((a,b)=>a+b,0), sq=rho.reduce((a,b)=>a+b*b,0);
+    const ess=sum*sum/sq;
+    const sumc=clipped.reduce((a,b)=>a+b,0), sqc=clipped.reduce((a,b)=>a+b*b,0);
+    const essc=sumc*sumc/sqc;
+    const frac = rho.filter(r=>r<1-eps||r>1+eps).length/NS;
+    const theo = Math.pow(2*(PI[0]*PI[0]+PI[1]*PI[1]), T)-1;
+    const hi=Math.max(1.05, Math.min(Math.max.apply(null,shown), S.mean+5*Math.sqrt(Math.max(S.varr,1e-9))+0.5));
+    const NB=60, H=histogram(shown,NB,0,hi);
+    clear(ctx,cv);
+    const x0=60,y0=200,w=800,h=155;
+    axes(ctx,x0,y0,w,h,'importance weight  \u03c1(\u03c4)','count (log scale)');
+    const ymax=Math.log10(Math.max.apply(null,H.bins)+1)*1.1 || 1;
+    const bw=w/NB;
+    for(let i=0;i<NB;i++){
+      const v=Math.log10(H.bins[i]+1)/ymax;
+      ctx.fillStyle= doClip? '#6A3FA0' : '#1F4E79'; ctx.globalAlpha=0.8;
+      ctx.fillRect(x0+i*bw, y0-h*v, bw-1, h*v);
+    }
+    ctx.globalAlpha=1;
+    const x1=x0+w*Math.min(1,1/hi);
+    ctx.strokeStyle='#C0392B'; ctx.lineWidth=2; ctx.beginPath();
+    ctx.moveTo(x1,y0-h); ctx.lineTo(x1,y0); ctx.stroke();
+    ctx.fillStyle='#C0392B'; ctx.font='11px -apple-system,Arial'; ctx.textAlign='center';
+    ctx.fillText('\u03c1 = 1', x1, y0-h-6);
+    ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial';
+    for(let i=0;i<=5;i++) ctx.fillText((hi*i/5).toFixed(2), x0+w*i/5, y0+15);
+    ctx.textAlign='left';
+    ctx.fillStyle='#666'; ctx.font='11px -apple-system,Arial';
+    ctx.fillText('\u03c0 = ('+PI[0].toFixed(3)+', '+PI[1].toFixed(3)+')   b = (0.500, 0.500)   T = '+T, x0+6, 22);
+    tbl.innerHTML = '<tr><th></th><th>mean \u03c1</th><th>variance</th><th>max</th><th>ESS</th><th>ESS / N</th></tr>'
+      + '<tr><td style="font-weight:600">raw</td><td>'+S.mean.toFixed(4)+'</td><td>'+S.varr.toFixed(4)+'</td><td>'
+        + Math.max.apply(null,rho).toFixed(2)+'</td><td>'+ess.toFixed(0)+'</td><td>'+(100*ess/NS).toFixed(1)+'%</td></tr>'
+      + '<tr'+(doClip?' class="hi"':'')+'><td style="font-weight:600">clipped to [1\u2212\u03b5, 1+\u03b5]</td><td>'+SC.mean.toFixed(4)+'</td><td>'+SC.varr.toFixed(4)
+        + '</td><td>'+Math.max.apply(null,clipped).toFixed(2)+'</td><td>'+essc.toFixed(0)+'</td><td>'+(100*essc/NS).toFixed(1)+'%</td></tr>';
+    out.innerHTML = 'Theoretical variance \\(\\;(\\sum_a \\pi_a^2/b_a)^T - 1\\) = <b>'+ (theo>1e6? theo.toExponential(2) : theo.toFixed(3)) +'</b>, empirical <b>'+S.varr.toFixed(3)+'</b>. '
+      + 'The raw sample mean is <b>'+S.mean.toFixed(4)+'</b>'
+      + (S.mean<0.6
+          ? ' \u2014 and it has <em>collapsed away from 1</em>. The estimator is still unbiased in expectation; what has failed is the sampling. Almost the entire mass of \\(\\mathbb{E}_b[\\rho]\\) now sits in trajectories so rare that '+NS+' draws contain none of them, so the sample mean underestimates by orders of magnitude and would not converge in any batch you can afford. This is what "importance sampling fails" means concretely. '
+          : ' \u2014 unbiasedness holds and tells you nothing about whether the estimate is usable. ')
+      + '<b>ESS = '+ess.toFixed(0)+' of '+NS+' ('+(100*ess/NS).toFixed(1)+'%)</b>: that is how many equally-weighted samples this batch is actually worth. '
+      + 'Clipping at \\(\\epsilon='+eps.toFixed(2)+'\\) touches <b>'+(100*frac).toFixed(1)+'%</b> of the weights, moves the mean to <b>'+SC.mean.toFixed(4)+'</b> '
+      + '(that displacement from 1 <em>is</em> the bias you accepted) and cuts the variance by <b>'+(SC.varr>1e-12? (S.varr/SC.varr).toFixed(1):'\u221e')+'\u00d7</b>. '
+      + 'Push \\(T\\) or \\(\\Delta\\) up and watch the ESS fall long before the histogram looks alarming \u2014 it is the diagnostic that leads the failure rather than confirming it.';
+    typeset(out);
+  }
+  dS.oninput=draw; tS.oninput=draw; eS.oninput=draw; clipCB.onchange=draw;
+  draw();
+})();
+
+/* ============================================================
+   Demo E (§6): entropy on the simplex and the regularised optimum
+   ============================================================ */
+(function(){
+  const s1=document.getElementById('en-1'), s2=document.getElementById('en-2'), s3=document.getElementById('en-3'),
+        l1=document.getElementById('en-1L'), l2=document.getElementById('en-2L'), l3=document.getElementById('en-3L'),
+        lS=document.getElementById('en-l'), lL=document.getElementById('en-lL'),
+        cvS=document.getElementById('en-simplex'), sctx=cvS.getContext('2d'),
+        cvC=document.getElementById('en-curve'), cctx=cvC.getContext('2d'),
+        out=document.getElementById('en-read');
+  const R=[1.0,0.6,0.2], HMAX=Math.log(3);
+  const V1=[200,22], V2=[26,300], V3=[374,300];
+  let heatDone=false;
+  function bary(x,y){
+    const d=(V2[1]-V3[1])*(V1[0]-V3[0])+(V3[0]-V2[0])*(V1[1]-V3[1]);
+    const a=((V2[1]-V3[1])*(x-V3[0])+(V3[0]-V2[0])*(y-V3[1]))/d;
+    const b=((V3[1]-V1[1])*(x-V3[0])+(V1[0]-V3[0])*(y-V3[1]))/d;
+    return [a,b,1-a-b];
+  }
+  function toXY(p){ return [p[0]*V1[0]+p[1]*V2[0]+p[2]*V3[0], p[0]*V1[1]+p[1]*V2[1]+p[2]*V3[1]]; }
+  function drawHeat(){
+    const img=sctx.createImageData(cvS.width,cvS.height);
+    const d=img.data;
+    for(let y=0;y<cvS.height;y++){
+      for(let x=0;x<cvS.width;x++){
+        const i=4*(y*cvS.width+x);
+        const p=bary(x+0.5,y+0.5);
+        if(p[0]<0||p[1]<0||p[2]<0){ d[i]=255;d[i+1]=255;d[i+2]=255;d[i+3]=255; continue; }
+        const f=entropy(p)/HMAX;
+        d[i]=Math.round(255-(255-31)*f*0.86);
+        d[i+1]=Math.round(255-(255-78)*f*0.62);
+        d[i+2]=Math.round(255-(255-121)*f*0.28);
+        d[i+3]=255;
+      }
+    }
+    sctx.putImageData(img,0,0);
+    heatDone=true;
+  }
+  function drawSimplex(){
+    clear(sctx,cvS);
+    drawHeat();
+    sctx.strokeStyle='#7A8A9A'; sctx.lineWidth=1.2; sctx.beginPath();
+    sctx.moveTo(V1[0],V1[1]); sctx.lineTo(V2[0],V2[1]); sctx.lineTo(V3[0],V3[1]); sctx.closePath(); sctx.stroke();
+    sctx.fillStyle='#333'; sctx.font='11px -apple-system,Arial'; sctx.textAlign='center';
+    sctx.fillText('a\u2081 = 1  (H = 0)', V1[0], V1[1]-7);
+    sctx.fillText('a\u2082 = 1', V2[0], V2[1]+15);
+    sctx.fillText('a\u2083 = 1', V3[0], V3[1]+15);
+    const cen=toXY([1/3,1/3,1/3]);
+    sctx.fillStyle='#eaf1f8'; sctx.font='10px -apple-system,Arial';
+    sctx.fillText('H = log 3 = 1.099', cen[0], cen[1]+30);
+    const lam=Math.pow(10,parseFloat(lS.value));
+    const p=softmax([parseFloat(s1.value),parseFloat(s2.value),parseFloat(s3.value)]);
+    const ps=softmax(R.map(v=>v/lam));
+    const a=toXY(p), b=toXY(ps);
+    sctx.strokeStyle='#333'; sctx.lineWidth=1; sctx.setLineDash([3,3]);
+    sctx.beginPath(); sctx.moveTo(a[0],a[1]); sctx.lineTo(b[0],b[1]); sctx.stroke(); sctx.setLineDash([]);
+    sctx.fillStyle='#fff'; sctx.strokeStyle='#333'; sctx.lineWidth=1.5;
+    sctx.beginPath(); sctx.arc(a[0],a[1],6,0,7); sctx.fill(); sctx.stroke();
+    sctx.fillStyle='#C0392B'; sctx.strokeStyle='#fff'; sctx.lineWidth=2;
+    sctx.beginPath(); sctx.arc(b[0],b[1],6,0,7); sctx.fill(); sctx.stroke();
+    sctx.textAlign='left';
+  }
+  function drawCurve(){
+    clear(cctx,cvC);
+    const x0=56,y0=288,w=370,h=248;
+    axes(cctx,x0,y0,w,h,'coefficient \u03bb  (log scale)','');
+    const LO=-2, HI=1, NPT=160;
+    cctx.strokeStyle='#EEF2F6';
+    for(let i=0;i<=4;i++){ const y=y0-h*i/4; cctx.beginPath(); cctx.moveTo(x0,y); cctx.lineTo(x0+w,y); cctx.stroke(); }
+    const Hs=[], Js=[];
+    for(let i=0;i<NPT;i++){
+      const lam=Math.pow(10, LO+(HI-LO)*i/(NPT-1));
+      const ps=softmax(R.map(v=>v/lam));
+      Hs.push([x0+w*i/(NPT-1), y0-h*entropy(ps)/HMAX]);
+      const j=ps.reduce((acc,q,k)=>acc+q*R[k],0);
+      Js.push([x0+w*i/(NPT-1), y0-h*(j-R[2])/(R[0]-R[2])]);
+    }
+    polyline(cctx,Hs,'#6A3FA0',2.2);
+    polyline(cctx,Js,'#1F8B4C',2.2);
+    const lam=Math.pow(10,parseFloat(lS.value));
+    const xl=x0+w*(Math.log10(lam)-LO)/(HI-LO);
+    cctx.strokeStyle='#C0392B'; cctx.lineWidth=1.5; cctx.setLineDash([4,3]);
+    cctx.beginPath(); cctx.moveTo(xl,y0-h); cctx.lineTo(xl,y0); cctx.stroke(); cctx.setLineDash([]);
+    cctx.fillStyle='#999'; cctx.font='10px -apple-system,Arial'; cctx.textAlign='center';
+    ['0.01','0.1','1','10'].forEach(function(t,i){ cctx.fillText(t, x0+w*i/3, y0+15); });
+    cctx.textAlign='left';
+    cctx.font='11px -apple-system,Arial';
+    const t1='H(\u03c0*) \u2192 log 3 = 1.099 (uniform)', t2='E[r] \u2192 0.60 (uniform)  \u2193  from 1.00 (greedy)';
+    const tw=Math.max(cctx.measureText(t1).width, cctx.measureText(t2).width)+8;
+    cctx.fillStyle='rgba(255,255,255,0.88)'; cctx.fillRect(x0+7, y0-h*0.42-12, tw, 32);
+    cctx.fillStyle='#6A3FA0'; cctx.fillText(t1, x0+10, y0-h*0.42);
+    cctx.fillStyle='#1F8B4C'; cctx.fillText(t2, x0+10, y0-h*0.42+15);
+  }
+  function refresh(){
+    l1.textContent=parseFloat(s1.value).toFixed(2);
+    l2.textContent=parseFloat(s2.value).toFixed(2);
+    l3.textContent=parseFloat(s3.value).toFixed(2);
+    const lam=Math.pow(10,parseFloat(lS.value));
+    lL.textContent=lam.toFixed(3);
+    drawSimplex(); drawCurve();
+    const p=softmax([parseFloat(s1.value),parseFloat(s2.value),parseFloat(s3.value)]);
+    const H=entropy(p), Jr=p.reduce((a,q,k)=>a+q*R[k],0);
+    const ps=softmax(R.map(v=>v/lam)), Hs=entropy(ps), Js=ps.reduce((a,q,k)=>a+q*R[k],0);
+    out.innerHTML = 'Your policy \\(\\pi = ('+p.map(v=>v.toFixed(3)).join(',\\,')+')\\): '
+      + '\\(H(\\pi)\\) = <b>'+H.toFixed(4)+'</b> nats of a maximum '+HMAX.toFixed(4)+', '
+      + '\\(\\mathbb{E}_\\pi[r]\\) = <b>'+Jr.toFixed(4)+'</b>, regularised objective \\(J+\\lambda H\\) = <b>'+(Jr+lam*H).toFixed(4)+'</b>. '
+      + '&nbsp;\u00b7&nbsp; At \\(\\lambda='+lam.toFixed(3)+'\\) the optimum is \\(\\pi^\\star=\\mathrm{softmax}(r/\\lambda) = ('
+      + ps.map(v=>v.toFixed(3)).join(',\\,')+')\\) with \\(H\\) = <b>'+Hs.toFixed(4)+'</b> and \\(\\mathbb{E}[r]\\) = <b>'+Js.toFixed(4)+'</b>, '
+      + 'so the regulariser has cost <b>'+(1.0-Js).toFixed(4)+'</b> of reward against the greedy value 1.0000. '
+      + (lam<0.05 ? 'This \\(\\lambda\\) is small enough that \\(\\pi^\\star\\) is effectively deterministic \u2014 nothing prevents an early collapse onto the wrong action.'
+        : (lam>2 ? 'This \\(\\lambda\\) is large enough that \\(\\pi^\\star\\) is nearly uniform \u2014 the policy cannot commit, and the return plateaus at the random-action value however long you train.'
+                 : 'This is the usable regime: \\(\\pi^\\star\\) prefers the best action while keeping every action sampled often enough to receive a gradient.'));
+    typeset(out);
+  }
+  [s1,s2,s3,lS].forEach(function(el){ el.oninput=refresh; });
+  refresh();
+})();
+</script>
+</body>
+</html>

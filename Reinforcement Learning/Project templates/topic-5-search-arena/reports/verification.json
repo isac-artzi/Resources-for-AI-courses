@@ -1,0 +1,53 @@
+{
+  "checks": [
+    {
+      "check": "alpha-beta equivalence",
+      "positions": 1000,
+      "depth": 4,
+      "mismatches": 0,
+      "examples": [],
+      "passed": true,
+      "mean_nodes_full_width": 2579.362,
+      "mean_nodes_alpha_beta": 778.628,
+      "mean_nodes_ordered_alpha_beta": 187.929,
+      "seconds": 128.7
+    },
+    {
+      "check": "strong search never loses to random",
+      "agent": "heuristic-ordered alpha-beta, depth 6",
+      "games": 300,
+      "wins": 300,
+      "draws": 0,
+      "losses": 0,
+      "win_rate": 1.0,
+      "passed": true
+    },
+    {
+      "check": "MCTS beats random at a high iteration budget",
+      "simulations": 800,
+      "games": 100,
+      "wins": 100,
+      "draws": 0,
+      "losses": 0,
+      "win_rate": 1.0,
+      "threshold": 0.9,
+      "passed": true
+    },
+    {
+      "check": "heuristic ordering reduces nodes under alpha-beta",
+      "depth": 6,
+      "positions": 25,
+      "mean_nodes": {
+        "exhaustive": 125562.7,
+        "heuristic_no_ab": 125562.7,
+        "natural+ab": 16156.8,
+        "heuristic+ab": 1459.2,
+        "beam3": 183.7
+      },
+      "ordering_speedup_vs_natural_ab": 11.07,
+      "alpha_beta_speedup_vs_full_width": 7.77,
+      "passed": true
+    }
+  ],
+  "all_passed": true
+}

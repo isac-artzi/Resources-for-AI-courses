@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topic 2 Exercises — Markov Decision Process and Monte Carlo Learning</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.6;
+}
+.container { max-width: 940px; margin: 24px auto 48px; background: white;
+  padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79;
+     padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+.score { position: sticky; top: 0; background: white; padding: 10px 14px;
+         border: 1px solid #E0E5EB; border-radius: 8px; margin-bottom: 12px;
+         color: #1F4E79; font-weight: 600; z-index: 10;
+         display: flex; justify-content: space-between; align-items: center; }
+.score .bar { background: #E0E5EB; border-radius: 999px; height: 8px;
+              width: 240px; overflow: hidden; }
+.score .bar > div { background: #1F4E79; height: 100%; transition: width 0.3s; }
+.exercise { border: 1px solid #E0E5EB; border-radius: 8px; padding: 22px 26px;
+            margin: 22px 0; background: #FCFDFE; }
+.exercise h3 { margin: 0 0 4px; color: #1F4E79; font-size: 1.1em; }
+.exercise .qtype { color: #888; font-size: 0.8em; text-transform: uppercase;
+                   letter-spacing: 0.05em; margin-bottom: 14px; }
+.stem { margin-bottom: 14px; }
+.stem code { font-family: "SF Mono", Consolas, Monaco, monospace;
+             background: #F2F4F7; padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+pre { background: #F2F4F7; padding: 14px 18px; border-radius: 6px;
+      overflow-x: auto; border-left: 4px solid #1F4E79;
+      font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.92em; }
+table.tb { border-collapse:collapse; margin:12px 0; font-size:0.9em; }
+table.tb td, table.tb th { border:1px solid #D0D8E0; padding:5px 12px; text-align:center; }
+table.tb th { background:#EAF1F8; color:#1F4E79; }
+.options { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 14px; }
+.options label { cursor: pointer; padding: 10px 14px; background: white;
+                 border: 1px solid #D0D8E0; border-radius: 6px; transition: border-color 0.15s; }
+.options label:hover { border-color: #1F4E79; background: #F7FAFC; }
+.options input[type="radio"] { margin-right: 10px; }
+.numeric-row { display: flex; gap: 12px; align-items: center; margin: 10px 0 14px; }
+.numeric-row input { padding: 8px 12px; border: 1px solid #D0D8E0; border-radius: 6px;
+                     font-family: inherit; font-size: 1em; width: 160px; }
+button { background: #1F4E79; color: white; border: 0; padding: 9px 18px;
+         border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.95em; }
+button:hover { background: #2D5C8C; }
+button.secondary { background: #E0E5EB; color: #1A1A1A; }
+button.secondary:hover { background: #CFD7DF; }
+button:disabled { background: #B8C2CB; cursor: not-allowed; }
+.feedback { padding: 12px 16px; border-radius: 6px; margin-top: 10px;
+            font-size: 0.95em; display: none; }
+.feedback.show { display: block; }
+.feedback.correct { background: #E8F5E9; border-left: 4px solid #2E7D32; color: #1B5E20; }
+.feedback.incorrect { background: #FDECEA; border-left: 4px solid #C00000; color: #6E1414; }
+.feedback strong { display: block; margin-bottom: 4px; }
+.help { color: #777; font-size: 0.85em; margin-top: 6px; }
+.nav { display: flex; justify-content: space-between; margin-top: 36px;
+       padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; }
+.nav a { color: #1F4E79; text-decoration: none; }
+.nav a:hover { text-decoration: underline; }
+.eq { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">Practice exercises</div>
+<h1>Topic 2 — Markov Decision Process and Monte Carlo Learning</h1>
+<p class="subtitle">Ten self-graded problems. Submit each one to see immediate feedback; the score bar at the top tracks your progress. Every problem is a quantity you will compute again inside your Topic 2 product.</p>
+
+<div class="score">
+  <span id="scoreText">Score: 0 / 10</span>
+  <div class="bar"><div id="scoreBar" style="width:0%"></div></div>
+</div>
+
+<!-- Q1 -->
+<div class="exercise" data-q="1">
+  <div class="qtype">Computational · One Bellman expectation backup</div>
+  <h3>Question 1</h3>
+  <div class="stem">In state <code>s</code> the policy is stochastic: <span class="eq">π(a₁|s) = 0.6</span> and <span class="eq">π(a₂|s) = 0.4</span>. The kernel and the current values are below, with <span class="eq">γ = 0.9</span>.
+  <table class="tb">
+    <tr><th>action</th><th>outcome</th><th><span class="eq">P(s′|s,a)</span></th><th>reward</th><th><span class="eq">v<sub>π</sub>(s′)</span></th></tr>
+    <tr><td><span class="eq">a₁</span></td><td>step across</td><td>1.0</td><td>+2</td><td>5</td></tr>
+    <tr><td rowspan="2"><span class="eq">a₂</span></td><td>drift left</td><td>0.5</td><td>0</td><td>10</td></tr>
+    <tr><td>drift right</td><td>0.5</td><td>−1</td><td>2</td></tr>
+  </table>
+  Apply one Bellman <em>expectation</em> backup. What is <span class="eq">v<sub>π</sub>(s)</span>? Round to two decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.01" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · Compute <span class="eq">q<sub>π</sub>(s,a) = Σ P(s′|s,a)[r + γ v<sub>π</sub>(s′)]</span> for each action first, then average them with the policy probabilities. The expectation equation averages over actions; it does not maximise.</div>
+</div>
+
+<!-- Q2 -->
+<div class="exercise" data-q="2">
+  <div class="qtype">Conceptual · The policy improvement theorem</div>
+  <h3>Question 2</h3>
+  <div class="stem">Continuing from Question 1: <span class="eq">q<sub>π</sub>(s,a₁) = 6.5</span>, <span class="eq">q<sub>π</sub>(s,a₂) = 4.9</span>, and <span class="eq">v<sub>π</sub>(s) = 5.86</span>. You define <span class="eq">π′</span> to take <span class="eq">a₁</span> deterministically in <code>s</code> and to follow <span class="eq">π</span> everywhere else. Which statement is correct?</div>
+  <div class="options">
+    <label><input type="radio" name="q2" value="a"> Nothing follows until <span class="eq">π′</span> is evaluated, because switching an action in <code>s</code> changes the state distribution and could make other states worse.</label>
+    <label><input type="radio" name="q2" value="b"> Since <span class="eq">q<sub>π</sub>(s,π′(s)) = 6.5 &gt; 5.86 = v<sub>π</sub>(s)</span> and <span class="eq">π′</span> matches <span class="eq">π</span> elsewhere, the improvement theorem gives <span class="eq">v<sub>π′</sub>(s′) ≥ v<sub>π</sub>(s′)</span> at <em>every</em> state, with strict improvement at <code>s</code>.</label>
+    <label><input type="radio" name="q2" value="c"> The theorem guarantees improvement only at <code>s</code>; other states may become worse, which is why policy iteration re-evaluates from scratch.</label>
+    <label><input type="radio" name="q2" value="d"> The theorem does not apply, because <span class="eq">π</span> is stochastic and the theorem is stated for deterministic policies only.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q3 -->
+<div class="exercise" data-q="3">
+  <div class="qtype">Computational · Value iteration versus policy iteration cost</div>
+  <h3>Question 3</h3>
+  <div class="stem">An MDP has 500 non-terminal states and 4 actions. Count cost in <em>elementary backups</em>, where one backup is a single evaluation of <span class="eq">q(s,a)</span>.
+  <ul>
+    <li>Value iteration converges in 60 sweeps. Each sweep evaluates all 4 actions in every state.</li>
+    <li>Policy iteration converges in 5 rounds. Each round runs 12 evaluation sweeps for its current <em>deterministic</em> policy, then one improvement sweep over all actions.</li>
+  </ul>
+  How many elementary backups does <strong>policy iteration</strong> perform in total?</div>
+  <div class="numeric-row">
+    <input type="number" step="1" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · An evaluation sweep for a deterministic policy touches one action per state, not four. An improvement sweep touches all four. Cost one round, then multiply by the number of rounds.</div>
+</div>
+
+<!-- Q4 -->
+<div class="exercise" data-q="4">
+  <div class="qtype">Computational · First-visit against every-visit</div>
+  <h3>Question 4</h3>
+  <div class="stem">A single episode is generated under <span class="eq">π</span> with <span class="eq">γ = 0.5</span>:
+  <pre>A --(r=+1)--> B --(r=-1)--> A --(r=+2)--> C --(r=+4)--> terminal</pre>
+  This is the only episode you have. What is the <strong>every-visit</strong> Monte Carlo estimate of <span class="eq">V(A)</span>? Round to two decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.01" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · Work backwards with <span class="eq">G<sub>t</sub> = R<sub>t+1</sub> + γG<sub>t+1</sub></span> to get the return following each of the four time steps, then average the returns following <em>both</em> occurrences of A.</div>
+</div>
+
+<!-- Q5 -->
+<div class="exercise" data-q="5">
+  <div class="qtype">Computational · The importance-sampling ratio</div>
+  <h3>Question 5</h3>
+  <div class="stem">Three actions. The target policy is <span class="eq">π = (0.50, 0.40, 0.10)</span> and the behaviour policy is <span class="eq">b = (0.25, 0.25, 0.50)</span>, both the same in every state. A three-step episode is observed under <span class="eq">b</span> with the action sequence <span class="eq">a₁, a₂, a₁</span>. What is the importance-sampling ratio <span class="eq">ρ</span> for this episode? Round to two decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.01" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · <span class="eq">ρ = Π<sub>t</sub> π(a<sub>t</sub>|s<sub>t</sub>) / b(a<sub>t</sub>|s<sub>t</sub>)</span>. The transition probabilities appear in both the numerator and the denominator and cancel, so no knowledge of <span class="eq">P</span> is required.</div>
+</div>
+
+<!-- Q6 -->
+<div class="exercise" data-q="6">
+  <div class="qtype">Conceptual · Ordinary versus weighted importance sampling</div>
+  <h3>Question 6</h3>
+  <div class="stem">You evaluate a target policy off-policy from 30 logged episodes. The ordinary estimate is 4.9 and the weighted estimate is 1.2, and every logged return lay between −1 and +3. Which reading is correct?</div>
+  <div class="options">
+    <label><input type="radio" name="q6" value="a"> The ordinary estimate is the trustworthy one, because it is the unbiased estimator; the weighted estimate is biased and should be discarded.</label>
+    <label><input type="radio" name="q6" value="b"> The ordinary estimate is unbiased in expectation but has unbounded variance and has clearly been dominated by one or two large ratios — note that 4.9 lies outside the range of any observed return, which the weighted estimator cannot do because it is a convex combination of them. Report the weighted estimate with its effective sample size.</label>
+    <label><input type="radio" name="q6" value="c"> The two estimators are estimating different quantities, so the disagreement is expected and neither can be preferred.</label>
+    <label><input type="radio" name="q6" value="d"> The disagreement means the coverage assumption <span class="eq">π(a|s) &gt; 0 ⟹ b(a|s) &gt; 0</span> has been violated, and no importance-sampling estimate is valid.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q7 -->
+<div class="exercise" data-q="7">
+  <div class="qtype">Computational · Discounting and the cost of convergence</div>
+  <h3>Question 7</h3>
+  <div class="stem">The Bellman optimality operator is a <span class="eq">γ</span>-contraction, so the max-norm residual of value iteration falls by at most a factor <span class="eq">γ</span> per sweep. With <span class="eq">γ = 0.99</span>, how many sweeps does that bound require to reduce the residual by a factor of <span class="eq">10⁶</span>? Give a whole number of sweeps.</div>
+  <div class="numeric-row">
+    <input type="number" step="1" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · Solve <span class="eq">γ<sup>k</sup> ≤ 10<sup>−6</sup></span> for <span class="eq">k</span>, i.e. <span class="eq">k ≥ ln(10<sup>−6</sup>) / ln(0.99)</span>, and round up.</div>
+</div>
+
+<!-- Q8 -->
+<div class="exercise" data-q="8">
+  <div class="qtype">Computational · Seeds, intervals, and the 5% level</div>
+  <h3>Question 8</h3>
+  <div class="stem">Step 7 of your product asks for a 95% confidence interval across at least ten seeds. At a budget of 2,000 episodes you record the RMSE between the Monte Carlo estimate and the exact value-iteration solution for <span class="eq">n = 10</span> seeds, obtaining a sample mean of <span class="eq">0.148</span> and a sample standard deviation of <span class="eq">0.036</span>. Using <span class="eq">t<sub>0.975,&nbsp;9</sub> = 2.262</span>, what is the <strong>half-width</strong> of the 95% confidence interval for the mean RMSE? Round to three decimal places.</div>
+  <div class="numeric-row">
+    <input type="number" step="0.001" data-input>
+    <button data-check>Check</button>
+  </div>
+  <div class="feedback" data-feedback></div>
+  <div class="help">Hint · The half-width is <span class="eq">t<sub>0.975,&nbsp;n−1</sub> · s/√n</span>. Note the <span class="eq">√n</span>, not <span class="eq">n</span>, and that <span class="eq">s</span> is the seed-to-seed standard deviation, not the standard error.</div>
+</div>
+
+<!-- Q9 -->
+<div class="exercise" data-q="9">
+  <div class="qtype">Application · Designing shared/preprocess.py</div>
+  <h3>Question 9</h3>
+  <div class="stem">Your repository contains a value-iteration planner and a Monte Carlo learner solving the same gridworld. A teammate proposes applying <code>clip_reward(r, -1, 1)</code> inside the Monte Carlo rollout loop only, "because clipping is a variance-reduction trick for sampled learners and the planner does not need it." What is wrong with this, and what should <code>shared/preprocess.py</code> enforce?</div>
+  <div class="options">
+    <label><input type="radio" name="q9" value="a"> Nothing is wrong: clipping only affects the learner's update magnitudes, so the two agents still solve the same problem and the RMSE comparison remains valid.</label>
+    <label><input type="radio" name="q9" value="b"> Clipping redefines <span class="eq">R</span>, so the clipped learner converges to the value function of a <em>different</em> MDP; the RMSE against the unclipped planner will then plateau at a non-zero floor no matter how many episodes are run. Clipping must be applied to both or to neither, and the module exists so that the transformation used at training is provably the one used everywhere else, including at serving.</label>
+    <label><input type="radio" name="q9" value="c"> The problem is that one-hot encoding must be applied to the planner as well, since both agents must consume identically shaped inputs.</label>
+    <label><input type="radio" name="q9" value="d"> The problem is only stylistic: the transformation should live in the module for tidiness, but the numerical results would be the same either way.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<!-- Q10 -->
+<div class="exercise" data-q="10">
+  <div class="qtype">Application · Free-tier infrastructure</div>
+  <h3>Question 10</h3>
+  <div class="stem">You are starting the Topic 2 product in a fresh repository and already have a Supabase project serving your Topic 1 agent. A classmate advises provisioning a second Supabase project so the two products stay cleanly separated. What should you do?</div>
+  <div class="options">
+    <label><input type="radio" name="q10" value="a"> Provision the second project — separation of products is a course requirement and the free tier is unlimited.</label>
+    <label><input type="radio" name="q10" value="b"> Reuse the existing project and namespace this product's tables, because the free tier permits only two active projects per person and you need the headroom in later topics; the products stay independent through separate repositories and separate deployments, not separate databases. Touch the project weekly, since free projects pause after a week of inactivity.</label>
+    <label><input type="radio" name="q10" value="c"> Delete the Topic 1 project and reuse its quota, since Topic 1 has already been graded.</label>
+    <label><input type="radio" name="q10" value="d"> Skip the data tier for this product and keep the episode history in memory, since Topic 2 generates tens of thousands of rows and the 500 MB limit will be exceeded.</label>
+  </div>
+  <button data-check>Check</button>
+  <div class="feedback" data-feedback></div>
+</div>
+
+<div class="nav"><a href="index.html">← All tutorials</a><a href="Tutorial-Topic-2-Markov-Decision-Process-and-Monte-Carlo-Learning.html">Topic 2 tutorial →</a></div>
+</div>
+
+<script>
+/* ---- Answer key + feedback content ---- */
+const KEY = {
+  1: { type: 'numeric', accept: 5.86, tol: 0.005,
+       ok: 'q(s,a₁) = 2 + 0.9·5 = 6.5 and q(s,a₂) = 0.5(0 + 0.9·10) + 0.5(−1 + 0.9·2) = 4.5 + 0.4 = 4.9, so v(s) = 0.6·6.5 + 0.4·4.9 = 5.86. The value of a state under a policy is the policy-weighted average of its action values — writing max(6.5, 4.9) = 6.5 here is the optimality equation, which answers a different question and is the single most common slip on this backup.',
+       no: 'Two sums, in order. Inner: for each action, average [r + γ v(s′)] over successors — a₂ has two of them, at 0.5 each. Outer: weight the two action values by π(a|s) = 0.6 and 0.4. Do not take a maximum; that is the optimality equation, not the expectation equation.' },
+  2: { type: 'mc', accept: 'b',
+       ok: 'The premise q_π(s, π′(s)) ≥ v_π(s) holds at every state — trivially where π′ = π, and strictly at s — so the theorem’s conclusion v_π′ ≥ v_π holds at every state too. That global conclusion from a one-step premise is exactly what the telescoping proof buys you: it re-applies the premise at whichever state π′ actually reaches, so the change in the state distribution never has to be assumed away.',
+       no: 'The worry that a local switch could hurt other states is the right worry, and the telescoping proof is precisely what disposes of it — the induction never assumes anything about the new state distribution. Also check the theorem’s statement: it is proved for a deterministic π′, but π itself may be stochastic.' },
+  3: { type: 'numeric', accept: 40000, tol: 10,
+       ok: 'One round costs 12·500 = 6,000 evaluation backups plus 500·4 = 2,000 improvement backups, so 8,000; five rounds is 40,000. Value iteration costs 60·500·4 = 120,000, so policy iteration wins here by 3× — but only because its evaluation was truncated at 12 sweeps. Evaluate to full precision instead and the ordering reverses, which is what the planner demo in the tutorial shows.',
+       no: 'Cost the two kinds of sweep separately. A deterministic policy has one action per state, so an evaluation sweep is 500 backups, not 2,000; the improvement sweep is the one that costs 500·4. Add them for one round, then multiply by 5.' },
+  4: { type: 'numeric', accept: 2.75, tol: 0.005,
+       ok: 'The returns are G₀ = 1 − 0.5 + 0.5 + 0.5 = 1.5, G₁ = 1.0, G₂ = 2 + 0.5·4 = 4.0, G₃ = 4.0. A occurs at t = 0 and t = 2, so every-visit averages (1.5 + 4.0)/2 = 2.75 while first-visit reports 1.5. They differ by a lot on one episode and agree in the limit — and the reason the two samples cannot simply be pooled as independent data is that they share the same trajectory tail, which is the source of every-visit’s finite-sample bias.',
+       no: 'Compute the four returns backwards from the end with G_t = R_{t+1} + γG_{t+1}: 4.0, 4.0, 1.0, 1.5 reading right to left. A appears twice, at t = 0 and t = 2. First-visit would use only G₀ = 1.5; every-visit averages G₀ and G₂.' },
+  5: { type: 'numeric', accept: 6.4, tol: 0.05,
+       ok: 'ρ = (0.50/0.25)·(0.40/0.25)·(0.50/0.25) = 2 × 1.6 × 2 = 6.4. Note what did not appear: P(s′|s,a) is in both products and cancels term by term, which is why an importance-sampling correction is available to a model-free learner. Note also the shape of the arithmetic — ratios multiply across the horizon, so a modest per-step mismatch becomes an enormous weight over a long episode, and that is the variance problem in one line.',
+       no: 'Multiply the per-step ratios π(a_t)/b(a_t), one factor per step, for the three actions actually taken: a₁, a₂, a₁. Do not include transition probabilities — they cancel — and do not average the ratios; they multiply.' },
+  6: { type: 'mc', accept: 'b',
+       ok: 'The diagnostic in the stem is decisive: a weighted estimate is a convex combination of observed returns and therefore cannot leave [−1, 3], while an ordinary estimate can and here did. Unbiasedness is a property of the average over infinitely many repetitions of the whole experiment; you ran it once, so the variance is what governs your error. Report the weighted estimate together with n_eff = (Σρ)²/Σρ², which is the number that tells a reader how much of your data was actually doing the work.',
+       no: 'Both estimators are consistent for the same v_π, so this is not a case of estimating different things — and unbiasedness alone does not make an estimator usable. Ask which of the two could possibly produce 4.9 when no observed return exceeded 3, and what that implies about the weights.' },
+  7: { type: 'numeric', accept: 1375, tol: 15,
+       ok: 'k ≥ ln(10⁻⁶)/ln(0.99) = −13.8155/−0.01005 = 1374.6, so 1,375 sweeps. At γ = 0.9 the same bound is only 131 — a factor of 10.5, which is exactly the ratio of the effective horizons 100 and 10. The bound is worst-case, however: in the episodic gridworld of this topic the measured sweep count is an order of magnitude smaller, because the operator contracts by γ^k times the probability of not yet having been absorbed.',
+       no: 'Take logs of γ^k ≤ 10⁻⁶. Both logarithms are negative, so dividing flips the inequality: k ≥ ln(10⁻⁶)/ln(γ). With ln(0.99) ≈ −0.01005 the quotient is close to 1,375, not to 600 or to 100/0.99.' },
+  8: { type: 'numeric', accept: 0.0258, tol: 0.002,
+       ok: '2.262 × 0.036/√10 = 2.262 × 0.011384 = 0.0258, so the interval is 0.148 ± 0.026. Two things this number is not: it is not the spread of the seeds (that is 0.036, and it does not shrink with more seeds), and it is not a claim about any single run. To report the episode budget at which the Monte Carlo estimate becomes statistically indistinguishable from the exact solution, run the same interval at several budgets and name the first at which the null of zero difference is not rejected at the 5% level — and state the test and its assumptions, because a one-sample t-test assumes approximately normal seed means.',
+       no: 'Half-width = t · s/√n. Divide the standard deviation 0.036 by √10 ≈ 3.162 to get the standard error 0.0114 first, and only then multiply by 2.262. Dividing by 10 rather than by √10 gives roughly 0.008, which is the common error here.' },
+  9: { type: 'mc', accept: 'b',
+       ok: 'Clipping is a transformation of R, and R is part of the MDP. Clip for one agent only and your convergence plot is measuring the distance between the solutions of two different problems, so it flattens out at a floor instead of going to zero — the most common way this topic’s headline chart comes out wrong. The general rule the module enforces is that a transformation applied at training must provably be the one applied everywhere else; a module that both agents import gives you that, and inline code in two files does not.',
+       no: 'Ask what clipping changes. It does not merely rescale an update — it changes the reward function, hence v_π and possibly the arg max. Then ask what your RMSE-versus-episodes curve would converge to if the planner and the learner were solving problems with different reward functions.' },
+  10:{ type: 'mc', accept: 'b',
+       ok: 'The free tier allows two active projects per person, which is why the syllabus asks you to reuse one across topics and namespace by product. Independence between products comes from separate repositories and separate deployments — so missing one topic never blocks the next — not from separate databases. Also note the pause rule: free projects pause after a week of inactivity, and a paused project at grading time is an ungraded product unless your README documents the resume procedure accurately.',
+       no: 'Check the free-tier limit you are designing around: two active projects per person, and 500 MB per database. Per-episode rows for this topic are on the order of tens of thousands and are nowhere near the size limit, so the constraint that binds is the project count — and the fix is namespacing, not deleting a graded deployment or abandoning the data tier.' },
+};
+
+const state = {}; let solved = new Set();
+
+document.querySelectorAll('.exercise').forEach(ex => {
+  const qid = +ex.dataset.q;
+  const btn = ex.querySelector('[data-check]');
+  const fb = ex.querySelector('[data-feedback]');
+  btn.addEventListener('click', () => {
+    const k = KEY[qid]; let user;
+    if (k.type === 'numeric') {
+      const inp = ex.querySelector('[data-input]');
+      user = parseFloat(inp.value);
+      if (Number.isNaN(user)) {
+        fb.className = 'feedback incorrect show';
+        fb.innerHTML = '<strong>Please enter a number.</strong>';
+        return;
+      }
+    } else {
+      const picked = ex.querySelector('input[type=radio]:checked');
+      if (!picked) {
+        fb.className = 'feedback incorrect show';
+        fb.innerHTML = '<strong>Please select an option.</strong>';
+        return;
+      }
+      user = picked.value;
+    }
+    const ok = (k.type === 'numeric')
+      ? Math.abs(user - k.accept) <= k.tol
+      : user === k.accept;
+    if (ok) {
+      fb.className = 'feedback correct show';
+      fb.innerHTML = '<strong>Correct.</strong>' + k.ok;
+      if (!solved.has(qid)) { solved.add(qid); updateScore(); }
+      btn.disabled = true;
+    } else {
+      fb.className = 'feedback incorrect show';
+      fb.innerHTML = '<strong>Not quite.</strong>' + k.no;
+    }
+  });
+});
+
+function updateScore() {
+  const total = Object.keys(KEY).length;
+  document.getElementById('scoreText').textContent = `Score: ${solved.size} / ${total}`;
+  document.getElementById('scoreBar').style.width = `${(solved.size / total * 100).toFixed(0)}%`;
+}
+</script>
+</body>
+</html>

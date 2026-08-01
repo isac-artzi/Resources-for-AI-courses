@@ -1,0 +1,65 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"     # pin: Box2D wheels stop at 3.13, so never 3.14
+
+      # NOTE: CI installs the SERVING requirements plus a test runner, and
+      # nothing else. If a serving module ever grows a training-tier import,
+      # this step fails before the no-torch guard even runs. That is intended.
+      - name: Install serving requirements only
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-serve.txt
+          pip install pytest ruff
+
+      - name: Lint
+        run: ruff check .
+
+      # What CI does NOT run: tests/test_equivalence.py needs PyTorch, so its
+      # three comparisons SKIP here and run on your machine and in the training
+      # job. Do not "fix" that by adding torch to this workflow — installing
+      # serving deps only is what makes the guard meaningful. Everything else,
+      # including the 422 dimensionality tests and the store round trips, runs.
+      - name: Test (includes the no-torch guard)
+        run: pytest -q
+
+      - name: Migration check — every migration must be checked in and ordered
+        run: |
+          test -d db/migrations
+          ls db/migrations/*.sql
+          # The entropy_sweep table is a named deliverable of this product, so
+          # its absence is a build failure rather than a review comment.
+          test -f db/migrations/002_topic4.sql
+          grep -q "create table if not exists entropy_sweep" db/migrations/002_topic4.sql
+          grep -q "kl_divergence" db/migrations/002_topic4.sql
+
+      # The serving path must be able to load and evaluate all three committed
+      # artifacts with NOTHING but requirements-serve.txt installed. This is the
+      # deployment rehearsal: if it needs torch, it fails here rather than at
+      # 3 a.m. on Streamlit Cloud.
+      - name: The three deployed artifacts load and answer in NumPy alone
+        run: |
+          python -c "import api.main, sys; assert 'torch' not in sys.modules"
+          python -c "
+          import numpy as np
+          from api.policy import PolicyArtifactStore
+          s = PolicyArtifactStore('policies', default_name='a2c_cartpole')
+          expected = {
+              'a2c_cartpole': ('CartPole-v1', 4, 2, 'discrete'),
+              'ppo_acrobot':  ('Acrobot-v1',  6, 3, 'discrete'),
+              'sac_pendulum': ('Pendulum-v1', 3, 1, 'continuous'),
+          }
+          for name, (env_id, obs, acts, space) in expected.items():
+              p, meta = s.get(name)
+              assert meta['env_id'] == env_id, (name, meta)
+              assert meta['obs_dim'] == obs and meta['n_actions'] == acts, (name, meta)
+              assert meta['action_space'] == space, (name, meta)
+              print(name, meta['bytes'], 'bytes', p.act(np.zeros(obs)))
+          "

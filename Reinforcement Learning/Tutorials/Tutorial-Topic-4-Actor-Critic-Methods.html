@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topic 4 Tutorial — Actor-Critic Methods: From Advantage Actor-Critic to Soft Actor-Critic</title>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] }, svg: { fontCache: 'global' } };
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif; margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.62; }
+.container { max-width: 1000px; margin: 24px auto 48px; background: white; padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79; padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.34em; margin-top: 42px; border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 7px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+pre { background: #1f2733; color:#e6edf3; padding: 14px 18px; border-radius: 6px; overflow-x: auto; border-left: 4px solid #1F4E79; font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.86em; line-height:1.55; }
+pre .c { color:#8b98a9; } pre .k { color:#ff7b72; } pre .s { color:#a5d6ff; } pre .f { color:#d2a8ff; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79; padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.why { background:#F0FaF3; border-left:4px solid #1F8B4C; padding:14px 18px; margin:16px 0; border-radius:4px; }
+.why strong { color:#1F8B4C; }
+.deep { background:#FBF7FF; border-left:4px solid #6A3FA0; padding:14px 18px; margin:16px 0; border-radius:4px; }
+.deep strong { color:#6A3FA0; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px; margin: 14px 0; border-radius: 4px; font-size: 0.95em; }
+.product { background:#FCF6FF; border-left:4px solid #7B3FA0; padding:14px 18px; margin:16px 0; border-radius:4px; }
+.product strong { color:#7B3FA0; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px; padding: 22px; margin: 24px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.demo .tag { font-size:0.7em; background:#1F4E79; color:white; padding:2px 8px; border-radius:10px; vertical-align:middle; margin-left:8px; letter-spacing:0.04em;}
+.controls { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 200px; }
+.control input[type="text"], .control input[type="number"], .control select { padding:6px 8px; border:1px solid #CFD7DF; border-radius:4px; font-family:inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px; border-radius: 6px; font-size: 0.9em; }
+.mono { font-family:"SF Mono",Consolas,monospace; }
+textarea { width:100%; min-height:60px; padding:10px; border:1px solid #CFD7DF; border-radius:6px; font-family:"SF Mono",Consolas,monospace; font-size:0.9em; resize:vertical; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.9em; }
+button:hover { background: #2D5C8C; } button.secondary { background: #E0E5EB; color: #1A1A1A; } button.secondary:hover { background:#CFD7DF; }
+button:disabled { background:#CBD5E0; cursor:not-allowed; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; max-width:100%; }
+.tok { display:inline-block; background:#EAF1F8; border:1px solid #BcceE0; color:#1F4E79; padding:2px 7px; margin:2px; border-radius:10px; font-family:"SF Mono",Consolas,monospace; font-size:0.82em; }
+table.grid { border-collapse:collapse; font-family:"SF Mono",Consolas,monospace; font-size:0.8em; margin:8px 0; }
+table.grid td { border:1px solid #C7D2DE; width:64px; height:52px; text-align:center; padding:0; vertical-align:middle; line-height:1.25; }
+table.grid td .v { font-weight:bold; display:block; font-size:1.08em; }
+table.grid td .a { color:#1F4E79; font-size:1.15em; display:block; }
+table.grid td.hole { background:#3A4A5C; color:#fff; } table.grid td.goal { background:#1F8B4C; color:#fff; }
+table.grid td.start { outline:3px solid #F9A825; outline-offset:-3px; }
+table.tb { border-collapse:collapse; margin:12px 0; font-size:0.88em; } table.tb td, table.tb th { border:1px solid #D0D8E0; padding:5px 10px; text-align:center; } table.tb th { background:#EAF1F8; color:#1F4E79; }
+table.tb tr.hi td { background:#D6EAD9; font-weight:bold; }
+.nav { display: flex; justify-content: space-between; margin-top: 44px; padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { columns:2; font-size:0.92em; } .toc a { color:#1F4E79; text-decoration:none; } .toc a:hover{text-decoration:underline;}
+.legend { font-size:0.82em; color:#555; margin-top:6px; }
+.sw { display:inline-block; width:11px; height:11px; border-radius:2px; margin-right:4px; vertical-align:-1px; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">Tutorial · ~ 110 min · formal</div>
+<h1>Topic 4 — Actor-Critic Methods: From Advantage Actor-Critic to Soft Actor-Critic</h1>
+<p class="subtitle">One family, three algorithms, and a single organising idea: every method here is a policy gradient whose return has been replaced by an estimate, and whose step has been constrained by a regulariser. A2C replaces the return with an advantage and buys variance reduction. PPO adds a trust region and buys a step you can take without measuring it. SAC adds an entropy term and buys a different optimum. The last of those three is the one Topic 6 is built on, and this tutorial is where it is set up.</p>
+
+<div class="callout">
+ <strong>Roadmap.</strong>
+ <div class="toc">
+ <a href="#s1">1. The critic as a bias–variance dial</a><br>
+ <a href="#s2">2. A2C: the advantage, and what it costs</a><br>
+ <a href="#s3">3. Trust regions: TRPO's constraint, PPO's clip</a><br>
+ <a href="#s4">4. Off-policy actor-critic and the weight that explodes</a><br>
+ <a href="#s5">5. Maximum-entropy RL and the soft Bellman backup</a><br>
+ <a href="#s6">6. SAC: temperature, squashing, and two regularisers</a><br>
+ <a href="#s7">7. In practice (Control Bench)</a>
+ </div>
+</div>
+
+<h2 id="s1">1. The critic as a bias–variance dial</h2>
+<p>Topic 3 ended with the policy gradient theorem in its general form: for any function \(\Psi_t\) of the trajectory,</p>
+\[ \nabla_\theta J(\theta) \;=\; \mathbb{E}_{\pi_\theta}\!\left[ \sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)\, \Psi_t \right], \]
+<p>and the choice of \(\Psi_t\) decides everything about how the estimator behaves. REINFORCE takes \(\Psi_t = G_t\), the full sampled return. That choice is unbiased and it is the worst choice available on variance, because \(G_t\) accumulates the randomness of every reward and every transition from \(t\) to the end of the episode. An <strong>actor-critic</strong> method is precisely the decision to replace that sampled return with an estimate produced by a learned value function — a <strong>critic</strong> — and then to face the consequences.</p>
+<p>The family of estimates is indexed by one integer. The <strong>\(n\)-step return</strong> takes \(n\) real rewards and then bootstraps:</p>
+\[ G^{(n)}_t \;=\; \sum_{k=0}^{n-1} \gamma^{k} R_{t+k+1} \;+\; \gamma^{n} V_\phi(S_{t+n}). \]
+<p>At \(n=1\) this is the one-step temporal-difference target of Topic 1, and \(V_\phi\) supplies everything beyond the first reward. At \(n=\infty\) — meaning "run to termination" — the bootstrap term vanishes and the estimate is the Monte Carlo return. Every intermediate \(n\) is a mixture, and the two error sources move in opposite directions as \(n\) grows.</p>
+<p>Write the critic's error at a state as \(\delta_\phi(s) = V_\phi(s) - v_\pi(s)\). Taking expectations over the trajectory, and using \(\mathbb{E}[\sum_{k<n}\gamma^k R_{t+k+1} + \gamma^n v_\pi(S_{t+n})] = v_\pi(S_t)\) — which is just the \(n\)-step Bellman expectation equation — gives the bias exactly:</p>
+\[ \operatorname{Bias}\!\left[G^{(n)}_t\right] \;=\; \gamma^{n}\, \mathbb{E}\!\left[ \delta_\phi(S_{t+n}) \right]. \]
+<p>The critic's error enters attenuated by \(\gamma^n\), so the bias decays geometrically in \(n\) and is exactly zero at \(n = \infty\). The variance runs the other way: each additional sampled reward adds its own noise, and for independent reward noise of variance \(\sigma^2\),</p>
+\[ \operatorname{Var}\!\left[G^{(n)}_t\right] \;=\; \sigma^2 \sum_{k=0}^{n-1} \gamma^{2k} \;=\; \sigma^2\,\frac{1-\gamma^{2n}}{1-\gamma^{2}}, \]
+<p>which increases monotonically in \(n\) and saturates at the Monte Carlo value \(\sigma^2/(1-\gamma^2)\). One number decays, the other grows. There is no setting of \(n\) that is good on both, and which end of the dial you want depends on a quantity you do not know in advance: how wrong your critic currently is.</p>
+
+<div class="demo">
+ <h3>Demo · n-step returns: where bias stops paying for variance <span class="tag">interactive</span></h3>
+ <p>A 16-step chain pays \(+1\) per step with Gaussian noise of standard deviation \(\sigma\), so \(v_\pi(s_0) = (1-\gamma^{16})/(1-\gamma)\) is known exactly. The critic is deliberately imperfect: \(V_\phi(s) = (1-\omega)\,v_\pi(s)\), an under-trained critic that shrinks values toward zero by a fraction \(\omega\). Sample \(M\) rollouts, form \(G^{(n)}\) for every \(n\), and plot the squared bias against the variance. The <em>crossing point</em> — where the geometrically decaying bias falls below the saturating variance — is the whole lesson: to its left the critic's error dominates, to its right the sampling noise does.</p>
+ <div class="controls">
+ <div class="control"><label>critic error \(\omega\): <b id="d1-wL">0.30</b></label><input type="range" id="d1-w" min="0" max="0.80" step="0.02" value="0.30"></div>
+ <div class="control"><label>reward noise \(\sigma\): <b id="d1-sL">1.00</b></label><input type="range" id="d1-s" min="0.2" max="2.0" step="0.05" value="1.0"></div>
+ <div class="control"><label>rollouts \(M\): <b id="d1-mL">800</b></label><input type="range" id="d1-m" min="200" max="4000" step="100" value="800"></div>
+ </div>
+ <div class="controls"><button id="d1-run">Resample</button><span class="legend"><span class="sw" style="background:#C0392B"></span>squared bias &nbsp; <span class="sw" style="background:#1F4E79"></span>variance &nbsp; <span class="sw" style="background:#7B3FA0"></span>mean squared error &nbsp; (solid = empirical, thin = exact)</span></div>
+ <canvas id="d1-canvas" width="900" height="270"></canvas>
+ <table class="tb" id="d1-table"></table>
+ <div class="readout" id="d1-read"></div>
+</div>
+
+<div class="why">
+ <strong>Why \(n\) is not the knob you actually ship, and what is.</strong> The demo makes \(n\) look like a hyperparameter to tune, and it is — but an integer \(n\) commits the estimator to a single point on the dial and throws away every other horizon you already paid to sample. Generalised advantage estimation instead takes an exponentially weighted average over all \(n\) simultaneously, \(\hat{A}^{\text{GAE}(\lambda)}_t = \sum_{l\ge 0}(\gamma\lambda)^l \delta_{t+l}\) with \(\delta_t = R_{t+1} + \gamma V_\phi(S_{t+1}) - V_\phi(S_t)\), which reduces to \(n=1\) at \(\lambda=0\) and to Monte Carlo at \(\lambda=1\). The reason to prefer it is not that it is more accurate at its best setting — it is that the weighted average is computed in one backward pass over the batch you already have, so the dial becomes continuous at no extra sample cost. This is the estimator inside your PPO implementation; \(\lambda = 0.95\) is the default you should be able to justify by pointing at the curves above rather than at a paper.
+</div>
+
+<h2 id="s2">2. A2C: the advantage, and what it costs</h2>
+<p>Advantage actor-critic makes one specific choice of \(\Psi_t\): the <strong>advantage function</strong></p>
+\[ A^\pi(s,a) \;=\; q^\pi(s,a) - v^\pi(s), \]
+<p>which asks not "how good is this action" but "how much better than average is this action, in this state". Two claims must be established before the choice is defensible, and they are separate claims: that subtracting \(v^\pi(s)\) does not bias the gradient, and that it reduces its variance.</p>
+
+<h3>Unbiasedness: any state-dependent baseline is free</h3>
+<p>Let \(b(s)\) be any function of the state alone. Then, at a fixed \(s\),</p>
+\[ \mathbb{E}_{a\sim\pi_\theta}\!\left[ \nabla_\theta \log \pi_\theta(a\mid s)\, b(s) \right] \;=\; b(s) \sum_a \pi_\theta(a\mid s)\, \frac{\nabla_\theta \pi_\theta(a\mid s)}{\pi_\theta(a\mid s)} \;=\; b(s)\, \nabla_\theta \sum_a \pi_\theta(a\mid s) \;=\; b(s)\, \nabla_\theta 1 \;=\; 0. \]
+<p>The subtracted term has expectation exactly zero, so \(\mathbb{E}[\nabla\log\pi\,(q^\pi - b)] = \mathbb{E}[\nabla\log\pi\, q^\pi]\) for every \(b\). Note where the argument breaks: \(b\) must not depend on \(a\), because then it could not be pulled outside the sum and \(\nabla_\theta\sum_a \pi_\theta = 0\) would no longer be the identity being used. This is the entire reason baselines are functions of the state.</p>
+
+<h3>Variance reduction (DQ 1a)</h3>
+<p>Write \(X = \nabla_\theta \log \pi_\theta(a\mid s)\) for the score at a fixed state and \(Q = q^\pi(s,a)\). Because \(\mathbb{E}[Xb] = 0\), the mean of the estimator is the same for every \(b\), so comparing variances is comparing second moments:</p>
+\[ \operatorname{Var}\!\left[X(Q-b)\right] \;=\; \mathbb{E}\!\left[\lVert X\rVert^2 (Q-b)^2\right] \;-\; \big\lVert\mathbb{E}[XQ]\big\rVert^2, \]
+<p>and only the first term depends on \(b\). Differentiating it with respect to \(b\) and setting the derivative to zero,</p>
+\[ \frac{\partial}{\partial b}\,\mathbb{E}\!\left[\lVert X\rVert^2 (Q-b)^2\right] = -2\,\mathbb{E}\!\left[\lVert X\rVert^2 (Q-b)\right] = 0 \quad\Longrightarrow\quad b^\star = \frac{\mathbb{E}\!\left[\lVert X\rVert^2 Q\right]}{\mathbb{E}\!\left[\lVert X\rVert^2\right]}. \]
+<p>The optimal baseline is a score-weighted average of \(q^\pi\). If \(\lVert X\rVert^2\) and \(Q\) are approximately uncorrelated across actions — the standard working assumption — then \(b^\star \approx \mathbb{E}[Q] = v^\pi(s)\), which is exactly the advantage. Substituting \(b = v^\pi(s)\) and comparing against \(b=0\) gives the reduction explicitly:</p>
+\[ \mathbb{E}\!\left[\lVert X\rVert^2 Q^2\right] - \mathbb{E}\!\left[\lVert X\rVert^2 (Q-v)^2\right] \;=\; v\left(2\,\mathbb{E}\!\left[\lVert X\rVert^2 Q\right] - v\,\mathbb{E}\!\left[\lVert X\rVert^2\right]\right) \;\approx\; v^2\, \mathbb{E}\!\left[\lVert X\rVert^2\right] \;\ge\; 0. \]
+<p>The saving is proportional to \(v^\pi(s)^2\). That is the practical statement: the advantage helps most exactly where the raw \(q\)-values are large and nearly equal — a state worth \(+200\) in which one action is worth \(+201\) and another \(+199\). Without the baseline every action receives a large positive gradient and the estimator must resolve a \(1\%\) difference through sampling noise of the same magnitude as the values themselves; with it, the two actions receive \(+1\) and \(-1\) and the signal is the whole quantity.</p>
+
+<div class="deep">
+ <strong>Why the reduction is not automatic, and the one case where the baseline hurts.</strong> The inequality above relies on the approximation \(\mathbb{E}[\lVert X\rVert^2 Q] \approx \mathbb{E}[\lVert X\rVert^2]\,v\). Drop it and the exact condition for \(b=v\) to beat \(b=0\) is \(2\,\mathbb{E}[\lVert X\rVert^2 Q] > v\,\mathbb{E}[\lVert X\rVert^2]\), which can fail when the score magnitude is strongly anti-correlated with the action value — when the actions the policy is least certain about are precisely the valuable ones. This is not a pathology you will hit on CartPole, but it is the reason the claim is "the advantage reduces variance under a stated assumption" and not "subtracting anything helps". The second-order cost is more likely to bite you: \(v^\pi\) is not known, so \(A\) is estimated as \(G^{(n)}_t - V_\phi(S_t)\), and the critic's own error is now inside your policy gradient with the bias of §1. A2C trades a large unbiased variance for a smaller biased one, and the trade is only good while the critic is learning faster than the actor is moving.
+</div>
+
+<h3>The performance difference lemma (DQ 2a)</h3>
+<p>The advantage is not merely a variance-reduction device. It is the exact currency in which policy improvement is measured. Let \(J(\pi) = \mathbb{E}_{s_0}[v^\pi(s_0)]\). For any two policies \(\pi\) and \(\pi'\),</p>
+\[ J(\pi') - J(\pi) \;=\; \frac{1}{1-\gamma}\; \mathbb{E}_{s \sim d^{\pi'}}\, \mathbb{E}_{a \sim \pi'(\cdot\mid s)}\!\left[ A^{\pi}(s,a) \right], \]
+<p>where \(d^{\pi'}\) is the normalised discounted state-visitation distribution of \(\pi'\). The derivation is a telescoping sum and takes four lines. Start from the trajectory distribution of \(\pi'\) and expand the advantage of the <em>old</em> policy along it:</p>
+\[ \mathbb{E}_{\tau\sim\pi'}\!\left[\sum_{t\ge0}\gamma^t A^\pi(s_t,a_t)\right] = \mathbb{E}_{\tau\sim\pi'}\!\left[\sum_{t\ge0}\gamma^t \Big(R_{t+1} + \gamma v^\pi(s_{t+1}) - v^\pi(s_t)\Big)\right], \]
+<p>using \(A^\pi(s,a) = \mathbb{E}[R + \gamma v^\pi(s') \mid s,a] - v^\pi(s)\). Split the bracket into the reward part and the value part. The reward part is \(J(\pi')\) by definition. The value part telescopes:</p>
+\[ \sum_{t\ge 0}\left(\gamma^{t+1} v^\pi(s_{t+1}) - \gamma^{t} v^\pi(s_t)\right) \;=\; -\,v^\pi(s_0), \]
+<p>whose expectation is \(-J(\pi)\). Hence \(\mathbb{E}_{\tau\sim\pi'}[\sum_t \gamma^t A^\pi(s_t,a_t)] = J(\pi') - J(\pi)\), and rewriting the discounted sum over time as \(\frac{1}{1-\gamma}\) times an expectation over the normalised visitation distribution \(d^{\pi'}\) gives the lemma.</p>
+<p>Read what it says. To improve on \(\pi\) you need actions with positive \(A^\pi\) — measured under the state distribution of the <em>new</em> policy, which you cannot sample until you have committed to it. Every practical algorithm makes the same substitution, replacing \(d^{\pi'}\) by \(d^{\pi}\) to obtain the <strong>surrogate objective</strong></p>
+\[ L_\pi(\pi') \;=\; \frac{1}{1-\gamma}\,\mathbb{E}_{s\sim d^{\pi}, a\sim \pi}\!\left[ \frac{\pi'(a\mid s)}{\pi(a\mid s)}\, A^{\pi}(s,a) \right], \]
+<p>which agrees with the true improvement to first order at \(\pi'=\pi\) and whose error is bounded by a term growing in the divergence between the two policies. Small policy changes are safe because the substitution is accurate for small changes and for no others. That sentence is the entire motivation for §3.</p>
+
+<h2 id="s3">3. Trust regions: TRPO's constraint, PPO's clip</h2>
+<p><strong>Trust region policy optimisation</strong> takes the surrogate at face value and constrains the region on which it is trusted:</p>
+\[ \max_{\theta}\;\; \mathbb{E}_{s\sim d^{\pi_{\text{old}}},\,a\sim\pi_{\text{old}}}\!\left[ \rho_\theta(s,a)\, A^{\pi_{\text{old}}}(s,a) \right] \quad\text{subject to}\quad \bar{D}_{\mathrm{KL}}\!\left(\pi_{\text{old}} \,\|\, \pi_\theta\right) \;=\; \mathbb{E}_{s\sim d^{\pi_{\text{old}}}}\!\left[ D_{\mathrm{KL}}\!\left(\pi_{\text{old}}(\cdot\mid s)\,\|\,\pi_\theta(\cdot\mid s)\right) \right] \;\le\; \delta, \]
+<p>with \(\rho_\theta(s,a) = \pi_\theta(a\mid s)/\pi_{\text{old}}(a\mid s)\). Linearising the objective and taking a second-order expansion of the constraint — whose Hessian at \(\theta_{\text{old}}\) is the Fisher information matrix \(F\) — turns this into a problem with a closed-form solution: step along \(F^{-1}g\), the natural gradient, with the largest length the constraint permits,</p>
+\[ \theta \;\leftarrow\; \theta_{\text{old}} + \sqrt{\frac{2\delta}{g^{\!\top} F^{-1} g}}\; F^{-1} g. \]
+<p>The step is measured in the geometry of the distribution, not of the parameters, which is why it is invariant to how the policy is parameterised. It is also why TRPO is expensive: \(F^{-1}g\) is obtained by conjugate gradient over Fisher-vector products, and the whole procedure is followed by a backtracking line search to confirm the constraint actually holds after the quadratic approximation is discarded.</p>
+
+<h3>PPO's clip, derived by cases</h3>
+<p><strong>Proximal policy optimisation</strong> abandons the constraint and modifies the objective so that the incentive to leave the region disappears:</p>
+\[ L^{\mathrm{CLIP}}(\theta) \;=\; \mathbb{E}\!\left[\, \min\Big( \rho_\theta A,\; \operatorname{clip}(\rho_\theta,\, 1-\epsilon,\, 1+\epsilon)\, A \Big) \right]. \]
+<p>The behaviour is not symmetric in the sign of \(A\), and the asymmetry is the design, not an artefact. Take the two cases separately.</p>
+<p><strong>Case \(A > 0\).</strong> Multiplying by a positive number preserves order, so \(\min(\rho A, \operatorname{clip}(\rho)A) = A\cdot\min(\rho, \operatorname{clip}(\rho)) = A\cdot\min(\rho,\,1+\epsilon)\). The objective rises linearly in \(\rho\) up to \(1+\epsilon\) and is flat thereafter. The gradient with respect to \(\rho\) is \(A\) for \(\rho < 1+\epsilon\) and exactly \(0\) for \(\rho > 1+\epsilon\). The update pushes the probability of a good action up, and stops pushing once the action has become \((1+\epsilon)\) times as likely as it was.</p>
+<p><strong>Case \(A < 0\).</strong> Multiplying by a negative number reverses order, so \(\min(\rho A, \operatorname{clip}(\rho)A) = A\cdot\max(\rho, \operatorname{clip}(\rho)) = A\cdot\max(\rho,\,1-\epsilon)\). Now the flat region is <em>below</em> \(1-\epsilon\): the gradient is \(A\) for \(\rho > 1-\epsilon\) and \(0\) for \(\rho < 1-\epsilon\). The update pushes the probability of a bad action down, and stops once it has fallen to \((1-\epsilon)\) of its old value.</p>
+<p>Two consequences follow that a symmetric penalty would not produce. First, the flat region is always on the side the update <em>wants</em> to move toward, so clipping removes the incentive to go further and never removes the incentive to come back: a ratio that has already drifted too far still receives full gradient in the corrective direction. Second, because \(\min\) is taken rather than \(\operatorname{clip}\) alone, \(L^{\mathrm{CLIP}}\) is a <em>pessimistic</em> lower bound on the unclipped surrogate — it equals the unclipped value whenever that value is the smaller of the two. For \(A<0\) and a very large \(\rho\), \(L^{\mathrm{CLIP}} = \rho A\) is unbounded below, so a single sample that has become far more likely under the new policy and turned out to be bad still dominates the batch loss. The clip bounds the reward for optimism; it does not bound the penalty for a mistake.</p>
+
+<div class="demo">
+ <h3>Demo · The PPO clipped surrogate, both signs of the advantage <span class="tag">interactive</span></h3>
+ <p>The canonical two-panel figure, computed live. The grey dashed line is the unclipped surrogate \(\rho A\); the solid line is \(L^{\mathrm{CLIP}}\). The shaded band is \([1-\epsilon,\,1+\epsilon]\) and the hatched region is where \(\partial L^{\mathrm{CLIP}}/\partial\rho = 0\). Move \(\epsilon\) and watch the flat region change side with the sign of \(A\) — that switch is the asymmetry, and it is why one clip parameter suffices for both directions.</p>
+ <div class="controls">
+ <div class="control"><label>clip range \(\epsilon\): <b id="d2-eL">0.20</b></label><input type="range" id="d2-e" min="0.02" max="0.60" step="0.01" value="0.20"></div>
+ <div class="control"><label>advantage magnitude \(|A|\): <b id="d2-aL">2.0</b></label><input type="range" id="d2-a" min="0.5" max="4.0" step="0.1" value="2.0"></div>
+ <div class="control"><label>evaluate at \(\rho\): <b id="d2-rL">1.50</b></label><input type="range" id="d2-r" min="0.05" max="2.20" step="0.01" value="1.50"></div>
+ </div>
+ <canvas id="d2-canvas" width="900" height="300"></canvas>
+ <div class="readout" id="d2-read"></div>
+</div>
+
+<div class="why">
+ <strong>Why PPO replaced TRPO in practice, and what was actually given up.</strong> TRPO enforces a constraint; PPO removes an incentive. Those are not the same guarantee, and PPO's is strictly weaker — nothing in \(L^{\mathrm{CLIP}}\) prevents \(\bar{D}_{\mathrm{KL}}\) from exceeding any bound you had in mind, because several epochs of minibatch gradient steps on a clipped objective can still walk the policy a long way if many samples sit inside the unclipped band. What PPO buys is that the objective is a scalar you can differentiate with a single line of autograd, with no Fisher-vector products, no conjugate gradient, and no line search, which means it composes with minibatching, recurrent policies, and shared actor–critic trunks. The honest engineering summary is that PPO exchanges a certificate for a heuristic that works, and the way you recover evidence for the heuristic is to log the realised mean KL per update — which is exactly why your product logs it. If that series drifts upward across training, your \(\epsilon\) is not doing the job you assumed it was.
+</div>
+
+<h2 id="s4">4. Off-policy actor-critic and the weight that explodes</h2>
+<p>Everything so far is on-policy: the data in the batch was generated by the policy being improved, and it is discarded after one update. That is a severe inefficiency. A transition is a costly object — on a physical system it is the only thing you actually pay for — and using it once is a choice, not a necessity. <strong>Off-policy actor-critic</strong> methods keep a replay buffer \(\mathcal{D}\) of past transitions generated by older policies, or by a separate behaviour policy \(b\), and reuse it.</p>
+<p>The correction is importance sampling. For a single decision step,</p>
+\[ \mathbb{E}_{a\sim\pi}\!\left[ f(s,a) \right] \;=\; \mathbb{E}_{a\sim b}\!\left[ \frac{\pi(a\mid s)}{b(a\mid s)} f(s,a) \right], \]
+<p>which gives the off-policy policy gradient used by <strong>OffPAC</strong>:</p>
+\[ \nabla_\theta J \;\approx\; \mathbb{E}_{s\sim d^{b},\, a\sim b}\!\left[ \frac{\pi_\theta(a\mid s)}{b(a\mid s)}\, \nabla_\theta \log \pi_\theta(a\mid s)\, q^{\pi}(s,a) \right]. \]
+<p>Note the approximation sign. The action distribution has been corrected; the <em>state</em> distribution has not — the expectation is still over \(d^b\), not \(d^\pi\). OffPAC drops that correction deliberately, and the resulting update is a valid ascent direction on the excursion objective \(J_b(\pi) = \sum_s d^b(s) v^\pi(s)\) rather than on \(J(\pi)\) itself. Whether that is acceptable is a question about how far \(d^b\) has drifted from \(d^\pi\), and it is not answerable from the update rule alone.</p>
+
+<h3>The variance of the weights (DQ 7)</h3>
+<p>The per-step weight \(\rho_t = \pi(a_t|s_t)/b(a_t|s_t)\) has mean 1 under \(b\). Its second moment is \(\mathbb{E}_b[\rho^2] = 1 + \chi^2(\pi \,\|\, b)\), where \(\chi^2\) is the chi-square divergence — zero only when the policies agree. Correcting a whole trajectory requires the product \(\rho_{0:T-1} = \prod_{t<T}\rho_t\), and for independent steps</p>
+\[ \operatorname{Var}\!\left[\rho_{0:T-1}\right] \;=\; \left(1+\chi^2\right)^{T} - 1. \]
+<p>The variance grows <em>exponentially in the horizon</em>. A one-percent-per-step mismatch, \(\chi^2 = 0.01\), gives a standard deviation of about \(0.5\) at \(T=25\) and about \(12\) at \(T=200\): the estimator is dominated by a handful of trajectories with enormous weight and is useless long before it is biased. The standard diagnostic is the effective sample size, \(\mathrm{ESS} = (\sum_i w_i)^2 / \sum_i w_i^2\), which reports how many of your \(M\) samples the weighted average is really using.</p>
+<p>Three responses exist and you should be able to name which one each algorithm chose. <em>Truncate</em> the weights — V-trace and Retrace clip \(\rho_t\) at a constant, accepting bias to bound variance. <em>Correct per decision</em> rather than per trajectory, so no product is ever formed. Or <em>eliminate the ratio entirely</em>: this is what SAC does. Its critic is trained by a Bellman backup, which is off-policy by construction and needs no ratio; its actor is updated by drawing fresh actions from the <em>current</em> policy at replayed states, so the action distribution is never mismatched and only the state distribution is stale. The third route is why SAC can use a million-transition replay buffer and PPO cannot.</p>
+
+<div class="deep">
+ <strong>Why sample efficiency and stability are the same axis viewed twice.</strong> The natural framing is a trade: on-policy methods are stable and wasteful, off-policy methods are efficient and fragile. The mechanism behind both halves is one quantity — the divergence between the policy that generated the data and the policy being evaluated. On-policy methods hold that divergence near zero by throwing data away, which is what makes them stable and what makes them expensive. Off-policy methods let it grow and must then either correct it (importance weights, whose variance is the \((1+\chi^2)^T\) above), bound it (a trust region), or avoid needing it (a Bellman backup). Your bake-off compares A2C and PPO at matched environment-step budgets precisely so this shows up as a number rather than an adjective: the same budget buys different amounts of progress, and the difference is attributable to how each method spends its divergence allowance.
+</div>
+
+<h2 id="s5">5. Maximum-entropy RL and the soft Bellman backup</h2>
+<p>Every method so far treats exploration as something outside the objective — an \(\varepsilon\), a Gaussian with a hand-set standard deviation, an entropy bonus added to the loss as a regulariser. <strong>Maximum-entropy reinforcement learning</strong> makes it part of what is being maximised:</p>
+\[ J(\pi) \;=\; \mathbb{E}_{\pi}\!\left[ \sum_{t\ge 0} \gamma^{t} \Big( r(s_t,a_t) \;+\; \alpha\, \mathcal{H}\big(\pi(\cdot\mid s_t)\big) \Big) \right], \qquad \mathcal{H}(\pi(\cdot\mid s)) = -\sum_a \pi(a\mid s)\log\pi(a\mid s). \]
+<p>The temperature \(\alpha\) has units of reward per nat and sets the exchange rate between the two. This is a different objective, not a different algorithm for the same objective: its optimum is a stochastic policy, and it remains stochastic at convergence.</p>
+
+<h3>Soft value functions</h3>
+<p>Define the soft state-value function as the entropy-augmented expected return and the soft action-value function as the value of committing to one action first:</p>
+\[ V(s) \;=\; \mathbb{E}_{a\sim\pi}\!\left[ Q(s,a) - \alpha \log \pi(a\mid s) \right] \;=\; \mathbb{E}_{a\sim\pi}[Q(s,a)] + \alpha\,\mathcal{H}(\pi(\cdot\mid s)), \qquad Q(s,a) \;=\; r(s,a) + \gamma\, \mathbb{E}_{s'}\!\left[ V(s') \right]. \]
+<p>The entropy of the current step is charged to \(V\) and not to \(Q\), because \(Q\) conditions on the action already having been chosen. This bookkeeping detail is where implementations most often go wrong.</p>
+
+<h3>The optimal policy is Boltzmann</h3>
+<p>Fix \(s\) and \(Q(s,\cdot)\) and maximise \(V(s)\) over the distribution \(\pi(\cdot\mid s)\). The Lagrangian with the normalisation constraint is</p>
+\[ \mathcal{L} = \sum_a \pi(a)Q(s,a) - \alpha\sum_a \pi(a)\log\pi(a) + \lambda\Big(1-\sum_a\pi(a)\Big), \]
+\[ \frac{\partial \mathcal{L}}{\partial \pi(a)} = Q(s,a) - \alpha\big(\log \pi(a) + 1\big) - \lambda = 0 \quad\Longrightarrow\quad \log\pi(a) = \frac{Q(s,a)-\lambda}{\alpha} - 1. \]
+<p>The multiplier is absorbed by normalising, giving the <strong>Boltzmann</strong> (softmax) policy</p>
+\[ \pi^{\star}(a\mid s) \;=\; \frac{\exp\!\big(Q(s,a)/\alpha\big)}{\sum_{b}\exp\!\big(Q(s,b)/\alpha\big)} \;\propto\; \exp\!\big(Q(s,a)/\alpha\big). \]
+<p>Substituting \(\pi^\star\) back into \(V\) collapses the expression. With \(Z = \sum_b \exp(Q(s,b)/\alpha)\) and \(\log\pi^\star(a) = Q(s,a)/\alpha - \log Z\),</p>
+\[ V(s) = \sum_a \pi^\star(a)Q(s,a) - \alpha\sum_a\pi^\star(a)\left(\frac{Q(s,a)}{\alpha} - \log Z\right) = \alpha\log Z, \]
+<p>so the <strong>soft Bellman backup</strong> for the state-value function is the log-sum-exp of the action values (DQ 4a):</p>
+\[ \boxed{\;V(s) \;=\; \alpha \log \sum_{a} \exp\!\left( \frac{Q(s,a)}{\alpha} \right), \qquad Q(s,a) = r(s,a) + \gamma\,\mathbb{E}_{s'}[V(s')].\;} \]
+
+<h3>The log-sum-exp is a soft maximum</h3>
+<p>The claim that this operator generalises \(\max\) is provable in two lines, not asserted. Let \(m = \max_a Q(s,a)\) and \(|\mathcal{A}|\) be the number of actions. Keeping only the largest term gives a lower bound; replacing every term by the largest gives an upper bound:</p>
+\[ m \;=\; \alpha\log \exp(m/\alpha) \;\le\; \alpha\log\sum_a \exp\!\big(Q(s,a)/\alpha\big) \;\le\; \alpha\log\Big(|\mathcal{A}|\exp(m/\alpha)\Big) \;=\; m + \alpha\log|\mathcal{A}|. \]
+<p>The gap is at most \(\alpha \log|\mathcal{A}|\), so as \(\alpha\to 0^+\) the operator is squeezed onto \(\max\) and the Boltzmann policy onto the greedy one — the soft Bellman equation becomes the ordinary Bellman optimality equation. In the opposite limit, expanding \(\exp(Q/\alpha)\approx 1 + Q/\alpha\) gives \(\alpha\log\sum_a\exp(Q/\alpha) \to \alpha\log|\mathcal{A}| + \bar{Q} + O(1/\alpha)\), where \(\bar{Q}\) is the unweighted mean: the action values stop mattering and the policy goes uniform. The two limits are the two failure modes an entropy sweep is designed to find.</p>
+
+<h3>The soft policy gradient theorem</h3>
+<p>For a parameterised policy the improvement step is a projection: choose \(\pi_\theta\) to minimise the divergence to the Boltzmann distribution induced by the current critic,</p>
+\[ \pi_{\text{new}} = \arg\min_{\pi_\theta}\; \mathbb{E}_{s\sim\mathcal{D}}\left[ D_{\mathrm{KL}}\!\left( \pi_\theta(\cdot\mid s) \;\Big\|\; \frac{\exp(Q(s,\cdot)/\alpha)}{Z(s)} \right) \right], \]
+<p>which, dropping the \(\theta\)-independent \(\log Z(s)\), is the objective \(J_\pi(\theta) = \mathbb{E}_{s\sim\mathcal{D}}\,\mathbb{E}_{a\sim\pi_\theta}\!\left[\alpha\log\pi_\theta(a\mid s) - Q(s,a)\right]\). In score-function form the gradient is the ordinary policy gradient with the reward replaced by the entropy-augmented one,</p>
+\[ \nabla_\theta J \;=\; \mathbb{E}\!\left[ \nabla_\theta \log\pi_\theta(a\mid s)\Big( Q(s,a) - \alpha\log\pi_\theta(a\mid s) - b(s) \Big) \right], \]
+<p>but SAC uses the lower-variance reparameterised form instead. Writing \(a = f_\theta(\epsilon; s)\) for a deterministic function of a noise sample \(\epsilon\),</p>
+\[ \nabla_\theta J_\pi \;=\; \nabla_\theta\, \alpha\log\pi_\theta(a\mid s) \;+\; \Big( \nabla_{a}\,\alpha\log\pi_\theta(a\mid s) \;-\; \nabla_{a} Q(s,a) \Big)\, \nabla_\theta f_\theta(\epsilon;s), \]
+<p>where the first term differentiates the explicit \(\theta\)-dependence at fixed \(a\) and the second flows the critic's gradient through the sampled action. The reparameterisation is what makes the estimator usable on continuous actions: it differentiates through the sample rather than weighting it.</p>
+
+<div class="demo">
+ <h3>Demo · Soft value iteration on a 4×4 grid <span class="tag">interactive</span></h3>
+ <p>A continuing 4×4 gridworld: reaching the goal pays \(+1\), falling in the pit pays \(-1\), and either one returns the agent to the start, so every state faces the same infinite horizon and the values are comparable. Run soft value iteration with the log-sum-exp backup at a chosen \(\alpha\). The heat map is \(V(s)\); the four arrows in each cell are drawn at <em>opacity equal to</em> \(\pi(a\mid s)\), so a deterministic policy shows one solid arrow and a uniform policy shows four faint ones. Sweep \(\alpha\) from \(0.01\) to \(1.5\) and watch the policy melt (DQ 4b, DQ 6).</p>
+ <div class="controls">
+ <div class="control"><label>temperature \(\alpha\): <b id="d3-aL">0.05</b></label><input type="range" id="d3-a" min="-2.0" max="0.176" step="0.01" value="-1.30"></div>
+ <div class="control"><label>discount \(\gamma\): <b id="d3-gL">0.90</b></label><input type="range" id="d3-g" min="0.70" max="0.97" step="0.01" value="0.90"></div>
+ </div>
+ <canvas id="d3-canvas" width="900" height="420"></canvas>
+ <div class="legend"><span class="sw" style="background:#1F8B4C"></span>goal (+1, returns to start) &nbsp; <span class="sw" style="background:#C0392B"></span>pit (−1, returns to start) &nbsp; the start cell is outlined.</div>
+ <div class="readout" id="d3-read"></div>
+</div>
+
+<div class="why">
+ <strong>Why the values inflate with \(\alpha\) and why that is not a bug to normalise away.</strong> Raise \(\alpha\) in the demo and every value rises, roughly by \(\alpha\log|\mathcal{A}|/(1-\gamma)\), while the differences between states shrink. The obvious reading is that the heat map has been corrupted by an additive constant that should be subtracted off. It has not: the agent really is collecting \(\alpha\) units of reward per nat of entropy at every step forever, and that stream is part of the objective it was told to maximise. The consequence is the one your entropy sweep must detect — at large \(\alpha\) the entropy income dwarfs the task reward, the value differences between good and bad states fall below the critic's own approximation error, and the policy has no gradient left to distinguish them. A policy that is "exploring" at \(\alpha = 0.5\) on Pendulum is not being cautious; it is optimising a different problem in which the task reward is a rounding error. That is why the sweep reports mean policy entropy alongside mean return: the two together identify which of the two regimes a run is in, and neither alone can.
+</div>
+
+<h2 id="s6">6. SAC: temperature, squashing, and two regularisers</h2>
+<p><strong>Soft actor-critic</strong> is the maximum-entropy objective made into an off-policy algorithm: twin \(Q\)-networks with a minimum taken over them to control overestimation, target networks, a replay buffer, a reparameterised squashed Gaussian actor, and an automatically tuned \(\alpha\). Three of those pieces need derivation.</p>
+
+<h3>Automatic temperature tuning</h3>
+<p>Fixing \(\alpha\) by hand is unworkable because it is a reward-scale-dependent quantity: doubling the environment's rewards halves the effective temperature. Instead, state the problem as constrained — maximise return subject to the policy retaining at least \(\bar{\mathcal{H}}\) nats of entropy on average — and let \(\alpha\) be the dual variable. The dual objective, for a fixed policy, is</p>
+\[ J(\alpha) \;=\; \mathbb{E}_{s\sim\mathcal{D},\,a\sim\pi}\!\left[ -\alpha \big( \log\pi(a\mid s) + \bar{\mathcal{H}} \big) \right] \;=\; \alpha\left( \mathcal{H}(\pi) - \bar{\mathcal{H}} \right), \]
+<p>whose gradient is \(\partial J/\partial\alpha = \mathcal{H}(\pi) - \bar{\mathcal{H}}\). Descending it gives \(\alpha \leftarrow \alpha - \lambda(\mathcal{H}(\pi) - \bar{\mathcal{H}})\): when the policy is more random than the target, the price of entropy falls; when it has collapsed below the target, the price rises and pushes it back. The standard heuristic target for a continuous action space is \(\bar{\mathcal{H}} = -\dim(\mathcal{A})\), which for Pendulum's single torque dimension is \(-1\) nat. Note that \(\alpha\) must be constrained positive, which is why implementations parameterise \(\log\alpha\) and optimise that.</p>
+
+<h3>The tanh-squashed Gaussian and its log-probability correction</h3>
+<p>Pendulum's action is a bounded torque. A Gaussian policy is unbounded, so SAC samples an unconstrained \(u \sim \mathcal{N}(\mu_\theta(s), \sigma_\theta(s))\) and squashes it, \(a = \tanh(u)\). Squashing is a change of variables, and a density does not survive one unchanged. For an invertible map the densities relate by the Jacobian determinant,</p>
+\[ \pi(a\mid s) \;=\; \mathcal{N}(u \mid s)\,\left| \det\!\left(\frac{\mathrm{d}a}{\mathrm{d}u}\right) \right|^{-1}, \qquad \frac{\mathrm{d}a_i}{\mathrm{d}u_i} = 1-\tanh^2(u_i), \]
+<p>and since the map acts coordinatewise the Jacobian is diagonal and its determinant is a product. Taking logs,</p>
+\[ \log\pi(a\mid s) \;=\; \log\mathcal{N}(u\mid s) \;-\; \sum_i \log\!\left(1-\tanh^2(u_i)\right). \]
+<p>The correction is not a numerical nicety. Without it the quantity you are calling a log-probability does not integrate to one over \((-1,1)^{\dim\mathcal{A}}\), so the entropy term in the objective and the \(\alpha\) it is tuned against are both measuring the wrong thing — and the error is largest exactly at the saturated actions the policy will drift toward. In code, \(\log(1-\tanh^2 u) = 2\big(\log 2 - u - \mathrm{softplus}(-2u)\big)\) is the numerically stable form; the naive expression underflows for \(|u| \gtrsim 10\).</p>
+
+<div class="demo">
+ <h3>Demo · The tanh-squashed Gaussian actor <span class="tag">interactive</span></h3>
+ <p>Left: the pre-squash Gaussian \(\mathcal{N}(u; \mu, \sigma)\) on the unconstrained variable. Right: the induced density on the action interval \((-1,1)\), drawn twice — with the Jacobian correction (solid) and without it (dashed, the mistake). The two integrals are computed numerically underneath. The corrected density is a density; the uncorrected one is not, and the discrepancy grows as the mean pushes toward the boundary.</p>
+ <div class="controls">
+ <div class="control"><label>mean \(\mu\): <b id="d5-mL">0.50</b></label><input type="range" id="d5-m" min="-2.5" max="2.5" step="0.05" value="0.5"></div>
+ <div class="control"><label>\(\log\sigma\): <b id="d5-sL">-0.51</b></label><input type="range" id="d5-s" min="-2.0" max="0.7" step="0.01" value="-0.51"></div>
+ <div class="control"><label>evaluate at \(a\): <b id="d5-aL">0.80</b></label><input type="range" id="d5-a" min="-0.98" max="0.98" step="0.01" value="0.80"></div>
+ </div>
+ <canvas id="d5-canvas" width="900" height="300"></canvas>
+ <div class="readout" id="d5-read"></div>
+</div>
+
+<h3>Two regularisers that are constantly confused</h3>
+<p>PPO and SAC both restrain the policy, and it is common to hear that they therefore do "the same thing". They do not, and the distinction is the one the rest of this course rests on.</p>
+<p>Start from an identity. For a finite action set with uniform reference \(U(a) = 1/|\mathcal{A}|\),</p>
+\[ D_{\mathrm{KL}}\!\left(\pi \,\|\, U\right) \;=\; \sum_a \pi(a)\log\frac{\pi(a)}{1/|\mathcal{A}|} \;=\; \sum_a \pi(a)\log\pi(a) \;+\; \log|\mathcal{A}| \;=\; -\,\mathcal{H}(\pi) \;+\; \log|\mathcal{A}|. \]
+<p>Substituting into the maximum-entropy objective,</p>
+\[ r + \alpha\,\mathcal{H}(\pi) \;=\; r \;-\; \alpha\, D_{\mathrm{KL}}\!\left(\pi\,\|\,U\right) \;+\; \alpha\log|\mathcal{A}|, \]
+<p>and the final term is constant in \(\pi\), so it shifts the objective's value without moving its argmax. <strong>Maximising reward plus \(\alpha\) times entropy is exactly maximising reward minus \(\alpha\) times a KL divergence against a uniform reference policy.</strong> Entropy regularisation is KL regularisation; the reference just happens to be the least informative distribution available.</p>
+<p>The trust region is a different object with a different reference. PPO and TRPO constrain \(D_{\mathrm{KL}}(\pi_{\text{old}} \,\|\, \pi_\theta)\), where \(\pi_{\text{old}}\) is the <em>previous iterate</em> — a reference that moves after every update. Three consequences separate them cleanly:</p>
+<ul>
+ <li><strong>Fixed point.</strong> Entropy changes the optimum: the maximum-entropy optimal policy is stochastic, Boltzmann in \(Q/\alpha\), and stays stochastic forever. A trust region does not change the optimum at all — the optimum of the unregularised problem is still a deterministic policy — it only bounds the path taken toward it. Run PPO long enough and its entropy goes to zero; run SAC long enough at fixed \(\alpha\) and its entropy converges to a positive constant.</li>
+ <li><strong>What is bounded.</strong> Entropy bounds the policy's distance from <em>determinism</em>. A trust region bounds the policy's distance from <em>its own previous version</em>. A policy can be far from uniform and inside its trust region, or close to uniform and far outside it; the two quantities are not comparable.</li>
+ <li><strong>Where it lives.</strong> The entropy term is inside the objective and inside the critic's backup — it is why \(V(s) = \alpha\log\sum_a\exp(Q/\alpha)\) and not \(\max_a Q\). The trust region is outside the objective, a property of the optimiser, and the value function knows nothing about it.</li>
+</ul>
+<p>Now replace the reference. If \(U\) is swapped for a learned reference policy \(\pi_{\text{ref}}\), the same Lagrangian derivation as §5 returns the same shape of answer with the reference multiplying in:</p>
+\[ \max_\pi\; \mathbb{E}[r] - \beta\, D_{\mathrm{KL}}\!\left(\pi\,\|\,\pi_{\text{ref}}\right) \quad\Longrightarrow\quad \pi^\star(a\mid s) \;=\; \frac{1}{Z(s)}\,\pi_{\text{ref}}(a\mid s)\,\exp\!\left(\frac{r(s,a)}{\beta}\right), \]
+<p>which reduces to the Boltzmann policy of §5 exactly when \(\pi_{\text{ref}}\) is uniform, because a constant factor is absorbed by \(Z\). This is the objective of reinforcement learning from human feedback, and \(\beta\) plays the role \(\alpha\) plays here. Topic 6 introduces no new mathematics on this point; it changes one distribution in a formula you have already derived.</p>
+
+<div class="demo">
+ <h3>Demo · Entropy versus trust region: the same number, twice <span class="tag">interactive</span></h3>
+ <p>A three-action policy on the simplex. Drag the blue marker to move \(\pi\); drag the purple marker to move the reference \(\pi_{\text{ref}}\). Two quantities are computed by <em>independent code paths</em> — one from the entropy formula, one from the KL sum — and displayed side by side. While the reference is uniform they agree to machine precision. Move the reference off uniform and \(D_{\mathrm{KL}}(\pi\|\pi_{\text{ref}})\) separates from both, which is precisely the step Topic 6 takes.</p>
+ <div class="controls">
+ <button id="d4-off">Move the reference off uniform</button>
+ <button id="d4-ref" class="secondary">Reference ← uniform</button>
+ <button id="d4-pi" class="secondary">Randomise \(\pi\)</button>
+ <button id="d4-det" class="secondary">Push \(\pi\) toward determinism</button>
+ </div>
+ <canvas id="d4-canvas" width="900" height="360"></canvas>
+ <div class="readout" id="d4-read"></div>
+</div>
+
+<div class="deep">
+ <strong>Why the identity is worth this much attention when the constant \(\log|\mathcal{A}|\) makes it look trivial.</strong> The temptation is to treat \(-\mathcal{H}(\pi) + \log|\mathcal{A}| = D_{\mathrm{KL}}(\pi\|U)\) as an algebraic curiosity, because an additive constant never changes an argmax. What it buys is a change of type. Entropy is a property of one distribution and has no obvious generalisation; a KL divergence is a property of a <em>pair</em>, and the second slot is a free parameter. Once the objective is written as \(r - \alpha D_{\mathrm{KL}}(\pi\|\pi_{\text{ref}})\), the reference can be a pretrained language model, a safe baseline controller, or last week's deployed policy, and every derivation in §5 survives verbatim: the optimum is still exponential-tilted, the soft value is still a log-partition function, and the temperature is still a dual variable. The finite-action identity is the bridge, and it is the reason the syllabus can claim that Topic 6 introduces no new mathematics. A student who reads the entropy term as "a bonus that encourages exploration" has the right intuition and the wrong object, and will not recognise the same equation when it reappears with \(\beta\) in place of \(\alpha\).
+</div>
+
+<h2 id="s7">7. In practice (Control Bench)</h2>
+<p class="product"><strong>In the build.</strong> Three agents, one contract. A2C trains on CartPole-v1, PPO on Acrobot-v1, SAC on Pendulum-v1 — all classic control, all pure wheels, all comfortably inside the free-tier allocation. One <code>POST /act</code> endpoint serves whichever policy the caller names in the request body, and the three differ only in the shape of what comes out: a categorical sample for the first two, a squashed mean for the third. Every episode goes to <code>episodes</code>; PPO additionally logs the realised mean KL per update, so the trust-region claim of §3 is checkable against data rather than asserted in prose; SAC logs critic loss and mean policy entropy, so the two regimes named in §5 are distinguishable in the table.</p>
+<p>The <code>entropy_sweep</code> table is the topic's central experiment, and its shape follows from what the sweep must establish. Three regimes — \(\alpha = 0.5\), \(\alpha = 0.01\), and automatic tuning against \(\bar{\mathcal{H}} = -1\) — crossed with at least three seeds each, reporting convergence speed, final performance, and stability:</p>
+<table class="tb">
+<tr><th>column</th><th>type</th><th>why it is there</th></tr>
+<tr><td><code>experiment_id</code></td><td>uuid</td><td>joins back to the run that produced it; without it the row is an anecdote</td></tr>
+<tr><td><code>alpha_setting</code></td><td>text</td><td><code>0.5</code>, <code>0.01</code>, or <code>auto</code> — the independent variable</td></tr>
+<tr><td><code>mode</code></td><td>text</td><td><code>fixed</code> or <code>auto</code>; separates the two mechanisms, since <code>auto</code> has no single α</td></tr>
+<tr><td><code>mean_return</code></td><td>float</td><td>mean over the last 100 episodes — final performance</td></tr>
+<tr><td><code>return_std</code></td><td>float</td><td>across seeds, not within a run: this is the stability column</td></tr>
+<tr><td><code>mean_policy_entropy</code></td><td>float</td><td>the diagnostic that separates "exploring" from "optimising the entropy stream"</td></tr>
+</table>
+<p>Expect \(\alpha = 0.5\) to hold high entropy and never converge on Pendulum, \(\alpha = 0.01\) to converge fast on some seeds and collapse to a poor local optimum on others (high <code>return_std</code>, low <code>mean_policy_entropy</code>), and <code>auto</code> to sit between them with the smallest seed variance. Report what you observe, not what this paragraph predicts.</p>
+
+<h3>Why <code>POST /act</code> must return 422 and not a stack trace</h3>
+<p>The three policies take observation vectors of dimension 4 (CartPole), 6 (Acrobot), and 3 (Pendulum). A caller who names <code>sac_pendulum</code> and sends a four-element state has made a client error, and the contract must say so. Passing that array into a NumPy matrix multiply raises a <code>ValueError</code> deep in the forward pass, which FastAPI renders as a 500 — a status code that tells the caller the <em>server</em> is broken and that their request should be retried. It will fail identically every time. Validate the shape at the boundary, name both dimensions in the message, and return 422:</p>
+<pre><span class="c"># api/policy.py — the whole serving-side forward pass for SAC, plus the guard</span>
+<span class="k">import</span> numpy <span class="k">as</span> np
+<span class="k">from</span> fastapi <span class="k">import</span> HTTPException
+
+<span class="k">def</span> <span class="f">act_sac</span>(P, s: np.ndarray) -> np.ndarray:
+    <span class="k">if</span> s.shape != (int(P[<span class="s">"obs_dim"</span>]),):                      <span class="c"># boundary check, before any matmul</span>
+        <span class="k">raise</span> <span class="f">HTTPException</span>(422, f<span class="s">"policy expects {int(P['obs_dim'])} dims, got {s.shape[0]}"</span>)
+    h = np.<span class="f">tanh</span>(P[<span class="s">"W1"</span>] @ s + P[<span class="s">"b1"</span>]); h = np.<span class="f">tanh</span>(P[<span class="s">"W2"</span>] @ h + P[<span class="s">"b2"</span>])
+    mu = P[<span class="s">"Wmu"</span>] @ h + P[<span class="s">"bmu"</span>]                            <span class="c"># 1. the mean head</span>
+    <span class="c"># log_std = np.clip(P["Wls"] @ h + P["bls"], -20, 2)      # 2. only needed for stochastic rollouts</span>
+    <span class="k">return</span> np.<span class="f">tanh</span>(mu) * P[<span class="s">"act_scale"</span>]                      <span class="c"># 3. the squash, and the torque limit</span></pre>
+<p>That is the "three extra lines" the build step refers to: a mean head, a log-standard-deviation head, and a <code>tanh</code>. Deterministic evaluation uses \(\tanh(\mu)\) and never touches the log-standard deviation; only stochastic rollouts sample \(u = \mu + \sigma\epsilon\) first. Your PyTorch/NumPy equivalence test must pin both paths, because they exercise different tensors and a transposed weight matrix will pass one and fail the other.</p>
+
+<div class="warn">
+ <strong>The reward-scale trap, and why it belongs in your limitations section.</strong> Pendulum's per-step reward is roughly \([-16, 0]\), so \(\alpha = 0.5\) is a small temperature there and would be enormous on a task rewarded in \([0,1]\). SAC has no scale invariance: \(\alpha\) is compared directly against rewards inside the same backup. If you rescale rewards, normalise observations, or clip either, you have changed the effective temperature and any α you tuned before is stale. State the reward range you trained against in the model card, and say how you would test whether the limitation binds — the test is a rerun at a rescaled reward with α scaled by the same factor, checking that the learning curves coincide.
+</div>
+
+<div class="callout">
+ <strong>What carries forward.</strong> The bias–variance dial of §1 is the same dial the rollout depth exposes in Topic 5's tree search: a deeper simulation is a longer unbiased sample, and a learned evaluator is the critic that replaces it. The trust region of §3 returns in Topic 6 as the KL penalty that keeps a fine-tuned language model near its reference. And the identity of §6 — that \(r + \alpha\mathcal{H}(\pi)\) and \(r - \beta D_{\mathrm{KL}}(\pi\|\pi_{\text{ref}})\) are one regularised objective with two different references — is the single equation Topic 6 is built on. When you meet \(\pi^\star \propto \pi_{\text{ref}}\exp(r/\beta)\) there, you will have already derived it here with \(\pi_{\text{ref}} = U\).
+</div>
+
+<div class="nav"><a href="Tutorial-Topic-3-Policy-Gradient-Methods.html">← Topic 3 · Policy Gradient Methods</a><a href="Tutorial-Topic-5-Tree-Search.html">Topic 5 · Tree Search →</a></div>
+</div>
+<script>
+/* ============================================================
+   Shared helpers
+   ============================================================ */
+function clear(ctx,c){ ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height); }
+function axes(ctx,x0,y0,w,h,xlab,ylab){
+  ctx.strokeStyle='#C7D2DE'; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(x0,y0-h); ctx.lineTo(x0,y0); ctx.lineTo(x0+w,y0); ctx.stroke();
+  ctx.fillStyle='#666'; ctx.font='11px -apple-system,Arial';
+  if(xlab){ ctx.textAlign='center'; ctx.fillText(xlab,x0+w/2,y0+30); }
+  if(ylab){ ctx.save(); ctx.translate(x0-40,y0-h/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText(ylab,0,0); ctx.restore(); }
+  ctx.textAlign='left';
+}
+function polyline(ctx,pts,color,width,dash){
+  if(pts.length<2) return;
+  ctx.save(); if(dash) ctx.setLineDash(dash);
+  ctx.strokeStyle=color; ctx.lineWidth=width||2; ctx.beginPath();
+  ctx.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]);
+  ctx.stroke(); ctx.restore();
+}
+function gauss(){ let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+function logsumexp(arr,alpha){            // alpha * log sum exp(x/alpha), numerically stable
+  let m=-Infinity; for(const x of arr) if(x>m) m=x;
+  let s=0; for(const x of arr) s+=Math.exp((x-m)/alpha);
+  return m + alpha*Math.log(s);
+}
+function softmaxT(arr,alpha){
+  let m=-Infinity; for(const x of arr) if(x>m) m=x;
+  const e=arr.map(x=>Math.exp((x-m)/alpha)); const s=e.reduce((a,b)=>a+b,0);
+  return e.map(x=>x/s);
+}
+function typeset(el){ if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([el]); }
+
+/* ============================================================
+   D1: n-step returns, bias and variance
+   ============================================================ */
+(function(){
+  const wS=document.getElementById('d1-w'), sS=document.getElementById('d1-s'), mS=document.getElementById('d1-m'),
+        wL=document.getElementById('d1-wL'), sL=document.getElementById('d1-sL'), mL=document.getElementById('d1-mL'),
+        cv=document.getElementById('d1-canvas'), ctx=cv.getContext('2d'),
+        tbl=document.getElementById('d1-table'), out=document.getElementById('d1-read');
+  const L=16, G=0.95;
+  const vtrue=new Array(L+1).fill(0);
+  for(let i=L-1;i>=0;i--) vtrue[i]=1+G*vtrue[i+1];
+
+  function run(){
+    const w=parseFloat(wS.value), sig=parseFloat(sS.value), M=parseInt(mS.value);
+    wL.textContent=w.toFixed(2); sL.textContent=sig.toFixed(2); mL.textContent=M;
+    const Vhat=vtrue.map((v,i)=> i>=L ? 0 : (1-w)*v);
+    const sum=new Array(L+1).fill(0), sum2=new Array(L+1).fill(0);
+    for(let m=0;m<M;m++){
+      const r=new Array(L); for(let k=0;k<L;k++) r[k]=1+sig*gauss();
+      let acc=0, gp=1;
+      for(let n=1;n<=L;n++){
+        acc += gp*r[n-1]; gp*=G;
+        const Gn = acc + gp*Vhat[n];
+        sum[n]+=Gn; sum2[n]+=Gn*Gn;
+      }
+    }
+    const emp=[]; // index 1..L
+    for(let n=1;n<=L;n++){
+      const mean=sum[n]/M, vr=Math.max(1e-12, sum2[n]/M-mean*mean)*M/(M-1);
+      emp[n]={bias:mean-vtrue[0], varr:vr};
+    }
+    const th=[];
+    for(let n=1;n<=L;n++){
+      const b=-w*Math.pow(G,n)*vtrue[Math.min(n,L)];
+      let vr=0; for(let k=0;k<n;k++) vr+=Math.pow(G,2*k); vr*=sig*sig;
+      th[n]={bias:b, varr:vr, mse:b*b+vr};
+    }
+    // plot
+    clear(ctx,cv);
+    const x0=64,y0=215,w2=790,h=180;
+    axes(ctx,x0,y0,w2,h,'n  (number of sampled rewards before bootstrapping)','error, log₁₀ scale');
+    let lo=Infinity, hi=-Infinity;
+    for(let n=1;n<=L;n++){
+      for(const v of [Math.max(th[n].bias*th[n].bias,1e-6), th[n].varr, th[n].mse,
+                      Math.max(emp[n].bias*emp[n].bias,1e-6), emp[n].varr]){
+        const e=Math.log10(Math.max(v,1e-6)); if(e<lo)lo=e; if(e>hi)hi=e;
+      }
+    }
+    hi=Math.ceil(hi)+0.2; lo=Math.max(Math.floor(lo)-0.2, hi-4.2);
+    const X=n=>x0+w2*(n-1)/(L-1);
+    const Y=v=>Math.min(y0, y0-h*(Math.log10(Math.max(v,1e-6))-lo)/(hi-lo));
+    ctx.strokeStyle='#EEF2F6';
+    for(let e=Math.ceil(lo);e<=hi;e++){ const y=Y(Math.pow(10,e));
+      ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+w2,y); ctx.stroke();
+      ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial'; ctx.fillText('1e'+e,x0-34,y+3); }
+    ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial'; ctx.textAlign='center';
+    for(const n of [1,2,4,8,12,16]) ctx.fillText(n===16?'16 = ∞':String(n),X(n),y0+15);
+    ctx.textAlign='left';
+    const mk=(f)=>{ const p=[]; for(let n=1;n<=L;n++) p.push([X(n),Y(f(n))]); return p; };
+    polyline(ctx,mk(n=>th[n].bias*th[n].bias),'#E8A9A0',1.2);
+    polyline(ctx,mk(n=>th[n].varr),'#A9BFD8',1.2);
+    polyline(ctx,mk(n=>th[n].mse),'#C7B0DE',1.2);
+    polyline(ctx,mk(n=>emp[n].bias*emp[n].bias),'#C0392B',2);
+    polyline(ctx,mk(n=>emp[n].varr),'#1F4E79',2);
+    polyline(ctx,mk(n=>emp[n].bias*emp[n].bias+emp[n].varr),'#7B3FA0',2,[5,4]);
+    // crossing of theoretical bias^2 and variance
+    let cross=null;
+    for(let n=1;n<L;n++){
+      const a=th[n].bias*th[n].bias-th[n].varr, b=th[n+1].bias*th[n+1].bias-th[n+1].varr;
+      if(a>0&&b<=0){ cross=n+ a/(a-b); break; }
+    }
+    if(cross){ const x=X(cross);
+      ctx.save(); ctx.setLineDash([4,4]); ctx.strokeStyle='#F9A825'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(x,y0); ctx.lineTo(x,y0-h); ctx.stroke(); ctx.restore();
+      ctx.fillStyle='#B8860B'; ctx.font='11px -apple-system,Arial';
+      ctx.fillText('crossing  n ≈ '+cross.toFixed(1), Math.min(x+6,x0+w2-120), y0-h+14);
+    }
+    let bestN=1, bestM=Infinity;
+    for(let n=1;n<=L;n++){ const m2=th[n].mse; if(m2<bestM){bestM=m2;bestN=n;} }
+    // table
+    let html='<tr><th>n</th><th>empirical bias</th><th>empirical variance</th><th>empirical MSE</th><th>exact bias</th><th>exact variance</th></tr>';
+    for(const n of [1,2,4,8,16]){
+      const hi2 = (n===bestN)?' class="hi"':'';
+      html+=`<tr${hi2}><td>${n===16?'∞ (Monte Carlo)':n}</td><td>${emp[n].bias.toFixed(3)}</td><td>${emp[n].varr.toFixed(3)}</td>`
+          + `<td>${(emp[n].bias*emp[n].bias+emp[n].varr).toFixed(3)}</td><td>${th[n].bias.toFixed(3)}</td><td>${th[n].varr.toFixed(3)}</td></tr>`;
+    }
+    tbl.innerHTML=html;
+    out.innerHTML = `\\(v_\\pi(s_0) = ${vtrue[0].toFixed(3)}\\) exactly. Squared bias decays as \\(\\gamma^{2n}\\); variance saturates at \\(\\sigma^2/(1-\\gamma^2) = ${(sig*sig/(1-G*G)).toFixed(2)}\\). `
+      + (cross ? `They cross at <b>n ≈ ${cross.toFixed(1)}</b>: below it the critic's error is the dominant term, above it the sampling noise is. `
+               : `At this critic error the variance dominates at every n — there is no crossing, and one-step bootstrapping is unambiguously right. `)
+      + `Mean squared error is minimised at <b>n = ${bestN===L?'∞ (Monte Carlo)':bestN}</b>. `
+      + `Raise \\(\\omega\\) and the crossing and the minimum both move right, because a worse critic must be trusted for fewer steps; raise \\(\\sigma\\) and they move left.`;
+    typeset(out);
+  }
+  [wS,sS,mS].forEach(el=>el.oninput=run);
+  document.getElementById('d1-run').onclick=run;
+  run();
+})();
+
+/* ============================================================
+   D2: the PPO clipped surrogate
+   ============================================================ */
+(function(){
+  const eS=document.getElementById('d2-e'), aS=document.getElementById('d2-a'), rS=document.getElementById('d2-r'),
+        eL=document.getElementById('d2-eL'), aL=document.getElementById('d2-aL'), rL=document.getElementById('d2-rL'),
+        cv=document.getElementById('d2-canvas'), ctx=cv.getContext('2d'), out=document.getElementById('d2-read');
+  const clip=(x,lo,hi)=>Math.max(lo,Math.min(hi,x));
+  const L=(rho,A,eps)=>Math.min(rho*A, clip(rho,1-eps,1+eps)*A);
+
+  function panel(px,pw,A,eps,rho0,title){
+    const x0=px+46, y0=248, w=pw-70, h=190;
+    const RMAX=2.2, amag=Math.abs(A);
+    const yhi=amag*RMAX*1.02, ylo=-amag*RMAX*1.02;
+    const X=r=>x0+w*r/RMAX, Y=v=>y0-h*(v-ylo)/(yhi-ylo);
+    // hatched zero-gradient region
+    const zl = A>0? [X(1+eps),X(RMAX)] : [X(0),X(1-eps)];
+    ctx.save();
+    ctx.beginPath(); ctx.rect(zl[0],y0-h,zl[1]-zl[0],h); ctx.clip();
+    ctx.fillStyle='#F4F6F8'; ctx.fillRect(zl[0],y0-h,zl[1]-zl[0],h);
+    ctx.strokeStyle='#DCE3EA'; ctx.lineWidth=1;
+    for(let x=zl[0];x<zl[1]+h*0.5;x+=9){ ctx.beginPath(); ctx.moveTo(x,y0); ctx.lineTo(x-h*0.5,y0-h); ctx.stroke(); }
+    ctx.restore();
+    // trust band
+    ctx.fillStyle='rgba(31,139,76,0.10)';
+    ctx.fillRect(X(1-eps),y0-h,X(1+eps)-X(1-eps),h);
+    // axes
+    ctx.strokeStyle='#C7D2DE'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x0,y0-h); ctx.lineTo(x0,y0); ctx.lineTo(x0+w,y0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0,Y(0)); ctx.lineTo(x0+w,Y(0)); ctx.stroke();
+    ctx.fillStyle='#666'; ctx.font='11px -apple-system,Arial'; ctx.textAlign='center';
+    ctx.fillText('probability ratio  ρ', x0+w/2, y0+30);
+    [0,0.5,1,1.5,2].forEach(r=>ctx.fillText(r.toFixed(1),X(r),y0+15));
+    ctx.textAlign='left';
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 12px -apple-system,Arial'; ctx.fillText(title,x0,y0-h-8);
+    // unclipped
+    const pu=[]; for(let r=0;r<=RMAX;r+=0.01) pu.push([X(r),Y(r*A)]);
+    polyline(ctx,pu,'#9AA7B4',1.4,[5,4]);
+    // clipped
+    const pc=[]; for(let r=0;r<=RMAX;r+=0.005) pc.push([X(r),Y(L(r,A,eps))]);
+    polyline(ctx,pc,A>0?'#1F8B4C':'#C0392B',2.6);
+    // markers
+    ctx.strokeStyle='#333'; ctx.setLineDash([2,3]); ctx.beginPath();
+    ctx.moveTo(X(1),y0); ctx.lineTo(X(1),y0-h); ctx.stroke(); ctx.setLineDash([]);
+    const yv=L(rho0,A,eps);
+    ctx.fillStyle='#F9A825'; ctx.beginPath(); ctx.arc(X(rho0),Y(yv),5,0,7); ctx.fill();
+    ctx.strokeStyle='#B8860B'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.fillStyle='#666'; ctx.font='10px -apple-system,Arial';
+    ctx.fillText('ρ = 1', X(1)+4, y0-h+10);
+    ctx.fillText(A>0?'gradient = 0 above 1+ε':'gradient = 0 below 1−ε', A>0?X(1+eps)+6:X(0)+6, y0-h+26);
+    return yv;
+  }
+  function draw(){
+    const eps=parseFloat(eS.value), amag=parseFloat(aS.value), rho=parseFloat(rS.value);
+    eL.textContent=eps.toFixed(2); aL.textContent=amag.toFixed(1); rL.textContent=rho.toFixed(2);
+    clear(ctx,cv);
+    const vp=panel(0,450,amag,eps,rho,'A = +'+amag.toFixed(1)+'   (a better-than-average action)');
+    const vn=panel(450,450,-amag,eps,rho,'A = −'+amag.toFixed(1)+'   (a worse-than-average action)');
+    const gp = rho>1+eps?0:amag, gn = rho<1-eps?0:-amag;
+    out.innerHTML = `At \\(\\rho = ${rho.toFixed(2)}\\), \\(\\epsilon = ${eps.toFixed(2)}\\): &nbsp; `
+      + `<b>A = +${amag.toFixed(1)}</b> → \\(L^{CLIP} = ${vp.toFixed(3)}\\) (unclipped would be ${(rho*amag).toFixed(3)}), gradient \\(\\partial L/\\partial\\rho = ${gp.toFixed(2)}\\). &nbsp;·&nbsp; `
+      + `<b>A = −${amag.toFixed(1)}</b> → \\(L^{CLIP} = ${vn.toFixed(3)}\\) (unclipped would be ${(-rho*amag).toFixed(3)}), gradient \\(= ${gn.toFixed(2)}\\).<br>`
+      + `The flat region sits <b>above</b> \\(1+\\epsilon\\) when \\(A>0\\) and <b>below</b> \\(1-\\epsilon\\) when \\(A<0\\) — always on the side the update wants to travel. `
+      + `The incentive to move <em>back</em> toward \\(\\rho=1\\) is never removed, which is why one \\(\\epsilon\\) governs both directions. `
+      + `Note the right panel below \\(1-\\epsilon\\): the curve is flat, so a bad action whose probability has already been cut by \\(\\epsilon\\) is left alone rather than driven to zero.`;
+    typeset(out);
+  }
+  [eS,aS,rS].forEach(el=>el.oninput=draw);
+  draw();
+})();
+
+/* ============================================================
+   D3: soft value iteration on a 4x4 grid
+   ============================================================ */
+(function(){
+  const aS=document.getElementById('d3-a'), gS=document.getElementById('d3-g'),
+        aL=document.getElementById('d3-aL'), gL=document.getElementById('d3-gL'),
+        cv=document.getElementById('d3-canvas'), ctx=cv.getContext('2d'), out=document.getElementById('d3-read');
+  const N=4, NS=16, NA=4, GOAL=15, PIT=6, START=0;
+  const AR=[[0,-1],[1,0],[0,1],[-1,0]];   // 0 up, 1 right, 2 down, 3 left
+  function nxt(s,a){
+    let r=Math.floor(s/N), c=s%N;
+    if(a===0) r=Math.max(r-1,0); else if(a===1) c=Math.min(c+1,N-1);
+    else if(a===2) r=Math.min(r+1,N-1); else c=Math.max(c-1,0);
+    return r*N+c;
+  }
+  function step(s,a){ const ns=nxt(s,a);
+    if(ns===GOAL) return [1,START]; if(ns===PIT) return [-1,START]; return [0,ns]; }
+  function solve(alpha,g){
+    let V=new Array(NS).fill(0);
+    for(let it=0;it<3000;it++){
+      const nV=new Array(NS).fill(0); let d=0;
+      for(let s=0;s<NS;s++){
+        const Q=[]; for(let a=0;a<NA;a++){ const [r,ns]=step(s,a); Q.push(r+g*V[ns]); }
+        nV[s]=logsumexp(Q,alpha); d=Math.max(d,Math.abs(nV[s]-V[s]));
+      }
+      V=nV; if(d<1e-11) break;
+    }
+    const POL=[], QQ=[];
+    for(let s=0;s<NS;s++){
+      const Q=[]; for(let a=0;a<NA;a++){ const [r,ns]=step(s,a); Q.push(r+g*V[ns]); }
+      QQ.push(Q); POL.push(softmaxT(Q,alpha));
+    }
+    return {V,POL,QQ};
+  }
+  function heat(v,lo,hi){
+    const f=hi>lo?Math.max(0,Math.min(1,(v-lo)/(hi-lo))):0.5;
+    const r=Math.round(255-(255-31)*f*0.86), gg=Math.round(255-(255-78)*f*0.62), b=Math.round(255-(255-121)*f*0.26);
+    return `rgb(${r},${gg},${b})`;
+  }
+  function arrow(cx,cy,dx,dy,alpha,len){
+    ctx.save(); ctx.globalAlpha=Math.max(0.03,Math.min(1,alpha));
+    ctx.strokeStyle='#12325A'; ctx.fillStyle='#12325A'; ctx.lineWidth=2.4;
+    const ex=cx+dx*len, ey=cy+dy*len;
+    ctx.beginPath(); ctx.moveTo(cx+dx*8,cy+dy*8); ctx.lineTo(ex,ey); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ex+dx*5,ey+dy*5);
+    ctx.lineTo(ex-dx*3+dy*4.5, ey-dy*3-dx*4.5);
+    ctx.lineTo(ex-dx*3-dy*4.5, ey-dy*3+dx*4.5);
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+  function draw(){
+    const alpha=Math.pow(10,parseFloat(aS.value)), g=parseFloat(gS.value);
+    aL.textContent=alpha.toFixed(3); gL.textContent=g.toFixed(2);
+    const {V,POL,QQ}=solve(alpha,g);
+    clear(ctx,cv);
+    const lo=Math.min(...V), hi=Math.max(...V), CS=86, ox=30, oy=34;
+    ctx.font='11px -apple-system,Arial';
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 12px -apple-system,Arial';
+    ctx.fillText('V(s) heat map, with π(a|s) as arrow opacity', ox, oy-12);
+    for(let s=0;s<NS;s++){
+      const r=Math.floor(s/N), c=s%N, x=ox+c*CS, y=oy+r*CS;
+      ctx.fillStyle=heat(V[s],lo,hi); ctx.fillRect(x,y,CS,CS);
+      ctx.strokeStyle='#C7D2DE'; ctx.lineWidth=1; ctx.strokeRect(x,y,CS,CS);
+      if(s===GOAL){ ctx.fillStyle='rgba(31,139,76,0.55)'; ctx.fillRect(x,y,CS,CS); }
+      if(s===PIT){ ctx.fillStyle='rgba(192,57,43,0.55)'; ctx.fillRect(x,y,CS,CS); }
+      if(s===START){ ctx.strokeStyle='#F9A825'; ctx.lineWidth=3; ctx.strokeRect(x+2,y+2,CS-4,CS-4); }
+      const cx=x+CS/2, cy=y+CS/2;
+      for(let a=0;a<NA;a++) arrow(cx,cy,AR[a][0],AR[a][1],POL[s][a],30);
+      ctx.fillStyle='#12325A'; ctx.font='bold 11px "SF Mono",Consolas,monospace';
+      ctx.textAlign='center'; ctx.fillText(V[s].toFixed(2), cx, y+CS-7); ctx.textAlign='left';
+    }
+    // right panel: entropy and softmax gap vs alpha
+    const x0=470, y0=340, w=390, h=250;
+    axes(ctx,x0,y0,w,h,'temperature α  (log scale)','');
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 12px -apple-system,Arial';
+    ctx.fillText('mean policy entropy and the soft-max gap', x0, y0-h-16);
+    const lgLo=-2, lgHi=0.176, LN4=Math.log(4);
+    const X=la=>x0+w*(la-lgLo)/(lgHi-lgLo), Y=e=>y0-h*e/(LN4*1.08);
+    ctx.strokeStyle='#EEF2F6';
+    [0,0.25,0.5,0.75,1].forEach(f=>{ const y=Y(f*LN4);
+      ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+w,y); ctx.stroke();
+      ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial'; ctx.fillText((f*LN4).toFixed(2),x0-32,y+3); });
+    ctx.fillStyle='#999'; ctx.textAlign='center';
+    [-2,-1.5,-1,-0.5,0].forEach(la=>ctx.fillText(Math.pow(10,la).toFixed(2),X(la),y0+15));
+    ctx.textAlign='left';
+    const ptsH=[], ptsG=[];
+    for(let la=lgLo; la<=lgHi+1e-9; la+=0.06){
+      const al=Math.pow(10,la); const r=solve(al,g);
+      let H=0, gap=0;
+      for(let s=0;s<NS;s++){
+        for(let a=0;a<NA;a++){ const p=r.POL[s][a]; if(p>1e-12) H-=p*Math.log(p); }
+        gap += r.V[s]-Math.max(...r.QQ[s]);
+      }
+      H/=NS; gap/=NS;
+      ptsH.push([X(la),Y(H)]); ptsG.push([X(la),Y(gap)]);
+    }
+    polyline(ctx,ptsH,'#1F4E79',2.2);
+    polyline(ctx,ptsG,'#7B3FA0',2,[5,4]);
+    const yln4=Y(LN4);
+    ctx.save(); ctx.setLineDash([3,3]); ctx.strokeStyle='#C0392B';
+    ctx.beginPath(); ctx.moveTo(x0,yln4); ctx.lineTo(x0+w,yln4); ctx.stroke(); ctx.restore();
+    ctx.fillStyle='#C0392B'; ctx.font='10px -apple-system,Arial'; ctx.fillText('log|A| = 1.386 (uniform)', x0+6, yln4-5);
+    const lax=X(Math.log10(alpha));
+    ctx.save(); ctx.strokeStyle='#F9A825'; ctx.lineWidth=2; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(lax,y0); ctx.lineTo(lax,y0-h); ctx.stroke(); ctx.restore();
+    ctx.fillStyle='#1F4E79'; ctx.font='10px -apple-system,Arial';
+    ctx.fillText('mean entropy H(π)', x0+w-140, y0-h+16);
+    ctx.fillStyle='#7B3FA0'; ctx.fillText('V(s) − max Q(s,·)', x0+w-140, y0-h+32);
+    // readout
+    let H=0, gap=0;
+    for(let s=0;s<NS;s++){
+      for(let a=0;a<NA;a++){ const p=POL[s][a]; if(p>1e-12) H-=p*Math.log(p); }
+      gap += V[s]-Math.max(...QQ[s]);
+    }
+    H/=NS; gap/=NS;
+    out.innerHTML = `\\(\\alpha = ${alpha.toFixed(3)}\\), \\(\\gamma = ${g.toFixed(2)}\\): &nbsp; mean policy entropy = <b>${H.toFixed(3)}</b> nats against a uniform ceiling of \\(\\log 4 = 1.386\\) `
+      + `(<b>${(100*H/Math.log(4)).toFixed(1)}%</b> of the way to uniform). &nbsp;·&nbsp; \\(V(s_0) = ${V[START].toFixed(3)}\\). &nbsp;·&nbsp; `
+      + `mean soft-max gap \\(V(s)-\\max_a Q(s,a) = ${gap.toFixed(3)}\\), which the bound of §5 requires to lie in \\([0,\\ \\alpha\\log 4] = [0,\\ ${(alpha*Math.log(4)).toFixed(3)}]\\). `
+      + `Drive \\(\\alpha\\) to the left edge and the gap collapses to zero: the log-sum-exp becomes \\(\\max\\), the arrows resolve to one solid direction per cell, and soft value iteration becomes ordinary value iteration. `
+      + `Drive it right and the arrows fade to four equal quarters while every value rises by roughly \\(\\alpha\\log|\\mathcal{A}|/(1-\\gamma) = ${(alpha*Math.log(4)/(1-g)).toFixed(2)}\\) — income the agent earns for being random, which at this \\(\\alpha\\) is ${(alpha*Math.log(4)/(1-g) > 2 ? 'already larger than anything the task pays' : 'still smaller than the task reward')}.`;
+    typeset(out);
+  }
+  [aS,gS].forEach(el=>el.oninput=draw);
+  draw();
+})();
+
+/* ============================================================
+   D4: entropy versus trust region on the simplex
+   ============================================================ */
+(function(){
+  const cv=document.getElementById('d4-canvas'), ctx=cv.getContext('2d'), out=document.getElementById('d4-read');
+  let PI=[0.55,0.30,0.15], REF=[1/3,1/3,1/3];
+  const TRI=[[210,40],[40,300],[380,300]];   // vertices for a1, a2, a3
+  function toXY(p){ return [p[0]*TRI[0][0]+p[1]*TRI[1][0]+p[2]*TRI[2][0],
+                            p[0]*TRI[0][1]+p[1]*TRI[1][1]+p[2]*TRI[2][1]]; }
+  function toBary(x,y){
+    const [x1,y1]=TRI[0],[x2,y2]=TRI[1],[x3,y3]=TRI[2];
+    const d=(y2-y3)*(x1-x3)+(x3-x2)*(y1-y3);
+    let l1=((y2-y3)*(x-x3)+(x3-x2)*(y-y3))/d;
+    let l2=((y3-y1)*(x-x3)+(x1-x3)*(y-y3))/d;
+    let l3=1-l1-l2;
+    l1=Math.max(0.004,l1); l2=Math.max(0.004,l2); l3=Math.max(0.004,l3);
+    const s=l1+l2+l3; return [l1/s,l2/s,l3/s];
+  }
+  /* two independent code paths, on purpose */
+  function entropyPath(p){ let H=0; for(const q of p) H-=q*Math.log(q); return -H+Math.log(p.length); }
+  function klPath(p,q){ let k=0; for(let i=0;i<p.length;i++) k+=p[i]*Math.log(p[i]/q[i]); return k; }
+  function draw(){
+    clear(ctx,cv);
+    // simplex
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 12px -apple-system,Arial';
+    ctx.fillText('the 3-action simplex', 30, 24);
+    ctx.beginPath(); ctx.moveTo(TRI[0][0],TRI[0][1]); ctx.lineTo(TRI[1][0],TRI[1][1]);
+    ctx.lineTo(TRI[2][0],TRI[2][1]); ctx.closePath();
+    ctx.fillStyle='#F4F7FA'; ctx.fill(); ctx.strokeStyle='#C7D2DE'; ctx.lineWidth=1.5; ctx.stroke();
+    // contours of KL to uniform
+    for(const lev of [0.05,0.2,0.5,1.0]){
+      ctx.strokeStyle='#DDE5EE'; ctx.lineWidth=1; ctx.beginPath(); let started=false;
+      for(let t=0;t<=360;t+=2){
+        const th=t*Math.PI/180;
+        let loP=0, hiP=1, best=null;
+        for(let it=0;it<28;it++){
+          const m=(loP+hiP)/2;
+          const p=[1/3+m*0.66*Math.cos(th), 1/3+m*0.66*Math.sin(th)*0.9, 0];
+          p[2]=1-p[0]-p[1];
+          if(p[0]<=0.002||p[1]<=0.002||p[2]<=0.002){ hiP=m; continue; }
+          if(klPath(p,[1/3,1/3,1/3])<lev){ loP=m; best=p; } else hiP=m;
+        }
+        if(best){ const [x,y]=toXY(best);
+          if(!started){ ctx.moveTo(x,y); started=true; } else ctx.lineTo(x,y); }
+      }
+      if(started){ ctx.closePath(); ctx.stroke(); }
+    }
+    const lbl=['a₁','a₂','a₃'];
+    ctx.fillStyle='#555'; ctx.font='12px -apple-system,Arial'; ctx.textAlign='center';
+    ctx.fillText(lbl[0],TRI[0][0],TRI[0][1]-9);
+    ctx.fillText(lbl[1],TRI[1][0]-10,TRI[1][1]+16);
+    ctx.fillText(lbl[2],TRI[2][0]+10,TRI[2][1]+16);
+    ctx.textAlign='left';
+    const [ux,uy]=toXY([1/3,1/3,1/3]);
+    ctx.fillStyle='#9AA7B4'; ctx.beginPath(); ctx.arc(ux,uy,4,0,7); ctx.fill();
+    ctx.fillStyle='#777'; ctx.font='10px -apple-system,Arial'; ctx.fillText('uniform',ux-46,uy+4);
+    const [rx,ry]=toXY(REF);
+    ctx.strokeStyle='#7B3FA0'; ctx.lineWidth=2; ctx.fillStyle='rgba(123,63,160,0.35)';
+    ctx.beginPath(); ctx.arc(rx,ry,9,0,7); ctx.fill(); ctx.stroke();
+    const [px,py]=toXY(PI);
+    ctx.strokeStyle='#1F4E79'; ctx.lineWidth=2; ctx.fillStyle='rgba(31,78,121,0.45)';
+    ctx.beginPath(); ctx.arc(px,py,9,0,7); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle='#B9A0D0'; ctx.lineWidth=1.4; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(px,py); ctx.lineTo(rx,ry); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#1F4E79'; ctx.font='11px -apple-system,Arial'; ctx.fillText('π',px+11,py+4);
+    ctx.fillStyle='#7B3FA0'; ctx.fillText('π_ref',rx+11,ry+4);
+    ctx.fillStyle='#777'; ctx.font='10px -apple-system,Arial';
+    ctx.fillText('drag either marker', 30, 330);
+    // bars
+    const bx=470, by=300, bw=380, bh=230;
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 12px -apple-system,Arial';
+    ctx.fillText('the two distributions', bx, 24);
+    axes(ctx,bx,by,bw,bh,'action','probability');
+    ctx.strokeStyle='#EEF2F6';
+    for(let i=1;i<=4;i++){ const y=by-bh*i/4; ctx.beginPath(); ctx.moveTo(bx,y); ctx.lineTo(bx+bw,y); ctx.stroke();
+      ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial'; ctx.fillText((i/4).toFixed(2),bx-30,y+3); }
+    for(let i=0;i<3;i++){
+      const cx=bx+bw*(i+0.5)/3;
+      ctx.fillStyle='#1F4E79'; ctx.fillRect(cx-40,by-bh*PI[i],36,bh*PI[i]);
+      ctx.fillStyle='#7B3FA0'; ctx.fillRect(cx+4,by-bh*REF[i],36,bh*REF[i]);
+      ctx.fillStyle='#555'; ctx.font='11px -apple-system,Arial'; ctx.textAlign='center';
+      ctx.fillText(lbl[i],cx,by+15); ctx.textAlign='left';
+    }
+    ctx.fillStyle='#1F4E79'; ctx.fillRect(bx+bw-118,by-bh-14,10,10);
+    ctx.fillStyle='#333'; ctx.font='11px -apple-system,Arial'; ctx.fillText('π',bx+bw-104,by-bh-5);
+    ctx.fillStyle='#7B3FA0'; ctx.fillRect(bx+bw-72,by-bh-14,10,10);
+    ctx.fillStyle='#333'; ctx.fillText('π_ref',bx+bw-58,by-bh-5);
+    // numbers
+    const U=[1/3,1/3,1/3];
+    const A=entropyPath(PI), B=klPath(PI,U), C=klPath(PI,REF);
+    let H=0; for(const q of PI) H-=q*Math.log(q);
+    const refUniform = Math.max(...REF.map((r,i)=>Math.abs(r-U[i])))<1e-9;
+    out.innerHTML =
+      `\\(\\pi = (${PI.map(x=>x.toFixed(3)).join(',\\ ')})\\), &nbsp; \\(\\pi_{\\text{ref}} = (${REF.map(x=>x.toFixed(3)).join(',\\ ')})\\)<br>`
+      + `<b>Path 1 (entropy):</b> \\(-\\mathcal{H}(\\pi)+\\log 3 = -(${H.toFixed(6)}) + 1.098612 =\\) <b>${A.toFixed(6)}</b> &nbsp;&nbsp; `
+      + `<b>Path 2 (KL sum):</b> \\(\\sum_a \\pi_a\\log\\frac{\\pi_a}{1/3} =\\) <b>${B.toFixed(6)}</b> &nbsp;&nbsp; `
+      + `difference = <b>${Math.abs(A-B).toExponential(1)}</b> — zero to machine precision, at every point of the simplex.<br>`
+      + `<b>Against the reference:</b> \\(D_{KL}(\\pi\\,\\|\\,\\pi_{\\text{ref}}) =\\) <b>${C.toFixed(6)}</b>. `
+      + (refUniform
+          ? `The reference is uniform, so this third number coincides with the first two: entropy regularisation <em>is</em> KL regularisation, with no choice of reference having been made. Move the reference off uniform.`
+          : `The reference is no longer uniform, and the third number has separated from the first two by <b>${Math.abs(C-B).toFixed(4)}</b> nats. `
+            + `The entropy of \\(\\pi\\) has not changed at all — only the distribution it is being compared against. That substitution, and nothing else, is what Topic 6 does to this objective.`);
+    typeset(out);
+  }
+  let drag=null;
+  function pos(e){ const r=cv.getBoundingClientRect();
+    return [(e.clientX-r.left)*cv.width/r.width, (e.clientY-r.top)*cv.height/r.height]; }
+  cv.addEventListener('mousedown',e=>{
+    const [x,y]=pos(e); const [px,py]=toXY(PI), [rx,ry]=toXY(REF);
+    const dp=(x-px)**2+(y-py)**2, dr=(x-rx)**2+(y-ry)**2;
+    if(Math.min(dp,dr)<900) drag = dp<=dr ? 'pi' : 'ref';
+    else if(x<420) drag='pi';
+    if(drag){ move(e); }
+  });
+  function move(e){ if(!drag) return; const [x,y]=pos(e);
+    if(x>420) return;
+    const b=toBary(x,y); if(drag==='pi') PI=b; else REF=b; draw(); }
+  cv.addEventListener('mousemove',move);
+  window.addEventListener('mouseup',()=>{ drag=null; });
+  document.getElementById('d4-off').onclick=()=>{ REF=[0.60,0.30,0.10]; draw(); };
+  document.getElementById('d4-ref').onclick=()=>{ REF=[1/3,1/3,1/3]; draw(); };
+  document.getElementById('d4-pi').onclick=()=>{
+    const e=[Math.random(),Math.random(),Math.random()].map(u=>-Math.log(u));
+    const s=e.reduce((a,b)=>a+b,0); PI=e.map(x=>Math.max(0.01,x/s));
+    const t=PI.reduce((a,b)=>a+b,0); PI=PI.map(x=>x/t); draw(); };
+  document.getElementById('d4-det').onclick=()=>{
+    const e=PI.map(x=>Math.pow(x,2.2)); const s=e.reduce((a,b)=>a+b,0);
+    PI=e.map(x=>Math.max(0.004,x/s)); const t=PI.reduce((a,b)=>a+b,0); PI=PI.map(x=>x/t); draw(); };
+  draw();
+})();
+
+/* ============================================================
+   D5: the tanh-squashed Gaussian actor
+   ============================================================ */
+(function(){
+  const mS=document.getElementById('d5-m'), sS=document.getElementById('d5-s'), aS=document.getElementById('d5-a'),
+        mL=document.getElementById('d5-mL'), sL=document.getElementById('d5-sL'), aL=document.getElementById('d5-aL'),
+        cv=document.getElementById('d5-canvas'), ctx=cv.getContext('2d'), out=document.getElementById('d5-read');
+  const npdf=(u,m,s)=>Math.exp(-0.5*((u-m)/s)**2)/(s*Math.sqrt(2*Math.PI));
+  const atanh=a=>0.5*Math.log((1+a)/(1-a));
+  function draw(){
+    const mu=parseFloat(mS.value), ls=parseFloat(sS.value), a0=parseFloat(aS.value);
+    const sg=Math.exp(ls);
+    mL.textContent=mu.toFixed(2); sL.textContent=ls.toFixed(2); aL.textContent=a0.toFixed(2);
+    clear(ctx,cv);
+    // left panel: pre-squash gaussian
+    const x0=56,y0=245,w=360,h=195, UL=-4, UH=4;
+    axes(ctx,x0,y0,w,h,'pre-squash  u','density');
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 12px -apple-system,Arial';
+    ctx.fillText('u ~ N(μ, σ)', x0, y0-h-10);
+    let pmax=npdf(mu,mu,sg);
+    const X=u=>x0+w*(u-UL)/(UH-UL), Y=p=>y0-h*p/(pmax*1.12);
+    const pts=[]; for(let u=UL;u<=UH;u+=0.02) pts.push([X(u),Y(npdf(u,mu,sg))]);
+    polyline(ctx,pts,'#1F4E79',2.2);
+    ctx.fillStyle='rgba(31,78,121,0.12)'; ctx.beginPath(); ctx.moveTo(X(UL),y0);
+    for(const p of pts) ctx.lineTo(p[0],p[1]); ctx.lineTo(X(UH),y0); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial'; ctx.textAlign='center';
+    [-4,-2,0,2,4].forEach(u=>ctx.fillText(u,X(u),y0+15)); ctx.textAlign='left';
+    const u0=atanh(a0);
+    ctx.save(); ctx.setLineDash([4,4]); ctx.strokeStyle='#F9A825'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(X(u0),y0); ctx.lineTo(X(u0),Y(npdf(u0,mu,sg))); ctx.stroke(); ctx.restore();
+    ctx.fillStyle='#B8860B'; ctx.font='10px -apple-system,Arial';
+    ctx.fillText('u = atanh(a) = '+u0.toFixed(2), Math.min(X(u0)+5,x0+w-110), y0-h+12);
+    // right panel: post-squash densities
+    const bx=500, by=245, bw=360, bh=195;
+    axes(ctx,bx,by,bw,bh,'action  a = tanh(u)','density on (−1, 1)');
+    ctx.fillStyle='#1F4E79'; ctx.font='bold 12px -apple-system,Arial';
+    ctx.fillText('the induced density on the action', bx, by-bh-10);
+    const AS=[], corr=[], naive=[];
+    for(let a=-0.995;a<=0.995;a+=0.002){ const u=atanh(a); const n=npdf(u,mu,sg);
+      AS.push(a); naive.push(n); corr.push(n/(1-a*a)); }
+    let cmax=Math.max(...corr);
+    const BX=a=>bx+bw*(a+1)/2, BY=p=>by-bh*p/(cmax*1.1);
+    const pc=[], pn=[];
+    for(let i=0;i<AS.length;i++){ pc.push([BX(AS[i]),BY(corr[i])]); pn.push([BX(AS[i]),BY(naive[i])]); }
+    ctx.fillStyle='rgba(31,139,76,0.12)'; ctx.beginPath(); ctx.moveTo(BX(-1),by);
+    for(const p of pc) ctx.lineTo(p[0],p[1]); ctx.lineTo(BX(1),by); ctx.closePath(); ctx.fill();
+    polyline(ctx,pc,'#1F8B4C',2.4);
+    polyline(ctx,pn,'#C0392B',1.8,[6,4]);
+    ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial'; ctx.textAlign='center';
+    [-1,-0.5,0,0.5,1].forEach(a=>ctx.fillText(a.toFixed(1),BX(a),by+15)); ctx.textAlign='left';
+    ctx.save(); ctx.setLineDash([4,4]); ctx.strokeStyle='#F9A825'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(BX(a0),by); ctx.lineTo(BX(a0),BY(npdf(u0,mu,sg)/(1-a0*a0))); ctx.stroke(); ctx.restore();
+    ctx.fillStyle='#1F8B4C'; ctx.font='10px -apple-system,Arial';
+    ctx.fillText('with Jacobian correction', bx+10, by-bh+14);
+    ctx.fillStyle='#C0392B'; ctx.fillText('without it (not a density)', bx+10, by-bh+30);
+    // numeric masses, integrated in u to stay stable
+    let mCorr=0, mNaive=0; const du=0.002;
+    for(let u=-9;u<=9;u+=du){ const n=npdf(u,mu,sg); const t=Math.tanh(u);
+      mCorr += n*du; mNaive += n*(1-t*t)*du; }
+    const logN = -0.5*((u0-mu)/sg)**2 - Math.log(sg*Math.sqrt(2*Math.PI));
+    const cterm = -Math.log(1-a0*a0);
+    out.innerHTML = `At \\(a = ${a0.toFixed(2)}\\): \\(u=\\operatorname{atanh}(a) = ${u0.toFixed(4)}\\), &nbsp; `
+      + `\\(\\log\\mathcal{N}(u;\\mu,\\sigma) = ${logN.toFixed(4)}\\), &nbsp; correction \\(-\\log(1-\\tanh^2 u) = ${cterm.toFixed(4)}\\), &nbsp; `
+      + `so \\(\\log\\pi(a) = ${(logN+cterm).toFixed(4)}\\).<br>`
+      + `Numerically integrated mass on \\((-1,1)\\): corrected = <b>${mCorr.toFixed(4)}</b>, uncorrected = <b>${mNaive.toFixed(4)}</b>. `
+      + `Only the first is a probability density. The correction is always \\(\\ge 0\\) and diverges as \\(|a|\\to 1\\), because \\(\\tanh\\) compresses an infinite stretch of \\(u\\) into a vanishing sliver of \\(a\\). `
+      + `Drag \\(\\mu\\) outward and watch the uncorrected mass fall further below 1: the discrepancy is worst exactly at the saturated actions a converged policy spends most of its time near, which is why omitting the term does not merely rescale the entropy — it misreports it most where it matters, and the automatically tuned \\(\\alpha\\) then chases a target it cannot reach.`;
+    typeset(out);
+  }
+  [mS,sS,aS].forEach(el=>el.oninput=draw);
+  draw();
+})();
+</script>
+</body>
+</html>

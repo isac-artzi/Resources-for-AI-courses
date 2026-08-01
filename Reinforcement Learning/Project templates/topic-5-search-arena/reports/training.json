@@ -1,0 +1,28 @@
+{
+  "experiment_id": "exp-0001",
+  "artifact": {
+    "name": "alphazero_c4",
+    "format": "npz",
+    "bytes": 107632,
+    "sha256": "7e59518e7d4f929cd7293d7b986997df0d6479c11032ccf43ea1fe3397f106df",
+    "kind": "value-net",
+    "obs_dim": 84,
+    "n_actions": 7
+  },
+  "games_played": 240,
+  "positions": 3822,
+  "policy_loss": 1.5271002054214478,
+  "value_loss": 0.42097312211990356,
+  "export_max_abs_error": 1.5259795524968922e-06,
+  "vs_random": {
+    "games": 60,
+    "wins": 59,
+    "draws": 0,
+    "losses": 1,
+    "win_rate": 0.9833333333333333,
+    "mean_return": 0.9666666666666667,
+    "std_return": 0.25819888974716115,
+    "stderr_return": 0.03333333333333333
+  },
+  "elapsed_s": 372.7
+}

@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topic 1 Tutorial — Introduction to Reinforcement Learning</title>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] }, svg: { fontCache: 'global' } };
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif; margin: 0; background: #F7F9FC; color: #1A1A1A; line-height: 1.62; }
+.container { max-width: 1000px; margin: 24px auto 48px; background: white; padding: 32px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 8px; }
+.brand { color: #888; font-size: 0.85em; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 { color: #1F4E79; font-size: 1.9em; border-bottom: 3px solid #1F4E79; padding-bottom: 10px; margin: 6px 0 8px; }
+.subtitle { color: #555; font-style: italic; margin-bottom: 24px; }
+h2 { color: #1F4E79; font-size: 1.34em; margin-top: 42px; border-bottom: 1px solid #D0D8E0; padding-bottom: 4px; }
+h3 { color: #333; font-size: 1.12em; margin-top: 24px; }
+p { margin: 12px 0; } ul, ol { margin: 12px 0; padding-left: 26px; } li { margin: 7px 0; }
+code { font-family: "SF Mono", Consolas, Monaco, monospace; background: #F2F4F7; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+pre { background: #1f2733; color:#e6edf3; padding: 14px 18px; border-radius: 6px; overflow-x: auto; border-left: 4px solid #1F4E79; font-family: "SF Mono", Consolas, Monaco, monospace; font-size: 0.86em; line-height:1.55; }
+pre .c { color:#8b98a9; } pre .k { color:#ff7b72; } pre .s { color:#a5d6ff; } pre .f { color:#d2a8ff; }
+.callout { background: #EAF1F8; border-left: 4px solid #1F4E79; padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+.callout strong { color: #1F4E79; }
+.why { background:#F0FaF3; border-left:4px solid #1F8B4C; padding:14px 18px; margin:16px 0; border-radius:4px; }
+.why strong { color:#1F8B4C; }
+.deep { background:#FBF7FF; border-left:4px solid #6A3FA0; padding:14px 18px; margin:16px 0; border-radius:4px; }
+.deep strong { color:#6A3FA0; }
+.warn { background: #FFF8E1; border-left: 4px solid #F9A825; padding: 12px 16px; margin: 14px 0; border-radius: 4px; font-size: 0.95em; }
+.product { background:#FCF6FF; border-left:4px solid #7B3FA0; padding:14px 18px; margin:16px 0; border-radius:4px; }
+.product strong { color:#7B3FA0; }
+.demo { background: #FAFBFC; border: 1px solid #E0E5EB; border-radius: 8px; padding: 22px; margin: 24px 0; }
+.demo h3 { margin-top: 0; color: #1F4E79; }
+.demo .tag { font-size:0.7em; background:#1F4E79; color:white; padding:2px 8px; border-radius:10px; vertical-align:middle; margin-left:8px; letter-spacing:0.04em;}
+.controls { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin: 12px 0 16px; }
+.control { display: flex; flex-direction: column; gap: 4px; font-size: 0.88em; }
+.control label { color: #555; }
+.control input[type="range"] { width: 200px; }
+.control input[type="text"], .control input[type="number"], .control select { padding:6px 8px; border:1px solid #CFD7DF; border-radius:4px; font-family:inherit; }
+.readout { background: white; border: 1px solid #E0E5EB; padding: 10px 14px; border-radius: 6px; font-size: 0.9em; }
+.mono { font-family:"SF Mono",Consolas,monospace; }
+textarea { width:100%; min-height:60px; padding:10px; border:1px solid #CFD7DF; border-radius:6px; font-family:"SF Mono",Consolas,monospace; font-size:0.9em; resize:vertical; }
+button { background: #1F4E79; color: white; border: 0; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.9em; }
+button:hover { background: #2D5C8C; } button.secondary { background: #E0E5EB; color: #1A1A1A; } button.secondary:hover { background:#CFD7DF; }
+button:disabled { background:#CBD5E0; cursor:not-allowed; }
+canvas { background: white; border: 1px solid #E0E5EB; border-radius: 4px; display: block; max-width:100%; }
+.tok { display:inline-block; background:#EAF1F8; border:1px solid #BcceE0; color:#1F4E79; padding:2px 7px; margin:2px; border-radius:10px; font-family:"SF Mono",Consolas,monospace; font-size:0.82em; }
+table.grid { border-collapse:collapse; font-family:"SF Mono",Consolas,monospace; font-size:0.8em; margin:8px 0; }
+table.grid td { border:1px solid #C7D2DE; width:64px; height:52px; text-align:center; padding:0; vertical-align:middle; line-height:1.25; }
+table.grid td .v { font-weight:bold; display:block; font-size:1.08em; }
+table.grid td .a { color:#1F4E79; font-size:1.15em; display:block; }
+table.grid td.hole { background:#3A4A5C; color:#fff; } table.grid td.goal { background:#1F8B4C; color:#fff; }
+table.grid td.start { outline:3px solid #F9A825; outline-offset:-3px; }
+table.tb { border-collapse:collapse; margin:12px 0; font-size:0.88em; } table.tb td, table.tb th { border:1px solid #D0D8E0; padding:5px 10px; text-align:center; } table.tb th { background:#EAF1F8; color:#1F4E79; }
+table.tb tr.hi td { background:#D6EAD9; font-weight:bold; }
+.nav { display: flex; justify-content: space-between; margin-top: 44px; padding-top: 16px; border-top: 1px solid #E0E5EB; font-size: 0.9em; color: #555; }
+.nav a { color: #1F4E79; text-decoration: none; } .nav a:hover { text-decoration: underline; }
+.toc { columns:2; font-size:0.92em; } .toc a { color:#1F4E79; text-decoration:none; } .toc a:hover{text-decoration:underline;}
+.legend { font-size:0.82em; color:#555; margin-top:6px; }
+.sw { display:inline-block; width:11px; height:11px; border-radius:2px; margin-right:4px; vertical-align:-1px; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">Tutorial · ~ 80 min · formal</div>
+<h1>Topic 1 — Introduction to Reinforcement Learning</h1>
+<p class="subtitle">The problem statement of the whole course, made precise. We define the agent–environment interface as a mathematical object, show what discounting actually buys, derive the Bellman equations and run value iteration to convergence, quantify the exploration–exploitation trade-off on a bandit, train a tabular Q-learning agent one episode at a time, and finish by asking the harder question: how do you know it learned anything?</p>
+
+<div class="callout">
+ <strong>Roadmap.</strong>
+ <div class="toc">
+ <a href="#s1">1. The agent–environment interface</a><br>
+ <a href="#s2">2. Return, and why we discount</a><br>
+ <a href="#s3">3. The Bellman equations &amp; value iteration</a><br>
+ <a href="#s4">4. Exploration vs. exploitation, quantified</a><br>
+ <a href="#s5">5. Q-learning: train it yourself</a><br>
+ <a href="#s6">6. Measuring an agent honestly</a><br>
+ <a href="#s7">7. In practice (Lake Pilot)</a>
+ </div>
+</div>
+
+<h2 id="s1">1. The agent–environment interface</h2>
+<p>Reinforcement learning is not a family of algorithms first — it is a problem statement, and the algorithms follow from it. The problem is described by a <strong>Markov decision process</strong>, the five-tuple</p>
+\[ \mathcal{M} = \langle \mathcal{S},\, \mathcal{A},\, P,\, R,\, \gamma \rangle, \]
+<p>where \(\mathcal{S}\) is a set of states, \(\mathcal{A}\) a set of actions, \(P(s' \mid s,a)\) a transition kernel, \(R(s,a,s')\) a reward function, and \(\gamma \in [0,1]\) a discount factor. At each step \(t\) the agent observes \(S_t\), takes \(A_t\), and the environment responds with \(R_{t+1}\) and \(S_{t+1}\). The interaction produces a <strong>trajectory</strong></p>
+\[ \tau = (S_0, A_0, R_1, S_1, A_1, R_2, S_2, \dots). \]
+<p>A <strong>policy</strong> \(\pi(a \mid s)\) is a distribution over actions given a state; it is the only thing the agent controls, and it is the only thing that ever gets deployed.</p>
+<p>The load-bearing assumption is in the letter \(P\). The transition kernel conditions on \(s\) and \(a\) alone — not on how the agent arrived at \(s\). That is the <strong>Markov property</strong>:</p>
+\[ \Pr(S_{t+1} = s' \mid S_t, A_t, S_{t-1}, A_{t-1}, \dots) = \Pr(S_{t+1} = s' \mid S_t, A_t). \]
+
+<div class="why">
+ <strong>Why the Markov property is a design decision, not a fact about the world.</strong> Almost no real environment is Markov in its raw observations. A single camera frame does not tell you velocity; a single blood-pressure reading does not tell you trend. The property is something you <em>engineer into the state representation</em> — by stacking frames, adding derivatives, or carrying a recurrent summary. When people say "reinforcement learning did not work on my problem," the cause is very often that the state they fed the agent was not Markov and no algorithm could have recovered the missing information. Deciding what goes into \(s\) is the first modelling choice you make, and it is not a small one.
+</div>
+
+<h3>The taxonomy, and why the boundaries are where they are</h3>
+<p>Two cuts organise the whole field, and both are cuts through the list above.</p>
+<ul>
+ <li><strong>Model-free vs. model-based.</strong> Does the agent have (or learn) \(P\) and \(R\)? A model-based method can <em>plan</em> — simulate consequences without acting. A model-free method can only <em>learn</em> from experience it actually collected. Topic 2 puts one of each behind the same API precisely so the difference stops being rhetorical.</li>
+ <li><strong>Value-based vs. policy-based.</strong> Does the agent represent a value function and read the policy off it (\(\pi(s) = \arg\max_a Q(s,a)\)), or parameterise \(\pi_\theta\) and optimise it directly? Value-based methods dominate discrete action spaces; policy-based methods handle continuous ones and stochastic optima that no \(\arg\max\) can express. Topics 3 and 4 are the policy-based branch; actor-critic is the admission that you usually want both.</li>
+</ul>
+<p>A third distinction cuts across those: <strong>on-policy</strong> methods learn about the policy they are currently following; <strong>off-policy</strong> methods learn about one policy from data generated by another. Q-learning, which you will train in §5, is off-policy — that is why it can learn the greedy policy while behaving \(\varepsilon\)-greedily, and it is the same property that makes the importance-sampling corrections in Topic 3 necessary.</p>
+
+<div class="deep">
+ <strong>Where this sits relative to supervised learning.</strong> Supervised learning receives \((x, y)\) pairs where \(y\) is the correct answer. Reinforcement learning receives \((s, a, r)\) where \(r\) evaluates the action taken and says nothing about the action that should have been taken. This is the difference between <em>instructive</em> and <em>evaluative</em> feedback, and three consequences follow immediately: the agent must explore to discover alternatives, credit for a reward must be assigned backwards across time, and the data distribution is not fixed — it shifts as the policy changes. Every technique in this course exists to manage one of those three.
+</div>
+
+<h2 id="s2">2. Return, and why we discount</h2>
+<p>The agent does not maximise reward. It maximises <strong>return</strong> — the cumulative discounted reward from a point in time onward:</p>
+\[ G_t \;=\; R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \cdots \;=\; \sum_{k=0}^{\infty} \gamma^{k} R_{t+k+1}. \]
+<p>Two facts about \(\gamma\) matter more than the definition. First, if rewards are bounded by \(R_{\max}\) and \(\gamma < 1\), the series converges: \(|G_t| \le R_{\max}/(1-\gamma)\). Without discounting, a non-terminating task has infinite return for every policy, and every policy is therefore equally good — the objective is degenerate. Second, \(\gamma\) sets a soft horizon. The weight on a reward \(k\) steps away is \(\gamma^k\), and the sum of the weights is \(1/(1-\gamma)\), so it is standard to read</p>
+\[ H_{\text{eff}} \;=\; \frac{1}{1-\gamma} \]
+<p>as the effective number of steps the agent is looking ahead. At \(\gamma = 0.9\) that is ten steps; at \(\gamma = 0.99\) it is a hundred. This is not a minor tuning knob — it decides which problem you are solving.</p>
+
+<div class="demo">
+ <h3>Demo · Discounting: the horizon you actually bought <span class="tag">interactive</span></h3>
+ <p>Drag \(\gamma\). The bars are the weights \(\gamma^k\) applied to a reward arriving \(k\) steps in the future. The panel below computes the return of two reward streams: a <em>sooner</em> stream paying \(+1\) at step 5, and a <em>later</em> stream paying \(+3\) at step 30. Find the \(\gamma\) at which the agent's preference flips — that value is the whole content of "the discount factor encodes patience."</p>
+ <div class="controls">
+ <div class="control"><label>discount \(\gamma\): <b id="g-gL">0.90</b></label><input type="range" id="g-g" min="0.50" max="0.999" step="0.001" value="0.90"></div>
+ <div class="control"><label>later payoff at step 30: <b id="g-rL">3.0</b></label><input type="range" id="g-r" min="1" max="8" step="0.1" value="3"></div>
+ </div>
+ <canvas id="g-canvas" width="900" height="210"></canvas>
+ <div class="readout" id="g-read"></div>
+</div>
+
+<div class="deep">
+ <strong>Discounting is doing three jobs at once, and they are often confused.</strong> (i) <em>Mathematical</em>: it makes the infinite sum converge and the Bellman operator a contraction, which is what guarantees the algorithms in §3 terminate at all. (ii) <em>Modelling</em>: it expresses a genuine preference for sooner rewards — the standard interpretation is a per-step \(1-\gamma\) probability that the episode simply ends. (iii) <em>Statistical</em>: a smaller \(\gamma\) truncates the credit-assignment chain, which lowers the variance of every sample-based estimate at the cost of bias. Practitioners reach for job (iii) far more often than they admit — a \(\gamma\) chosen "because it trained better" is a variance-reduction decision wearing a modelling costume. Say which one you are doing when you defend your choice in the engineering report.
+</div>
+
+<h2 id="s3">3. The Bellman equations and value iteration</h2>
+<p>Define the <strong>state-value function</strong> of a policy as the expected return from a state, and the <strong>action-value function</strong> as the expected return from taking a particular action first:</p>
+\[ v_\pi(s) = \mathbb{E}_\pi\!\left[ G_t \mid S_t = s \right], \qquad q_\pi(s,a) = \mathbb{E}_\pi\!\left[ G_t \mid S_t = s, A_t = a \right]. \]
+<p>Split the return into its first term and the rest, \(G_t = R_{t+1} + \gamma G_{t+1}\), take expectations, and the recursion writes itself. This is the <strong>Bellman expectation equation</strong>:</p>
+\[ v_\pi(s) \;=\; \sum_{a} \pi(a\mid s) \sum_{s'} P(s'\mid s,a)\Big[ R(s,a,s') + \gamma\, v_\pi(s') \Big]. \]
+<p>Replacing the average over actions with a maximum gives the <strong>Bellman optimality equation</strong>, which the optimal value function \(v_*\) uniquely satisfies:</p>
+\[ v_*(s) \;=\; \max_{a} \sum_{s'} P(s'\mid s,a)\Big[ R(s,a,s') + \gamma\, v_*(s') \Big]. \]
+<p><strong>Value iteration</strong> simply turns that equality into an assignment and applies it repeatedly: \(V_{k+1}(s) \leftarrow \max_a \sum_{s'} P(s'|s,a)[R + \gamma V_k(s')]\). The operator is a \(\gamma\)-contraction in the max norm, \(\lVert TV - TV' \rVert_\infty \le \gamma \lVert V - V' \rVert_\infty\), so by the Banach fixed-point theorem the iterates converge to the unique fixed point \(v_*\) geometrically, from any initialisation.</p>
+
+<div class="demo">
+ <h3>Demo · Value iteration on a slippery lake <span class="tag">interactive</span></h3>
+ <p>The 4×4 lake below is the environment your Topic 1 product uses (at 8×8). <span class="sw" style="background:#3A4A5C"></span>holes are terminal with reward 0, <span class="sw" style="background:#1F8B4C"></span>the goal is terminal with reward 1, and the start is outlined. When <em>slippery</em> is on, the intended action succeeds with probability \(1/3\) and slides to each perpendicular direction with probability \(1/3\) each. Sweep the Bellman optimality backup and watch value flow backwards from the goal; the arrows are the greedy policy \(\arg\max_a q(s,a)\) at the current \(V\).</p>
+ <div class="controls">
+ <div class="control"><label>discount \(\gamma\): <b id="vi-gL">0.99</b></label><input type="range" id="vi-g" min="0.50" max="0.999" step="0.001" value="0.99"></div>
+ <div class="control"><label>&nbsp;</label><label><input type="checkbox" id="vi-slip" checked> slippery (stochastic)</label></div>
+ </div>
+ <div class="controls">
+ <button id="vi-step">Sweep ▶ once</button>
+ <button id="vi-auto" class="secondary">Run to convergence</button>
+ <button id="vi-reset" class="secondary">Reset</button>
+ <span class="readout" id="vi-count"></span>
+ </div>
+ <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+ <div><div id="vi-grid"></div><div class="legend">Each cell shows \(V(s)\) above the greedy action.</div></div>
+ <div style="flex:1;min-width:300px"><canvas id="vi-canvas" width="520" height="230"></canvas><div class="legend">Bellman residual \(\lVert V_{k+1}-V_k\rVert_\infty\), log scale. A straight line on this axis <em>is</em> the geometric convergence rate — and its slope is \(\log\gamma\).</div></div>
+ </div>
+ <div class="readout" id="vi-read"></div>
+</div>
+
+<div class="why">
+ <strong>Why the slippery variant is genuinely a different problem, not a harder one.</strong> Turn the checkbox off and the optimal policy is a short path hugging the shortest route to the goal; \(v_*(\text{start})\) goes to nearly 1. Turn it on and the optimal policy changes <em>shape</em>: it prefers cells whose perpendicular slips are safe, and it will happily move away from the goal to keep a hole out of the slip set. That is not the deterministic policy executed more carefully — it is a different policy, and it is why "just add noise at test time" is not a substitute for training under the transition kernel you will actually face. Your product's README is asked for one sentence on this; the honest sentence is that stochasticity changes the argmax, not merely the value.
+</div>
+
+<h2 id="s4">4. Exploration versus exploitation, quantified</h2>
+<p>Value iteration had \(P\) handed to it. An agent that must learn from experience faces a problem that has no analogue in supervised learning: the only way to find out whether an untried action is good is to try it, and every step spent trying is a step not spent earning. The cleanest setting for measuring this is the \(k\)-armed bandit — a single state, \(k\) actions, each paying from an unknown distribution with mean \(\mu_a\). Performance is measured by <strong>cumulative regret</strong> against the best arm:</p>
+\[ \mathcal{R}_T \;=\; T\mu_{*} - \sum_{t=1}^{T} \mathbb{E}\!\left[ \mu_{A_t} \right], \qquad \mu_* = \max_a \mu_a. \]
+<p>An \(\varepsilon\)-greedy agent takes the empirical best arm with probability \(1-\varepsilon\) and a uniformly random arm otherwise. Its asymptotic per-step regret does not vanish: it keeps paying \(\varepsilon \cdot \frac{k-1}{k} \cdot \overline{\Delta}\) forever, where \(\overline{\Delta}\) is the mean suboptimality gap. So \(\mathcal{R}_T\) grows <em>linearly</em>. Upper-confidence-bound selection instead picks</p>
+\[ A_t \;=\; \arg\max_a \left[ \hat{\mu}_a + c\sqrt{\tfrac{\ln t}{N_a}} \right], \]
+<p>an optimism-under-uncertainty rule whose bonus shrinks as an arm is sampled, giving \(\mathcal{R}_T = O(\log T)\) — exploration that pays for itself and then stops.</p>
+
+<div class="demo">
+ <h3>Demo · Three strategies, one bandit, and the shape of regret <span class="tag">interactive</span></h3>
+ <p>Four arms with the win probabilities below. Run the three strategies on the <em>same</em> simulated draws and compare cumulative regret. Watch the shape, not just the height: greedy plateaus at a wrong arm (flat then linear forever), \(\varepsilon\)-greedy is linear with slope \(\propto \varepsilon\), UCB bends over. The decaying arm uses the canonical GLIE schedule \(\varepsilon_t = \min(1,\, 20/t)\), which explores almost surely at first and almost never at the end; it recovers most of UCB's shape, and it is the schedule your product must implement.</p>
+ <div class="controls">
+ <div class="control"><label>arm win probabilities</label><input type="text" id="b-arms" value="0.30, 0.55, 0.50, 0.20" size="26"></div>
+ <div class="control"><label>steps \(T\): <b id="b-TL">2000</b></label><input type="range" id="b-T" min="200" max="5000" step="100" value="2000"></div>
+ <div class="control"><label>\(\varepsilon\): <b id="b-eL">0.10</b></label><input type="range" id="b-e" min="0.01" max="0.50" step="0.01" value="0.10"></div>
+ <div class="control"><label>UCB \(c\): <b id="b-cL">1.4</b></label><input type="range" id="b-c" min="0.1" max="3.0" step="0.1" value="1.4"></div>
+ </div>
+ <div class="controls">
+ <button id="b-run">Run all four strategies</button>
+ <span class="legend">pure greedy · fixed \(\varepsilon\) · decaying \(\varepsilon_t=\min(1,20/t)\) · UCB</span>
+ </div>
+ <canvas id="b-canvas" width="900" height="260"></canvas>
+ <table class="tb" id="b-table"></table>
+ <div class="readout" id="b-read"></div>
+</div>
+
+<div class="deep">
+ <strong>Why an \(\varepsilon\) that never decays is a bug you can compute the cost of.</strong> Suppose you run 20,000 episodes at a fixed \(\varepsilon = 0.1\) on four actions. In expectation \(7.5\%\) of all actions are exploratory <em>and suboptimal</em>, forever — including after the value estimates have long since converged. That is a permanent tax on the behaviour policy. It does not corrupt what Q-learning <em>learns</em>, because Q-learning is off-policy and learns the greedy policy regardless (§5) — but it does corrupt every learning curve you plot from behaviour returns, which is why the evaluation in §6 has to run a separate greedy pass with exploration switched off. Students who report training returns as if they were performance are reporting the tax, not the agent.
+</div>
+
+<h2 id="s5">5. Q-learning: train it yourself</h2>
+<p>Q-learning estimates \(q_*\) directly from sampled transitions, with no model of \(P\). After each transition \((s,a,r,s')\) it applies</p>
+\[ Q(s,a) \;\leftarrow\; Q(s,a) + \alpha\Big[\underbrace{r + \gamma \max_{a'} Q(s',a')}_{\text{TD target}} - Q(s,a)\Big]. \]
+<p>The bracketed quantity is the <strong>temporal-difference error</strong>. Two things deserve attention. The target uses \(\max_{a'}\), the value of the <em>greedy</em> policy, while the action \(a\) that generated the transition came from the \(\varepsilon\)-greedy behaviour policy — that mismatch is what makes Q-learning off-policy. And the update is a sampled, incremental version of exactly the Bellman optimality backup from §3: value iteration with \(P\) replaced by one sample and the assignment replaced by a step of size \(\alpha\) toward it.</p>
+<p>Convergence to \(q_*\) with probability 1 requires the Robbins–Monro conditions on the step sizes, \(\sum_t \alpha_t = \infty\) and \(\sum_t \alpha_t^2 < \infty\), plus every state–action pair being visited infinitely often — which is the formal reason exploration cannot be switched off entirely during training.</p>
+
+<div class="demo">
+ <h3>Demo · A tabular Q-learning trainer with a live policy and learning curve <span class="tag">interactive</span></h3>
+ <p>Same lake, now with \(P\) hidden from the agent. Train in blocks of episodes and watch three things move together: the greedy policy arrows sharpening, the training-return curve rising, and — the one that matters — the <em>greedy evaluation</em> score, computed with \(\varepsilon = 0\) on 200 fresh episodes. Try \(\alpha = 0.5\) and watch the curve become noisy without becoming better; try \(\varepsilon\) decay off and watch the gap between the training curve and the greedy score refuse to close.</p>
+ <div class="controls">
+ <div class="control"><label>learning rate \(\alpha\): <b id="q-aL">0.10</b></label><input type="range" id="q-a" min="0.01" max="0.90" step="0.01" value="0.10"></div>
+ <div class="control"><label>discount \(\gamma\): <b id="q-gL">0.99</b></label><input type="range" id="q-g" min="0.50" max="0.999" step="0.001" value="0.99"></div>
+ <div class="control"><label>\(\varepsilon\) schedule</label><select id="q-sched"><option value="decay">decay 1.0 → 0.05</option><option value="fixed10">fixed 0.10</option><option value="fixed50">fixed 0.50</option><option value="fixed01">fixed 0.01</option></select></div>
+ <div class="control"><label>&nbsp;</label><label><input type="checkbox" id="q-slip" checked> slippery</label></div>
+ </div>
+ <div class="controls">
+ <button id="q-run">Train ▶ 2,000 episodes</button>
+ <button id="q-run10" class="secondary">Train 10,000</button>
+ <button id="q-eval" class="secondary">Greedy evaluation (200 ep)</button>
+ <button id="q-reset" class="secondary">Reset</button>
+ <span class="readout" id="q-count"></span>
+ </div>
+ <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+ <div><div id="q-grid"></div><div class="legend">Greedy policy from the learned \(Q\); the number is \(\max_a Q(s,a)\).</div></div>
+ <div style="flex:1;min-width:300px"><canvas id="q-canvas" width="520" height="230"></canvas>
+ <div class="legend"><span class="sw" style="background:#8FA9C4"></span>training return (100-episode moving average, \(\varepsilon\)-greedy) &nbsp; <span class="sw" style="background:#1F8B4C"></span>greedy evaluation</div></div>
+ </div>
+ <div class="readout" id="q-read"></div>
+</div>
+
+<div class="why">
+ <strong>Why the two curves in that chart are not measuring the same thing.</strong> The blue curve is what the behaviour policy earned while exploring; the green points are what the greedy policy earns when you stop. Early in training the blue curve is higher-variance and lower — exploration costs returns. Late in training, with a fixed \(\varepsilon\), the blue curve <em>plateaus below</em> the green points and stays there permanently: the gap is the exploration tax computed in §4. Your product logs the per-episode training returns to the <code>episodes</code> table and the greedy results to <code>evaluations</code> — two tables, because they answer two questions. Reporting the first as if it were the second is the single most common error in submitted work.
+</div>
+
+<h2 id="s6">6. Measuring an agent honestly</h2>
+<p>Suppose two configurations are trained and you must recommend one. The temptation is to compare final mean return. But reinforcement learning results are the noisiest in applied machine learning: the same code, the same hyperparameters, and a different random seed can produce qualitatively different curves. A comparison from a single seed is not weak evidence — it is, in the strict sense, no evidence about the configuration at all, because it has not separated the configuration's effect from the seed's.</p>
+<p>Report an interval, not a point. With \(n\) seeds and per-seed mean returns \(x_1,\dots,x_n\), the standard error of the mean is \(s/\sqrt{n}\) and an approximate 95% interval is</p>
+\[ \bar{x} \;\pm\; t_{0.975,\,n-1}\,\frac{s}{\sqrt{n}}. \]
+<p>Note the \(\sqrt{n}\): halving the width of the interval costs four times the seeds. Note also that this interval describes the mean <em>across seeds</em>, which is the quantity a claim about the configuration must be about.</p>
+<p>And choose the metric deliberately, because different metrics rank configurations differently. <em>Mean final return</em> hides how long you waited for it. <em>Episodes-to-threshold</em> hides what happens after the threshold, including collapse. <em>Success rate</em> hides the magnitude of both successes and failures. Each is defensible; none is neutral.</p>
+
+<div class="demo">
+ <h3>Demo · Seeds, intervals, and two metrics that disagree <span class="tag">interactive</span></h3>
+ <p>Two configurations are sampled from fixed underlying distributions: <b>A</b> converges quickly to a modest score with low seed variance; <b>B</b> reaches a higher score eventually but is erratic. Draw seeds and read the two verdicts. At \(n=3\) — the number most submitted reports use — the intervals usually overlap and neither metric supports a claim. Increase \(n\) and watch the intervals separate; note which metric declares which winner.</p>
+ <div class="controls">
+ <div class="control"><label>seeds \(n\): <b id="e-nL">3</b></label><input type="range" id="e-n" min="2" max="40" step="1" value="3"></div>
+ <div class="control"><label>threshold for "solved": <b id="e-tL">0.55</b></label><input type="range" id="e-t" min="0.20" max="0.80" step="0.01" value="0.55"></div>
+ </div>
+ <div class="controls"><button id="e-draw">Draw a fresh set of seeds</button></div>
+ <canvas id="e-canvas" width="900" height="250"></canvas>
+ <table class="tb" id="e-table"></table>
+ <div class="readout" id="e-read"></div>
+</div>
+
+<div class="deep">
+ <strong>What the run-history table buys you.</strong> Every quantity above is a <code>GROUP BY</code> over rows you already wrote. Mean return with a confidence band is an aggregate over <code>episodes</code> grouped by seed; episodes-to-threshold is the first episode index per seed whose moving average crosses a value; the failed-hyperparameter curve your report must include is a run you did not delete. This is the argument for the database tier that is stronger in reinforcement learning than anywhere else in the programme: the evidence for a policy is not the policy, it is the learning history, and a policy artifact with no history behind it cannot be defended to anyone — including you, three weeks later.
+</div>
+
+<h2 id="s7">7. In practice (Lake Pilot)</h2>
+<p class="product"><strong>In the build.</strong> Every quantity in this tutorial becomes a column, an endpoint, or a tab. The \(\varepsilon\) in force at each episode is logged alongside the return, so §4's exploration tax is recomputable from your data. The greedy evaluation of §6 runs server-side behind <code>POST /rollout</code> and lands in <code>evaluations</code>. The \(Q\)-table of §5 is exported to a NumPy <code>.npz</code> archive, registered in <code>policies</code> with its byte size and SHA-256, and loaded by the service tier — which never imports PyTorch, because it does not need to. A lookup table is a lookup table.</p>
+<pre><span class="c"># train/export.py — the artifact you deploy is not the training graph</span>
+<span class="k">import</span> numpy <span class="k">as</span> np, hashlib, pathlib
+
+<span class="k">def</span> <span class="f">export_q</span>(Q, path=<span class="s">"policies/q_frozenlake_v1.npz"</span>):
+    p = pathlib.Path(path); p.parent.<span class="f">mkdir</span>(parents=<span class="s">True</span>, exist_ok=<span class="s">True</span>)
+    np.<span class="f">savez_compressed</span>(p, Q=Q.<span class="f">astype</span>(np.float32))       <span class="c"># float32 halves the artifact</span>
+    digest = hashlib.<span class="f">sha256</span>(p.<span class="f">read_bytes</span>()).<span class="f">hexdigest</span>()
+    <span class="k">return</span> {<span class="s">"path"</span>: str(p), <span class="s">"bytes"</span>: p.<span class="f">stat</span>().st_size, <span class="s">"sha256"</span>: digest}
+
+<span class="c"># api/policy.py — the entire serving-side forward pass</span>
+<span class="k">def</span> <span class="f">act</span>(Q, state: int) -> int:
+    <span class="k">return</span> int(Q[state].<span class="f">argmax</span>())                          <span class="c"># no torch, no framework, 1 line</span></pre>
+
+<div class="warn">
+ <strong>The guard that keeps this honest.</strong> <code>tests/test_no_torch.py</code> imports your FastAPI app and asserts <code>"torch" not in sys.modules</code>. It is not busywork: <code>import torch</code> alone costs roughly 490 MB of resident memory, against a 690 MB guarantee on the deployed tier. The measured footprint of the full stack in this course, before any policy loads, is 82 MB. The rule is what keeps that number true through Topic 6.
+</div>
+
+<div class="callout">
+ <strong>What carries forward.</strong> The Bellman optimality backup of §3 returns in Topic 2 as value iteration proper and as the target of Monte Carlo control. The \(\varepsilon\)-greedy trade-off of §4 becomes an explicit entropy term in the objective in Topics 3 and 4, and a KL penalty against a reference policy in Topic 6 — the same regularised objective, three times, with different reference distributions. The seed-band discipline of §6 is the evidentiary standard for every claim in every later product. And the export-and-serve split of §7 is the architecture, unchanged, from a 64-entry lookup table here to a reward model in Topic 6.
+</div>
+
+<div class="nav"><a href="index.html">← All tutorials</a><a href="Tutorial-Topic-2-Markov-Decision-Process-and-Monte-Carlo-Learning.html">Topic 2 · Markov Decision Process &amp; Monte Carlo Learning →</a></div>
+</div>
+<script>
+/* ============================================================
+   Shared helpers
+   ============================================================ */
+function clear(ctx,c){ ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height); }
+function axes(ctx,x0,y0,w,h,xlab,ylab){
+  ctx.strokeStyle='#C7D2DE'; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(x0,y0-h); ctx.lineTo(x0,y0); ctx.lineTo(x0+w,y0); ctx.stroke();
+  ctx.fillStyle='#666'; ctx.font='11px -apple-system,Arial';
+  if(xlab){ ctx.textAlign='center'; ctx.fillText(xlab,x0+w/2,y0+30); }
+  if(ylab){ ctx.save(); ctx.translate(x0-40,y0-h/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText(ylab,0,0); ctx.restore(); }
+  ctx.textAlign='left';
+}
+function polyline(ctx,pts,color,width){
+  if(pts.length<2) return;
+  ctx.strokeStyle=color; ctx.lineWidth=width||2; ctx.beginPath();
+  ctx.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]);
+  ctx.stroke();
+}
+function gauss(){ let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+const T95=[0,12.706,4.303,3.182,2.776,2.571,2.447,2.365,2.306,2.262,2.228,2.201,2.179,2.160,2.145,
+           2.131,2.120,2.110,2.101,2.093,2.086,2.080,2.074,2.069,2.064,2.060,2.056,2.052,2.048,2.045,2.042];
+function tcrit(df){ return df<=0?0:(df<T95.length?T95[df]:1.96+1.4/df); }
+
+/* ============================================================
+   Environment: 4x4 FrozenLake, shared by demos 2 and 5
+   ============================================================ */
+const MAP = "SFFFFHFHFFFHHFFG".split('');   // row-major 4x4
+const N = 4, NS = 16, NA = 4;               // actions 0=left 1=down 2=right 3=up
+const ARROW = ['\u2190','\u2193','\u2192','\u2191'];
+const isTerm = s => MAP[s]==='H' || MAP[s]==='G';
+function move(s,dir){
+  let r=Math.floor(s/N), c=s%N;
+  if(dir===0) c=Math.max(c-1,0);
+  else if(dir===1) r=Math.min(r+1,N-1);
+  else if(dir===2) c=Math.min(c+1,N-1);
+  else r=Math.max(r-1,0);
+  return r*N+c;
+}
+// returns [[prob, nextState, reward, done], ...]
+function transitions(s,a,slippery){
+  if(isTerm(s)) return [[1.0,s,0,true]];
+  const dirs = slippery ? [(a+3)%4, a, (a+1)%4] : [a];
+  const p = 1/dirs.length;
+  return dirs.map(d=>{ const ns=move(s,d); return [p, ns, MAP[ns]==='G'?1:0, isTerm(ns)]; });
+}
+function sampleStep(s,a,slippery){
+  const tr = transitions(s,a,slippery);
+  let u=Math.random(), acc=0;
+  for(const t of tr){ acc+=t[0]; if(u<=acc) return t; }
+  return tr[tr.length-1];
+}
+function valueColor(v,vmax){
+  const f = vmax>0 ? Math.max(0,Math.min(1,v/vmax)) : 0;
+  const r=Math.round(255-(255-31)*f*0.85), g=Math.round(255-(255-78)*f*0.6), b=Math.round(255-(255-121)*f*0.25);
+  return `rgb(${r},${g},${b})`;
+}
+function renderGrid(el,V,policy,showPolicy){
+  const vmax = Math.max(0.0001,...V);
+  let h='<table class="grid">';
+  for(let r=0;r<N;r++){ h+='<tr>';
+    for(let c=0;c<N;c++){ const s=r*N+c; const ch=MAP[s];
+      let cls = ch==='H'?'hole':(ch==='G'?'goal':(ch==='S'?'start':''));
+      let style = (ch==='H'||ch==='G')?'':`background:${valueColor(V[s],vmax)}`;
+      let inner;
+      if(ch==='H') inner='<span class="v">hole</span>';
+      else if(ch==='G') inner='<span class="v">goal</span>';
+      else inner=`<span class="v">${V[s].toFixed(3)}</span>`+(showPolicy?`<span class="a">${ARROW[policy[s]]}</span>`:'');
+      h+=`<td class="${cls}" style="${style}">${inner}</td>`;
+    } h+='</tr>'; }
+  return el.innerHTML = h+'</table>';
+}
+
+/* ============================================================
+   Demo 1: discounting
+   ============================================================ */
+(function(){
+  const gS=document.getElementById('g-g'), rS=document.getElementById('g-r'),
+        gL=document.getElementById('g-gL'), rL=document.getElementById('g-rL'),
+        cv=document.getElementById('g-canvas'), out=document.getElementById('g-read');
+  const ctx=cv.getContext('2d');
+  function draw(){
+    const g=parseFloat(gS.value), R=parseFloat(rS.value);
+    gL.textContent=g.toFixed(3); rL.textContent=R.toFixed(1);
+    clear(ctx,cv);
+    const x0=52,y0=170,w=800,h=130, K=40;
+    axes(ctx,x0,y0,w,h,'steps into the future  k','weight  \u03b3\u1d4f');
+    const bw=w/K;
+    for(let k=0;k<K;k++){
+      const wt=Math.pow(g,k), bh=wt*h;
+      ctx.fillStyle = (k===5)?'#1F8B4C' : (k===30)?'#7B3FA0' : '#BCCEE0';
+      ctx.fillRect(x0+k*bw+1,y0-bh,bw-2,bh);
+    }
+    ctx.fillStyle='#666'; ctx.font='11px -apple-system,Arial';
+    [0,10,20,30,40].forEach(k=>{ ctx.textAlign='center'; ctx.fillText(k,x0+k*bw+bw/2,y0+15); });
+    ctx.textAlign='left';
+    ctx.fillStyle='#1F8B4C'; ctx.fillText('k = 5  (+1)', x0+5*bw+6, y0-Math.pow(g,5)*h-6);
+    ctx.fillStyle='#7B3FA0'; ctx.fillText('k = 30 (+'+R.toFixed(1)+')', x0+30*bw-30, y0-Math.pow(g,30)*h-6);
+    const Gs=Math.pow(g,5), Gl=R*Math.pow(g,30), H=1/(1-g), flip=Math.pow(1/R,1/25);
+    out.innerHTML = `effective horizon \\(1/(1-\\gamma)\\) = <b>${H.toFixed(1)}</b> steps &nbsp;·&nbsp; `
+      + `sooner stream \\(G=\\gamma^{5}\\cdot 1\\) = <b>${Gs.toFixed(4)}</b> &nbsp;·&nbsp; `
+      + `later stream \\(G=\\gamma^{30}\\cdot ${R.toFixed(1)}\\) = <b>${Gl.toFixed(4)}</b> &nbsp;\u2192&nbsp; `
+      + `<b style="color:${Gl>Gs?'#7B3FA0':'#1F8B4C'}">the agent prefers the ${Gl>Gs?'later':'sooner'} reward</b>. `
+      + `Preference flips at \\(\\gamma^\\star = (1/R)^{1/25}\\) = <b>${flip.toFixed(4)}</b>.`;
+    if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([out]);
+  }
+  gS.oninput=draw; rS.oninput=draw; draw();
+})();
+
+/* ============================================================
+   Demo 2: value iteration
+   ============================================================ */
+(function(){
+  const gS=document.getElementById('vi-g'), gL=document.getElementById('vi-gL'),
+        slip=document.getElementById('vi-slip'), gridEl=document.getElementById('vi-grid'),
+        cv=document.getElementById('vi-canvas'), ctx=cv.getContext('2d'),
+        cnt=document.getElementById('vi-count'), out=document.getElementById('vi-read');
+  let V=new Array(NS).fill(0), pol=new Array(NS).fill(0), resid=[], sweeps=0;
+
+  function greedy(V,g,sl){
+    const p=new Array(NS).fill(0);
+    for(let s=0;s<NS;s++){ if(isTerm(s)) continue;
+      let best=-Infinity,ba=0;
+      for(let a=0;a<NA;a++){ let q=0;
+        for(const [pr,ns,r] of transitions(s,a,sl)) q+=pr*(r+g*V[ns]);
+        if(q>best+1e-12){best=q;ba=a;} }
+      p[s]=ba; }
+    return p;
+  }
+  function sweep(){
+    const g=parseFloat(gS.value), sl=slip.checked, nV=new Array(NS).fill(0);
+    let d=0;
+    for(let s=0;s<NS;s++){
+      if(isTerm(s)){ nV[s]=0; continue; }
+      let best=-Infinity;
+      for(let a=0;a<NA;a++){ let q=0;
+        for(const [pr,ns,r] of transitions(s,a,sl)) q+=pr*(r+g*V[ns]);
+        if(q>best) best=q; }
+      nV[s]=best; d=Math.max(d,Math.abs(best-V[s]));
+    }
+    V=nV; sweeps++; resid.push(Math.max(d,1e-12));
+    pol=greedy(V,g,sl);
+  }
+  function drawCurve(){
+    clear(ctx,cv); const x0=54,y0=180,w=430,h=145;
+    axes(ctx,x0,y0,w,h,'sweep k','residual (log\u2081\u2080)');
+    if(resid.length<1){ ctx.fillStyle='#999'; ctx.fillText('sweep to begin',x0+150,y0-70); return; }
+    const lo=-9, hi=0.3;
+    ctx.strokeStyle='#EEF2F6';
+    for(let e=0;e>=-9;e-=3){ const y=y0-h*(e-lo)/(hi-lo);
+      ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+w,y); ctx.stroke();
+      ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial'; ctx.fillText('1e'+e,x0-34,y+3); }
+    const n=Math.max(resid.length,10);
+    const pts=resid.map((d,i)=>{
+      const e=Math.max(lo,Math.log10(d));
+      return [x0+w*i/(n-1), y0-h*(e-lo)/(hi-lo)];
+    });
+    polyline(ctx,pts,'#1F4E79',2);
+    pts.forEach(p=>{ ctx.fillStyle='#1F4E79'; ctx.beginPath(); ctx.arc(p[0],p[1],2.5,0,7); ctx.fill(); });
+  }
+  function refresh(){
+    renderGrid(gridEl,V,pol,sweeps>0);
+    drawCurve();
+    cnt.textContent = `${sweeps} sweep${sweeps===1?'':'s'}`;
+    const g=parseFloat(gS.value);
+    const last = resid.length?resid[resid.length-1]:NaN;
+    out.innerHTML = sweeps===0
+      ? 'All values start at 0. The first sweep can only discover value in states one step from the goal \u2014 value flows backwards, one sweep per step of distance.'
+      : `\\(V(\\text{start})\\) = <b>${V[0].toFixed(4)}</b> &nbsp;\u00b7&nbsp; last residual = <b>${last.toExponential(2)}</b>`
+        + ` &nbsp;\u00b7&nbsp; contraction bound predicts a slope of \\(\\log_{10}\\gamma\\) = <b>${Math.log10(g).toFixed(4)}</b> per sweep`
+        + ` &nbsp;\u00b7&nbsp; ${slip.checked?'slippery':'deterministic'} kernel.`;
+    if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([out]);
+  }
+  function reset(){ V=new Array(NS).fill(0); pol=new Array(NS).fill(0); resid=[]; sweeps=0; refresh(); }
+  document.getElementById('vi-step').onclick=()=>{ sweep(); refresh(); };
+  document.getElementById('vi-auto').onclick=()=>{
+    let guard=0; do{ sweep(); guard++; } while(resid[resid.length-1]>1e-9 && guard<4000);
+    refresh();
+  };
+  document.getElementById('vi-reset').onclick=reset;
+  gS.oninput=()=>{ gL.textContent=parseFloat(gS.value).toFixed(3); reset(); };
+  slip.onchange=reset;
+  reset();
+})();
+
+/* ============================================================
+   Demo 3: bandit
+   ============================================================ */
+(function(){
+  const armsIn=document.getElementById('b-arms'), TS=document.getElementById('b-T'),
+        eS=document.getElementById('b-e'), cS=document.getElementById('b-c'),
+        TL=document.getElementById('b-TL'), eL=document.getElementById('b-eL'), cL=document.getElementById('b-cL'),
+        cv=document.getElementById('b-canvas'), ctx=cv.getContext('2d'),
+        tbl=document.getElementById('b-table'), out=document.getElementById('b-read');
+  const COLORS={greedy:'#C0392B', eps:'#F9A825', decay:'#1F4E79', ucb:'#1F8B4C'};
+
+  function parseArms(){
+    const p=armsIn.value.split(',').map(x=>parseFloat(x.trim())).filter(x=>!isNaN(x)&&x>=0&&x<=1);
+    return p.length>=2?p:[0.3,0.55,0.5,0.2];
+  }
+  function run(p,T,rule,eps,c){
+    const k=p.length, Q=new Array(k).fill(0), Nc=new Array(k).fill(0);
+    const mu=Math.max(...p); let regret=0; const curve=new Array(T), pulls=new Array(k).fill(0);
+    for(let t=0;t<T;t++){
+      let a;
+      if(rule==='ucb'){
+        a=0; let best=-Infinity;
+        for(let i=0;i<k;i++){
+          const v = Nc[i]===0 ? Infinity : Q[i]+c*Math.sqrt(Math.log(t+1)/Nc[i]);
+          if(v>best){best=v;a=i;}
+        }
+      } else {
+        let e = rule==='greedy'?0 : (rule==='decay' ? Math.min(1,20/(t+1)) : eps);
+        if(Math.random()<e) a=Math.floor(Math.random()*k);
+        else { let best=-Infinity, ties=[];
+          for(let i=0;i<k;i++){ if(Q[i]>best+1e-12){best=Q[i];ties=[i];} else if(Q[i]>best-1e-12) ties.push(i); }
+          a=ties[Math.floor(Math.random()*ties.length)]; }   // ties broken at random
+      }
+      const r = Math.random()<p[a] ? 1 : 0;
+      Nc[a]++; pulls[a]++; Q[a]+=(r-Q[a])/Nc[a];
+      regret += mu-p[a]; curve[t]=regret;
+    }
+    return {curve,pulls,regret};
+  }
+  function draw(){
+    const p=parseArms(), T=parseInt(TS.value), eps=parseFloat(eS.value), c=parseFloat(cS.value);
+    TL.textContent=T; eL.textContent=eps.toFixed(2); cL.textContent=c.toFixed(1);
+    const runs={ greedy:run(p,T,'greedy',eps,c), eps:run(p,T,'eps',eps,c),
+                 decay:run(p,T,'decay',eps,c), ucb:run(p,T,'ucb',eps,c) };
+    clear(ctx,cv);
+    const x0=56,y0=210,w=760,h=175;
+    axes(ctx,x0,y0,w,h,'step t','cumulative regret');
+    const ymax=Math.max(10,...Object.values(runs).map(r=>r.regret))*1.1;
+    ctx.strokeStyle='#EEF2F6';
+    for(let i=1;i<=4;i++){ const y=y0-h*i/4; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+w,y); ctx.stroke();
+      ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial'; ctx.fillText((ymax*i/4).toFixed(0),x0-30,y+3); }
+    const step=Math.max(1,Math.floor(T/400));
+    for(const key of ['greedy','eps','decay','ucb']){
+      const pts=[]; for(let t=0;t<T;t+=step) pts.push([x0+w*t/(T-1), y0-h*runs[key].curve[t]/ymax]);
+      polyline(ctx,pts,COLORS[key],2);
+    }
+    const labels={greedy:'pure greedy',eps:'\u03b5-greedy (fixed)',decay:'\u03b5-greedy (decaying)',ucb:'UCB'};
+    let lx=x0+12, ly=y0-h+14;
+    for(const key of ['greedy','eps','decay','ucb']){
+      ctx.fillStyle=COLORS[key]; ctx.fillRect(lx,ly-8,10,10);
+      ctx.fillStyle='#333'; ctx.font='11px -apple-system,Arial'; ctx.fillText(labels[key],lx+15,ly);
+      lx += ctx.measureText(labels[key]).width+42;
+    }
+    const best=p.indexOf(Math.max(...p));
+    let h2='<tr><th>strategy</th><th>final regret</th><th>regret / step</th><th>% pulls on the best arm</th></tr>';
+    for(const key of ['greedy','eps','decay','ucb']){
+      const r=runs[key], frac=100*r.pulls[best]/T;
+      h2+=`<tr><td style="color:${COLORS[key]};font-weight:600">${labels[key]}</td><td>${r.regret.toFixed(1)}</td>`
+        + `<td>${(r.regret/T).toFixed(4)}</td><td>${frac.toFixed(1)}%</td></tr>`;
+    }
+    tbl.innerHTML=h2;
+    out.innerHTML = `Best arm is #${best+1} with \\(\\mu_\\star=${p[best].toFixed(2)}\\). `
+      + `Read the <b>shape</b>: pure greedy is flat where it locked onto a wrong arm and then linear forever; fixed \\(\\varepsilon\\) is a straight line whose slope is the permanent exploration tax; decaying \\(\\varepsilon\\) and UCB both bend, because their exploration rate goes to zero. `
+      + `Only the bending curves have sublinear regret \u2014 and only they will still be improving at step 100,000.`;
+    if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([out]);
+  }
+  document.getElementById('b-run').onclick=draw;
+  [TS,eS,cS].forEach(el=>el.oninput=()=>{ TL.textContent=TS.value; eL.textContent=parseFloat(eS.value).toFixed(2); cL.textContent=parseFloat(cS.value).toFixed(1); });
+  draw();
+})();
+
+/* ============================================================
+   Demo 4: Q-learning trainer
+   ============================================================ */
+(function(){
+  const aS=document.getElementById('q-a'), gS=document.getElementById('q-g'),
+        aL=document.getElementById('q-aL'), gL=document.getElementById('q-gL'),
+        sched=document.getElementById('q-sched'), slip=document.getElementById('q-slip'),
+        gridEl=document.getElementById('q-grid'), cv=document.getElementById('q-canvas'),
+        ctx=cv.getContext('2d'), cnt=document.getElementById('q-count'), out=document.getElementById('q-read');
+  let Q, returns, evals, episodes, TOTAL=20000;
+  function reset(){
+    Q=Array.from({length:NS},()=>new Array(NA).fill(0));
+    returns=[]; evals=[]; episodes=0; refresh();
+  }
+  function epsAt(e){
+    const v=sched.value;
+    if(v==='fixed10') return 0.10;
+    if(v==='fixed50') return 0.50;
+    if(v==='fixed01') return 0.01;
+    return Math.max(0.05, 1.0*Math.exp(-3*e/TOTAL));
+  }
+  function train(n){
+    const a=parseFloat(aS.value), g=parseFloat(gS.value), sl=slip.checked;
+    for(let i=0;i<n;i++){
+      let s=0, G=0, eps=epsAt(episodes);
+      for(let t=0;t<200;t++){
+        let act;
+        if(Math.random()<eps) act=Math.floor(Math.random()*NA);
+        else { act=0; let best=-Infinity; for(let k=0;k<NA;k++) if(Q[s][k]>best){best=Q[s][k];act=k;} }
+        const [,ns,r,done]=sampleStep(s,act,sl);
+        const target = done ? r : r + g*Math.max(...Q[ns]);
+        Q[s][act] += a*(target-Q[s][act]);
+        G+=r; s=ns;
+        if(done) break;
+      }
+      returns.push(G); episodes++;
+    }
+  }
+  function evaluate(n){
+    const sl=slip.checked; let tot=0;
+    for(let i=0;i<n;i++){
+      let s=0;
+      for(let t=0;t<200;t++){
+        let act=0,best=-Infinity;
+        for(let k=0;k<NA;k++) if(Q[s][k]>best){best=Q[s][k];act=k;}
+        const [,ns,r,done]=sampleStep(s,act,sl);
+        tot+=r; s=ns; if(done) break;
+      }
+    }
+    const score=tot/n; evals.push([episodes,score]); return score;
+  }
+  function policyFromQ(){ return Q.map(row=>{ let b=0,bv=-Infinity; row.forEach((v,i)=>{ if(v>bv){bv=v;b=i;} }); return b; }); }
+  function drawCurve(){
+    clear(ctx,cv); const x0=54,y0=180,w=430,h=145;
+    axes(ctx,x0,y0,w,h,'episode','mean return (success rate)');
+    ctx.strokeStyle='#EEF2F6';
+    for(let i=1;i<=4;i++){ const y=y0-h*i/4; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+w,y); ctx.stroke();
+      ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial'; ctx.fillText((i/4).toFixed(2),x0-30,y+3); }
+    if(episodes<50){ ctx.fillStyle='#999'; ctx.font='11px -apple-system,Arial'; ctx.fillText('train to begin',x0+150,y0-70); return; }
+    const W=100, ma=[];
+    let acc=0;
+    for(let i=0;i<returns.length;i++){ acc+=returns[i]; if(i>=W) acc-=returns[i-W];
+      if(i>=W-1) ma.push([i, acc/W]); }
+    const step=Math.max(1,Math.floor(ma.length/400));
+    const pts=[]; for(let i=0;i<ma.length;i+=step) pts.push([x0+w*ma[i][0]/Math.max(episodes-1,1), y0-h*ma[i][1]]);
+    polyline(ctx,pts,'#8FA9C4',2);
+    evals.forEach(([e,sc])=>{
+      const x=x0+w*e/Math.max(episodes,1), y=y0-h*sc;
+      ctx.fillStyle='#1F8B4C'; ctx.beginPath(); ctx.arc(x,y,4,0,7); ctx.fill();
+    });
+    if(evals.length>1){
+      polyline(ctx,evals.map(([e,sc])=>[x0+w*e/Math.max(episodes,1), y0-h*sc]),'#1F8B4C',1.5);
+    }
+    ctx.fillStyle='#999'; ctx.font='10px -apple-system,Arial'; ctx.textAlign='center';
+    ctx.fillText('0',x0,y0+15); ctx.fillText(String(episodes),x0+w,y0+15); ctx.textAlign='left';
+  }
+  function refresh(){
+    renderGrid(gridEl, Q.map(r=>Math.max(...r)), policyFromQ(), episodes>0);
+    drawCurve();
+    cnt.textContent = `${episodes.toLocaleString()} episodes trained`;
+    const W=Math.min(100,returns.length);
+    const recent = W? returns.slice(-W).reduce((a,b)=>a+b,0)/W : 0;
+    const lastEval = evals.length? evals[evals.length-1][1] : null;
+    out.innerHTML = episodes===0
+      ? 'The table starts at zero, so every action ties and the greedy policy is arbitrary. Train a block and watch value propagate backwards from the goal \u2014 the same flow as value iteration, but one sampled transition at a time.'
+      : `\u03b5 now = <b>${epsAt(episodes).toFixed(3)}</b> &nbsp;\u00b7&nbsp; training return (last ${W}) = <b>${recent.toFixed(3)}</b>`
+        + (lastEval!==null? ` &nbsp;\u00b7&nbsp; <span style="color:#1F8B4C">greedy evaluation = <b>${lastEval.toFixed(3)}</b></span>`
+             + ` &nbsp;\u00b7&nbsp; exploration tax = <b>${(lastEval-recent).toFixed(3)}</b> return per episode` : '')
+        + `. The tax is what \\(\\varepsilon\\) costs the behaviour policy; it is not an error in \\(Q\\).`;
+    if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([out]);
+  }
+  document.getElementById('q-run').onclick=()=>{ train(2000); evaluate(200); refresh(); };
+  document.getElementById('q-run10').onclick=()=>{ for(let i=0;i<5;i++){ train(2000); evaluate(200); } refresh(); };
+  document.getElementById('q-eval').onclick=()=>{ evaluate(200); refresh(); };
+  document.getElementById('q-reset').onclick=reset;
+  aS.oninput=()=>aL.textContent=parseFloat(aS.value).toFixed(2);
+  gS.oninput=()=>gL.textContent=parseFloat(gS.value).toFixed(3);
+  sched.onchange=reset; slip.onchange=reset;
+  reset();
+})();
+
+/* ============================================================
+   Demo 5: seeds, intervals, and disagreeing metrics
+   ============================================================ */
+(function(){
+  const nS=document.getElementById('e-n'), tS=document.getElementById('e-t'),
+        nL=document.getElementById('e-nL'), tL=document.getElementById('e-tL'),
+        cv=document.getElementById('e-canvas'), ctx=cv.getContext('2d'),
+        tbl=document.getElementById('e-table'), out=document.getElementById('e-read');
+  const CFG = { A:{name:'Config A', mu:0.62, sd:0.04, tau:600,  tsd:80,  color:'#1F4E79'},
+                B:{name:'Config B', mu:0.70, sd:0.13, tau:1500, tsd:500, color:'#7B3FA0'} };
+  let pool={A:[],B:[]};
+  function drawSeeds(){
+    pool={A:[],B:[]};
+    for(const k of ['A','B']){
+      for(let i=0;i<40;i++){
+        const c=CFG[k];
+        pool[k].push({ R: Math.max(0.02,Math.min(0.99, c.mu + c.sd*gauss())),
+                       tau: Math.max(80, c.tau + c.tsd*gauss()) });
+      }
+    }
+  }
+  function stats(x){
+    const n=x.length, m=x.reduce((a,b)=>a+b,0)/n;
+    const s=n>1? Math.sqrt(x.reduce((a,b)=>a+(b-m)*(b-m),0)/(n-1)) : 0;
+    return {n,m,s,ci:tcrit(n-1)*s/Math.sqrt(n)};
+  }
+  function draw(){
+    const n=parseInt(nS.value), thr=parseFloat(tS.value);
+    nL.textContent=n; tL.textContent=thr.toFixed(2);
+    const res={};
+    for(const k of ['A','B']){
+      const seeds=pool[k].slice(0,n);
+      const finals=seeds.map(s=>s.R);
+      const eps=seeds.map(s=> s.R>thr ? s.tau*Math.log(s.R/(s.R-thr)) : NaN);
+      const reached=eps.filter(v=>!isNaN(v));
+      res[k]={ fin:stats(finals), ep: reached.length? stats(reached):null,
+               solved:reached.length, n:n };
+    }
+    clear(ctx,cv);
+    // left panel: final return
+    function panel(x0,w,title,get,fmt,unit){
+      const y0=205,h=140;
+      axes(ctx,x0,y0,w,h,'',title);
+      const vals=['A','B'].map(k=>get(res[k])).filter(v=>v);
+      if(!vals.length){ ctx.fillStyle='#999'; ctx.fillText('no seed reached the threshold',x0+20,y0-70); return; }
+      const top=Math.max(...vals.map(v=>v.m+v.ci))*1.25;
+      ['A','B'].forEach((k,i)=>{
+        const v=get(res[k]); if(!v) return;
+        const bx=x0+w*(0.25+0.42*i), bw=52;
+        ctx.fillStyle=CFG[k].color; ctx.globalAlpha=0.75;
+        ctx.fillRect(bx-bw/2, y0-h*v.m/top, bw, h*v.m/top); ctx.globalAlpha=1;
+        const yTop=y0-h*(v.m+v.ci)/top, yBot=y0-h*Math.max(0,v.m-v.ci)/top;
+        ctx.strokeStyle='#333'; ctx.lineWidth=1.6; ctx.beginPath();
+        ctx.moveTo(bx,yTop); ctx.lineTo(bx,yBot);
+        ctx.moveTo(bx-11,yTop); ctx.lineTo(bx+11,yTop);
+        ctx.moveTo(bx-11,yBot); ctx.lineTo(bx+11,yBot); ctx.stroke();
+        ctx.fillStyle='#333'; ctx.font='11px -apple-system,Arial'; ctx.textAlign='center';
+        ctx.fillText(CFG[k].name, bx, y0+16);
+        ctx.fillText(fmt(v.m)+' \u00b1 '+fmt(v.ci), bx, yTop-7); ctx.textAlign='left';
+      });
+    }
+    panel(56,380,'mean final return', r=>r.fin, v=>v.toFixed(3));
+    panel(516,360,'episodes to threshold', r=>r.ep, v=>v.toFixed(0));
+    const A=res.A, B=res.B;
+    const finOverlap = !(A.fin.m-A.fin.ci > B.fin.m+B.fin.ci || B.fin.m-B.fin.ci > A.fin.m+A.fin.ci);
+    let h='<tr><th>metric</th><th>Config A</th><th>Config B</th><th>verdict at n = '+n+'</th></tr>';
+    h+=`<tr><td>mean final return (95% CI)</td><td>${A.fin.m.toFixed(3)} \u00b1 ${A.fin.ci.toFixed(3)}</td>`
+     + `<td>${B.fin.m.toFixed(3)} \u00b1 ${B.fin.ci.toFixed(3)}</td>`
+     + `<td>${finOverlap?'<b>intervals overlap \u2014 no claim supported</b>':'<b>'+(A.fin.m>B.fin.m?'A':'B')+' wins</b>'}</td></tr>`;
+    if(A.ep&&B.ep){
+      const epOverlap = !(A.ep.m-A.ep.ci > B.ep.m+B.ep.ci || B.ep.m-B.ep.ci > A.ep.m+A.ep.ci);
+      h+=`<tr><td>episodes to threshold (95% CI)</td><td>${A.ep.m.toFixed(0)} \u00b1 ${A.ep.ci.toFixed(0)}</td>`
+       + `<td>${B.ep.m.toFixed(0)} \u00b1 ${B.ep.ci.toFixed(0)}</td>`
+       + `<td>${epOverlap?'<b>intervals overlap \u2014 no claim supported</b>':'<b>'+(A.ep.m<B.ep.m?'A':'B')+' wins</b>'}</td></tr>`;
+    }
+    h+=`<tr><td>seeds that ever reached the threshold</td><td>${A.solved} / ${n}</td><td>${B.solved} / ${n}</td>`
+     + `<td>${B.solved<A.solved?'B fails outright on some seeds':'\u2014'}</td></tr>`;
+    tbl.innerHTML=h;
+    out.innerHTML = `Interval half-width scales as \\(1/\\sqrt{n}\\): going from ${n} seeds to ${n*4} seeds halves it. `
+      + `Notice that the two metrics can name different winners \u2014 B is often better <em>eventually</em> while A is reliably faster <em>and</em> succeeds on every seed. `
+      + `Neither metric is wrong; a report that quotes only one has made a choice it did not disclose. Redraw the seeds a few times at n = 3 and count how often the "winner" changes.`;
+    if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([out]);
+  }
+  document.getElementById('e-draw').onclick=()=>{ drawSeeds(); draw(); };
+  nS.oninput=draw; tS.oninput=draw;
+  drawSeeds(); draw();
+})();
+</script>
+</body>
+</html>

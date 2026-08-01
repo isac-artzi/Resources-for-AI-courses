@@ -1,0 +1,54 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"     # pin: Box2D wheels stop at 3.13, so never 3.14
+
+      # NOTE: CI installs the SERVING requirements plus a test runner, and
+      # nothing else. If a serving module ever grows a training-tier import,
+      # this step fails before the no-torch guard even runs. That is intended.
+      - name: Install serving requirements only
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-serve.txt
+          pip install pytest ruff
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Test (includes the no-torch guard)
+        run: pytest -q
+
+      - name: Migration check — every migration must be checked in and ordered
+        run: |
+          test -d db/migrations
+          ls db/migrations/*.sql
+          # This topic adds 002. Asserting it by name rather than just listing
+          # the directory: a migration that exists locally and was never
+          # committed produces a schema mismatch nobody notices until an insert
+          # fails against the real project.
+          test -f db/migrations/001_init.sql
+          test -f db/migrations/002_topic2.sql
+
+      # The serving process must load neither the training framework nor SciPy.
+      # Run as its own step, in its own process, because by the time pytest has
+      # imported train/ the answer for SciPy is already contaminated — see the
+      # note in tests/test_topic2.py.
+      - name: Serving-path import guard
+        run: |
+          python -c "import sys, api.main; \
+            assert 'torch' not in sys.modules, 'the deployed app imported PyTorch'; \
+            assert 'scipy' not in sys.modules, 'the deployed app imported SciPy'; \
+            print('serving path clean:', len(sys.modules), 'modules')"
+
+      # The convergence numbers quoted in the README have to be reproducible.
+      # --quick runs the whole pipeline at a tenth of the budget in a few
+      # seconds; it proves the pipeline runs, not the result.
+      - name: Training pipeline smoke test
+        run: python -m train.train --quick --seeds 3

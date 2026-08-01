@@ -1,0 +1,24 @@
+# ---------------------------------------------------------------------------
+# TRAINING REQUIREMENTS — installed on your laptop or in Colab ONLY.
+# Never installed by the deployed app. Includes everything in
+# requirements-serve.txt so one environment can do both locally.
+# ---------------------------------------------------------------------------
+-r requirements-serve.txt
+
+torch==2.6.0                 # training tier only — never imported by api/ or ui/
+matplotlib==3.10.0
+pytest==8.3.4
+ruff==0.9.4
+python-dotenv==1.0.1
+
+# scipy is used by train/compare.py for the t distribution behind the
+# confidence intervals and the equivalence test. It stays out of
+# requirements-serve.txt (~90 MB), and compare.py falls back to a
+# self-contained implementation when it is missing — which is the path CI
+# takes, since CI installs the serving requirements only. The two are checked
+# against each other in tests/test_topic2.py.
+scipy==1.15.1
+
+# NOTE: gymnasium moved UP into requirements-serve.txt for this topic, because
+# POST /rollout runs evaluation episodes inside the deployed process. See the
+# note there before assuming it was a mistake.
