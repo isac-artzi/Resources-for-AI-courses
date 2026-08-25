@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Topic 2 · Image Filtering and Enhancement — Exercises</title>
+<style>
+:root {
+  --c-bg:        #f7f9fc;
+  --c-card:      #ffffff;
+  --c-text:      #1f2937;
+  --c-text-soft: #4b5563;
+  --c-muted:     #6b7280;
+  --c-line:      #e5e7eb;
+  --c-primary:   #1f3864;
+  --c-accent:    #2e5597;
+  --c-soft-blue: #d9e2f3;
+  --c-code-bg:   #f1f4f9;
+  --c-code-text: #0f172a;
+  --c-success:   #16a34a;
+  --c-success-bg:#dcfce7;
+  --c-warn:      #b45309;
+  --c-warn-bg:   #fef3c7;
+  --c-error:     #b91c1c;
+  --c-error-bg:  #fee2e2;
+  --radius:      10px;
+  --shadow:      0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+}
+.page { max-width: 920px; margin: 0 auto; padding: 32px 24px 80px; }
+header.brand {
+  display: flex; align-items: baseline; gap: 12px;
+  border-bottom: 1px solid var(--c-line); padding-bottom: 16px; margin-bottom: 28px;
+}
+header.brand .crumb { color: var(--c-muted); font-size: 13px; }
+h1, h2, h3, h4 { color: var(--c-primary); margin: 1.4em 0 .5em; line-height: 1.25; }
+h1 { font-size: 28px; margin-top: 0; }
+h2 { font-size: 22px; border-bottom: 1px solid var(--c-line); padding-bottom: 6px; }
+h3 { font-size: 18px; }
+h4 { font-size: 15px; color: var(--c-accent); }
+p  { margin: .7em 0; }
+.lead { font-size: 17px; color: var(--c-text-soft); }
+.scope { font-size: 13px; color: var(--c-muted); font-style: italic; }
+a { color: var(--c-accent); }
+code {
+  background: var(--c-code-bg); color: var(--c-code-text);
+  padding: 1px 6px; border-radius: 4px; font-size: 90%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+pre {
+  background: var(--c-code-bg); color: var(--c-code-text);
+  padding: 14px 16px; border-radius: var(--radius); overflow-x: auto;
+  font-size: 13.5px; line-height: 1.55;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+pre code { background: none; padding: 0; }
+.card {
+  background: var(--c-card); border: 1px solid var(--c-line); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 20px 24px; margin: 18px 0;
+}
+.card h2:first-child, .card h3:first-child { margin-top: 0; }
+.callout {
+  border-left: 4px solid var(--c-accent); background: var(--c-soft-blue);
+  border-radius: 0 var(--radius) var(--radius) 0; padding: 14px 18px; margin: 20px 0;
+}
+.callout .label { color: var(--c-primary); }
+.callout.warn  { border-left-color: var(--c-warn);  background: var(--c-warn-bg); }
+.callout.warn  .label { color: var(--c-warn); }
+.callout.error { border-left-color: var(--c-error); background: var(--c-error-bg); }
+.callout.error .label { color: var(--c-error); }
+.callout.ok    { border-left-color: var(--c-success); background: var(--c-success-bg); }
+.callout.ok    .label { color: var(--c-success); }
+table.data { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 14px; }
+table.data th, table.data td {
+  border: 1px solid var(--c-line); padding: 6px 10px; text-align: left;
+}
+table.data th { background: var(--c-code-bg); color: var(--c-primary); }
+ul.choices { list-style: none; padding: 0; margin: 10px 0; }
+ul.choices li {
+  border: 1px solid var(--c-line); border-radius: var(--radius);
+  padding: 10px 14px; margin: 6px 0; cursor: pointer; transition: background .15s;
+}
+ul.choices li:hover   { background: var(--c-code-bg); }
+ul.choices li.selected { background: var(--c-soft-blue); border-color: var(--c-primary); }
+ul.choices li.correct  { background: var(--c-success-bg); border-color: var(--c-success); }
+ul.choices li.incorrect{ background: var(--c-error-bg);   border-color: var(--c-error); }
+.progress {
+  background: var(--c-line); border-radius: 4px; height: 6px;
+  overflow: hidden; margin: 8px 0;
+}
+.progress > div { background: var(--c-accent); height: 100%; transition: width .35s ease; }
+svg.chart { display: block; max-width: 100%; height: auto; }
+.legend { display: flex; gap: 12px; font-size: 13px; color: var(--c-text-soft); margin: 6px 0; }
+.legend span.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+.feedback { margin-top: 10px; padding: 10px 14px; border-radius: var(--radius); font-size: 14px; }
+.feedback.ok  { background: var(--c-success-bg); color: #14532d; }
+.feedback.bad { background: var(--c-error-bg);   color: #7f1d1d; }
+.btn {
+  background: var(--c-primary); color: #fff; border: none; border-radius: 6px;
+  padding: 8px 16px; font-size: 14px; cursor: pointer;
+}
+.btn:hover { background: var(--c-accent); }
+.btn-row { display: flex; gap: 10px; align-items: center; margin: 8px 0; }
+input[type=text] {
+  border: 1px solid var(--c-line); border-radius: 6px; padding: 8px 10px; font-size: 14px;
+}
+.photo {
+  border: 1px dashed var(--c-muted); border-radius: var(--radius);
+  padding: 30px 16px; text-align: center; color: var(--c-muted);
+  font-size: 14px; background: var(--c-code-bg); margin: 14px 0;
+}
+.tag {
+  display: inline-block; padding: 2px 8px; font-size: 12px; font-weight: 600;
+  border-radius: 999px; background: var(--c-soft-blue); color: var(--c-primary);
+  margin-right: 6px;
+}
+.hidden { display: none !important; }
+footer.brand {
+  margin-top: 60px; padding-top: 16px; border-top: 1px solid var(--c-line);
+  color: var(--c-muted); font-size: 13px; text-align: center;
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="brand">
+    <span class="tag">AIT-224 · Computer Vision</span>
+    <span class="crumb">Exercises · Topic 2</span>
+  </header>
+  
+<h1>Topic 2 · Practice Exercises</h1>
+<p class="lead">Six exercises on convolution intuition, filter selection, and contrast methods.</p>
+<div id="ex-root"></div>
+
+  <footer class="brand">© 2026 · AIT-224 Image Processing and Computer Vision</footer>
+</div>
+<script>
+// ---- exercise framework ----
+function el(tag, attrs, ...kids){
+  const e = document.createElement(tag);
+  for (const k in (attrs||{})) {
+    if (k === 'class') e.className = attrs[k];
+    else if (k === 'html') e.innerHTML = attrs[k];
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else if (attrs[k] !== false && attrs[k] != null) e.setAttribute(k, attrs[k]);
+  }
+  for (const kid of kids.flat()) {
+    if (kid == null) continue;
+    e.appendChild(kid.nodeType ? kid : document.createTextNode(kid));
+  }
+  return e;
+}
+function feedback(host, kind, msg){
+  let f = host.querySelector('.feedback');
+  if (!f) { f = el('div', {class:'feedback'}); host.appendChild(f); }
+  f.className = 'feedback ' + kind;
+  f.innerHTML = msg;
+}
+function renderMCQ(host, q){
+  host.appendChild(el('p', {class:'lead'}, q.stem));
+  const ul = el('ul', {class:'choices'});
+  let answered = false;
+  q.choices.forEach((c, i) => {
+    const li = el('li', {tabindex:'0'}, c);
+    li.addEventListener('click', () => {
+      if (answered) return;
+      answered = true;
+      Array.from(ul.children).forEach(x => x.classList.remove('selected'));
+      li.classList.add('selected');
+      if (i === q.answer) {
+        li.classList.add('correct');
+        feedback(host, 'ok', '<strong>Correct.</strong> ' + (q.rationale||''));
+      } else {
+        li.classList.add('incorrect');
+        ul.children[q.answer].classList.add('correct');
+        feedback(host, 'bad', '<strong>Not quite.</strong> The correct answer is highlighted in green. ' + (q.rationale||''));
+      }
+    });
+    ul.appendChild(li);
+  });
+  host.appendChild(ul);
+}
+function renderTextEx(host, q){
+  host.appendChild(el('p', {class:'lead'}, q.stem));
+  const input = el('input', {type:'text', placeholder: q.placeholder || 'Your answer…', style:'width:60%;'});
+  const btn = el('button', {class:'btn'}, 'Check');
+  const row = el('div', {class:'btn-row'}, input, btn);
+  host.appendChild(row);
+  btn.addEventListener('click', () => {
+    const v = (input.value || '').trim();
+    if (q.check(v)) feedback(host, 'ok', '<strong>Correct.</strong> ' + (q.rationale||''));
+    else feedback(host, 'bad', '<strong>Not quite.</strong> ' + (q.hint||q.rationale||''));
+  });
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') btn.click(); });
+}
+function buildExerciseSet(rootSel, items){
+  const root = document.querySelector(rootSel);
+  items.forEach((q, idx) => {
+    const card = el('div', {class:'card'});
+    card.appendChild(el('h3', {}, 'Exercise ' + (idx+1) + ' — ' + q.type));
+    if (q.kind === 'mcq') renderMCQ(card, q);
+    else if (q.kind === 'text') renderTextEx(card, q);
+    root.appendChild(card);
+  });
+}
+
+buildExerciseSet('#ex-root', [
+  { kind:'mcq', type:'Convolution Basics', stem:'What does a convolution kernel do as it slides across an image?',
+    choices:['Deletes every other pixel', 'Computes a weighted sum of neighboring pixels to replace the center pixel', 'Randomly shuffles pixel values', 'Converts the image to grayscale'],
+    answer:1, rationale:'Convolution replaces each pixel with a weighted combination of itself and its neighbors, as defined by the kernel.' },
+  { kind:'mcq', type:'Filter Selection', stem:'Your capture has isolated bright/dark speckle noise (salt-and-pepper) from a dusty sensor. Which filter targets this specific noise type best?',
+    choices:['Gaussian blur', 'Median filter', 'CLAHE', 'Histogram equalization'],
+    answer:1, rationale:'Median filtering replaces each pixel with the median of its neighborhood, which is very effective against isolated outlier (salt-and-pepper) pixels.' },
+  { kind:'mcq', type:'Edge Preservation', stem:'You want to reduce noise on a portrait but keep the edges of facial features sharp. Which filter is designed for this?',
+    choices:['Gaussian blur', 'Median filter', 'Bilateral filter', 'Box blur'],
+    answer:2, rationale:'Bilateral filtering weights neighbors by both spatial distance AND intensity similarity, so it smooths flat regions while leaving strong edges largely intact.' },
+  { kind:'mcq', type:'Contrast Methods', stem:'A photo has one very bright, sunlit corner and one very dark, shadowed corner. Which contrast method handles this scene better?',
+    choices:['Global histogram equalization', 'CLAHE (tile-based, with a clip limit)', 'Median filtering', 'Gaussian blur'],
+    answer:1, rationale:'CLAHE equalizes in small local tiles rather than globally, so it improves the dark corner without blowing out the already-bright corner.' },
+  { kind:'mcq', type:'Trade-offs', stem:'What is the main practical downside of the Bilateral filter compared to Gaussian or Median?',
+    choices:['It cannot run on grayscale images', 'It is significantly slower to compute', 'It only works on video, not stills', 'It requires a GPU'],
+    answer:1, rationale:'Because it weighs both spatial and intensity distance for every neighbor, bilateral filtering is considerably more expensive than Gaussian or Median blur.' },
+  { kind:'text', type:'CLAHE Recall', stem:'What does the "CL" in CLAHE stand for? (two words)',
+    check: v => v.trim().toLowerCase().replace(/\s+/g,' ') === 'contrast limited',
+    hint: 'It refers to the clip limit that prevents over-amplifying noise in flat regions.',
+    rationale:'CLAHE = Contrast Limited Adaptive Histogram Equalization. The clip limit is what distinguishes it from plain histogram equalization.' },
+]);
+</script>
+</body>
+</html>
