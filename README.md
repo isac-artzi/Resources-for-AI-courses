@@ -1,8 +1,16 @@
 # Resources for AI Courses
 
-A collection of teaching resources. The repository holds **four courses**, each
-with its own tutorials and hands-on resources, plus a course-agnostic survey of
-cloud deployment architectures:
+### ▶ [Read the tutorials online](https://isac-artzi.github.io/Resources-for-AI-courses/)
+
+[![Deep Learning](https://img.shields.io/badge/Open-Deep%20Learning-1f6feb?style=for-the-badge)](https://isac-artzi.github.io/Resources-for-AI-courses/deep-learning/)
+[![Intro to ML](https://img.shields.io/badge/Open-Intro%20to%20ML-2a3aa6?style=for-the-badge)](https://isac-artzi.github.io/Resources-for-AI-courses/intro-to-machine-learning/)
+[![NLP](https://img.shields.io/badge/Open-NLP-3b4fd8?style=for-the-badge)](https://isac-artzi.github.io/Resources-for-AI-courses/natural-language-processing/)
+[![Reinforcement Learning](https://img.shields.io/badge/Open-Reinforcement%20Learning-0f8b8d?style=for-the-badge)](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/)
+[![R-Pi Workshop](https://img.shields.io/badge/Open-R--Pi%20AI%20Camera-b26a00?style=for-the-badge)](https://isac-artzi.github.io/Resources-for-AI-courses/r-pi-with-ai-camera-workshop/)
+
+A collection of teaching resources. The repository holds **four courses** and a
+**hardware workshop**, each with its own tutorials and hands-on resources, plus a
+course-agnostic survey of cloud deployment architectures:
 
 | | What it is |
 |---|---|
@@ -10,6 +18,7 @@ cloud deployment architectures:
 | 📗 **[Intro to Machine Learning](#intro-to-machine-learning)** | Course tutorials **and single-tier project templates** (Streamlit + SQLite + pandas + scikit-learn) covering the classical ML toolkit. |
 | 📕 **[Natural Language Processing](#natural-language-processing)** | Course lecture notes, exercises, and **starter skeletons** on the same three-cloud stack — infrastructure finished, the NLP layer left to build. |
 | 📙 **[Reinforcement Learning](#reinforcement-learning)** | Course tutorials, exercises, and **complete agent templates** on a two-cloud, three-tier stack — train in PyTorch, serve in NumPy. |
+| 🔬 **[R-Pi AI Camera Workshop](#r-pi-ai-camera-workshop)** | An eight-topic hardware workshop: capture, streaming, on-camera inference, and recording on a Raspberry Pi AI Camera. |
 | ☁️ **[Cloud Deployment](#cloud-deployment-survey)** | A survey of different deployment stacks (Azure, Vercel, Render, Railway, TF.js). Not tied to any one course. |
 
 > Each course folder groups the tutorials and resources for one subject area. The
@@ -34,6 +43,22 @@ hand in hand to support each course topic:
 > canonical reference pattern; the six templates that follow it
 > (*Income-Insight*, *See-Sense*, *Attend-It*, *Former-It*, *Fine-It*, *Gen-It*)
 > reuse the same pattern with only the model box swapped.
+
+---
+
+### Tutorials
+
+**[▶ Open these online](https://isac-artzi.github.io/Resources-for-AI-courses/deep-learning/)** — 14 rendered pages across 7 topics. The source files are in [`Tutorials/`](./Deep%20Learning/Tutorials); github.com shows HTML as source, so use the links to read them.
+
+| Topic | Subject | Pages |
+|---|---|---|
+| 1 | Background Math & Gradient Descent | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/deep-learning/Topic_1_-_Derivatives_and_Partial_Derivatives/Tutorial_Topic_1_Background_Math_and_Gradient_Descent.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/deep-learning/Topic_1_-_Derivatives_and_Partial_Derivatives/Exercises_Topic_1_Background_Math_and_Gradient_Descent.html) |
+| 2 | Matrices, Perceptrons & Feed-Forward Networks | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/deep-learning/Topic_2_-_Matrices/Tutorial_Topic_2_Matrices_and_Feed_Forward_Neural_Networks.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/deep-learning/Topic_2_-_Matrices/Exercises_Topic_2_Matrices_and_Feed_Forward_Neural_Networks.html) |
+| 3 | Convolutional Neural Networks | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/deep-learning/Topic_3_-_CNN/Tutorial_Topic_3_Convolutional_Neural_Networks.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/deep-learning/Topic_3_-_CNN/Exercises_Topic_3_Convolutional_Neural_Networks.html) |
+| 4 | Sequence Models & Attention | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/deep-learning/Topic_4_-_Sequence_Models/Tutorial_Topic_4_Sequence_Models_and_Attention.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/deep-learning/Topic_4_-_Sequence_Models/Exercises_Topic_4_Sequence_Models_and_Attention.html) |
+| 5 | Transformer Architecture | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/deep-learning/Topic_5_-_Transformers/Tutorial_Topic_5_Transformer_Architecture.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/deep-learning/Topic_5_-_Transformers/Exercises_Topic_5_Transformer_Architecture.html) |
+| 6 | Pre-Training & Fine-Tuning LLMs | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/deep-learning/Topic_6_-_LLM/Tutorial_Topic_6_Pre_Training_and_Fine_Tuning_LLMs.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/deep-learning/Topic_6_-_LLM/Exercises_Topic_6_Pre_Training_and_Fine_Tuning_LLMs.html) |
+| 7 | Generative Models | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/deep-learning/Topic_7_-_Generative_AI/Tutorial_Topic_7_Generative_Models.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/deep-learning/Topic_7_-_Generative_AI/Exercises_Topic_7_Generative_Models.html) |
 
 ---
 
@@ -198,18 +223,17 @@ students.
 
 ### Tutorials
 
-| Topic | Subject |
-|-------|---------|
-| 1 | SQL Basics — [Tutorial](./Intro%20to%20Machine%20Learning/Tutorials/Topic_1_SQL_Basics_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Tutorials/Topic_1_SQL_Basics_Exercises.html) |
-| 2 | Data Quality — [Tutorial](./Intro%20to%20Machine%20Learning/Tutorials/Topic_2_Data_Quality_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Tutorials/Topic_2_Data_Quality_Exercises.html) |
-| 3 | Linear Regression — [Tutorial](./Intro%20to%20Machine%20Learning/Tutorials/Topic_3_Linear_Regression_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Tutorials/Topic_3_Linear_Regression_Exercises.html) |
-| 4 | Naive Bayes — [Tutorial](./Intro%20to%20Machine%20Learning/Tutorials/Topic_4_Naive_Bayes_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Tutorials/Topic_4_Naive_Bayes_Exercises.html) |
-| 5 | Classification — [Tutorial](./Intro%20to%20Machine%20Learning/Tutorials/Topic_5_Classification_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Tutorials/Topic_5_Classification_Exercises.html) |
-| 6 | Clustering — [Tutorial](./Intro%20to%20Machine%20Learning/Tutorials/Topic_6_Clustering_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Tutorials/Topic_6_Clustering_Exercises.html) |
-| 7 | Data Version Control & Features — [Tutorial](./Intro%20to%20Machine%20Learning/Tutorials/Topic_7_DVC_Features_Tutorial.html) · [Exercises](./Intro%20to%20Machine%20Learning/Tutorials/Topic_7_DVC_Features_Exercises.html) |
+**[▶ Open these online](https://isac-artzi.github.io/Resources-for-AI-courses/intro-to-machine-learning/)** — 14 rendered pages across 7 topics. The source files are in [`Tutorials/`](./Intro%20to%20Machine%20Learning/Tutorials); github.com shows HTML as source, so use the links to read them.
 
-> GitHub renders `.html` files as source. Clone or download the folder (or enable
-> GitHub Pages) to view them as formatted pages in a browser.
+| Topic | Subject | Pages |
+|---|---|---|
+| 1 | SQL Basics & Reading into pandas | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/intro-to-machine-learning/Topic_1_SQL_Basics_Tutorial.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/intro-to-machine-learning/Topic_1_SQL_Basics_Exercises.html) |
+| 2 | Data Pipelines & Quality | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/intro-to-machine-learning/Topic_2_Data_Quality_Tutorial.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/intro-to-machine-learning/Topic_2_Data_Quality_Exercises.html) |
+| 3 | Linear Regression | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/intro-to-machine-learning/Topic_3_Linear_Regression_Tutorial.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/intro-to-machine-learning/Topic_3_Linear_Regression_Exercises.html) |
+| 4 | Naive Bayes | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/intro-to-machine-learning/Topic_4_Naive_Bayes_Tutorial.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/intro-to-machine-learning/Topic_4_Naive_Bayes_Exercises.html) |
+| 5 | Classification | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/intro-to-machine-learning/Topic_5_Classification_Tutorial.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/intro-to-machine-learning/Topic_5_Classification_Exercises.html) |
+| 6 | Clustering & PCA | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/intro-to-machine-learning/Topic_6_Clustering_Tutorial.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/intro-to-machine-learning/Topic_6_Clustering_Exercises.html) |
+| 7 | DVC, Features & Deployment | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/intro-to-machine-learning/Topic_7_DVC_Features_Tutorial.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/intro-to-machine-learning/Topic_7_DVC_Features_Exercises.html) |
 
 ---
 
@@ -253,18 +277,17 @@ API deploy, Supabase migrations, and a pytest suite split into `contract` and
 
 ### Tutorials
 
-| Topic | Subject |
-|-------|---------|
-| 1 | Text Preprocessing and Tokenization — [Lecture Notes](./Natural%20Language%20Processing/Tutorials/Topic_1_-_Text_Preprocessing_and_Tokenization/Lecture_Notes_Topic_1_Text_Preprocessing_and_Tokenization.html) · [Exercises](./Natural%20Language%20Processing/Tutorials/Topic_1_-_Text_Preprocessing_and_Tokenization/Exercises_Topic_1_Text_Preprocessing_and_Tokenization.html) |
-| 2 | Natural Language Understanding — [Lecture Notes](./Natural%20Language%20Processing/Tutorials/Topic_2_-_Natural_Language_Understanding/Lecture_Notes_Topic_2_Natural_Language_Understanding.html) · [Exercises](./Natural%20Language%20Processing/Tutorials/Topic_2_-_Natural_Language_Understanding/Exercises_Topic_2_Natural_Language_Understanding.html) |
-| 3 | Natural Language Generation — [Lecture Notes](./Natural%20Language%20Processing/Tutorials/Topic_3_-_Natural_Language_Generation/Lecture_Notes_Topic_3_Natural_Language_Generation.html) · [Exercises](./Natural%20Language%20Processing/Tutorials/Topic_3_-_Natural_Language_Generation/Exercises_Topic_3_Natural_Language_Generation.html) |
-| 4 | Sentiment Analysis — [Lecture Notes](./Natural%20Language%20Processing/Tutorials/Topic_4_-_Sentiment_Analysis/Lecture_Notes_Topic_4_Sentiment_Analysis.html) · [Exercises](./Natural%20Language%20Processing/Tutorials/Topic_4_-_Sentiment_Analysis/Exercises_Topic_4_Sentiment_Analysis.html) |
-| 5 | Named Entity Recognition — [Lecture Notes](./Natural%20Language%20Processing/Tutorials/Topic_5_-_Named_Entity_Recognition/Lecture_Notes_Topic_5_Named_Entity_Recognition.html) · [Exercises](./Natural%20Language%20Processing/Tutorials/Topic_5_-_Named_Entity_Recognition/Exercises_Topic_5_Named_Entity_Recognition.html) |
-| 6 | Part-of-Speech Tagging — [Lecture Notes](./Natural%20Language%20Processing/Tutorials/Topic_6_-_Part_of_Speech_Tagging/Lecture_Notes_Topic_6_Part_of_Speech_Tagging.html) · [Exercises](./Natural%20Language%20Processing/Tutorials/Topic_6_-_Part_of_Speech_Tagging/Exercises_Topic_6_Part_of_Speech_Tagging.html) |
-| 7 | Language Modeling, Embeddings and RAG — [Lecture Notes](./Natural%20Language%20Processing/Tutorials/Topic_7_-_Language_Modeling_Embeddings_and_RAG/Lecture_Notes_Topic_7_Language_Modeling_Embeddings_and_RAG.html) · [Exercises](./Natural%20Language%20Processing/Tutorials/Topic_7_-_Language_Modeling_Embeddings_and_RAG/Exercises_Topic_7_Language_Modeling_Embeddings_and_RAG.html) |
+**[▶ Open these online](https://isac-artzi.github.io/Resources-for-AI-courses/natural-language-processing/)** — 14 rendered pages across 7 topics. The source files are in [`Tutorials/`](./Natural%20Language%20Processing/Tutorials); github.com shows HTML as source, so use the links to read them.
 
-> GitHub renders `.html` files as source. Clone or download the folder (or enable
-> GitHub Pages) to view them as formatted pages in a browser.
+| Topic | Subject | Pages |
+|---|---|---|
+| 1 | Text Preprocessing and Tokenization | [Lecture notes](https://isac-artzi.github.io/Resources-for-AI-courses/natural-language-processing/Topic_1_-_Text_Preprocessing_and_Tokenization/Lecture_Notes_Topic_1_Text_Preprocessing_and_Tokenization.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/natural-language-processing/Topic_1_-_Text_Preprocessing_and_Tokenization/Exercises_Topic_1_Text_Preprocessing_and_Tokenization.html) |
+| 2 | Natural Language Understanding | [Lecture notes](https://isac-artzi.github.io/Resources-for-AI-courses/natural-language-processing/Topic_2_-_Natural_Language_Understanding/Lecture_Notes_Topic_2_Natural_Language_Understanding.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/natural-language-processing/Topic_2_-_Natural_Language_Understanding/Exercises_Topic_2_Natural_Language_Understanding.html) |
+| 3 | Controllable Natural Language Generation | [Lecture notes](https://isac-artzi.github.io/Resources-for-AI-courses/natural-language-processing/Topic_3_-_Natural_Language_Generation/Lecture_Notes_Topic_3_Natural_Language_Generation.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/natural-language-processing/Topic_3_-_Natural_Language_Generation/Exercises_Topic_3_Natural_Language_Generation.html) |
+| 4 | Sentiment Analysis and Aspect-Based Sentiment | [Lecture notes](https://isac-artzi.github.io/Resources-for-AI-courses/natural-language-processing/Topic_4_-_Sentiment_Analysis/Lecture_Notes_Topic_4_Sentiment_Analysis.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/natural-language-processing/Topic_4_-_Sentiment_Analysis/Exercises_Topic_4_Sentiment_Analysis.html) |
+| 5 | Named Entity Recognition | [Lecture notes](https://isac-artzi.github.io/Resources-for-AI-courses/natural-language-processing/Topic_5_-_Named_Entity_Recognition/Lecture_Notes_Topic_5_Named_Entity_Recognition.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/natural-language-processing/Topic_5_-_Named_Entity_Recognition/Exercises_Topic_5_Named_Entity_Recognition.html) |
+| 6 | Part-of-Speech Tagging | [Lecture notes](https://isac-artzi.github.io/Resources-for-AI-courses/natural-language-processing/Topic_6_-_Part_of_Speech_Tagging/Lecture_Notes_Topic_6_Part_of_Speech_Tagging.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/natural-language-processing/Topic_6_-_Part_of_Speech_Tagging/Exercises_Topic_6_Part_of_Speech_Tagging.html) |
+| 7 | Language Modeling, Embeddings and Retrieval-Augmented Generation | [Lecture notes](https://isac-artzi.github.io/Resources-for-AI-courses/natural-language-processing/Topic_7_-_Language_Modeling_Embeddings_and_RAG/Lecture_Notes_Topic_7_Language_Modeling_Embeddings_and_RAG.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/natural-language-processing/Topic_7_-_Language_Modeling_Embeddings_and_RAG/Exercises_Topic_7_Language_Modeling_Embeddings_and_RAG.html) |
 
 ---
 
@@ -279,7 +302,7 @@ subfolders, one set per topic:
   scaffold they all reuse.
 - **[`Tutorials/`](./Reinforcement%20Learning/Tutorials)** — the matching
   **tutorials and exercises** (HTML), with an
-  [index page](./Reinforcement%20Learning/Tutorials/index.html) linking all twelve.
+  [index page](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/) linking all twelve.
 
 ### Architecture — two clouds, three tiers
 
@@ -318,18 +341,37 @@ Every template ships the same six standing endpoints (`/act`, `/rollout`,
 
 ### Tutorials
 
-| Topic | Subject |
-|-------|---------|
-| 1 | Introduction to Reinforcement Learning — [Tutorial](./Reinforcement%20Learning/Tutorials/Tutorial-Topic-1-Introduction-to-Reinforcement-Learning.html) · [Exercises](./Reinforcement%20Learning/Tutorials/Exercises-Topic-1-Introduction-to-Reinforcement-Learning.html) |
-| 2 | Markov Decision Processes and Monte Carlo Learning — [Tutorial](./Reinforcement%20Learning/Tutorials/Tutorial-Topic-2-Markov-Decision-Process-and-Monte-Carlo-Learning.html) · [Exercises](./Reinforcement%20Learning/Tutorials/Exercises-Topic-2-Markov-Decision-Process-and-Monte-Carlo-Learning.html) |
-| 3 | Policy Gradient Methods — [Tutorial](./Reinforcement%20Learning/Tutorials/Tutorial-Topic-3-Policy-Gradient-Methods.html) · [Exercises](./Reinforcement%20Learning/Tutorials/Exercises-Topic-3-Policy-Gradient-Methods.html) |
-| 4 | Actor-Critic Methods — [Tutorial](./Reinforcement%20Learning/Tutorials/Tutorial-Topic-4-Actor-Critic-Methods.html) · [Exercises](./Reinforcement%20Learning/Tutorials/Exercises-Topic-4-Actor-Critic-Methods.html) |
-| 5 | Tree Search — [Tutorial](./Reinforcement%20Learning/Tutorials/Tutorial-Topic-5-Tree-Search.html) · [Exercises](./Reinforcement%20Learning/Tutorials/Exercises-Topic-5-Tree-Search.html) |
-| 6 | RLHF and Multi-Agent Reinforcement Learning — [Tutorial](./Reinforcement%20Learning/Tutorials/Tutorial-Topic-6-RLHF-and-Multi-Agent-Reinforcement-Learning.html) · [Exercises](./Reinforcement%20Learning/Tutorials/Exercises-Topic-6-RLHF-and-Multi-Agent-Reinforcement-Learning.html) |
+**[▶ Open these online](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/)** — 12 rendered pages across 6 topics. The source files are in [`Tutorials/`](./Reinforcement%20Learning/Tutorials); github.com shows HTML as source, so use the links to read them.
 
-> GitHub renders `.html` files as source. Clone or download the folder (or enable
-> GitHub Pages) to view them as formatted pages in a browser — or open
-> [`Tutorials/index.html`](./Reinforcement%20Learning/Tutorials/index.html) locally.
+| Topic | Subject | Pages |
+|---|---|---|
+| 1 | Introduction to Reinforcement Learning | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/Tutorial-Topic-1-Introduction-to-Reinforcement-Learning.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/Exercises-Topic-1-Introduction-to-Reinforcement-Learning.html) |
+| 2 | Markov Decision Process and Monte Carlo Learning | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/Tutorial-Topic-2-Markov-Decision-Process-and-Monte-Carlo-Learning.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/Exercises-Topic-2-Markov-Decision-Process-and-Monte-Carlo-Learning.html) |
+| 3 | Policy Gradient Methods | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/Tutorial-Topic-3-Policy-Gradient-Methods.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/Exercises-Topic-3-Policy-Gradient-Methods.html) |
+| 4 | Actor-Critic Methods: From Advantage Actor-Critic to Soft Actor-Critic | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/Tutorial-Topic-4-Actor-Critic-Methods.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/Exercises-Topic-4-Actor-Critic-Methods.html) |
+| 5 | Tree Search | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/Tutorial-Topic-5-Tree-Search.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/Exercises-Topic-5-Tree-Search.html) |
+| 6 | Reinforcement Learning From Human Feedback and Multi-Agent Reinforcement Learning | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/Tutorial-Topic-6-RLHF-and-Multi-Agent-Reinforcement-Learning.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/Exercises-Topic-6-RLHF-and-Multi-Agent-Reinforcement-Learning.html) |
+
+---
+
+## R-Pi AI Camera Workshop
+
+An eight-topic hardware workshop built around the Raspberry Pi AI Camera: capture, streaming and frame rate, camera controls, on-camera inference, frames as NumPy arrays, clip recording and playback, and a live preview. Seven project templates accompany the tutorials in [`Project Templates/`](./R-Pi%20with%20Ai%20Camera%20workshop/Project%20Templates).
+
+### Tutorials
+
+**[▶ Open these online](https://isac-artzi.github.io/Resources-for-AI-courses/r-pi-with-ai-camera-workshop/)** — 16 rendered pages across 8 topics. The source files are in [`tutorials/`](./R-Pi%20with%20Ai%20Camera%20workshop/tutorials); github.com shows HTML as source, so use the links to read them.
+
+| Topic | Subject | Pages |
+|---|---|---|
+| 1 | Introduction to Digital Image Processing | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/r-pi-with-ai-camera-workshop/Topic_1_Tutorial.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/r-pi-with-ai-camera-workshop/Topic_1_Exercises.html) |
+| 2 | Image Filtering and Enhancement | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/r-pi-with-ai-camera-workshop/Topic_2_Tutorial.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/r-pi-with-ai-camera-workshop/Topic_2_Exercises.html) |
+| 3 | Image Restoration and Reconstruction | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/r-pi-with-ai-camera-workshop/Topic_3_Tutorial.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/r-pi-with-ai-camera-workshop/Topic_3_Exercises.html) |
+| 4 | Image Segmentation and Edge Detection | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/r-pi-with-ai-camera-workshop/Topic_4_Tutorial.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/r-pi-with-ai-camera-workshop/Topic_4_Exercises.html) |
+| 5 | Image Registration and Alignment | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/r-pi-with-ai-camera-workshop/Topic_5_Tutorial.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/r-pi-with-ai-camera-workshop/Topic_5_Exercises.html) |
+| 6 | Motion Estimation and Tracking | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/r-pi-with-ai-camera-workshop/Topic_6_Tutorial.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/r-pi-with-ai-camera-workshop/Topic_6_Exercises.html) |
+| 7 | Multiple View Geometry and Stereo Vision | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/r-pi-with-ai-camera-workshop/Topic_7_Tutorial.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/r-pi-with-ai-camera-workshop/Topic_7_Exercises.html) |
+| 8 | Image and Video Compression | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/r-pi-with-ai-camera-workshop/Topic_8_Tutorial.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/r-pi-with-ai-camera-workshop/Topic_8_Exercises.html) |
 
 ---
 
