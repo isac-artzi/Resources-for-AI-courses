@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Break the Scanner on Purpose · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 1 · Class activity 2 · Friday</p>
+    <h1>Break the Scanner on Purpose</h1>
+    <p class="lede">Five experiments that each break the scanner in one specific way. Predict first, then run, then explain it with the theory.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 1</a> &nbsp;›&nbsp; Activity 2</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs</span><span><b>Time</b> 45 min</span><span><b>Bring</b> a working build of your scanner</span></div>
+<h2>The point</h2>
+<p>Five experiments, each breaking the scanner in one specific way. Predict the outcome first, then run it. A prediction you got wrong teaches more than three you got right, so write it down <i>before</i> running anything — otherwise you will remember having predicted correctly.</p>
+<div class="note"><b>Work on a copy</b><p>Every experiment below breaks the scanner on purpose, so work on a copy and keep the original intact for comparison:</p>
+<pre><code class="lang-">cp -r student/topic-1-lexical-analysis/lexer /tmp/broken
+cd /tmp/broken &amp;&amp; make</code></pre>
+<p>Use YOUR scanner, not a reference one. Project 1 is due tomorrow, so by now you should have enough of it working to break — and breaking your own code teaches considerably more.</p>
+</div>
+<h2>The experiments</h2>
+<ol class="steps"><li><b>Move the identifier rule above the keyword rules.</b> Predict what <code>tests/03_keywords_vs_ids.cm</code> will produce, then run it. Which conflict-resolution rule did you just exercise, and why did the other one not save you?</li><li><b>Delete the <code>&quot;&lt;=&quot;</code> rule.</b> Predict the exact token count for <code>tests/02_longest_match.cm</code> before you look. Then explain the result in terms of the combined NFA: what happened to the accepting state that used to record that pattern?</li><li><b>Move the <code>&quot;&lt;&quot;</code> rule above <code>&quot;&lt;=&quot;</code></b>, with both present. Predict, then run. This one surprises people — explain in one sentence why nothing changed, naming the rule responsible.</li><li><b>Make the error action call <code>exit(1)</code></b> instead of counting and continuing. Run <code>tests/05_lexical_errors.cm</code>, which holds four bad characters. How many did you learn about? Now imagine that file is 4,000 lines long.</li><li><b>Delete the position-counting call from the block-comment rule</b>, leaving the rule itself. Run <code>tests/04_comments.cm</code> and look at the line numbers. Which later phase does this break, and how would the resulting bug report look to someone who did not know?</li></ol>
+<h2>One design question, no experiment</h2>
+<p>Our language has no string literals. Suppose you wanted to add them: <code>print(&quot;total = &quot;);</code></p>
+<ul><li>Write the <i>regular definition</i> for a string literal.</li><li>What should happen if the closing quote is missing before end of line? Which error-recovery strategy from §9 of the lecture notes would you choose, and what does it cost?</li><li>Which phase should reject <code>&quot;abc&quot; + 1</code> — scanner, parser, or semantic analyzer? Defend it in one sentence, using what each phase can actually see.</li></ul>
+<details class="reveal"><summary>A hint on the third question</summary><p>Ask what information each phase has. The scanner sees one lexeme at a time and no context. The parser sees the shape of the expression but nothing about types — <code>expr '+' expr</code> matches perfectly well. Only one phase in this course is in a position to know that one operand is a string and the other an integer, and that is exactly what that phase is for.</p>
+</details>
+<div class="deliverable"><h3>Deliverable</h3><p>Extend <code>activity1.md</code>, or start <code>activity2.md</code>, with:</p>
+<ul><li>for each of the five experiments: your written prediction, what actually happened, and one sentence reconciling them;</li><li>your answers to the three string-literal questions;</li><li>one sentence on which experiment surprised you most, and why.</li></ul>
+<p>This feeds Lab Questions 1 and 2 directly, and it is the substance of the 'theoretical principles and design practices' section your Project 1 video has to cover.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

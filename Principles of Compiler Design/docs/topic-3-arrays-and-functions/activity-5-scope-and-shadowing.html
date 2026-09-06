@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scope and Shadowing · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 3 · Class activity 5 · Week 8 · Wednesday</p>
+    <h1>Scope and Shadowing</h1>
+    <p class="lede">Predict the output, draw the scope stack, break exitScope, then work out what dynamic scoping would have printed.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 3</a> &nbsp;›&nbsp; Activity 5</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs</span><span><b>Time</b> 40 min</span></div>
+<h2>The point</h2>
+<p>Shadowing is easy to describe and easy to get wrong. Predict, then verify, then break it on purpose.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Predict the output</b> line by line before running anything.<pre><code class="lang-">int n;
+int twice(int n) { return n + n; }
+int main() {
+    int m;
+    n = 10;
+    m = twice(3);
+    print(n);
+    print(m);
+    { int n; n = 99; print(n); }
+    print(n);
+    return 0;
+}</code></pre>
+</li><li><b>Draw the scope stack</b> at each <code>print</code>. Which entry does the lookup find, and how many scopes did it search? Name the rule you are applying.</li><li><b>Run it</b> without <code>-q</code>, find the scope traces, and reconcile.</li><li><b>Break it.</b> Make <code>exitScope()</code> a no-op. Predict what goes wrong, then confirm. Is the error the one you predicted?</li><li><b>Break it the other way.</b> Restore that, and make lookup search only the OUTERMOST scope. Which of the two symbol tables did you just break — the visibility one or the storage one? How can you tell from the symptom?</li><li><b>Theory question.</b> Our language is statically scoped. Write down what the program above would print under <i>dynamic</i> scoping, and say which line reveals the difference.</li></ol>
+<div class="deliverable"><h3>Deliverable</h3><p>Your line-by-line prediction; scope-stack diagrams; a paragraph on each sabotage; and your dynamic-scoping answer. Feeds Lab Questions 11 and 16.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

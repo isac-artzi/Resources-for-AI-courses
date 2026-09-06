@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build the Tree, Then Print It · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 2 · Class activity 4 · Week 3 · Friday</p>
+    <h1>Build the Tree, Then Print It</h1>
+    <p class="lede">Semantic actions as a syntax-directed definition, and a deliberate strdup bug that will save you a week.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 2</a> &nbsp;›&nbsp; Activity 4</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs, at a laptop</span><span><b>Time</b> 50 min</span></div>
+<h2>The point</h2>
+<p>Make the tree real, and make it visible. This is where a syntax-directed definition stops being a diagram and becomes code that runs.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Write the AST constructors.</b> Follow the pattern of the one that is given. Five functions, three lines each.</li><li><b>Wire them into the grammar actions.</b> Each action computes this node's attribute from its children's — write one out longhand as a syntax-directed definition rule before you write the C, and confirm it is synthesized.</li><li><b>Write the tree printer.</b> Two spaces of indent per level; recurse at <code>level + 1</code> — except for <code>NODE_STMT_LIST</code>, whose children print at the <i>same</i> level, because a sequence is not a nesting.</li><li><b>Test it against your paper answer from Activity 3.</b> If the printed tree does not match what you drew, one of the two is wrong. Find out which before going further.</li><li><b>Deliberately break it.</b> In <code>createAssign</code>, store the name without <code>strdup</code>. Rebuild, run, and describe what you see. Then explain it: what does the scanner do with its buffer between tokens?</li></ol>
+<div class="warn"><b>Step 5 is the most valuable five minutes of the week</b><p>The scanner reuses its buffer for the next token, so a name you merely point at will have changed by the time the semantic analyzer reads it. The symptom is an AST that looks randomly corrupted, and it is among the hardest bugs to find in this course — unless you have seen it once, on purpose, when you knew what you had just done.</p>
+</div>
+<div class="deliverable"><h3>Deliverable</h3><p>A working tree printer, its output for the Activity 3 program, one grammar action written out as a syntax-directed rule, and a paragraph describing what step 5 produced and why.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

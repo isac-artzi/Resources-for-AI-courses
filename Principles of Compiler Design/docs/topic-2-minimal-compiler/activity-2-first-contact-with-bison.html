@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>First Contact with Bison · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 2 · Class activity 2 · Week 2 · Friday</p>
+    <h1>First Contact with Bison</h1>
+    <p class="lede">One rule at a time, a deliberate conflict, and your first reading of parser.output — items, dots and all.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 2</a> &nbsp;›&nbsp; Activity 2</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs, at a laptop</span><span><b>Time</b> 50 min</span></div>
+<h2>The point</h2>
+<p>Get bison to talk to you. Its conflict reports and its <code>parser.output</code> file are the most useful and least read output in this course, and Topic 5 goes much better for people who have read one before.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Build the skeleton</b> and confirm it compiles:<pre><code class="lang-">cd student/topic-2-minimal-compiler/compiler
+make
+./minicompiler tests/t2_01_basics.cm out.s</code></pre>
+It will fail — the grammar is a placeholder. Read the message.</li><li><b>Write ONE rule</b> and nothing else: <code>program : stmt_list</code>, <code>stmt_list : stmt | stmt_list stmt</code>, <code>stmt : decl</code>, <code>decl : INT ID ';'</code>. Build. Feed it a file of declarations only, and confirm it parses.</li><li><b>Deliberately create a conflict.</b> Add a second rule <code>stmt : INT ID ';'</code> alongside <code>stmt : decl</code>. Rebuild and read what bison says.</li><li><b>Get the full report.</b> Run <code>bison -d -v parser.y</code> and open <code>parser.output</code>. Find the conflicted state. It lists the <i>items</i> — productions with a dot — exactly as in §5 of the lecture notes. Copy that state into your notes and identify which item wanted to shift and which wanted to reduce.</li><li><b>Remove the conflict</b>, then add the remaining rules for <code>assign</code> and <code>print_stmt</code>.</li><li><b>Watch a parse.</b> Add <code>%define parse.trace</code> and set <code>yydebug = 1</code>, or simply add a <code>printf</code> to each action. Parse <code>x = 1 + 2;</code> and write down the sequence of shifts and reduces. Compare it with the trace table in the lecture notes.</li></ol>
+<div class="note"><b>parser.output is a gift</b><p>Almost everyone in this course eventually has a grammar with a conflict they do not understand. The answer is always in <code>parser.output</code>. Fifteen minutes learning to read it now saves an evening in Topic 5, where the dangling-else conflict arrives on schedule.</p>
+</div>
+<div class="deliverable"><h3>Deliverable</h3><p>Your <code>parser.y</code> with all four statement forms parsing; the <code>parser.output</code> excerpt from step 4 with one sentence identifying the two competing items; and your shift/reduce trace from step 6.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

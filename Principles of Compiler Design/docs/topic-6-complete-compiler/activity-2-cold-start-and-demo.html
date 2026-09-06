@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cold-Start README Test and Demo Dry Run · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 6 · Class activity 2 · Week 15 · Friday</p>
+    <h1>Cold-Start README Test and Demo Dry Run</h1>
+    <p class="lede">Somebody who has never seen your compiler tries to build it from your README. Then you explain it out loud and they interrupt.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 6</a> &nbsp;›&nbsp; Activity 2</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> groups of three</span><span><b>Time</b> 50 min</span><span><b>Bring</b> a draft README and a machine you can clone onto</span></div>
+<h2>The point</h2>
+<p>Two things get tested here, and both are tested by somebody who is not you: can a stranger build your compiler, and can you explain it out loud under questioning.</p>
+<h3>Part 1 — the cold-start README test (25 min)</h3>
+<ol class="steps"><li><b>Swap repositories.</b> Clone a group member's compiler into a fresh directory. Do not ask them anything, and do not let them watch.</li><li><b>Follow their README literally.</b> Every place you had to guess, improvise or ask is a bug in the README. Write each one down.</li><li><b>Score it.</b> Could you build it? Run it on your own input? Find out what the language accepts without opening <code>parser.y</code>? Did the limitations section tell you something you then confirmed?</li><li><b>Hand back your list</b>, and fix your own README before you leave.</li></ol>
+<h3>Part 2 — the demo dry run (25 min)</h3>
+<p>Eight minutes each, to the other two. The audience's only job is to interrupt with <i>why</i>, and to ask at least one question the presenter cannot answer.</p>
+<ol class="steps"><li><b>Show it run</b> before explaining anything.</li><li><b>Follow one construct through all six phases.</b> Have the files open already — do not spend demo time navigating.</li><li><b>Name a decision and defend it.</b> Short-circuit or eager, table or chain, desugar or lower directly. The audience should push back once.</li><li><b>Present one number</b>, with its baseline and method.</li><li><b>Give two limitations with reasons.</b></li><li><b>Audience feedback:</b> one thing that was convincing, one that was not, and the question they would have asked with more time.</li></ol>
+<div class="note"><b>The most common demo mistake</b><p>Explaining for six minutes and demonstrating for one. Lead with the working program: everything afterward lands differently once the viewer has seen the thing actually work. The second most common mistake is reading code aloud — the viewer can read, and what they cannot get from the repository is why it is shaped that way.</p>
+</div>
+<div class="deliverable"><h3>Deliverable</h3><p>The list of README problems you found in someone else's, the list they found in yours, and your fixed README. Plus your written notes from the demo feedback — those go straight into your recorded video.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

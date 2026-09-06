@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lower a Loop, Then Draw Its Flow Graph · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 4 · Class activity 1 · Week 9 · Wednesday</p>
+    <h1>Lower a Loop, Then Draw Its Flow Graph</h1>
+    <p class="lede">Labels and jumps on paper, hand-execute it, find the basic blocks and the back edge, then move the test to the bottom and see what you built.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 4</a> &nbsp;›&nbsp; Activity 1</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs</span><span><b>Time</b> 45 min</span><span><b>Bring</b> paper</span></div>
+<h2>The point</h2>
+<p>Lower a loop by hand before writing the code that does it. The pattern is short enough to memorise and general enough to reuse for every construct in Topic 5.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Lower this by hand</b> into TAC with labels and jumps:<pre><code class="lang-">i = 0;
+s = 0;
+while (i &lt; 5) {
+    s = s + i;
+    i = i + 1;
+}
+print(s);</code></pre>
+</li><li><b>Hand-execute it.</b> Make a table with columns for <code>i</code>, <code>s</code> and the instruction number, and step through to termination. What does it print?</li><li><b>Now find the basic blocks.</b> Apply the three leader rules to your listing and mark the boundaries. Draw the flow graph. Which edge is the back edge?</li><li><b>Move the test to the bottom</b> — body first, then condition, then a conditional jump back. Hand-execute with <code>i = 5</code> initially. What changed, and what construct have you just implemented?</li><li><b>Nest two loops</b> on paper. How many distinct labels do you need? What breaks if the label generator ever returns the same name twice?</li><li><b>Implement it</b> and compare the compiler's TAC with your handwritten listing.</li></ol>
+<div class="deliverable"><h3>Deliverable</h3><p>Your handwritten lowering, the execution trace, your flow graph with the back edge marked, your answer to step 4 naming the construct, and the compiler's output beside yours. Feeds Lab Question 17.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

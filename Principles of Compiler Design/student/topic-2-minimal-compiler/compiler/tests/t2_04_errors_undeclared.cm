@@ -1,0 +1,8 @@
+/* THIS PROGRAM IS SUPPOSED TO FAIL.
+ * It parses cleanly — every statement matches the grammar — but it does not
+ * mean anything: `ghost` was never declared.  Only the semantic analyzer can
+ * catch that, which is the whole reason Phase 3 exists.
+ * Expected: one semantic error naming `ghost` and its line number. */
+int x;
+x = 1;
+print(ghost);

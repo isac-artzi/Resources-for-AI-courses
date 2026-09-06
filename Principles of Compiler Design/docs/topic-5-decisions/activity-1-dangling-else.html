@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Create the Dangling-Else Conflict, Then Fix It Three Ways · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 5 · Class activity 1 · Week 12 · Wednesday</p>
+    <h1>Create the Dangling-Else Conflict, Then Fix It Three Ways</h1>
+    <p class="lede">Build the conflict on purpose, read the items in parser.output, fix it with precedence and again with a matched/unmatched grammar, then swap the declarations and watch it break.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 5</a> &nbsp;›&nbsp; Activity 1</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs, at a laptop</span><span><b>Time</b> 45 min</span></div>
+<h2>The point</h2>
+<p>Create the dangling-else conflict deliberately, read the parser's own report on it, then fix it three different ways and watch one of them break.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Add the two if rules with no precedence declarations.</b> Build with <code>bison -d -v parser.y</code> and read the warning.</li><li><b>Open <code>parser.output</code></b> and find the conflicted state. It lists the items — productions with a dot — exactly as in the lecture notes. Copy it into your notes and identify which item wanted to shift and which wanted to reduce, and on what lookahead.</li><li><b>Test which way bison resolved it.</b> Compile and run<pre><code class="lang-">int main() {
+    int x; int y;
+    x = 1; y = 0;
+    if (x &gt; 0) if (y &gt; 0) print(1); else print(2);
+    return 0;
+}</code></pre>
+It prints 2 if the else bound to the inner if, and nothing at all if it bound to the outer one. Which happened?</li><li><b>Fix it properly</b> with the two <code>%nonassoc</code> declarations. Rebuild — the warning should be gone and the behavior unchanged.</li><li><b>Swap the two declarations.</b> Predict what the test prints now, then run it. Explain the result in terms of positional precedence.</li><li><b>Fix it a third way, on paper.</b> Write the matched/unmatched grammar from Dragon §4.3.2 for our language. Count how many rules mentioning <code>stmt</code> you had to touch, and say whether you would ship it.</li></ol>
+<div class="deliverable"><h3>Deliverable</h3><p>The <code>parser.output</code> excerpt with the two competing items identified; what the test printed at each stage; your matched/unmatched grammar with a rule count; and a one-paragraph judgement. This is Lab Question 25.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

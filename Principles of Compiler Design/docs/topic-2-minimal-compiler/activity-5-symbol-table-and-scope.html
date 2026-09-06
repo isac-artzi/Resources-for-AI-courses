@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Predict the Symbol Table · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 2 · Class activity 5 · Week 4 · Wednesday</p>
+    <h1>Predict the Symbol Table</h1>
+    <p class="lede">Write down what the table will hold before you run anything, grade your own error messages, and say why the parser could not have caught any of it.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 2</a> &nbsp;›&nbsp; Activity 5</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs</span><span><b>Time</b> 45 min</span></div>
+<h2>The point</h2>
+<p>Predict what the symbol table will contain before you look. Being able to do that reliably is the difference between debugging and guessing.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Predict.</b> For the program below, write down what the symbol table holds after each line: names, and the storage location each one gets.<pre><code class="lang-">int a;
+int b;
+int sum;
+a = 3;
+b = 4;
+sum = a + b;
+print(sum);</code></pre>
+</li><li><b>Check.</b> Compile without <code>-q</code>, find the symbol-table trace, and reconcile any differences.</li><li><b>Break it three ways</b>, predicting the message before each run:<ul><li><code>int a; int a;</code> — duplicate declaration</li><li><code>x = 1;</code> with no declaration of <code>x</code></li><li><code>print(y);</code> with no declaration of <code>y</code></li></ul>
+</li><li><b>Grade your own messages.</b> For each: does it give the LINE? name the IDENTIFIER? say what was EXPECTED? suggest a FIX? Rewrite any that score below three out of four.</li><li><b>Theory question.</b> Explain in two sentences why none of these three errors could have been caught by the parser, referring to what a context-free grammar can and cannot express.</li><li><b>Design question.</b> Our table is a flat array searched linearly. Sketch what changes if it becomes a hash table. Which functions change? Which do not? Why does that second answer matter more?</li></ol>
+<div class="deliverable"><h3>Deliverable</h3><p>Your predictions beside the actual traces; three improved error messages; your two-sentence answer to step 5; and a short answer to step 6. Steps 3–4 feed Lab Question 5 directly.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

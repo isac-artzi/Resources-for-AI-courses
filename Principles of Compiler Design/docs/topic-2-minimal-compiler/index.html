@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 2 — Compiler for a Starter Language · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 2 · Weeks 2–5</p>
+    <h1>Topic 2 — Compiler for a Starter Language</h1>
+    <p class="lede">A whole compiler, end to end, for the smallest language worth compiling.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; Topic 2</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="pipeline"><svg viewBox="0 0 1010 92" role="img" aria-label="The six phases of the compiler, left to right"><rect class="ph-box" x="6" y="20" width="148" height="44" rx="6"/><text class="ph-t" x="80" y="39" text-anchor="middle">1. Lexical</text><text class="ph-s" x="80" y="53" text-anchor="middle">chars → tokens</text><text class="ph-lbl" x="80" y="77" text-anchor="middle">scanner.l</text><path class="ph-arrow" d="M157 42 L173 42 M168 38 L173 42 L168 46"/><rect class="ph-box" x="176" y="20" width="148" height="44" rx="6"/><text class="ph-t" x="250" y="39" text-anchor="middle">2. Syntax</text><text class="ph-s" x="250" y="53" text-anchor="middle">tokens → AST</text><text class="ph-lbl" x="250" y="77" text-anchor="middle">parser.y</text><path class="ph-arrow" d="M327 42 L343 42 M338 38 L343 42 L338 46"/><rect class="ph-box" x="346" y="20" width="148" height="44" rx="6"/><text class="ph-t" x="420" y="39" text-anchor="middle">3. Semantic</text><text class="ph-s" x="420" y="53" text-anchor="middle">AST → checked AST</text><text class="ph-lbl" x="420" y="77" text-anchor="middle">semantic.c</text><path class="ph-arrow" d="M497 42 L513 42 M508 38 L513 42 L508 46"/><rect class="ph-box" x="516" y="20" width="148" height="44" rx="6"/><text class="ph-t" x="590" y="39" text-anchor="middle">4. IR</text><text class="ph-s" x="590" y="53" text-anchor="middle">AST → TAC</text><text class="ph-lbl" x="590" y="77" text-anchor="middle">tac.c</text><path class="ph-arrow" d="M667 42 L683 42 M678 38 L683 42 L678 46"/><rect class="ph-box" x="686" y="20" width="148" height="44" rx="6"/><text class="ph-t" x="760" y="39" text-anchor="middle">5. Optimize</text><text class="ph-s" x="760" y="53" text-anchor="middle">TAC → better TAC</text><text class="ph-lbl" x="760" y="77" text-anchor="middle">tac.c</text><path class="ph-arrow" d="M837 42 L853 42 M848 38 L853 42 L848 46"/><rect class="ph-box" x="856" y="20" width="148" height="44" rx="6"/><text class="ph-t" x="930" y="39" text-anchor="middle">6. CodeGen</text><text class="ph-s" x="930" y="53" text-anchor="middle">TAC → MIPS</text><text class="ph-lbl" x="930" y="77" text-anchor="middle">codegen.c</text></svg></div>
+<p><b>Weeks 2–5</b> &nbsp;·&nbsp; Sep 14 – Oct 11, 2026 &nbsp;·&nbsp; A whole compiler, end to end, for the smallest language worth compiling.</p>
+<h2>Start here</h2>
+<div class="grid"><div class="card"><h3><a class="title" href="lecture-notes.html">Lecture notes →</a></h3><p>Context-free grammars and the two families of parser; how attributes turn a parse into a translation; and what happens between a syntax tree and a running program.<br><br><b>The full theory for this topic</b>, with diagrams, worked examples and Dragon Book references. This page you are on is only an index.</p></div><div class="card"><h3><a class="title" href="https://github.com/isac-artzi/Resources-for-AI-courses/tree/main/Principles%20of%20Compiler%20Design/student/topic-2-minimal-compiler/">Your starter code</a></h3><p>The compiler you are extending this topic, with every TODO spelled out.<br><code>student/topic-2-minimal-compiler/</code></p></div><div class="card"><h3><a class="title" href="Topic-2-Project-2.docx">Assignment: Project 2 · Minimalist Language Compiler</a></h3><p>Full requirements and submission checklist. Due Oct 11, 2026.</p></div></div>
+<p>Stuck on the tools rather than the theory? The <a href="../toolchain.html">toolchain tutorials</a> cover make, Git and GitHub, flex and bison.</p>
+<h2>Class activities</h2>
+<p>One per class meeting. Ungraded — they exist so that the assignment is not the first time you meet the idea.</p>
+<div class="grid"><div class="card"><h3><a class="title" href="activity-1-derivations-and-ambiguity.html">Activity 1 — Derivations, Parse Trees, and Ambiguity</a></h3><p>Derive by hand, find two trees for one string, then fix it both of the ways the Dragon Book offers and argue for one.</p></div><div class="card"><h3><a class="title" href="activity-2-first-contact-with-bison.html">Activity 2 — First Contact with Bison</a></h3><p>One rule at a time, a deliberate conflict, and your first reading of parser.output — items, dots and all.</p></div><div class="card"><h3><a class="title" href="activity-3-parse-tree-vs-ast.html">Activity 3 — Parse Tree, Syntax Tree, and Attributes</a></h3><p>Draw both trees, count what you threw away, then annotate with attributes and check the arrows only point upward.</p></div><div class="card"><h3><a class="title" href="activity-4-build-the-tree.html">Activity 4 — Build the Tree, Then Print It</a></h3><p>Semantic actions as a syntax-directed definition, and a deliberate strdup bug that will save you a week.</p></div><div class="card"><h3><a class="title" href="activity-5-symbol-table-and-scope.html">Activity 5 — Predict the Symbol Table</a></h3><p>Write down what the table will hold before you run anything, grade your own error messages, and say why the parser could not have caught any of it.</p></div><div class="card"><h3><a class="title" href="activity-6-tac-by-hand.html">Activity 6 — Three-Address Code by Hand</a></h3><p>Translate a tree yourself, redraw it as quadruples, then make the compiler agree with you.</p></div><div class="card"><h3><a class="title" href="activity-7-first-running-program.html">Activity 7 — Your First Running Program</a></h3><p>Hand-write the MIPS, run it in SPIM, name the three code-generation decisions you just made, then make the compiler produce it.</p></div><div class="card"><h3><a class="title" href="activity-8-error-message-clinic.html">Activity 8 — Error Message Clinic</a></h3><p>Score your diagnostics out of four, classify your recovery strategy, rewrite the worst, and swap compilers.</p></div></div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

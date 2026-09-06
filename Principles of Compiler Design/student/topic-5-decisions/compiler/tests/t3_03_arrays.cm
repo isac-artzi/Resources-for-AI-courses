@@ -1,0 +1,12 @@
+/* Expected output: 30  100  60 */
+int shared[4];
+int sum3(int a[]) { return a[0] + a[1] + a[2]; }
+int main() {
+    int local[3];
+    shared[0] = 10; shared[1] = 20; shared[2] = 30; shared[3] = 40;
+    print(shared[2]);          /* 30  — global array element  */
+    print(sum3(shared) + 40);  /* 100 — array passed by reference */
+    local[0] = 10; local[1] = 20; local[2] = 30;
+    print(sum3(local));        /* 60  — same function, local array */
+    return 0;
+}

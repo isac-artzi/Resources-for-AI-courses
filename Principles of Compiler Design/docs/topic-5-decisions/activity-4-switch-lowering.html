@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>switch: Chain, Table, or Binary Search · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 5 · Class activity 4 · Week 13 · Friday</p>
+    <h1>switch: Chain, Table, or Binary Search</h1>
+    <p class="lede">Lower it by hand with fall-through, then cost all three strategies against four different case distributions.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 5</a> &nbsp;›&nbsp; Activity 4</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs</span><span><b>Time</b> 50 min</span></div>
+<h2>The point</h2>
+<p><code>switch</code> is the first construct where the obvious implementation and the fast one genuinely differ, and where the right answer depends on the input.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Lower this by hand</b> using dispatch-then-bodies. Get the fall-through right — case 2 has no break.<pre><code class="lang-">switch (x) {
+    case 1: print(10); break;
+    case 2: print(20);
+    case 3: print(30); break;
+    default: print(0);
+}</code></pre>
+</li><li><b>Hand-execute for x = 1, 2, 3, 9.</b> For x = 2, what prints? Two numbers. Be sure you can say why before implementing anything.</li><li><b>Design the jump-table version</b> on paper for the same switch. What goes in the table? What happens for a value outside the range? What happens if the cases were 1 and 5 with nothing between?</li><li><b>Cost all three strategies</b> against these four distributions, and say which you would choose for each:<ul><li>3 cases with values 1, 2, 3</li><li>3 cases with values 1, 1000, 50000</li><li>200 cases with values 1..200</li><li>200 cases scattered over 0..2,000,000</li></ul>
+</li><li><b>Implement the linear chain</b> and verify against your hand execution.</li><li><b>Add two semantic checks:</b> at most one <code>default</code>, and no duplicate case values. Test both, and write one sentence saying why neither could be a grammar rule.</li></ol>
+<div class="deliverable"><h3>Deliverable</h3><p>Your hand lowering; the four-value execution table with x = 2 explained; your jump-table design; the four costing decisions with reasons; a working implementation; and both semantic checks with their tests.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

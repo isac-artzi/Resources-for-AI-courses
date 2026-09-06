@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your First Running Program · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 2 · Class activity 7 · Week 5 · Wednesday</p>
+    <h1>Your First Running Program</h1>
+    <p class="lede">Hand-write the MIPS, run it in SPIM, name the three code-generation decisions you just made, then make the compiler produce it.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 2</a> &nbsp;›&nbsp; Activity 7</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs, at a laptop</span><span><b>Time</b> 55 min</span><span><b>Need</b> SPIM or QtSPIM installed</span></div>
+<h2>The point</h2>
+<p>Get one program all the way to a running executable. Nothing in this course feels real until that happens, and the three problems of code generation stop being a list the moment you have to solve them.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>By hand first.</b> Take three TAC instructions —<pre><code class="lang-">t0 = 2 + 3
+total = t0
+PRINT total</code></pre>
+— and write the MIPS yourself, assuming <code>total</code> lives at <code>0($sp)</code>. You need <code>li</code>, <code>add</code>, <code>sw</code>, <code>lw</code>, and two syscalls.</li><li><b>Assemble and run YOUR version.</b> Wrap it in a <code>.text / .globl main / main:</code> skeleton and run <code>spim -file yours.s</code>. Fix it until it prints 5.</li><li><b>Name the decisions you just made.</b> For each of Dragon's three problems — instruction selection, register allocation, evaluation order — write one sentence saying what you chose and what the alternative was.</li><li><b>Now implement the code generator</b> for those three TAC opcodes.</li><li><b>Diff.</b> Compare the compiler's output with your hand-written version. Where the compiler emitted more instructions, say why, and whether the extras are actually necessary.</li><li><b>Finish the phase</b> and run every test in <code>tests/</code>.</li></ol>
+<div class="note"><b>The two syscalls you need</b><pre><code class="lang-">    li   $v0, 1        # print integer, value in $a0
+    syscall
+
+    li   $v0, 10       # exit
+    syscall</code></pre>
+</div>
+<div class="deliverable"><h3>Deliverable</h3><p>Your hand-written <code>.s</code>, the compiler's, a screenshot of both running in SPIM, your three sentences from step 3, and your answer to step 5. This is Lab Questions 9 and 10.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

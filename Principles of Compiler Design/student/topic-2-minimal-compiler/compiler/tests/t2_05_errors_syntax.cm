@@ -1,0 +1,9 @@
+/* THIS PROGRAM IS SUPPOSED TO FAIL.
+ * A missing semicolon. The parser should say WHICH line and WHAT it expected,
+ * not just "syntax error".
+ * Expected: a syntax error reported at or near line 7. */
+int x;
+int y;
+x = 5
+y = 6;
+print(y);

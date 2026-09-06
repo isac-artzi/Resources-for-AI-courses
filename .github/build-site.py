@@ -57,7 +57,7 @@ def topic_of(path, title):
 
 
 def tutorials_dir(course):
-    for name in ("Tutorials", "tutorials"):
+    for name in ("Tutorials", "tutorials", "docs"):
         d = course / name
         if d.is_dir() and any(d.rglob("*.html")):
             return d
@@ -74,24 +74,35 @@ def collect():
         course_slug = slug(course.name)
         dest = OUT / course_slug
         pages = []
-        for f in sorted(src.rglob("*.html")):
+        for f in sorted(src.rglob("*")):
+            # copy everything the pages need: stylesheets, scripts, documents
+            if not f.is_file() or f.name == ".DS_Store":
+                continue
             rel = f.relative_to(src).as_posix()
             target = dest / rel
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(f, target)
-            if f.name.lower() != "index.html":
+            if f.suffix.lower() == ".html" and f.name.lower() != "index.html":
                 t = title_of(f)
                 pages.append({"n": topic_of(f, t), "kind": kind_of(f),
                               "subject": subject_of(t), "href": rel})
         topics = {}
         for p in pages:
             topics.setdefault(p["n"], []).append(p)
+        topics = dict(sorted(topics.items()))
+        subdirs = [d for d in sorted(src.iterdir())
+                   if d.is_dir() and (d / "index.html").is_file()]
+        if subdirs:
+            topic_titles = [subject_of(title_of(d / "index.html")) for d in subdirs]
+        else:
+            topic_titles = [max((q["subject"] for q in ps), key=len)
+                            for _, ps in topics.items()]
         courses.append({"name": course.name, "slug": course_slug,
-                        "topics": dict(sorted(topics.items())),
+                        "topics": topics, "topic_titles": topic_titles,
                         "own_index": (src / "index.html").is_file(),
                         "count": len(pages)})
         print(f"  {course.name} -> {course_slug}/ "
-              f"({len(topics)} topics, {len(pages)} pages"
+              f"({len(topic_titles)} topics, {len(pages)} pages"
               f"{', own index kept' if (src / 'index.html').is_file() else ''})")
     return courses
 
@@ -174,14 +185,11 @@ def landing(courses):
     e = html.escape
     blocks = []
     for c in courses:
-        rows = []
-        for n, pages in c["topics"].items():
-            subject = max((p["subject"] for p in pages), key=len)
-            rows.append(f"      <li>{e(subject)}</li>")
+        rows = [f"      <li>{e(s)}</li>" for s in c["topic_titles"]]
         blocks.append(
             f"""    <section class="course">
       <h2><a href="{e(c['slug'])}/">{e(c['name'])}</a></h2>
-      <p class="meta">{len(c['topics'])} topics · {c['count']} pages</p>
+      <p class="meta">{len(c['topic_titles'])} topics · {c['count']} pages</p>
       <ol>
 {chr(10).join(rows)}
       </ol>

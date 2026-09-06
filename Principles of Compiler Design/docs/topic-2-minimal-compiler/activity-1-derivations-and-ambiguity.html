@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Derivations, Parse Trees, and Ambiguity · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 2 · Class activity 1 · Week 2 · Wednesday</p>
+    <h1>Derivations, Parse Trees, and Ambiguity</h1>
+    <p class="lede">Derive by hand, find two trees for one string, then fix it both of the ways the Dragon Book offers and argue for one.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 2</a> &nbsp;›&nbsp; Activity 1</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs</span><span><b>Time</b> 45 min</span><span><b>Bring</b> paper</span></div>
+<h2>The point</h2>
+<p>Before touching bison, derive some sentences by hand. Ambiguity is easy to define and hard to recognize, and the only reliable way to recognize it is to have once found two trees for the same string yourself.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Derive.</b> Using the starter grammar, write a <i>leftmost</i> derivation for<pre><code class="lang-">int x;
+x = 1 + 2;</code></pre>
+Show every step: <code>program ⇒ stmt_list ⇒ …</code>. Then write the <i>rightmost</i> derivation of the same input and say which one a bottom-up parser would produce in reverse.</li><li><b>Draw the parse tree</b> for that derivation. Confirm that both derivations give the same tree — that is the point of §4.2.3.</li><li><b>Now the interesting one.</b> Take this fragment, with no precedence declarations:<pre><code class="lang-">expr -&gt; expr '+' expr | expr '*' expr | NUM</code></pre>
+Draw <b>two different parse trees</b> for <code>1 + 2 * 3</code>. Evaluate both. You should get two different numbers, and that is what ambiguity costs.</li><li><b>Fix it two ways.</b> (a) Rewrite the grammar into <code>expr → term → factor</code> layers. (b) Keep the ambiguous grammar and write the <code>%left</code> declarations. Write both out in full.</li><li><b>Check associativity.</b> Under your layered grammar, draw the tree for <code>17 - 5 - 3</code> and evaluate it. Then make the recursion right-recursive instead and redraw. Which is correct, and what does that tell you about the direction of recursion?</li><li><b>Argue.</b> Which fix would you ship, and why? Write the answer you actually believe, not the one you think is expected — Dragon §4.8 argues for the second and most textbooks teach the first.</li></ol>
+<details class="reveal"><summary>If you are stuck on step 6</summary><p>Layering is portable — it works with any parser generator and with a hand-written recursive-descent parser — and the grammar itself documents the precedence. Declarations are shorter, easier to change, and keep the grammar readable, but they are a yacc/bison feature and they put the precedence somewhere other than the rules. Both arguments are good. Pick one and mean it.</p>
+</details>
+<div class="deliverable"><h3>Deliverable</h3><p>Your worked pages — both derivations, three parse trees, both fixes, the associativity comparison — plus a paragraph answering step 6. This is most of Lab Question 3.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

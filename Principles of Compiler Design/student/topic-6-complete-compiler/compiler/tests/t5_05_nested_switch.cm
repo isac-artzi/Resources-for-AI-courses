@@ -1,0 +1,21 @@
+/* Expected output: 200  7 */
+int main() {
+    int outer; int inner; int i;
+    outer = 2; inner = 10;
+    switch (outer) {
+        case 1:
+            switch (inner) { case 10: print(100); break; default: print(0); break; }
+            break;
+        case 2:
+            switch (inner) { case 10: print(200); break; default: print(0); break; }
+            break;
+        default: print(0); break;
+    }
+    /* A break inside a switch must leave the SWITCH, not the enclosing loop. */
+    i = 0;
+    for (i = 0; i < 3; i = i + 1) {
+        switch (i) { case 0: break; default: break; }
+    }
+    print(i + 4);   /* the loop ran to completion: i = 3, so 7 */
+    return 0;
+}

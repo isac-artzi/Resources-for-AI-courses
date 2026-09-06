@@ -1,0 +1,12 @@
+/* Expected output: 5  12  17 */
+int counter;
+int limit;
+int bump(int n) { return n + 7; }
+int main() {
+    counter = 5;
+    print(counter);
+    limit = bump(counter);
+    print(limit);
+    print(counter + limit);
+    return 0;
+}

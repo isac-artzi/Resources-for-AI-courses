@@ -1,0 +1,11 @@
+/* Expected output: 1  0  1  0  1  0
+ * A comparison yields 1 or 0; there is no separate boolean type. */
+int main() {
+    print(3 < 5);
+    print(5 < 3);
+    print(4 <= 4);
+    print(4 > 9);
+    print(7 == 7);
+    print(7 != 7);
+    return 0;
+}

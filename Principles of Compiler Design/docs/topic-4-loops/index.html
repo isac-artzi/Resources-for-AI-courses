@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 4 — Compiling Loops · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 4 · Weeks 9–11</p>
+    <h1>Topic 4 — Compiling Loops</h1>
+    <p class="lede">Control flow becomes labels and jumps; then the optimizer earns its keep.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; Topic 4</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="pipeline"><svg viewBox="0 0 1010 92" role="img" aria-label="The six phases of the compiler, left to right"><rect class="ph-box" x="6" y="20" width="148" height="44" rx="6"/><text class="ph-t" x="80" y="39" text-anchor="middle">1. Lexical</text><text class="ph-s" x="80" y="53" text-anchor="middle">chars → tokens</text><text class="ph-lbl" x="80" y="77" text-anchor="middle">scanner.l</text><path class="ph-arrow" d="M157 42 L173 42 M168 38 L173 42 L168 46"/><rect class="ph-box" x="176" y="20" width="148" height="44" rx="6"/><text class="ph-t" x="250" y="39" text-anchor="middle">2. Syntax</text><text class="ph-s" x="250" y="53" text-anchor="middle">tokens → AST</text><text class="ph-lbl" x="250" y="77" text-anchor="middle">parser.y</text><path class="ph-arrow" d="M327 42 L343 42 M338 38 L343 42 L338 46"/><rect class="ph-box" x="346" y="20" width="148" height="44" rx="6"/><text class="ph-t" x="420" y="39" text-anchor="middle">3. Semantic</text><text class="ph-s" x="420" y="53" text-anchor="middle">AST → checked AST</text><text class="ph-lbl" x="420" y="77" text-anchor="middle">semantic.c</text><path class="ph-arrow" d="M497 42 L513 42 M508 38 L513 42 L508 46"/><rect class="ph-box" x="516" y="20" width="148" height="44" rx="6"/><text class="ph-t" x="590" y="39" text-anchor="middle">4. IR</text><text class="ph-s" x="590" y="53" text-anchor="middle">AST → TAC</text><text class="ph-lbl" x="590" y="77" text-anchor="middle">tac.c</text><path class="ph-arrow" d="M667 42 L683 42 M678 38 L683 42 L678 46"/><rect class="ph-box" x="686" y="20" width="148" height="44" rx="6"/><text class="ph-t" x="760" y="39" text-anchor="middle">5. Optimize</text><text class="ph-s" x="760" y="53" text-anchor="middle">TAC → better TAC</text><text class="ph-lbl" x="760" y="77" text-anchor="middle">tac.c</text><path class="ph-arrow" d="M837 42 L853 42 M848 38 L853 42 L848 46"/><rect class="ph-box" x="856" y="20" width="148" height="44" rx="6"/><text class="ph-t" x="930" y="39" text-anchor="middle">6. CodeGen</text><text class="ph-s" x="930" y="53" text-anchor="middle">TAC → MIPS</text><text class="ph-lbl" x="930" y="77" text-anchor="middle">codegen.c</text></svg></div>
+<p><b>Weeks 9–11</b> &nbsp;·&nbsp; Nov 2 – Nov 22, 2026 &nbsp;·&nbsp; Control flow becomes labels and jumps; then the optimizer earns its keep.</p>
+<h2>Start here</h2>
+<div class="grid"><div class="card"><h3><a class="title" href="lecture-notes.html">Lecture notes →</a></h3><p>Lowering structured statements to jumps; basic blocks and the flow graph; and the data-flow framework that makes optimization something you can reason about rather than guess at.<br><br><b>The full theory for this topic</b>, with diagrams, worked examples and Dragon Book references. This page you are on is only an index.</p></div><div class="card"><h3><a class="title" href="https://github.com/isac-artzi/Resources-for-AI-courses/tree/main/Principles%20of%20Compiler%20Design/student/topic-4-loops/">Your starter code</a></h3><p>The compiler you are extending this topic, with every TODO spelled out.<br><code>student/topic-4-loops/</code></p></div><div class="card"><h3><a class="title" href="Topic-4-Project-4.docx">Assignment: Project 4 · Loops and Optimization</a></h3><p>Full requirements and submission checklist. Due Nov 22, 2026.</p></div></div>
+<p>Stuck on the tools rather than the theory? The <a href="../toolchain.html">toolchain tutorials</a> cover make, Git and GitHub, flex and bison.</p>
+<h2>Class activities</h2>
+<p>One per class meeting. Ungraded — they exist so that the assignment is not the first time you meet the idea.</p>
+<div class="grid"><div class="card"><h3><a class="title" href="activity-1-lower-a-loop.html">Activity 1 — Lower a Loop, Then Draw Its Flow Graph</a></h3><p>Labels and jumps on paper, hand-execute it, find the basic blocks and the back edge, then move the test to the bottom and see what you built.</p></div><div class="card"><h3><a class="title" href="activity-2-for-vs-while.html">Activity 2 — for vs while — a Design Decision</a></h3><p>Lower directly or desugar? Write both, settle the degenerate cases, and let continue tell you which is riskier.</p></div><div class="card"><h3><a class="title" href="activity-3-break-and-continue.html">Activity 3 — break, and the continue You Are Not Implementing</a></h3><p>A label stack, a depth counter, and a two-sentence argument for why no grammar could have caught it.</p></div><div class="card"><h3><a class="title" href="activity-4-optimize-by-hand.html">Activity 4 — Optimize a Listing by Hand</a></h3><p>Pass by pass to a fixed point, naming every transformation, then break the label rule and meet the worst failure mode in compilers.</p></div><div class="card"><h3><a class="title" href="activity-5-measure-it.html">Activity 5 — Measure It, and Defend the Number</a></h3><p>Code size and work done are different numbers. Get both, repeat the run, and state a threshold you can justify.</p></div><div class="card"><h3><a class="title" href="activity-6-unrolling-and-strength-reduction.html">Activity 6 — Unrolling, Code Motion, Strength Reduction</a></h3><p>Three loop optimizations by hand — two you will not implement, and one you already have without noticing.</p></div></div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

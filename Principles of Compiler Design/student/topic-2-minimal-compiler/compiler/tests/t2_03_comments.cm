@@ -1,0 +1,8 @@
+/* Expected output: 42
+ * Comments are the scanner's business and nothing else's: by the time the
+ * parser runs they have already disappeared. */
+int answer;   // a line comment
+/* a block
+   comment spanning lines */
+answer = 40 + 2;
+print(answer);   /* trailing block comment */

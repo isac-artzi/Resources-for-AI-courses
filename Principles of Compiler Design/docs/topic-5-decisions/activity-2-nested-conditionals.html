@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lower Nested Conditionals · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 5 · Class activity 2 · Week 12 · Friday</p>
+    <h1>Lower Nested Conditionals</h1>
+    <p class="lede">Count the labels, draw the flow graph, execute all four cases, then remove one jump and see which cases still look fine.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 5</a> &nbsp;›&nbsp; Activity 2</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs</span><span><b>Time</b> 45 min</span><span><b>Bring</b> paper</span></div>
+<h2>The point</h2>
+<p>Lower nested conditionals by hand and count the labels. Nesting is where label generation goes wrong, and it goes wrong silently.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Lower this by hand</b> into TAC, generating labels as you go:<pre><code class="lang-">if (a &gt; 0) {
+    if (b &gt; 0) { print(1); } else { print(2); }
+} else {
+    print(3);
+}</code></pre>
+</li><li><b>Count the labels.</b> How many did you need? Write the general formula for <i>k</i> nested if-else statements.</li><li><b>Draw the flow graph.</b> Apply the leader rules from Topic 4 to your listing. How many basic blocks? How many paths from entry to exit?</li><li><b>Hand-execute all four combinations</b> of a and b being positive or not. Confirm each prints exactly one number.</li><li><b>Sabotage.</b> Remove the <code>goto after</code> at the end of the then-branch. Re-execute all four cases. Which now print TWO numbers, and which still look correct?</li><li><b>Implement</b> and confirm the compiler produces the same shape you did.</li><li><b>Break the label generator</b> — make it always return <code>L0</code>. What does the assembler say? Is that message enough to find the cause?</li></ol>
+<div class="note"><b>Why step 5 matters</b><p>The cases that still look correct are exactly the ones a hastily written test would cover. A missing else-jump is invisible whenever the condition is false, which is why this bug survives casual testing and turns up in somebody else's program.</p>
+</div>
+<div class="deliverable"><h3>Deliverable</h3><p>Your hand lowering; the label count and general formula; the flow graph with block and path counts; the four-case execution table; and which cases broke in step 5. Feeds Lab Question 26.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

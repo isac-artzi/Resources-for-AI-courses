@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Precedence and Associativity Lab · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 3 · Class activity 1 · Week 6 · Wednesday</p>
+    <h1>Precedence and Associativity Lab</h1>
+    <p class="lede">Six expressions, six trees, then break the precedence table and explain each change by the shape of the tree.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 3</a> &nbsp;›&nbsp; Activity 1</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs</span><span><b>Time</b> 40 min</span><span><b>Bring</b> paper</span></div>
+<h2>The point</h2>
+<p>Precedence and associativity are two separate decisions that people routinely conflate. Separate them by hand, then confirm against the machine.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Draw the syntax tree</b> for each of these, using the precedence table from the notes. Do not run anything yet.<pre><code class="lang-">2 + 3 * 4
+(2 + 3) * 4
+17 - 5 - 3
+-2 * 3
+2 * -3
+-8 / 2 / 2</code></pre>
+</li><li><b>Evaluate each tree</b> and write the number down.</li><li><b>Check</b> by compiling and running the three that differ most, then reconcile any disagreement.</li><li><b>Change associativity.</b> Make <code>+</code> and <code>-</code> <code>%right</code>. Predict which of your six expressions change value, then rebuild and check. Explain the result in terms of the shape of the tree.</li><li><b>Remove <code>%prec UMINUS</code></b> from the unary-minus rule. Predict what happens to <code>-8 / 2 / 2</code>, then check. Which precedence does the rule inherit without it?</li><li><b>Write the layered grammar</b> for <code>+</code>, <code>*</code> and <code>NUM</code> — <code>expr → term → factor</code> — and say which form you would ship in a compiler other people maintain.</li></ol>
+<div class="deliverable"><h3>Deliverable</h3><p>Six trees with their values, the results of experiments 4 and 5, and your layered grammar with a one-paragraph argument. Feeds Lab Question 3.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

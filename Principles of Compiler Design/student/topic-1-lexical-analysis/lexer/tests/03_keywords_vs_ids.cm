@@ -1,0 +1,5 @@
+/* Rule ORDER, isolated.
+ * `int` is a keyword; `integer`, `intx` and `printer` are identifiers, because
+ * longest match takes the whole word first and only then asks which rule.
+ * Expect: INT, then ID, ID, ID, PRINT, ID. */
+int integer intx printer print printing

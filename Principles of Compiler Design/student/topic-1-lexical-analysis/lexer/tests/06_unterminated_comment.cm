@@ -1,0 +1,8 @@
+/* THIS FILE IS SUPPOSED TO FAIL with exactly one error.
+ * The block comment below is never closed, so the scanner runs to end of
+ * file inside it.  Report that as an unterminated comment — silence here
+ * would swallow the rest of the program without a word. */
+int x;
+x = 1;
+/* this comment is never closed
+print(x);

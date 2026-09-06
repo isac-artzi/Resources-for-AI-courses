@@ -1,0 +1,8 @@
+// a line comment at the top
+int x;     // trailing line comment
+/* a block comment
+   spanning three
+   lines */
+x = 1;     /* inline */ print(x);
+/* Expect: 0 errors, and the line number on `x = 1;` must be 6.
+ * If it says 4, your scanner is not counting newlines inside comments. */

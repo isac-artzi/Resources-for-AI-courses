@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>for vs while — a Design Decision · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 4 · Class activity 2 · Week 9 · Friday</p>
+    <h1>for vs while — a Design Decision</h1>
+    <p class="lede">Lower directly or desugar? Write both, settle the degenerate cases, and let continue tell you which is riskier.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 4</a> &nbsp;›&nbsp; Activity 2</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs, at a laptop</span><span><b>Time</b> 50 min</span></div>
+<h2>The point</h2>
+<p><code>for</code> is a design decision, not a feature. Make it deliberately, and be able to defend it.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Two implementations, on paper.</b> (a) Lower <code>for</code> directly. (b) Desugar it in the parser into a <code>while</code> whose body is <code>{ B; U; }</code>, preceded by <code>I</code>. Write the TAC each produces for the same loop.</li><li><b>Compare the listings.</b> Identical? If not, which is shorter, and does the difference survive optimization?</li><li><b>Decide the degenerate cases before coding.</b> For each, is it a parse error or a legal program, and what does it mean?<pre><code class="lang-">for (; i &lt; 5; i = i + 1) ...     no initializer
+for (i = 0; ; i = i + 1) ...     no condition
+for (i = 0; i &lt; 5; ) ...         no update
+for (;;) ...                     nothing at all</code></pre>
+</li><li><b>Implement your choice</b>, then write a test exercising all four degenerate forms and confirm each behaves as you decided.</li><li><b>The continue question.</b> You are not implementing <code>continue</code>, but answer on paper: in a <code>while</code>, which label would it jump to? In a <code>for</code>? Why are those different, and what does that tell you about desugaring?</li><li><b>Argue.</b> Two sentences: which implementation would you ship, and what would change your mind?</li></ol>
+<details class="reveal"><summary>On step 5</summary><p>In a <code>while</code>, <code>continue</code> jumps to the top — the same label the back edge targets. In a <code>for</code> it must jump to the <i>update</i>, or the loop variable never advances and you have written an infinite loop. So a naive desugaring that discards the distinction between 'top of loop' and 'start of update' is correct until the day you add <code>continue</code> — which is a good argument for keeping two labels even if you desugar.</p>
+</details>
+<div class="deliverable"><h3>Deliverable</h3><p>Both TAC listings; your decision table for the four degenerate forms; a working implementation; your written answer on <code>continue</code>; and your two-sentence argument. Feeds Lab Question 18.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

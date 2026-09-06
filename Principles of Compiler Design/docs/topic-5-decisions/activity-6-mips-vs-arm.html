@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MIPS vs ARM — What Would Actually Change · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 5 · Class activity 6 · Week 14 · Friday</p>
+    <h1>MIPS vs ARM — What Would Actually Change</h1>
+    <p class="lede">Hand-translate one function, meet predication and condition flags, then mark every file in your compiler unchanged, edited, or rewritten.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 5</a> &nbsp;›&nbsp; Activity 6</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs</span><span><b>Time</b> 45 min</span></div>
+<h2>The point</h2>
+<p>Answer the retargeting question with evidence rather than a feeling. The useful comparison is about your own compiler's structure, not about instruction sets.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Take one function</b> from your own compiler's output — something with an <code>if</code> and a loop — and print the MIPS.</li><li><b>Hand-translate it to ARM.</b> You need the shape, not fluency. The mapping table in the lecture notes is enough.</li><li><b>Count.</b> Instructions in each version. Where did the counts differ, and why?</li><li><b>The interesting difference.</b> Rewrite <code>if (a &gt; 0) x = 1;</code> using <code>cmp</code> and a predicated <code>movgt</code>, with no branch at all. Compare against the MIPS version and say what the compiler would have to decide before it could do this automatically.</li><li><b>The condition-code difference.</b> Our IR produces a comparison <i>value</i>. ARM would rather have a comparison that sets <i>flags</i>. Which of Dragon's two translations of boolean expressions (§6.6) suits ARM better, and what would change in your TAC generator if you adopted it?</li><li><b>Now the real question.</b> Go file by file through your compiler and mark each <i>unchanged</i>, <i>small changes</i>, or <i>rewritten</i>. Then say in one sentence what that list tells you about why the compiler has an IR.</li><li><b>Within the back end</b>, list the specific functions that would change. Be precise — this is the answer to the objective.</li></ol>
+<details class="reveal"><summary>What step 6 should come out as</summary><p>Scanner, parser, AST, semantic analyzer and TAC generator: unchanged. Symbol table: unchanged in interface, possibly a different word size. Code generator: rewritten. Roughly 85% of the compiler is target-independent, and that is not an accident — it is what phase 4 exists to buy you, and it is the strongest single thing you can say about the architecture.</p>
+</details>
+<div class="deliverable"><h3>Deliverable</h3><p>Both listings with instruction counts; your predicated version and what the compiler would have to decide; your answer on flags versus values; the file-by-file table; and the list of back-end functions that would change.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

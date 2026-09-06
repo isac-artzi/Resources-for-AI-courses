@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tokenize by Hand, Then by Machine · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 1 · Class activity 1 · Wednesday</p>
+    <h1>Tokenize by Hand, Then by Machine</h1>
+    <p class="lede">Write the token stream yourself, then find out where you and the automaton disagree — and which rule explains each difference.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 1</a> &nbsp;›&nbsp; Activity 1</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs</span><span><b>Time</b> 35–45 min</span><span><b>Bring</b> laptop, one sheet of paper</span></div>
+<h2>The point</h2>
+<p>Before you let a tool tokenize for you, tokenize by hand. Every disagreement between your answer and the machine's is a rule you had not noticed you were assuming — usually longest match, first match, or a phase boundary.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>On paper, alone, five minutes.</b> Write the token stream for the line below. One token per line: kind, then the lexeme that matched. Do not run anything yet.<pre><code class="lang-">x=y&lt;=z*2;  // done!</code></pre>
+</li><li><b>Compare with your partner.</b> Where you differ, decide which of you is right and why <i>before</i> looking at any output. Write each disagreement down in one sentence.</li><li><b>Now run it.</b> Put that line in a file and run a scanner over it. On day one you have two options: your instructor will run the reference lexer on the projector, or — if you brought a working scanner forward from CST-301 — use yours:<pre><code class="lang-">cd student/topic-1-lexical-analysis/lexer
+make
+./lexer yourfile.cm</code></pre>
+</li><li><b>Account for every difference.</b> For each, name the rule that explains it: longest match, first match, or 'that is not the scanner's job'.</li><li><b>Then break it.</b> Add a line containing a character the language does not have — <code>x = y @ z;</code> — and confirm the error names the right line AND the right column. Count the columns by hand to check.</li></ol>
+<h2>Questions worth arguing about</h2>
+<ul><li>Is <code>// done!</code> a token? If not, what happened to it, and which phase would have to care if it were?</li><li>How many tokens is <code>&lt;=</code>? Which of the two conflict-resolution rules settles that, and could rule order change the answer?</li><li>The line has no spaces around <code>=</code>. Did that matter? Should it? What in the theory says so?</li></ul>
+<div class="deliverable"><h3>Deliverable</h3><p>One shared file, <code>activity1.md</code>, containing:</p>
+<ul><li>your two hand-written token streams, from before you ran anything;</li><li>the machine's output;</li><li>a numbered list of every disagreement, each with the one-sentence rule that explains it;</li><li>the error message from step 5, with the column verified by hand.</li></ul>
+<p>Bring it to the next class — you will need the token-kind list for Project 1.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

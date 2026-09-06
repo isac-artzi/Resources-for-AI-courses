@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audit Somebody Else's Compiler · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 5 · Class activity 5 · Week 14 · Wednesday</p>
+    <h1>Audit Somebody Else's Compiler</h1>
+    <p class="lede">Five adversarial programs each, rotate, diagnose by phase, fix one bug before you leave.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 5</a> &nbsp;›&nbsp; Activity 5</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> groups of three</span><span><b>Time</b> 50 min</span><span><b>Bring</b> a compiler you believe works</span></div>
+<h2>The point</h2>
+<p>Audit somebody else's compiler adversarially. The Topic 5 objective is literally <i>audit the correctness of the AST and semantic actions of the parser</i> — this is that, done to each other.</p>
+<h2>How to run it</h2>
+<ol class="steps"><li><b>Everyone writes five adversarial programs</b> — designed to break a compiler that was tested casually. Starting points:<ul><li>an <code>if</code> with an empty body, or a bare block as its body</li><li><code>if</code> inside a loop inside an <code>if</code></li><li>a <code>break</code> inside a switch inside a loop</li><li>a switch whose controlling expression is a function call</li><li>a case body containing a <code>return</code></li><li><code>if (a) if (b) X else Y</code> with all four truth combinations</li><li>a switch with no <code>default</code> and no matching case</li><li><code>2 &amp;&amp; 1</code>, and <code>!5</code></li></ul>
+</li><li><b>Write the expected output</b> for each, by hand, before running anything.</li><li><b>Rotate.</b> Run your five on both other compilers and record every disagreement.</li><li><b>Diagnose by phase.</b> For each failure, find the phase responsible. The AST dump is the fastest tool: if the tree is wrong, nothing downstream can be right, and the search is narrowed to two files.</li><li><b>Fix one bug each</b>, in your own compiler, before the session ends.</li></ol>
+<div class="note"><b>The one that catches almost everyone</b><p>A <code>return</code> inside a switch case. If the return does not jump to the function epilogue, control falls through into the next case body and the function returns whatever the <i>last</i> case says. It is invisible until somebody writes exactly that program — which is the point of an adversarial session.</p>
+</div>
+<div class="deliverable"><h3>Deliverable</h3><p>Your five programs with expected outputs; a table of which compilers failed which tests; and a one-paragraph diagnosis of the bug you fixed, naming the phase and the line.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

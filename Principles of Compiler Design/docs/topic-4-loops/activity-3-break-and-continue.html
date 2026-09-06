@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>break, and the continue You Are Not Implementing · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 4 · Class activity 3 · Week 10 · Wednesday</p>
+    <h1>break, and the continue You Are Not Implementing</h1>
+    <p class="lede">A label stack, a depth counter, and a two-sentence argument for why no grammar could have caught it.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 4</a> &nbsp;›&nbsp; Activity 3</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs</span><span><b>Time</b> 45 min</span></div>
+<h2>The point</h2>
+<p><code>break</code> is the first construct whose legality depends on context rather than on its own text. That makes it a small, concrete example of why phase 3 exists.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Predict the target</b> of each <code>break</code> below, then implement the label stack and check.<pre><code class="lang-">while (a) {
+    while (b) {
+        break;        &lt;- which loop does this leave?
+    }
+    break;            &lt;- and this one?
+}</code></pre>
+</li><li><b>Implement the semantic check.</b> A <code>break</code> outside any loop must be an error with a line number. Use a depth counter incremented around loop <i>bodies</i> only — and explain in one sentence why the condition is excluded.</li><li><b>Test the error</b> with a top-level <code>break;</code> and confirm the message names the line.</li><li><b>Argue from theory.</b> Write two sentences explaining why no context-free grammar could have caught this, referring to what the production for <code>break_stmt</code> can and cannot see.</li><li><b>Design labeled break.</b> Java has <code>break outer;</code>. What would that require of your label stack? Two sentences.</li></ol>
+<div class="deliverable"><h3>Deliverable</h3><p>Your predictions; a working <code>break</code> with a working error message; your two-sentence theory answer; and your design for labeled break.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

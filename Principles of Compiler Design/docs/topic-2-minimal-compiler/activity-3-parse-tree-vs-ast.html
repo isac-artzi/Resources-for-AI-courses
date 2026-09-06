@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parse Tree, Syntax Tree, and Attributes · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 2 · Class activity 3 · Week 3 · Wednesday</p>
+    <h1>Parse Tree, Syntax Tree, and Attributes</h1>
+    <p class="lede">Draw both trees, count what you threw away, then annotate with attributes and check the arrows only point upward.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 2</a> &nbsp;›&nbsp; Activity 3</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> individual, then compare</span><span><b>Time</b> 40 min</span></div>
+<h2>The point</h2>
+<p>You are about to design a data structure that five later phases must live with. Design it on paper first, and be deliberate about what you throw away.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Draw the parse tree AND the syntax tree</b> for<pre><code class="lang-">int a;
+int b;
+a = 1 + 2;
+b = a + a;
+print(b);</code></pre>
+</li><li><b>Count the nodes in each</b> and write both numbers down.</li><li><b>For every node in the parse tree that is NOT in the syntax tree</b>, say in one phrase what it was for and why no later phase needs it. Group them: punctuation, single-child chains, and anything else.</li><li><b>Attributes.</b> Annotate your syntax tree with a <code>val</code> attribute wherever it can be computed, and draw an arrow for each attribute dependency. Are any of your arrows pointing <i>downward</i>? If not, your definition is S-attributed — say what that buys you.</li><li><b>Design decision.</b> Our <code>NODE_STMT_LIST</code> holds two children — a statement and 'the rest'. The alternative is one node holding an array of statements. Sketch both for the five-statement program above.</li><li><b>Argue it.</b> Which is easier to build in a bison action? Which is easier to <i>walk</i> in <code>generateTAC</code>? They are not the same answer, and noticing that is the point of the exercise.</li></ol>
+<details class="reveal"><summary>A nudge on step 6</summary><p>A left-recursive rule reduces one statement at a time, so the action naturally builds a linked structure — an array version has to grow and copy. But walking a list-of-lists means every visitor needs a special case for 'this child is itself a list', and forgetting it is exactly the bug that makes a compiler silently skip statements. Look at how the given code handles it in <code>checkStmtList</code>.</p>
+</details>
+<div class="deliverable"><h3>Deliverable</h3><p>Both trees, both node counts, your grouped list from step 3, the annotated tree from step 4, and a paragraph on step 6. This is Lab Question 6 nearly verbatim.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

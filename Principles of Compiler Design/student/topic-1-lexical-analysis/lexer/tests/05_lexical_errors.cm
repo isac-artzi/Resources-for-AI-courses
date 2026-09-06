@@ -1,0 +1,7 @@
+/* THIS FILE IS SUPPOSED TO FAIL — with FOUR errors, not one.
+ * A scanner that stops at the first bad character makes the programmer
+ * recompile once per typo. */
+int x;
+x = 5 @ 3;        // @ is not in the language
+int y$z;          // $ is not allowed in identifiers
+print('c');       // no character literals in this language

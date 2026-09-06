@@ -1,0 +1,13 @@
+/* Expected output: 1  0  1  1  0  1  111 */
+int main() {
+    int x; int y;
+    x = 5; y = 0;
+    print(x > 0 && x < 10);
+    print(x > 0 && y > 0);
+    print(x > 0 || y > 0);
+    print(!y);
+    print(!x);
+    print(!(x < 0));
+    if (x > 3 && !y) { print(111); } else { print(222); }
+    return 0;
+}

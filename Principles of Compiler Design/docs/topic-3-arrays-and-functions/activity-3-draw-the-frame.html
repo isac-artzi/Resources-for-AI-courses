@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Draw the Activation Record · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 3 · Class activity 3 · Week 7 · Wednesday</p>
+    <h1>Draw the Activation Record</h1>
+    <p class="lede">Predict the frame, compare it with Dragon's general form, check it against the generated assembly, then sabotage the epilogue.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 3</a> &nbsp;›&nbsp; Activity 3</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs</span><span><b>Time</b> 50 min</span></div>
+<h2>The point</h2>
+<p>Draw the activation record you expect, then hold the generated assembly against it. This is the activity that makes function calls stop being magic.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Draw the frame</b> you expect for<pre><code class="lang-">int addUp(int a, int b) {
+    int t;
+    t = a + b;
+    return t;
+}</code></pre>
+Label every slot with its offset and give the total size. Compare your drawing against the general activation record in the notes: which of Dragon's fields does yours have, and which does it omit? For each omission, say why this language does not need it.</li><li><b>Compile it</b> without <code>-q</code>, find the reported frame size and symbol table, and reconcile.</li><li><b>Read the prologue and epilogue</b> and account for every instruction. There should be no line you cannot explain.</li><li><b>Sabotage the epilogue.</b> Comment out the <code>lw $ra</code> restore. Predict where control goes, then run it.</li><li><b>Sabotage differently.</b> Restore that, and make <code>return</code> fall through instead of jumping to the epilogue. Test with a function having a <code>return</code> in the middle. Explain the result.</li><li><b>Draw the stack at maximum depth</b> for <code>fact(3)</code>. How many frames? What is in each <code>$ra</code> slot? Confirm against the activation tree idea from the notes.</li></ol>
+<div class="deliverable"><h3>Deliverable</h3><p>Your predicted frame beside the compiler's, with the omitted-field analysis; an annotated prologue and epilogue; a paragraph for each sabotage; and the <code>fact(3)</code> stack diagram.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arrays Are Address Arithmetic · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 3 · Class activity 2 · Week 6 · Friday</p>
+    <h1>Arrays Are Address Arithmetic</h1>
+    <p class="lede">base + i×w by hand, the two-dimensional generalization, then three different answers to where the base comes from.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 3</a> &nbsp;›&nbsp; Activity 2</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs, at a laptop</span><span><b>Time</b> 50 min</span></div>
+<h2>The point</h2>
+<p>Do the address arithmetic by hand before making the compiler do it. Off-by-four is very cheap to make and very expensive to find in generated assembly.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>On paper.</b> <code>int a[5];</code> sits at offset 12 in the frame. Write the byte address of <code>a[0]</code>, <code>a[3]</code> and <code>a[i]</code>. Then write the MIPS to load <code>a[i]</code> into <code>$t4</code>, with <code>i</code> in <code>$t2</code>.</li><li><b>Two dimensions, on paper only.</b> For <code>int m[3][4]</code> in row-major order, write the address of <code>m[i][j]</code>. Which of the two bounds does the formula need? Now explain why C requires <code>int m[][4]</code> and not <code>int m[][]</code> in a parameter list.</li><li><b>Why <code>sll $t, $t, 2</code> and not <code>mul $t, $t, 4</code>?</b> Both are correct. Name the optimization this is an instance of, and check whether SPIM's instruction count agrees with your reasoning.</li><li><b>Implement</b> array declaration, indexing, and the load/store cases in the back end.</li><li><b>Test a local array first, then a global one.</b> They take different paths to the base address; read the generated <code>.s</code> and confirm you can see which path each took.</li><li><b>Break it deliberately.</b> Read <code>a[99]</code> from a five-element array. Nothing stops you — there is no bounds check. What memory did you just read? Would adding a bounds check be a phase-3 or a phase-6 change, and what would it cost?</li></ol>
+<div class="note"><b>Global arrays and .align</b><p><code>.asciiz</code> leaves the assembler's location counter on an odd byte. Without <code>.align 2</code> before the next <code>.space</code>, every <code>lw</code> on that array raises an address-error exception in SPIM — and the message does not point at the cause. This is the alignment issue from §1 of the notes, made concrete.</p>
+</div>
+<div class="deliverable"><h3>Deliverable</h3><p>Your hand-written address arithmetic and MIPS; the two-dimensional formula with the C parameter explanation; your answer on strength reduction; a working array test; and a paragraph on step 6. Feeds Lab Question 14.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+/* Expected output: 2
+ * THE test for dangling-else. With `else` bound to the INNER if (correct),
+ * y=0 fails the inner test and prints 2.  If your parser binds it to the
+ * OUTER if, nothing prints at all. */
+int main() {
+    int x; int y;
+    x = 1; y = 0;
+    if (x > 0) if (y > 0) print(1); else print(2);
+    return 0;
+}

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Short-Circuit or Not — Decide It · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 5 · Class activity 3 · Week 13 · Wednesday</p>
+    <h1>Short-Circuit or Not — Decide It</h1>
+    <p class="lede">Both of Dragon's translations, a truth table, the bitwise-and trap, and a measurement.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 5</a> &nbsp;›&nbsp; Activity 3</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs</span><span><b>Time</b> 50 min</span></div>
+<h2>The point</h2>
+<p>Short-circuit evaluation is a language-design decision most people inherit without noticing. Make it consciously, and measure what it costs.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Write both lowerings on paper</b> for <code>A &amp;&amp; B</code> — the numeric one and the flow-of-control one from Dragon §6.6. Count instructions in each listing, and count how many <i>execute</i> when A is false.</li><li><b>Implement the eager version</b> and confirm the truth table:<pre><code class="lang-">print(1 &amp;&amp; 1);  print(1 &amp;&amp; 0);  print(0 &amp;&amp; 1);  print(0 &amp;&amp; 0);
+print(1 || 0);  print(0 || 0);  print(!0);  print(!5);</code></pre>
+</li><li><b>Test the trap.</b> <code>print(2 &amp;&amp; 1);</code> must print 1. If it prints 0, fix it and explain the fix in one sentence naming the instruction you added.</li><li><b>Measure.</b> Write a loop evaluating <code>i &gt; 100 &amp;&amp; i &lt; 200</code> ten thousand times with <code>i</code> always 5. Record SPIM's instruction count. How many of those instructions were spent evaluating an operand whose value could not matter?</li><li><b>Decide.</b> Would you implement short-circuiting? Under what change to the language does it stop being optional? Two sentences.</li></ol>
+<details class="reveal"><summary>The answer to the second half of step 5</summary><p>The moment expressions can have side effects. Your language already allows function calls in expressions, so <code>n != 0 &amp;&amp; safeDivide(x, n)</code> is a program whose correctness depends on the answer. At that point short-circuiting is not an optimization — it is part of what the operator means, which is why C specifies it in the standard rather than leaving it to implementations.</p>
+</details>
+<div class="deliverable"><h3>Deliverable</h3><p>Both lowerings with instruction counts; your eight truth-table results; the one-sentence fix for step 3; your measurement; and your two-sentence decision. Feeds Lab Question 24.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

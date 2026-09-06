@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Toolchain · Principles of Compiler Design</title>
+<link rel="stylesheet" href="assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Reference</p>
+    <h1>The Toolchain</h1>
+    <p class="lede">make, Git and GitHub, flex, and bison — the four tools this course runs on, and the handful of things about each that actually cause trouble.</p>
+    <nav class="crumbs"><a href="index.html">All topics</a> &nbsp;›&nbsp; The toolchain</nav>
+  </div>
+</header>
+<main class="wrap">
+<p>Four tools, none of which is compiler theory, all of which will cost you time if you learn them by trial and error. Each tab below is self-contained; link straight to one with <code>#make</code>, <code>#git</code>, <code>#flex</code> or <code>#bison</code> on the end of this page's address.</p>
+<div class="note"><b>Check your toolchain first</b><pre><code class="lang-">flex --version &amp;&amp; bison --version &amp;&amp; gcc --version &amp;&amp; make --version &amp;&amp; which spim</code></pre>
+<p>Project 1 asks for evidence that these are installed and working, so run this in week 1. Anything missing is far easier to fix now than the night before a deadline.</p>
+</div>
+<div class="tabs"><div class="tabbar" role="tablist"><button role="tab" aria-selected="false" data-tab="make">make</button><button role="tab" aria-selected="false" data-tab="git">Git &amp; GitHub</button><button role="tab" aria-selected="false" data-tab="flex">flex</button><button role="tab" aria-selected="false" data-tab="bison">bison</button></div><div class="panel" hidden><h3>What make is for</h3>
+<p>Your compiler is nine source files that produce eight intermediate files and one executable. Rebuilding all of it after changing one line is slow and, worse, it is the kind of slow that makes you stop rebuilding. <code>make</code> reads a description of what depends on what, compares timestamps, and re-runs only the commands whose inputs have changed.</p>
+<figure class="dia"><svg viewBox="0 0 664 322" role="img" style="max-width:664px" aria-label="The dependency graph make builds from your Makefile. Change ast.c and only ast.o and the final link re-run. Change parser.y and almost everything does — because parser.tab.h defines the token numbers "><rect class="d-box alt" x="14" y="14" width="108" height="26" rx="4"/><text class="d-lbl" x="68" y="32" text-anchor="middle">scanner.l</text><rect class="d-box alt" x="150" y="14" width="108" height="26" rx="4"/><text class="d-lbl" x="204" y="32" text-anchor="middle">parser.y</text><rect class="d-box alt" x="430" y="14" width="108" height="26" rx="4"/><text class="d-lbl" x="484" y="32" text-anchor="middle">main.c</text><rect class="d-box alt" x="546" y="14" width="108" height="26" rx="4"/><text class="d-lbl" x="600" y="32" text-anchor="middle">ast.c</text><rect class="d-box" x="14" y="84" width="108" height="26" rx="4"/><text class="d-lbl" x="68" y="102" text-anchor="middle">lex.yy.c</text><rect class="d-box" x="150" y="84" width="108" height="26" rx="4"/><text class="d-lbl" x="204" y="102" text-anchor="middle">parser.tab.c</text><rect class="d-box on" x="286" y="84" width="108" height="26" rx="4"/><text class="d-lbl" x="340" y="102" text-anchor="middle">parser.tab.h</text><rect class="d-box" x="14" y="192" width="108" height="26" rx="4"/><text class="d-lbl" x="68" y="210" text-anchor="middle">lex.yy.o</text><rect class="d-box" x="150" y="192" width="108" height="26" rx="4"/><text class="d-lbl" x="204" y="210" text-anchor="middle">parser.tab.o</text><rect class="d-box" x="430" y="192" width="108" height="26" rx="4"/><text class="d-lbl" x="484" y="210" text-anchor="middle">main.o</text><rect class="d-box" x="546" y="192" width="108" height="26" rx="4"/><text class="d-lbl" x="600" y="210" text-anchor="middle">ast.o</text><rect class="d-box on" x="230" y="262" width="108" height="26" rx="4"/><text class="d-lbl" x="284" y="280" text-anchor="middle">minicompiler</text><path class="d-line" d="M68 40 L68 82"/><path class="d-line" d="M64 77 L68 82 L72 77"/><path class="d-line" d="M204 40 L204 82"/><path class="d-line" d="M200 77 L204 82 L208 77"/><path class="d-line" d="M68 110 L68 190"/><path class="d-line" d="M64 185 L68 190 L72 185"/><path class="d-line" d="M204 110 L204 190"/><path class="d-line" d="M200 185 L204 190 L208 185"/><path class="d-line" d="M484 40 L484 190"/><path class="d-line" d="M480 185 L484 190 L488 185"/><path class="d-line" d="M600 40 L600 190"/><path class="d-line" d="M596 185 L600 190 L604 185"/><path class="d-line" d="M232 40 Q300 40 340 80"/><path class="d-line" d="M336 77 L340 82 L344 77"/><path class="d-dash" d="M340 110 L340 140 L40 140 L40 114"/><path class="d-line" d="M36 119 L40 114 L44 119"/><text class="d-s2" x="62" y="158">the scanner compiles against this, so it must exist first</text><path class="d-line" d="M68 218 L284 260"/><path class="d-line" d="M204 218 L284 260"/><path class="d-line" d="M484 218 L284 260"/><path class="d-line" d="M600 218 L284 260"/><text class="d-s2" x="14" y="310">make walks this graph and rebuilds only what is older than its inputs.</text></svg><figcaption><b>The dependency graph <code>make</code> builds from your Makefile.</b> Change <code>ast.c</code> and only <code>ast.o</code> and the final link re-run. Change <code>parser.y</code> and almost everything does &mdash; because <code>parser.tab.h</code> defines the token numbers the scanner compiles against. That dashed edge is the one people forget, and the one that produces the strangest errors.</figcaption></figure>
+<h3>The anatomy of a rule</h3>
+<pre><code class="lang-">target : prerequisites
+&lt;TAB&gt;recipe</code></pre>
+<p>Three parts. The <b>target</b> is a file to be produced. The <b>prerequisites</b> are the files it is made from. The <b>recipe</b> is the shell command that makes it. <code>make</code> runs the recipe when the target is missing, or when any prerequisite is newer than the target.</p>
+<pre><code class="lang-">ast.o : ast.c ast.h
+	gcc -g -Wall -c ast.c</code></pre>
+<div class="warn"><b>The recipe line must begin with a TAB</b><p>Not spaces. This is the single most common Makefile error and the message is unhelpful:</p>
+<pre><code class="lang-">Makefile:12: *** missing separator.  Stop.</code></pre>
+<p>If you see that, line 12 begins with spaces. Most editors can be told to keep real tabs in Makefiles; if yours converts silently, check with <code>cat -A Makefile</code> — a real tab shows as <code>^I</code>.</p>
+</div>
+<h3>Variables</h3>
+<pre><code class="lang-">CC     = gcc
+CFLAGS = -g -Wall
+OBJS   = lex.yy.o parser.tab.o main.o ast.o symtab.o semantic.o codegen.o tac.o
+
+minicompiler : $(OBJS)
+	$(CC) $(CFLAGS) -o minicompiler $(OBJS)</code></pre>
+<p>Defined with <code>=</code>, used with <code>$(NAME)</code>. Worth doing for anything repeated: changing <code>CFLAGS</code> in one place then applies to every compile.</p>
+<h4>Automatic variables</h4>
+<p>Inside a recipe, <code>make</code> defines several variables for you. Three are worth knowing:</p>
+<div class="tablewrap"><table><thead><tr><th>Variable</th><th>Means</th><th>In &lt;code&gt;ast.o : ast.c ast.h&lt;/code&gt;</th></tr></thead><tbody><tr><td><code>$@</code></td><td>the target</td><td><code>ast.o</code></td></tr><tr><td><code>$&lt;</code></td><td>the <i>first</i> prerequisite</td><td><code>ast.c</code></td></tr><tr><td><code>$^</code></td><td><i>all</i> prerequisites</td><td><code>ast.c ast.h</code></td></tr></tbody></table></div>
+<pre><code class="lang-">ast.o : ast.c ast.h
+	$(CC) $(CFLAGS) -c $&lt; -o $@</code></pre>
+<h3>Pattern rules</h3>
+<p>One rule for a whole class of files. <code>%</code> matches any stem:</p>
+<pre><code class="lang-">%.o : %.c
+	$(CC) $(CFLAGS) -c $&lt; -o $@</code></pre>
+<p>That single rule builds every <code>.o</code> from its <code>.c</code>. You still add specific rules to declare <i>extra</i> prerequisites — header files, mostly — and the two combine:</p>
+<pre><code class="lang-">semantic.o : semantic.c semantic.h ast.h symtab.h trace.h</code></pre>
+<p>Note there is no recipe on that line: it adds prerequisites to the target, and the pattern rule supplies the command. Getting the header dependencies right is what makes <code>make</code> rebuild correctly after you edit an <code>.h</code> file — and getting them wrong produces the maddening bug where the build succeeds but the binary behaves as though your change never happened.</p>
+<h3>Phony targets</h3>
+<p>Some targets are not files. <code>clean</code> never produces a file called <code>clean</code>, so if a file by that name ever appeared, <code>make clean</code> would decide there was nothing to do. Declaring it phony prevents that:</p>
+<pre><code class="lang-">clean :
+	rm -f $(TARGET) $(OBJS) lex.yy.c parser.tab.c parser.tab.h
+
+.PHONY : all clean test</code></pre>
+<h3>The course Makefile, line by line</h3>
+<p>Here is what your compiler's Makefile is actually saying:</p>
+<pre><code class="lang-">CC     = gcc                     <span class="cm"># the compiler to use</span>
+LEX    = flex
+YACC   = bison
+CFLAGS = -g -Wall                <span class="cm"># debug symbols, and all warnings</span>
+
+TARGET = minicompiler
+OBJS   = lex.yy.o parser.tab.o main.o ast.o symtab.o semantic.o codegen.o tac.o
+
+all : $(TARGET)                  <span class="cm"># the DEFAULT target — first in the file</span>
+
+$(TARGET) : $(OBJS)              <span class="cm"># link everything into the executable</span>
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
+
+<span class="hi">lex.yy.c : scanner.l parser.tab.h   <span class="cm"># NOTE the second prerequisite</span></span>
+	$(LEX) scanner.l
+
+parser.tab.c parser.tab.h : parser.y
+	$(YACC) -d parser.y</code></pre>
+<div class="key"><b>The one non-obvious dependency</b><p><code>lex.yy.c</code> depends on <code>parser.tab.h</code> as well as on <code>scanner.l</code>. The scanner returns token <i>numbers</i>, and those numbers are assigned by bison and written into the header. Without that prerequisite, a clean build can run flex before bison, and you get a wall of errors about <code>INT</code> and <code>PRINT</code> being undeclared — in a file you did not write. Delete the prerequisite and run <code>make clean &amp;&amp; make -j4</code> to see it happen.</p>
+</div>
+<h3>Errors, and what they mean</h3>
+<div class="tablewrap"><table><thead><tr><th>Message</th><th>Cause</th></tr></thead><tbody><tr><td><code>*** missing separator</code></td><td>a recipe line starts with spaces, not a tab</td></tr><tr><td><code>Nothing to be done for 'all'</code></td><td>everything is up to date — usually correct; force a rebuild with <code>make -B</code></td></tr><tr><td><code>No rule to make target 'x.o'</code></td><td>a prerequisite has no rule and no file — usually a typo in a filename</td></tr><tr><td><code>Circular dependency dropped</code></td><td>two targets list each other as prerequisites</td></tr><tr><td>builds fine but behaves as though your edit was ignored</td><td>a missing header dependency — the <code>.o</code> looked newer than its <code>.c</code> and was not rebuilt</td></tr></tbody></table></div>
+<h3>Flags worth knowing</h3>
+<pre><code class="lang-">make            <span class="cm"># build the first target</span>
+make test       <span class="cm"># build and run a named target</span>
+make clean      <span class="cm"># delete what make produced</span>
+make -n         <span class="cm"># DRY RUN: print the commands without running them</span>
+make -B         <span class="cm"># rebuild everything, ignoring timestamps</span>
+make -j4        <span class="cm"># run four recipes at once — exposes missing dependencies</span>
+make -d         <span class="cm"># explain every decision (very verbose)</span></code></pre>
+<p><code>make -n</code> is the one to reach for when a build does something you did not expect: it shows exactly which commands would run, in order, without running them.</p>
+<details class="reveal"><summary>A useful habit: always test with make -j</summary><p>Parallel builds only work if your dependency graph is complete. If <code>make -j4</code> fails intermittently but <code>make</code> always succeeds, you have a missing prerequisite that serial builds hide by luck of ordering. Finding it now is much easier than finding it the night before a deadline on a teammate's machine.</p>
+</details>
+<div class="quiz"><p class="q">You edit <code>ast.h</code>, run <code>make</code>, and the compiler behaves exactly as before. What is most likely wrong?</p><button class="opt" data-correct="0" data-feedback="make has no cache — it compares file timestamps, nothing more.">make is caching the old build</button><button class="opt" data-correct="1" data-feedback="So &lt;code&gt;ast.o&lt;/code&gt; still looks newer than &lt;code&gt;ast.c&lt;/code&gt; and is not rebuilt. Header dependencies must be declared explicitly, which is why the course Makefile lists them per object file. &lt;code&gt;make clean&lt;/code&gt; works around it; adding the prerequisite fixes it.">The rule for <code>ast.o</code> does not list <code>ast.h</code> as a prerequisite</button><button class="opt" data-correct="0" data-feedback="That defeats the purpose of make. It is a workaround for the real problem.">You need to run <code>make clean</code> every time</button><button class="opt" data-correct="0" data-feedback="True — but their contents are pasted into the &lt;code&gt;.c&lt;/code&gt; files that include them, so a change to a header does require recompiling those.">Header files are never compiled</button><p class="fb"></p></div>
+</div><div class="panel" hidden><h3>The mental model</h3>
+<p>Git confuses people because four different places hold your work, and most commands move things between two of them. Learn the four and most of the confusion goes away.</p>
+<figure class="dia"><svg viewBox="0 0 640 108" role="img" style="max-width:640px" aria-label="The four places your work can be. Nearly every confusing thing Git does makes sense once you know which of these you are talking about. git status tells you where everything currently is, and it is th"><rect class="d-box alt" x="6" y="30" width="112" height="50" rx="5"/><text class="d-t" x="62" y="52" text-anchor="middle">working tree</text><text class="d-s2" x="62" y="68" text-anchor="middle">the files you edit</text><rect class="d-box" x="176" y="30" width="112" height="50" rx="5"/><text class="d-t" x="232" y="52" text-anchor="middle">staging area</text><text class="d-s2" x="232" y="68" text-anchor="middle">the next commit</text><rect class="d-box" x="346" y="30" width="112" height="50" rx="5"/><text class="d-t" x="402" y="52" text-anchor="middle">local repo</text><text class="d-s2" x="402" y="68" text-anchor="middle">your history</text><rect class="d-box on" x="516" y="30" width="112" height="50" rx="5"/><text class="d-t" x="572" y="52" text-anchor="middle">GitHub</text><text class="d-s2" x="572" y="68" text-anchor="middle">the shared copy</text><path class="d-line hot" d="M118 46 L176 46 M171 42 L176 46 L171 50"/><text class="d-edge" x="147" y="24" text-anchor="middle">git add</text><path class="d-line hot" d="M288 46 L346 46 M341 42 L346 46 L341 50"/><text class="d-edge" x="317" y="24" text-anchor="middle">git commit</text><path class="d-line hot" d="M458 46 L516 46 M511 42 L516 46 L511 50"/><text class="d-edge" x="487" y="24" text-anchor="middle">git push</text><path class="d-line" d="M176 66 L118 66 M123 62 L118 66 L123 70"/><text class="d-edge" x="147" y="98" text-anchor="middle">git restore --staged</text><path class="d-line" d="M346 66 L288 66 M293 62 L288 66 L293 70"/><text class="d-edge" x="317" y="98" text-anchor="middle">git reset HEAD~1</text><path class="d-line" d="M516 66 L458 66 M463 62 L458 66 L463 70"/><text class="d-edge" x="487" y="98" text-anchor="middle">git pull</text></svg><figcaption><b>The four places your work can be.</b> Nearly every confusing thing Git does makes sense once you know which of these you are talking about. <code>git status</code> tells you where everything currently is, and it is the right answer to almost any 'what is going on' moment.</figcaption></figure>
+<p><code>git status</code> reports where everything currently sits. When something is confusing, run it first — it is the single most useful command in Git, and it usually suggests the command you want next.</p>
+<h3>First-time setup</h3>
+<pre><code class="lang-">git config --global user.name  "Your Name"
+git config --global user.email "you@example.com"
+git config --global init.defaultBranch main</code></pre>
+<p>The name and email are stamped into every commit you make, permanently. Set them before your first commit rather than after.</p>
+<h3>The daily loop</h3>
+<pre><code class="lang-">git status                    <span class="cm"># what has changed?</span>
+git add ast.c ast.h           <span class="cm"># stage specific files</span>
+git add -A                    <span class="cm"># or stage everything, including deletions</span>
+git commit -m "add createBinOp and wire it into the grammar"
+git push                      <span class="cm"># send commits to GitHub</span>
+
+git pull                      <span class="cm"># get teammates' commits before you start work</span>
+git log --oneline -10         <span class="cm"># recent history</span>
+git diff                      <span class="cm"># what have I changed but not staged?</span>
+git diff --cached             <span class="cm"># what is staged and about to be committed?</span></code></pre>
+<div class="key"><b>Pull before you start, push when you finish</b><p>Most merge pain on a team project comes from working for three days on a stale copy. Pulling at the start of each session costs nothing and prevents nearly all of it.</p>
+</div>
+<h3>What must never be committed</h3>
+<p>Build artifacts. They are large, they change on every build, and they conflict constantly because everyone's differ. In this course that means:</p>
+<pre><code class="lang-">*.o                 <span class="cm"># object files</span>
+minicompiler        <span class="cm"># the executable</span>
+lexer
+lex.yy.c            <span class="cm"># generated by flex — regenerate, do not store</span>
+parser.tab.c        <span class="cm"># generated by bison</span>
+parser.tab.h
+parser.output
+*.s                 <span class="cm"># assembly your compiler emitted while testing</span>
+*.tac
+.DS_Store</code></pre>
+<p>Put those in a file named <code>.gitignore</code> at the top of the repository and commit <i>that</i>. One is provided in your starter code.</p>
+<div class="warn"><b>Ignoring a file does not untrack it</b><p><code>.gitignore</code> only affects files Git is not already tracking. If you committed <code>minicompiler</code> before adding the rule, it stays tracked. Remove it from the repository while keeping it on disk:</p>
+<pre><code class="lang-">git rm --cached minicompiler
+git rm -r --cached *.o
+git commit -m "stop tracking build artifacts"</code></pre>
+</div>
+<p>Check what you are about to publish before you push:</p>
+<pre><code class="lang-">git ls-files | grep -E '\.o$|minicompiler|lex\.yy\.c|parser\.tab\.'</code></pre>
+<p>Anything that prints is tracked and should not be.</p>
+<h3>Working as a CLC team</h3>
+<p>Your assignment requires a private repository with the instructor added as a collaborator. The setup, once, by one team member:</p>
+<ol class="steps"><li><b>Create the repository on GitHub</b> — the green <b>New</b> button, or <code>gh repo create team-compiler --private</code>. Choose <b>Private</b>.</li><li><b>Add your teammates and the instructor.</b> Repository → <b>Settings</b> → <b>Collaborators</b> → <b>Add people</b>. They each get an email invitation which they must accept.</li><li><b>Push the starter code:</b><pre><code class="lang-">cd student/topic-2-minimal-compiler
+git init
+git add -A
+git commit -m "starter code"
+git branch -M main
+git remote add origin https://github.com/YOURNAME/team-compiler.git
+git push -u origin main</code></pre>
+</li><li><b>Everyone else clones it:</b><pre><code class="lang-">git clone https://github.com/YOURNAME/team-compiler.git</code></pre>
+</li></ol>
+<h4>Dividing the work</h4>
+<p>Divide by <b>phase</b>, not by file. Each phase has a clean interface, so each person owns a boundary, can work without blocking the others, and has something coherent to explain in their video. Dividing by file gives everyone a piece of everything and nobody an account of anything.</p>
+<h3>Merge conflicts</h3>
+<p>Two people changed the same lines. Git stops and marks the file:</p>
+<pre><code class="lang-">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+    $$ = createBinOp('+', $1, $3);
+=======
+    $$ = createBinOp('+', $1, $3); free($2);
+<span class="hi">&gt;&gt;&gt;&gt; origin/main</span></code></pre>
+<p>Everything between <code>&lt;&lt;&lt;&lt;</code> and <code>====</code> is yours; everything between <code>====</code> and <code>&gt;&gt;&gt;&gt;</code> is theirs. Edit the file so it contains what you actually want — often a combination — delete all three marker lines, then:</p>
+<pre><code class="lang-">git add parser.y
+git commit</code></pre>
+<div class="note"><b>Conflict markers left in a file are a compile error</b><p>If your build suddenly fails with a syntax error on a line reading <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code>, you resolved a conflict and missed one. <code>grep -rn '&lt;&lt;&lt;&lt;&lt;&lt;&lt;' .</code> finds them all.</p>
+</div>
+<h3>Undoing things</h3>
+<div class="tablewrap"><table><thead><tr><th>Situation</th><th>Command</th><th>Destroys work?</th></tr></thead><tbody><tr><td>Staged a file by mistake</td><td><code>git restore --staged FILE</code></td><td>no</td></tr><tr><td>Want to discard edits to a file</td><td><code>git restore FILE</code></td><td><b>yes</b></td></tr><tr><td>Bad commit message, not pushed</td><td><code>git commit --amend</code></td><td>no</td></tr><tr><td>Undo last commit, keep the changes</td><td><code>git reset --soft HEAD~1</code></td><td>no</td></tr><tr><td>Undo last commit and the changes</td><td><code>git reset --hard HEAD~1</code></td><td><b>yes</b></td></tr><tr><td>Undo a commit that is already pushed</td><td><code>git revert COMMIT</code></td><td>no — it adds an inverse commit</td></tr><tr><td>See what a file looked like before</td><td><code>git show HEAD~3:parser.y</code></td><td>no</td></tr></tbody></table></div>
+<div class="warn"><b>Never rewrite pushed history on a shared repository</b><p><code>reset --hard</code> followed by a force-push discards commits other people may already have. On anything shared, use <code>git revert</code>, which undoes the change by adding a new commit and leaves history intact.</p>
+</div>
+<h3>Authentication</h3>
+<p>GitHub stopped accepting passwords over HTTPS in 2021. Two options:</p>
+<div class="tablewrap"><table><thead><tr><th>Method</th><th>Setup</th><th>Notes</th></tr></thead><tbody><tr><td><b>Personal access token</b></td><td>GitHub → Settings → Developer settings → Personal access tokens → generate one with <code>repo</code> scope</td><td>paste it as the password when prompted; a credential helper will remember it</td></tr><tr><td><b>SSH key</b></td><td><code>ssh-keygen -t ed25519</code>, then add the <code>.pub</code> file at GitHub → Settings → SSH keys</td><td>no prompts afterward; use the <code>git@github.com:…</code> remote form</td></tr><tr><td><b>GitHub CLI</b></td><td><code>gh auth login</code></td><td>handles either for you</td></tr></tbody></table></div>
+<h3>Commit messages</h3>
+<p>Your commit history is evidence of how the work was divided, and a single commit named <code>final</code> is evidence of the opposite. A usable message says what changed and why:</p>
+<pre><code class="lang-">bad:   update
+       fixed stuff
+       asdf
+
+good:  add array indexing to the grammar and AST
+       fix $ra not being saved, which broke all nested calls
+       add zero-iteration test for while; it was passing by luck</code></pre>
+<div class="quiz"><p class="q">You accidentally committed <code>minicompiler</code> (a 150 KB binary) and pushed it. You add it to <code>.gitignore</code>. What happens?</p><button class="opt" data-correct="0" data-feedback="&lt;code&gt;.gitignore&lt;/code&gt; has no effect on files Git already tracks.">It is removed from the repository on the next push</button><button class="opt" data-correct="1" data-feedback="You must untrack it explicitly with &lt;code&gt;git rm --cached minicompiler&lt;/code&gt; and commit that. Until you do, every build produces a diff and it will conflict with every teammate&#x27;s copy.">Nothing — it stays tracked, and every rebuild will show as a change</button><button class="opt" data-correct="0" data-feedback="It will not — as far as Git is concerned you asked for the file to be tracked.">Git will warn you on the next commit</button><button class="opt" data-correct="0" data-feedback="Nothing here deletes anything; &lt;code&gt;git rm --cached&lt;/code&gt; specifically keeps the working copy.">The file is deleted from your disk</button><p class="fb"></p></div>
+</div><div class="panel" hidden><h3>What flex does</h3>
+<p>You give it patterns and actions; it writes a C function called <code>yylex()</code> that reads characters and runs the action of whichever pattern matches. The theory — regular expressions, NFA, DFA, and the two rules that break ties — is in the <a href='topic-1-lexical-analysis/lecture-notes.html'>Topic 1 lecture notes</a>. This is the mechanics.</p>
+<figure class="dia"><svg viewBox="0 0 560 266" role="img" style="max-width:560px" aria-label="A .l file has three sections separated by %%. The same three-part layout is used by .y files, which is why the two tools feel alike. Getting a rule into the wrong section is the most common first-day "><rect class="d-box alt" x="10" y="10" width="410" height="56" rx="5"/><text class="d-t" x="24" y="32">definitions</text><text class="d-s2" x="24" y="50">%option, named patterns, C in %{ %}</text><text class="d-lbl" x="20" y="88">%%</text><path class="d-dash" d="M60 83 L420 83"/><rect class="d-box on" x="10" y="96" width="410" height="56" rx="5"/><text class="d-t" x="24" y="118">rules</text><text class="d-s2" x="24" y="136">PATTERN    { action }</text><text class="d-lbl" x="20" y="188">%%</text><path class="d-dash" d="M60 183 L420 183"/><rect class="d-box" x="10" y="196" width="410" height="56" rx="5"/><text class="d-t" x="24" y="218">user code</text><text class="d-s2" x="24" y="236">copied verbatim to the bottom of lex.yy.c</text><text class="d-s2" x="436" y="130">the part you write</text><text class="d-s2" x="436" y="146">most of the time</text></svg><figcaption><b>A <code>.l</code> file has three sections separated by <code>%%</code>.</b> The same three-part layout is used by <code>.y</code> files, which is why the two tools feel alike. Getting a rule into the wrong section is the most common first-day error.</figcaption></figure>
+<h3>The three sections</h3>
+<pre><code class="lang-">%{
+  /* C code copied verbatim near the top of lex.yy.c:
+     includes, globals, helper functions the actions call */
+#include "parser.tab.h"
+%}
+
+%option noyywrap
+%option yylineno
+
+digit   [0-9]
+letter  [a-zA-Z_]
+id      {letter}({letter}|{digit})*
+
+%%
+"int"        { return INT; }
+{id}         { yylval.str = strdup(yytext); return ID; }
+[ \t\n]+     { /* skip whitespace: no return, so scanning continues */ }
+.            { fprintf(stderr, "bad character '%s'\n", yytext); }
+%%
+
+/* user code: copied verbatim to the bottom */</code></pre>
+<h3>Writing rules</h3>
+<p>A rule is a pattern, whitespace, then an action in braces. Two hard formatting rules:</p>
+<ul><li>The pattern must start in <b>column 1</b>. An indented line in the rules section is treated as C code to be copied out, not as a rule.</li><li>The action must start on the <i>same line</i> as the pattern.</li></ul>
+<div class="warn"><b>unrecognized rule</b><p>This message almost always means a line in the rules section starts at column 1 but is not a valid pattern — most often a stray comment. Comments in the rules section must be indented, or flex tries to parse them as a pattern.</p>
+</div>
+<h3>Patterns</h3>
+<div class="tablewrap"><table><thead><tr><th>Pattern</th><th>Matches</th></tr></thead><tbody><tr><td><code>"int"</code></td><td>the literal characters — quoting turns off all special meaning</td></tr><tr><td><code>[0-9]+</code></td><td>one or more digits</td></tr><tr><td><code>[a-zA-Z_][a-zA-Z0-9_]*</code></td><td>an identifier</td></tr><tr><td><code>{id}</code></td><td>whatever the named definition <code>id</code> was defined as</td></tr><tr><td><code>.</code></td><td>any character except newline</td></tr><tr><td><code>"//".*</code></td><td>a line comment</td></tr><tr><td><code>"/*"([^*]|\*+[^*/])*\*+"/"</code></td><td>a block comment, possibly multi-line</td></tr></tbody></table></div>
+<p>Quote anything with punctuation in it. <code>"+"</code> matches a plus sign; a bare <code>+</code> is the one-or-more operator and will not do what you want.</p>
+<h3>What an action can use</h3>
+<div class="tablewrap"><table><thead><tr><th>Name</th><th>Is</th></tr></thead><tbody><tr><td><code>yytext</code></td><td>the characters that matched, as a C string</td></tr><tr><td><code>yyleng</code></td><td>how many characters matched</td></tr><tr><td><code>yylineno</code></td><td>the current line number — with <code>%option yylineno</code></td></tr><tr><td><code>yylval</code></td><td>where to put the token's value for bison</td></tr><tr><td><code>return X;</code></td><td>hand token <code>X</code> to the parser and pause</td></tr><tr><td>no return</td><td>continue scanning — this is how whitespace is skipped</td></tr></tbody></table></div>
+<div class="key"><b>yytext is reused</b><p>It points into flex's own buffer, which is overwritten by the next token. If the parser will need the text later — for identifiers and numbers — you must copy it: <code>yylval.str = strdup(yytext);</code>. Storing the pointer instead produces an AST full of identifiers that have all mysteriously become the same string, and it is one of the hardest bugs in this course to track down.</p>
+</div>
+<h3>Options</h3>
+<div class="tablewrap"><table><thead><tr><th>Option</th><th>Effect</th></tr></thead><tbody><tr><td><code>%option noyywrap</code></td><td>do not expect a <code>yywrap()</code> function; stop at end of file</td></tr><tr><td><code>%option yylineno</code></td><td>maintain <code>yylineno</code> automatically</td></tr><tr><td><code>%option nounput noinput</code></td><td>suppress unused-function warnings for routines you do not call</td></tr><tr><td><code>%option case-insensitive</code></td><td>match patterns without regard to case</td></tr><tr><td><code>%option debug</code></td><td>enable tracing; set <code>yy_flex_debug = 1</code> to see every match</td></tr></tbody></table></div>
+<h3>Columns, which flex does not track</h3>
+<p><code>yylineno</code> is maintained for you. Columns are not, and a line number alone is not an exact location on a line holding three statements. Keep a counter yourself, and advance it in <i>every</i> action — including the ones that produce no token:</p>
+<pre><code class="lang-">static int col = 1;
+
+static void advance(const char *s, int n) {
+    for (int i = 0; i &lt; n; i++) {
+        if (s[i] == '\n')      { col = 1; }
+        else if (s[i] == '\t') { col += 4; }
+        else                    { col++; }
+    }
+}</code></pre>
+<p>Forget to call it from the block-comment rule and every line number after the first multi-line comment is wrong — with no error to tell you.</p>
+<h3>Talking to bison</h3>
+<p>The two tools meet in one file. Bison's <code>-d</code> flag writes <code>parser.tab.h</code>, which defines the token numbers and the <code>yylval</code> union. The scanner includes it:</p>
+<pre><code class="lang-">%{
+#include "parser.tab.h"
+%}</code></pre>
+<p>This is why the Makefile makes <code>lex.yy.c</code> depend on <code>parser.tab.h</code>, and why running flex before bison on a clean tree fails with undeclared identifiers.</p>
+<h3>Debugging a scanner</h3>
+<pre><code class="lang-">flex scanner.l              <span class="cm"># writes lex.yy.c</span>
+flex -d scanner.l           <span class="cm"># trace: prints every rule that fires</span></code></pre>
+<p>Or simply put a <code>printf</code> in the actions temporarily. The instructor's Topic 1 lexer prints a token table, which is the same idea made permanent — and a token table is by far the fastest way to see what your scanner is actually doing.</p>
+<div class="quiz"><p class="q">Your scanner returns <code>ID</code> for the input <code>while</code>. What is wrong?</p><button class="opt" data-correct="0" data-feedback="Possible, but there is a much more common cause with exactly this symptom.">The <code>while</code> pattern is misspelled</button><button class="opt" data-correct="1" data-feedback="Both patterns match five characters, so longest-match cannot break the tie and the earlier rule wins. Keyword rules must come first. (Topic 1 §8 explains why this is a consequence of how flex combines your patterns into one automaton.)">The identifier rule is written above the keyword rules</button><button class="opt" data-correct="0" data-feedback="Unrelated."><code>%option case-insensitive</code> is missing</button><button class="opt" data-correct="0" data-feedback="That produces corrupted identifier &lt;i&gt;text&lt;/i&gt; later, not the wrong token kind."><code>yytext</code> was not copied</button><p class="fb"></p></div>
+</div><div class="panel" hidden><h3>What bison does</h3>
+<p>You give it a grammar with actions; it writes a C function called <code>yyparse()</code> that calls <code>yylex()</code> for tokens and runs your action each time it recognizes a rule. The theory — context-free grammars, shift-reduce parsing, LALR, and where conflicts come from — is in the <a href='topic-2-minimal-compiler/lecture-notes.html'>Topic 2 lecture notes</a>. This is the mechanics.</p>
+<figure class="dia"><svg viewBox="0 0 560 182" role="img" style="max-width:560px" aria-label="What bison produces, and why order matters. -d writes the header of token numbers; the scanner includes it, so bison must run before flex output is compiled. -v writes parser.output, which is where ev"><rect class="d-box alt" x="10" y="30" width="120" height="40" rx="5"/><text class="d-t" x="70" y="55" text-anchor="middle">parser.y</text><path class="d-line hot" d="M130 50 L180 50 M176 46 L180 50 L176 54"/><text class="d-edge" x="155" y="42" text-anchor="middle">bison -d</text><rect class="d-box" x="184" y="8" width="140" height="34" rx="5"/><text class="d-lbl" x="254" y="30" text-anchor="middle">parser.tab.c</text><rect class="d-box on" x="184" y="52" width="140" height="34" rx="5"/><text class="d-lbl" x="254" y="74" text-anchor="middle">parser.tab.h</text><text class="d-s2" x="184" y="102">token numbers — the scanner needs this</text><rect class="d-box" x="184" y="118" width="140" height="34" rx="5"/><text class="d-lbl" x="254" y="140" text-anchor="middle">parser.output</text><text class="d-s2" x="184" y="168">only with -v — the states and any conflicts</text><path class="d-line" d="M130 60 L180 130 M176 124 L180 130 L172 130"/><text class="d-edge" x="120" y="112">-v</text><rect class="d-box alt" x="392" y="30" width="120" height="40" rx="5"/><text class="d-t" x="452" y="55" text-anchor="middle">scanner.l</text><path class="d-line hot" d="M388 69 L340 69 M344 65 L340 69 L344 73"/><text class="d-edge" x="364" y="62" text-anchor="middle">#include</text></svg><figcaption><b>What <code>bison</code> produces, and why order matters.</b> <code>-d</code> writes the header of token numbers; the scanner includes it, so bison must run before flex output is compiled. <code>-v</code> writes <code>parser.output</code>, which is where every conflict you will ever have is explained.</figcaption></figure>
+<h3>The four sections</h3>
+<pre><code class="lang-">%{
+  /* C copied verbatim: includes, globals, forward declarations */
+#include "ast.h"
+extern int yylex(void);
+void yyerror(const char *s);
+ASTNode *root = NULL;
+%}
+
+%union {                       <span class="cm">/* the possible types of a symbol's value */</span>
+    int num;
+    char *str;
+    struct ASTNode *node;
+}
+
+%token &lt;num&gt; NUM               <span class="cm">/* NUM carries an int   */</span>
+%token &lt;str&gt; ID                <span class="cm">/* ID carries a string  */</span>
+%token INT PRINT               <span class="cm">/* these carry nothing  */</span>
+%type  &lt;node&gt; expr stmt        <span class="cm">/* non-terminals carry AST nodes */</span>
+
+%left '+' '-'                  <span class="cm">/* precedence, lowest first */</span>
+%left '*' '/'
+
+%%
+stmt : ID '=' expr ';'   { $$ = createAssign($1, $3); free($1); }
+     ;
+expr : expr '+' expr     { $$ = createBinOp('+', $1, $3); }
+     | NUM               { $$ = createNum($1); }
+     ;
+%%
+
+void yyerror(const char *s) { fprintf(stderr, "line %d: %s\n", yylineno, s); }</code></pre>
+<h3>$$ and $1: where values come from</h3>
+<p>Inside an action, <code>$n</code> is the value of the <i>n</i>th symbol on the right of the rule, and <code>$$</code> is the value this rule produces. Count the symbols including the punctuation:</p>
+<pre><code class="lang-">stmt : ID   '='   expr   ';'
+       $1    $2     $3     $4     -&gt;  $$</code></pre>
+<p>The types come from the <code>%union</code> and the <code>%token</code> / <code>%type</code> declarations. If you forget to declare a non-terminal's type, you get:</p>
+<pre><code class="lang-">$$ of 'expr' has no declared type</code></pre>
+<p>The fix is a <code>%type &lt;node&gt; expr</code> line. This is the second most common bison error after conflicts.</p>
+<div class="key"><b>Children are already built when the parent's action runs</b><p>Bison reduces innermost-first, so by the time the action for <code>expr '+' expr</code> executes, <code>$1</code> and <code>$3</code> already point at complete subtrees. You never write tree-walking code to build the tree — you only ever assemble one node from pieces that exist. Topic 2 §6 explains why this works: it is a syntax-directed definition using only synthesized attributes.</p>
+</div>
+<h3>Precedence and associativity</h3>
+<pre><code class="lang-">%left  '+' '-'      <span class="cm">/* declared FIRST  = binds loosest */</span>
+%left  '*' '/'
+%right UMINUS       <span class="cm">/* declared LAST   = binds tightest */</span></code></pre>
+<ul><li>Later declarations bind <b>tighter</b>. The order of these lines is the entire precedence specification.</li><li><code>%left</code> makes <code>a - b - c</code> group as <code>(a - b) - c</code>; <code>%right</code> would give <code>a - (b - c)</code>, which is a different number.</li><li><code>%nonassoc</code> makes <code>a &lt; b &lt; c</code> a syntax error rather than something surprising.</li></ul>
+<h4>%prec</h4>
+<p>A rule takes the precedence of its last terminal, which is wrong for unary minus — the rule <code>'-' expr</code> would inherit binary minus. <code>%prec</code> overrides it:</p>
+<pre><code class="lang-">expr : '-' expr %prec UMINUS   { $$ = createBinOp('u', $2, NULL); }</code></pre>
+<h3>Conflicts</h3>
+<p>A <b>shift/reduce conflict</b> means the parser reached a point where it could either take another token or complete a rule, and one token of lookahead does not decide. Bison shifts, warns, and carries on. A <b>reduce/reduce conflict</b> means two rules could both be completed — nearly always a genuine grammar bug.</p>
+<pre><code class="lang-">bison -d -v parser.y        <span class="cm"># -v writes parser.output</span></code></pre>
+<p>Open <code>parser.output</code> and find the state named in the warning. It shows the <i>items</i> — productions with a dot marking how much has been seen — and exactly which two actions competed:</p>
+<pre><code class="lang-">State 42
+
+    stmt -&gt; IF '(' expr ')' stmt .          [ELSE]
+    stmt -&gt; IF '(' expr ')' stmt . ELSE stmt
+
+    ELSE  shift, and go to state 57
+    ELSE  [reduce using rule 12 (stmt)]</code></pre>
+<p>The bracketed action is the one bison discarded. Learning to read this once saves an evening in Topic 5, where the dangling-else conflict arrives on schedule.</p>
+<div class="note"><b>Zero conflicts should be the goal</b><p>Bison's defaults are often what you wanted, so a grammar with warnings can work perfectly. The problem is the <i>next</i> conflict — the one resolved the way you did not want — arriving in a report you have learned to ignore. Resolve them deliberately, with precedence declarations, and keep the count at zero.</p>
+</div>
+<h3>Error recovery</h3>
+<p><code>error</code> is a built-in token that matches wherever the parser is lost. An error production catches the mistake in a rule that knows what was being parsed, so it can say something useful:</p>
+<pre><code class="lang-">assign : ID '=' expr ';'    { $$ = createAssign($1, $3); free($1); }
+       | ID '=' expr error  { fprintf(stderr,
+                                "line %d: missing ';' after assignment to '%s'\n",
+                                yylineno, $1);
+                              free($1); $$ = NULL; yyerrok; }
+       ;</code></pre>
+<p><code>yyerrok</code> tells bison to resume normal parsing rather than staying in error mode. Without it, the next few real errors are suppressed.</p>
+<h3>Debugging a parser</h3>
+<pre><code class="lang-">%define parse.trace          <span class="cm">/* in the declarations section */</span>
+
+/* then, in main.c: */
+extern int yydebug;
+yydebug = 1;</code></pre>
+<p>This prints every shift, every reduce, and every state transition. It is verbose and it is the fastest way to find out why a particular input is not parsing the way you expect — you can watch the stack in the trace and compare it against the shift-reduce table in the Topic 2 notes.</p>
+<h3>Errors, and what they mean</h3>
+<div class="tablewrap"><table><thead><tr><th>Message</th><th>Cause</th></tr></thead><tbody><tr><td><code>$$ of 'x' has no declared type</code></td><td>missing <code>%type &lt;node&gt; x</code></td></tr><tr><td><code>symbol X is used, but is not defined as a token and has no rules</code></td><td>a typo, or a <code>%type</code> for a non-terminal you have not written yet</td></tr><tr><td><code>useless nonterminal</code> / <code>useless rule</code></td><td>nothing can reach that rule from the start symbol — usually a missing alternative</td></tr><tr><td><code>n shift/reduce conflicts</code></td><td>read <code>parser.output</code>; resolve with precedence</td></tr><tr><td><code>syntax error</code> at run time</td><td>the input does not match the grammar — add error productions to say <i>why</i></td></tr><tr><td><code>undefined reference to yylex</code></td><td>you did not link <code>lex.yy.o</code>, or flex has not run</td></tr></tbody></table></div>
+<div class="quiz"><p class="q">Bison reports one shift/reduce conflict and produces a working parser. What should you do?</p><button class="opt" data-correct="0" data-feedback="The behavior may be correct, but the warning now hides the next conflict, which may not be.">Nothing — the default resolution is correct</button><button class="opt" data-correct="1" data-feedback="Not to change the outcome — bison already shifts — but so that a future conflict is visible instead of arriving in a report you have learned to skip past.">Resolve it deliberately with precedence declarations so the count returns to zero</button><button class="opt" data-correct="0" data-feedback="A legitimate option, and sometimes the right one, but usually more disruptive than a precedence declaration.">Rewrite the grammar to remove the ambiguity</button><button class="opt" data-correct="0" data-feedback="Bison is LALR(1); you cannot ask it for more tokens of lookahead.">Add more lookahead</button><p class="fb"></p></div>
+</div></div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="index.html">All topics</a></span>
+</footer>
+</main>
+<script src="assets/compiler-design.js"></script>
+</body>
+</html>

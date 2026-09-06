@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Three-Address Code by Hand · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 2 · Class activity 6 · Week 4 · Friday</p>
+    <h1>Three-Address Code by Hand</h1>
+    <p class="lede">Translate a tree yourself, redraw it as quadruples, then make the compiler agree with you.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 2</a> &nbsp;›&nbsp; Activity 6</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs</span><span><b>Time</b> 50 min</span></div>
+<h2>The point</h2>
+<p>Translate a syntax tree to three-address code by hand, then make the compiler agree with you. Where you differ, one of you has made a design decision without noticing.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>By hand.</b> Write the TAC for<pre><code class="lang-">int a; int b; int c;
+a = 1 + 2;
+b = a + a;
+c = a + b + 3;
+print(c);</code></pre>
+Use <code>t0, t1, …</code> for temporaries and number every instruction.</li><li><b>Now as quadruples.</b> Redraw your listing as a four-column table — op, arg1, arg2, result — exactly as in §9 of the lecture notes.</li><li><b>Count your temporaries.</b> How many did you use in total? How many were <i>live at once</i>? Those are different numbers, and the second is the one a register allocator cares about.</li><li><b>Compare with a partner.</b> Different instruction counts mean different choices — find out what they were.</li><li><b>Now the compiler.</b> Implement the TAC generation and read <code>out.tac</code>. Reconcile every difference from your listing.</li><li><b>Hand-execute your TAC.</b> With a table of variable values, step through the listing and confirm it prints what the source should. This is how you will debug phase 6 next week.</li></ol>
+<div class="deliverable"><h3>Deliverable</h3><p>Your handwritten TAC, the same listing as quadruples, the compiler's <code>out.tac</code>, and a numbered list of the differences with an explanation for each. This is Lab Question 8.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

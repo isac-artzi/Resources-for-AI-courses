@@ -1,0 +1,9 @@
+/* Expected output: 55  10 */
+int main() {
+    int i; int s;
+    i = 1; s = 0;
+    while (i <= 10) { s = s + i; i = i + 1; }
+    print(s);    /* 55 */
+    print(i - 1);/* 10 */
+    return 0;
+}

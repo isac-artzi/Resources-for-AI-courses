@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Optimize a Listing by Hand · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 4 · Class activity 4 · Week 10 · Friday</p>
+    <h1>Optimize a Listing by Hand</h1>
+    <p class="lede">Pass by pass to a fixed point, naming every transformation, then break the label rule and meet the worst failure mode in compilers.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 4</a> &nbsp;›&nbsp; Activity 4</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs</span><span><b>Time</b> 50 min</span><span><b>Bring</b> paper</span></div>
+<h2>The point</h2>
+<p>Optimize a listing by hand, to a fixed point, before trusting a program to do it. You will find at least one transformation you would have got wrong.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>By hand, pass by pass.</b> Optimize this listing, writing out each pass separately and labeling every change with the transformation that made it. Use the names from Dragon §9.1.<pre><code class="lang-"> 1: t0 = 4 * 5
+ 2: n  = t0
+ 3: t1 = n + 0
+ 4: m  = t1
+ 5: t2 = m * 1
+ 6: k  = t2
+ 7: t3 = 7 - 7
+ 8: ifFalse t3 goto L1
+ 9: print 999
+10: L1:
+11: print k</code></pre>
+</li><li><b>Keep going until nothing changes.</b> How many passes? How many instructions remain? Why could a single pass not have got there?</li><li><b>Now the compiler.</b> Put an equivalent program through it, compare <code>out.tac</code> with <code>out.optimized.tac</code>, and read the scorecard.</li><li><b>Find a disagreement</b> and explain it. There is at least one: the compiler will not eliminate a dead store to a user <i>variable</i>, only to a temporary. Which analysis would it need in order to do better, and why is it not safe without it?</li><li><b>Break the safety rule.</b> Remove the 'forget everything at a label' step. Then compile a loop that changes a variable, and run it. Describe the wrong answer and say precisely which assumption failed, in flow-graph terms.</li></ol>
+<div class="warn"><b>Step 5 is the important one</b><p>It produces a compiler that passes every straight-line test you have written and is silently wrong on loops. That failure mode — correct on the tests, wrong in reality — is why optimizer bugs have the reputation they do, and it is worth meeting once deliberately.</p>
+</div>
+<div class="deliverable"><h3>Deliverable</h3><p>Your pass-by-pass hand optimization with every change named; the compiler's scorecard; your analysis of the disagreement; and a description of the step-5 failure. Feeds Lab Questions 19 and 20.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

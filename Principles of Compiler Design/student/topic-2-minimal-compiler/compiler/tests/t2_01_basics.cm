@@ -1,0 +1,13 @@
+/* Expected output: 5  10  18
+ * The whole starter language in one program: declare, assign, add, print. */
+int x;
+int y;
+int total;
+
+x = 5;
+y = 10;
+total = x + y + 3;
+
+print(x);
+print(y);
+print(total);

@@ -1,0 +1,12 @@
+/* Expected output: 1  2  1
+ * `n` names three different storage locations here. Watch the symbol table
+ * trace (run without -q) to see each one get its own frame slot. */
+int n;
+int show(int n) { return n; }
+int main() {
+    n = 1;
+    print(n);           /* the global   */
+    print(show(2));     /* the parameter shadows it */
+    print(n);           /* global again, untouched  */
+    return 0;
+}

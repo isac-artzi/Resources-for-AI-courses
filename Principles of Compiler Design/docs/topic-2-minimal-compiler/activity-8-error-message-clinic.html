@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Error Message Clinic · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 2 · Class activity 8 · Week 5 · Friday</p>
+    <h1>Error Message Clinic</h1>
+    <p class="lede">Score your diagnostics out of four, classify your recovery strategy, rewrite the worst, and swap compilers.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 2</a> &nbsp;›&nbsp; Activity 8</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> groups of three</span><span><b>Time</b> 45 min</span></div>
+<h2>The point</h2>
+<p>A compiler is a user interface, and its users meet it almost entirely through its error messages. Dragon §4.1.3 sets the standard; this is measuring yourself against it.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Collect real ones.</b> Each person writes three broken programs — one lexical, one syntax, one semantic error — runs them through their own compiler, and pastes the actual output.</li><li><b>Score every message</b> out of four: does it give the LINE? name the OFFENDING THING? say what was EXPECTED? suggest a FIX? Most first drafts score one.</li><li><b>Classify the recovery.</b> For each syntax error, which of Dragon's four strategies did your compiler use — panic mode, phrase level, error production, or none at all?</li><li><b>Rewrite the worst three</b>, aiming for four out of four.<pre><code class="lang-">before:  syntax error
+
+after:   Syntax error, line 7:
+           missing ';' after assignment
+           suggestion: add ';' after 'total = 2 + 3'</code></pre>
+</li><li><b>Implement one</b> as a bison error production, and explain why the production can say more than a generic handler could.</li><li><b>Swap compilers.</b> Run your broken programs through a group member's. Whose messages would you rather receive at 2am?</li></ol>
+<h2>A harder question, if you have time</h2>
+<p>Should the compiler stop after reporting an error, or keep going? Try both. Feed a file with five errors to each. Keeping going can cascade one mistake into twenty spurious ones; stopping makes the programmer recompile five times. Dragon §4.1.4 does not settle it for you.</p>
+<div class="deliverable"><h3>Deliverable</h3><p>A table of before/after messages with their four-point scores and the recovery strategy each used; at least one implemented error production; and a paragraph on the stop-or-continue question. This is the strongest material you can put in your Project 2 video.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

@@ -10,3 +10,24 @@ _site/
 *.mp4
 *.mov
 *.m4v
+
+# --- Instructor-only material from course working repos: never published ---
+instructor/
+legacy/
+.tools/
+INSTRUCTOR.md
+.git-instructor/
+.claude/
+
+# --- Compiler toolchain build products ---
+# NOTE: do NOT add bare names like `lexer`, `scanner` or `cminus` here. Those
+# patterns also match the student source directories of the same name, which is
+# how topic 1's starter code went missing from the standalone course repo.
+*.o
+lex.yy.c
+lex.yy.h
+parser.tab.c
+parser.tab.h
+y.tab.c
+y.tab.h
+parser.output

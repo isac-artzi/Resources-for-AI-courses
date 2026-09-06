@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trace a Call, Including a Nested One · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 3 · Class activity 4 · Week 7 · Friday</p>
+    <h1>Trace a Call, Including a Nested One</h1>
+    <p class="lede">Caller versus callee, $a0–$a3, $v0, $ra — and why f(1, g(2)) works at all.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 3</a> &nbsp;›&nbsp; Activity 4</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs, at a laptop</span><span><b>Time</b> 50 min</span></div>
+<h2>The point</h2>
+<p>Trace a call through the register conventions, including the case that breaks naive implementations: a call inside a call.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Write the calling sequence out</b> as two columns — what the caller does, what the callee does — for your own compiler. Then compare with the division in the lecture notes. Anything on the wrong side?</li><li><b>Predict the TAC</b> for <code>f(1, g(2))</code>: write the <code>param</code> and <code>call</code> instructions in order. Compile and compare.</li><li><b>Explain the ordering.</b> Both calls emit arguments into the same buffer. Why does the inner call take the right ones? Work through <code>f(g(1), 2)</code> as well — it comes out right for a different reason.</li><li><b>Recursion.</b> Run <code>fact(5)</code>. Then answer: which registers had to be preserved across the recursive call, and who preserved them — caller or callee?</li><li><b>Find the limit.</b> Write a function with five parameters. What does the compiler say? Is that a good error message? Improve it if not.</li><li><b>Design.</b> Sketch how you would pass a fifth argument. Real MIPS puts it on the stack — but <i>where</i>, relative to the caller's frame, and who pops it? Use Dragon's second design principle (§7.2.3) to justify your answer.</li></ol>
+<details class="reveal"><summary>On step 3</summary><p>A call consumes the LAST <i>n</i> buffered arguments, where <i>n</i> comes from the call instruction itself. Trace <code>f(1, g(2))</code> under that rule and watch it come out right; then trace <code>f(g(1), 2)</code> and notice that the reason is different.</p>
+</details>
+<div class="deliverable"><h3>Deliverable</h3><p>Your two-column calling sequence with any corrections; predicted vs actual TAC; your answer to step 3; the register-preservation answer from step 4; and your two-line design for step 6. Feeds Lab Question 15.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+/* Expected output: 20  0  45  30  99 */
+int grade(int s) {
+    switch (s) {
+        case 1: return 10;
+        case 2: return 20;
+        case 3: return 30;
+        default: return 99;
+    }
+}
+int main() {
+    int x;
+    x = 2;
+    switch (x) {                       /* simple dispatch      */
+        case 1: print(10); break;
+        case 2: print(20); break;
+        default: print(0); break;
+    }
+    x = 77;
+    switch (x) {                       /* default clause       */
+        case 1: print(10); break;
+        default: print(0); break;
+    }
+    x = 4;
+    switch (x) {                       /* grouped / fall-through */
+        case 4:
+        case 5: print(45); break;
+        default: print(0); break;
+    }
+    print(grade(3));                   /* return from inside a switch */
+    print(grade(8));
+    return 0;
+}

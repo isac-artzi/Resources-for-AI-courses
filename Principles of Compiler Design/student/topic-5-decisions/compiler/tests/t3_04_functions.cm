@@ -1,0 +1,11 @@
+/* Expected output: 6  5  7  8 */
+int add3(int a, int b, int c) { return a + b + c; }
+int twice(int x) { return x * 2; }
+int addup(int a, int b) { return a + b; }
+int main() {
+    print(add3(1, 2, 3));        /* 6 — three parameters       */
+    print(addup(1, twice(2)));   /* 5 — call inside a call     */
+    print(addup(twice(3), 1));   /* 7 — nested on the left     */
+    print(twice(twice(twice(1))));/* 8 — three levels deep     */
+    return 0;
+}

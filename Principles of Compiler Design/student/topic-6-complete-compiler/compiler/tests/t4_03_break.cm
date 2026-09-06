@@ -1,0 +1,11 @@
+/* Expected output: 21  4 */
+int main() {
+    int i;
+    i = 0;
+    while (i < 100) { i = i + 7; break; }
+    print(i + 14);       /* loop ran once: i = 7, so 21 */
+    i = 0;
+    for (i = 0; i < 100; i = i + 1) { break; }
+    print(i + 4);        /* break before any increment: 0 + 4 */
+    return 0;
+}

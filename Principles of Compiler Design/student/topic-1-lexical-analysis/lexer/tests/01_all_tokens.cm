@@ -1,0 +1,12 @@
+/* Every token the language has, in one file.
+ * Expect: 0 lexical errors.  Read the table and confirm that `<=` came back
+ * as ONE token and not as `<` followed by `=`. */
+int main() {
+    int a; int b[10];
+    a = 1 + 2 - 3 * 4 / 5;
+    if (a < 1 && b[0] >= 2 || !(a == 3) || a != 4) { a = a + 1; }
+    while (a > 0) { a = a - 1; break; }
+    for (a = 0; a <= 5; a = a + 1) { print(a); }
+    switch (a) { case 1: break; default: break; }
+    return 0;
+}

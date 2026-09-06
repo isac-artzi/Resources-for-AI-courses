@@ -1,0 +1,10 @@
+/* Expected output: 14  20  9  3  -20  7 */
+int main() {
+    print(2 + 3 * 4);          /* 14  — * binds tighter than +          */
+    print((2 + 3) * 4);        /* 20  — parentheses override precedence */
+    print(17 - 5 - 3);         /* 9   — - is LEFT associative            */
+    print(17 / 5);             /* 3   — integer division truncates       */
+    print(-(2 + 3) * 4);       /* -20 — unary minus binds tightest       */
+    print(- -7);               /* 7   — two unary minuses                */
+    return 0;
+}

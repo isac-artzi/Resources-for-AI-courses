@@ -1,0 +1,5 @@
+/* The longest-match rule, isolated.
+ * Expect: 0 errors, and exactly 8 tokens on the middle line —
+ *   ID LE ID GE ID EQ ID NE   ... not sixteen one-character tokens. */
+int x;
+x <= x >= x == x != x;

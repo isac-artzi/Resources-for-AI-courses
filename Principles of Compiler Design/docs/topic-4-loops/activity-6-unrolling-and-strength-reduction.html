@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unrolling, Code Motion, Strength Reduction · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 4 · Class activity 6 · Week 11 · Friday</p>
+    <h1>Unrolling, Code Motion, Strength Reduction</h1>
+    <p class="lede">Three loop optimizations by hand — two you will not implement, and one you already have without noticing.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 4</a> &nbsp;›&nbsp; Activity 6</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs</span><span><b>Time</b> 45 min</span></div>
+<h2>The point</h2>
+<p>Two loop optimizations you will not implement, worked by hand so you can discuss them accurately — and one you already have without noticing.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Unroll by hand.</b> Take<pre><code class="lang-">for (i = 0; i &lt; 4; i = i + 1) { s = s + a[i]; }</code></pre>
+and write both the normal lowering and a fully unrolled version. Count instructions in each listing, and count how many <i>execute</i> in each.</li><li><b>Partial unrolling.</b> Unroll by two instead. What must be true of the trip count for this to be correct, and what extra code is needed when it is not?</li><li><b>When does unrolling lose?</b> Change the loop to 10,000 iterations and reason about it. Name two costs, at least one of which is not code size.</li><li><b>Loop-invariant code motion.</b> In <code>while (i &lt;= n - 1) { ... }</code>, which computation is invariant? Move it. What would the compiler have to prove before it could do this automatically?</li><li><b>Strength reduction.</b> Rewrite the indexed loop to keep a running address and add 4 each iteration instead of multiplying. Count the instructions saved per iteration.</li><li><b>Find the one you already have.</b> Locate the existing strength reduction in the code generator, and say why the compiler can always apply that one safely.</li></ol>
+<details class="reveal"><summary>On step 3</summary><p>Code size, and instruction-cache pressure. A loop body that fitted in cache may not after unrolling, and a cache miss costs far more than the compare-and-branch you removed. This is why unrolling decisions in production compilers are driven by measured heuristics rather than by a rule — and why Dragon §9.1 is careful to say that loop optimizations are where the gains are <i>usually</i> found.</p>
+</details>
+<div class="deliverable"><h3>Deliverable</h3><p>Both unrolled listings with instruction counts; your answers on partial unrolling and on the two costs; the hoisted invariant with the condition the compiler would have to prove; the strength-reduced loop; and the location of the existing one. Feeds Lab Question 21.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

@@ -6,9 +6,10 @@
 [![Intro to ML](https://img.shields.io/badge/Open-Intro%20to%20ML-2a3aa6?style=for-the-badge)](https://isac-artzi.github.io/Resources-for-AI-courses/intro-to-machine-learning/)
 [![NLP](https://img.shields.io/badge/Open-NLP-3b4fd8?style=for-the-badge)](https://isac-artzi.github.io/Resources-for-AI-courses/natural-language-processing/)
 [![Reinforcement Learning](https://img.shields.io/badge/Open-Reinforcement%20Learning-0f8b8d?style=for-the-badge)](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/)
+[![Compiler Design](https://img.shields.io/badge/Open-Compiler%20Design-c2334d?style=for-the-badge)](https://isac-artzi.github.io/Resources-for-AI-courses/principles-of-compiler-design/)
 [![R-Pi Workshop](https://img.shields.io/badge/Open-R--Pi%20AI%20Camera-b26a00?style=for-the-badge)](https://isac-artzi.github.io/Resources-for-AI-courses/r-pi-with-ai-camera-workshop/)
 
-A collection of teaching resources. The repository holds **four courses** and a
+A collection of teaching resources. The repository holds **five courses** and a
 **hardware workshop**, each with its own tutorials and hands-on resources, plus a
 course-agnostic survey of cloud deployment architectures:
 
@@ -18,6 +19,7 @@ course-agnostic survey of cloud deployment architectures:
 | 📗 **[Intro to Machine Learning](#intro-to-machine-learning)** | Course tutorials **and single-tier project templates** (Streamlit + SQLite + pandas + scikit-learn) covering the classical ML toolkit. |
 | 📕 **[Natural Language Processing](#natural-language-processing)** | Course lecture notes, exercises, and **starter skeletons** on the same three-cloud stack — infrastructure finished, the NLP layer left to build. |
 | 📙 **[Reinforcement Learning](#reinforcement-learning)** | Course tutorials, exercises, and **complete agent templates** on a two-cloud, three-tier stack — train in PyTorch, serve in NumPy. |
+| ⚙️ **[Principles of Compiler Design](#principles-of-compiler-design)** | Six compilers, each the previous one with a new language feature threaded through all six phases — plus starter code for every topic. |
 | 🔬 **[R-Pi AI Camera Workshop](#r-pi-ai-camera-workshop)** | An eight-topic hardware workshop: capture, streaming, on-camera inference, and recording on a Raspberry Pi AI Camera. |
 | ☁️ **[Cloud Deployment](#cloud-deployment-survey)** | A survey of different deployment stacks (Azure, Vercel, Render, Railway, TF.js). Not tied to any one course. |
 
@@ -351,6 +353,31 @@ Every template ships the same six standing endpoints (`/act`, `/rollout`,
 | 4 | Actor-Critic Methods: From Advantage Actor-Critic to Soft Actor-Critic | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/Tutorial-Topic-4-Actor-Critic-Methods.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/Exercises-Topic-4-Actor-Critic-Methods.html) |
 | 5 | Tree Search | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/Tutorial-Topic-5-Tree-Search.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/Exercises-Topic-5-Tree-Search.html) |
 | 6 | Reinforcement Learning From Human Feedback and Multi-Agent Reinforcement Learning | [Tutorial](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/Tutorial-Topic-6-RLHF-and-Multi-Agent-Reinforcement-Learning.html) · [Exercises](https://isac-artzi.github.io/Resources-for-AI-courses/reinforcement-learning/Exercises-Topic-6-RLHF-and-Multi-Agent-Reinforcement-Learning.html) |
+
+---
+
+## Principles of Compiler Design
+
+Six compilers in one semester: each topic takes the previous compiler and threads a new language
+feature through all six phases — scanner, parser, semantic analysis, three-address code,
+optimization, MIPS code generation. You write the front end six times, and the repetition is the
+point.
+
+**[▶ Open the course site](https://isac-artzi.github.io/Resources-for-AI-courses/principles-of-compiler-design/)** — lecture notes, in-class
+activities, project descriptions and the C-Minus grammar reference.
+
+| Topic | Subject | Site |
+|---|---|---|
+| 1 | Compiler Design Phases | [Open](https://isac-artzi.github.io/Resources-for-AI-courses/principles-of-compiler-design/topic-1-lexical-analysis/) |
+| 2 | Compiler for a Starter Language | [Open](https://isac-artzi.github.io/Resources-for-AI-courses/principles-of-compiler-design/topic-2-minimal-compiler/) |
+| 3 | Compiling Complex Variables and Functions | [Open](https://isac-artzi.github.io/Resources-for-AI-courses/principles-of-compiler-design/topic-3-arrays-and-functions/) |
+| 4 | Compiling Loops | [Open](https://isac-artzi.github.io/Resources-for-AI-courses/principles-of-compiler-design/topic-4-loops/) |
+| 5 | Compiling Control Flow — Decisions | [Open](https://isac-artzi.github.io/Resources-for-AI-courses/principles-of-compiler-design/topic-5-decisions/) |
+| 6 | Compiler Design and Implementation | [Open](https://isac-artzi.github.io/Resources-for-AI-courses/principles-of-compiler-design/topic-6-complete-compiler/) |
+
+Starter code for every topic is in
+[`Principles of Compiler Design/student/`](./Principles%20of%20Compiler%20Design/student).
+Requires flex, bison, gcc and make.
 
 ---
 

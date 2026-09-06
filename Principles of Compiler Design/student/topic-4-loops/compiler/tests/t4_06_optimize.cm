@@ -1,0 +1,11 @@
+/* Expected output: 10
+ * Compile WITHOUT -q and read the optimization scorecard. Then compare
+ * 06_optimize.tac with 06_optimize.optimized.tac line by line. */
+int main() {
+    int a; int b; int c;
+    a = 2 * 3 + 4;   /* constant folding                       */
+    b = a + 0;       /* algebraic simplification, then const prop */
+    c = b * 1;       /* same again                              */
+    print(c);
+    return 0;
+}

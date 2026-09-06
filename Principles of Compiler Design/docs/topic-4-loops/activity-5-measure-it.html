@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Measure It, and Defend the Number · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 4 · Class activity 5 · Week 11 · Wednesday</p>
+    <h1>Measure It, and Defend the Number</h1>
+    <p class="lede">Code size and work done are different numbers. Get both, repeat the run, and state a threshold you can justify.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 4</a> &nbsp;›&nbsp; Activity 5</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs, at a laptop</span><span><b>Time</b> 50 min</span><span><b>Need</b> SPIM, and your machine's specifications</span></div>
+<h2>The point</h2>
+<p>Produce a number you would be willing to defend to someone who wanted to disagree with it.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Write a benchmark</b> with a hot nested loop running a few thousand iterations.</li><li><b>Code size.</b> Record the TAC instruction count before and after optimization, plus the per-technique scorecard.</li><li><b>Work done.</b> Run both versions in SPIM and record instructions executed. To get an unoptimized <code>.s</code>, point the back end at the unoptimized list.</li><li><b>Put the four numbers in a table</b> and compute both percentages. They will not match — explain the gap in one sentence, in terms of what was inside the loop.</li><li><b>Repeat three times.</b> How much do the numbers move? Anything smaller than that spread is not a result.</li><li><b>State a threshold.</b> Given your machine and your measured noise, what reduction would you call significant? Justify it with the spread from step 5, not with a feeling.</li></ol>
+<div class="deliverable"><h3>Deliverable</h3><p>A results table with all four numbers and both percentages; three repeated runs with the spread; the benchmark source; and a defended threshold. This is Lab Question 22 and a large part of the Project 6 performance section — do it properly now and reuse it in December.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

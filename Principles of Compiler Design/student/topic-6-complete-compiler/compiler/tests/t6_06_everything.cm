@@ -1,0 +1,40 @@
+/* Expected output: 120  55  30  1  45  60
+ * One program exercising every feature the language has: globals, arrays,
+ * array parameters, functions, recursion, both loops, if/else, logical
+ * operators and switch.  If this runs, the compiler is done. */
+int table[5];
+
+int fact(int n) {
+    if (n <= 1) { return 1; }
+    return n * fact(n - 1);
+}
+int sumTo(int n) {
+    int i; int s;
+    s = 0;
+    for (i = 1; i <= n; i = i + 1) { s = s + i; }
+    return s;
+}
+int total(int a[], int n) {
+    int i; int s;
+    i = 0; s = 0;
+    while (i < n) { s = s + a[i]; i = i + 1; }
+    return s;
+}
+int classify(int x) {
+    switch (x) {
+        case 0: return 45;
+        case 1: return 46;
+        default: return 47;
+    }
+}
+int main() {
+    int i;
+    print(fact(5));                       /* 120 */
+    print(sumTo(10));                     /* 55  */
+    for (i = 0; i < 5; i = i + 1) { table[i] = i * i; }
+    print(total(table, 5));               /* 0+1+4+9+16 = 30 */
+    print(fact(3) > 5 && !(sumTo(3) == 7));/* 1 */
+    print(classify(0));                   /* 45 */
+    print(total(table, 5) * 2);           /* 60 */
+    return 0;
+}

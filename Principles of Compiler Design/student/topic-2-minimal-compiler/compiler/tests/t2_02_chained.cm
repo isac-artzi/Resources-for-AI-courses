@@ -1,0 +1,9 @@
+/* Expected output: 6  21
+ * Addition is LEFT associative, so a + b + c parses as (a + b) + c.
+ * Look at the AST the compiler prints and confirm it leans left. */
+int a; int b; int c; int r;
+a = 1; b = 2; c = 3;
+r = a + b + c;
+print(r);
+r = r + r + r + 3;
+print(r);

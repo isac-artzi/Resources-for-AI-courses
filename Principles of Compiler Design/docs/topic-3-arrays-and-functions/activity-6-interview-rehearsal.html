@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Technical Interview Rehearsal · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 3 · Class activity 6 · Week 8 · Friday</p>
+    <h1>Technical Interview Rehearsal</h1>
+    <p class="lede">Eight questions, ten minutes each way, at a whiteboard, out loud.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 3</a> &nbsp;›&nbsp; Activity 6</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs, taking turns</span><span><b>Time</b> 50 min</span><span><b>Need</b> a whiteboard or shared doc</span></div>
+<h2>The point</h2>
+<p>Technical Interview Quiz 1 falls in this topic. The questions are not trivia — they are the design decisions you have already made, asked out loud. Rehearse saying them.</p>
+<h2>How to run it</h2>
+<p>Ten minutes each way. One person asks, the other answers at the whiteboard, talking throughout. The asker's job is to keep asking <i>why</i>.</p>
+<h2>The questions</h2>
+<ol><li>Walk me through what happens to <code>x = a[i] + 1;</code> in your compiler, phase by phase. <i>Follow-up: which phase would catch it if <code>a</code> were undeclared, and why can no earlier one?</i></li><li>Your parser sees <code>int total</code>. Variable or function? How does it decide, and how much lookahead does it need?</li><li>Where do local variables live, and who decides the offsets, and when? <i>Follow-up: why must the compiler walk the whole function before emitting a single instruction?</i></li><li>Draw the stack for <code>factorial(3)</code> at maximum depth. Now tell me what would break if <code>$ra</code> were not saved.</li><li>Your language passes integers by value and arrays by reference. Why the difference? What would change if arrays were by value?</li><li>You have ten registers and thirty live values. What do you do? <i>Follow-up: how do you choose which to evict, and what is the ideal choice you cannot compute?</i></li><li>Explain the difference between the two symbol tables in your compiler.</li><li>Name a program your compiler accepts and should not. What would catching it take, and in which phase?</li></ol>
+<div class="note"><b>What is actually being assessed</b><p>Not whether you memorised an answer, but whether you can reason aloud about a system you built, say which parts you are unsure of, and describe how you would find out. 'I do not know, but here is how I would check' is a strong answer.</p>
+</div>
+<div class="deliverable"><h3>Deliverable</h3><p>Nothing to hand in. Note the two questions you answered worst and read the relevant sections before the quiz.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>

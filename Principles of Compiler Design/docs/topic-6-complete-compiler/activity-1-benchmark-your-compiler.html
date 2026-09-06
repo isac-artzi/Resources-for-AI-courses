@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Benchmark Your Compiler · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 6 · Class activity 1 · Week 15 · Wednesday</p>
+    <h1>Benchmark Your Compiler</h1>
+    <p class="lede">Three benchmarks, four metrics, three repeated runs, one Amdahl calculation — and a number you could defend to a sceptic.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 6</a> &nbsp;›&nbsp; Activity 1</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="meta"><span><b>Format</b> pairs</span><span><b>Time</b> 50 min</span><span><b>Need</b> SPIM, your compiler, and your machine's specifications</span></div>
+<h2>The point</h2>
+<p>Produce the performance section of your Benchmark submission, with numbers you could defend to somebody who wanted to disagree with them.</p>
+<h2>Do this</h2>
+<ol class="steps"><li><b>Pick three benchmarks</b> of different shapes: one straight-line arithmetic program, one with a hot nested loop, one call-heavy (recursion is ideal). Each should run long enough to give a six-figure instruction count.</li><li><b>Compilation time.</b> Record the per-phase table for each. Then make a ten-times-longer version of one benchmark and record it again. Which phase grew fastest? Is anything super-linear? Plot it if you can — three points is enough to see a curve.</li><li><b>Apply Amdahl's law.</b> From your profile, which phase would you optimize first, and what is the maximum improvement available even if you made it free?</li><li><b>Code size.</b> Record TAC instructions before and after optimization, and the MIPS instruction count, for all three benchmarks.</li><li><b>Work done.</b> Run each in SPIM, optimized and unoptimized, and record instructions executed. To produce an unoptimized <code>.s</code>, point the back end at the unoptimized TAC list.</li><li><b>Repeat everything three times</b> and record the spread.</li><li><b>Write four sentences:</b> what you measured, what you compared it against, what the numbers show, and where the two metrics disagree and why.</li></ol>
+<div class="note"><b>Where to look when a number surprises you</b><p>The register allocator reports spills and reloads. A benchmark with far more executed instructions than you expected usually has a spill inside the hot loop — which is a real finding, traceable to the missing liveness analysis, and exactly the sort of thing that belongs in your write-up.</p>
+</div>
+<div class="deliverable"><h3>Deliverable</h3><p>A performance table covering three benchmarks with all four metrics; the growth analysis and your Amdahl calculation; the repeated-run spread; the benchmark sources; and your four sentences. This <i>is</i> the performance section of Project 6 — write it once, properly.</p>
+</div>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>
