@@ -7,3 +7,4 @@ venv/
 data/
 checkpoints/
 .pytest_cache/
+solutions/

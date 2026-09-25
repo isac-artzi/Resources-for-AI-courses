@@ -89,7 +89,7 @@ seesense_lab/          Your working code (contains the TODOs)
   app.py               Given: Streamlit front end
   check.py, device.py  Given: setup check and device selection
 tests/                 One test file per part
-solutions/             Instructor reference implementations (see below)
+solutions/             Instructor reference implementations (not in the public repo)
 docs/
   LAB_GUIDE.md         Student handout: step-by-step instructions and questions
   INSTRUCTOR_GUIDE.md  Timing, common mistakes, discussion prompts, grading
@@ -106,8 +106,8 @@ LAB_TARGET=solutions pytest
 LAB_TARGET=solutions python -m seesense_lab.train
 ```
 
-To keep the solutions from students, delete `solutions/` from the copy you
-distribute. See [docs/INSTRUCTOR_GUIDE.md](docs/INSTRUCTOR_GUIDE.md).
+The public repo omits `solutions/` (it is listed in `.gitignore`). Instructors
+keep a local copy, and `git add -f solutions` publishes it if you ever want to. See [docs/INSTRUCTOR_GUIDE.md](docs/INSTRUCTOR_GUIDE.md).
 
 ## Requirements
 
