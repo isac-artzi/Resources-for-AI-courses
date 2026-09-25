@@ -18,6 +18,45 @@ Each part has a **TODO** in the code and a **test file** that tells you when you
 are done. The plumbing (data loaders, FastAPI service, Streamlit app) is
 provided so you can spend your time on the ideas.
 
+## Before you start
+
+Read the [Topic 3 tutorial](../Topic_3_-_CNN/Tutorial_Topic_3_Convolutional_Neural_Networks.html) and attempt the [practice exercises](../Topic_3_-_CNN/Exercises_Topic_3_Convolutional_Neural_Networks.html) first.
+
+**Concepts you should know**
+
+- **Convolution:** a kernel sliding over an image as a dot product, weight sharing, and multi-channel kernels of shape (C_out, C_in, K, K)
+- **Shape arithmetic:** output size ⌊(I − K + 2P) / S⌋ + 1, stride, and padding
+- **Parameter counting:** C_out · (C_in · K · K + 1), and why it does not depend on image size
+- **Receptive field** of stacked stride-1 convolutions: 1 + n · (K − 1)
+- **Down-sampling:** max pooling vs. strided convolutions, and global average pooling
+- **Residual connections:** y = ReLU(x + F(x)) and why they make deep networks trainable
+- **Batch normalization:** per-channel statistics, and running statistics at inference (`train()` vs. `eval()`)
+- **Data augmentation:** label-preserving transforms, why evaluation data is not augmented, and normalization
+- **Training loop:** forward pass, cross-entropy loss, backpropagation, and gradient descent with momentum and weight decay
+- **Learning-rate scheduling:** cosine annealing
+- **Overfitting:** the train/test accuracy gap, and reading loss and accuracy curves
+- **Grad-CAM:** gradient-weighted feature maps, and how a saliency map can reveal dataset shortcuts
+- **Softmax and top-k:** turning logits into probabilities
+- **Hashing:** what SHA-256 is and why a hash is stored instead of the raw data
+- **HTTP basics:** POST vs. GET, and why images are uploaded as `multipart/form-data` rather than JSON
+
+**Skills and tools**
+
+- Python 3.10 to 3.13: functions, classes, comprehensions, `sorted` with a key, and subclassing `nn.Module`
+- NumPy arrays and tensor shapes
+- Reading a stack trace and a failing pytest assertion
+- A terminal, a virtual environment, and `pip install -r requirements.txt`
+- **PyTorch and torchvision:** `nn.Conv2d`, `nn.BatchNorm2d`, tensors, `.backward()`, `torch.no_grad()`, optimizers, schedulers, `datasets.CIFAR10`, and `transforms`
+- **Pillow:** opening and resizing images
+- **pytest:** running one test file or the whole suite
+- **Git and GitHub:** cloning or downloading the repo
+- **curl:** for one API smoke test
+- A code editor such as VS Code
+
+**Not required:** prior experience with FastAPI, Streamlit, Supabase, Render, or GPUs. The API and app are provided, deployment belongs to the project, and the lab runs on a CPU.
+
+**Arrive with this done:** Python and a virtual environment working, dependencies installed, and CIFAR-10 downloaded (see Quick start).
+
 ## Quick start
 
 ```bash
