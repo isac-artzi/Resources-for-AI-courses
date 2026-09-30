@@ -74,11 +74,21 @@ char* allocTemp() {
     return temp;
 }
 
+/* Is this name a compiler temporary — 't' followed by digits only?
+ * Checking just the first letter is not enough: freeTemp is called on every
+ * operand, and a user variable such as `total` would otherwise be read as
+ * atoi("otal") == 0 and release a t0 that is still live. */
+static int isTempName(const char* s) {
+    if (!s || s[0] != 't' || !s[1]) return 0;
+    for (int i = 1; s[i]; i++) if (s[i] < '0' || s[i] > '9') return 0;
+    return 1;
+}
+
 void freeTemp(char* temp) {
-    if (!temp || temp[0] != 't') return;
+    if (!isTempName(temp)) return;
 
     int tempNum = atoi(temp + 1);
-    if (!tempAlloc.allocated[tempNum]) return;
+    if (tempNum >= MAX_TEMPS || !tempAlloc.allocated[tempNum]) return;
 
     tempAlloc.allocated[tempNum] = 0;
     if (tempAlloc.freeCount < MAX_TEMPS) {

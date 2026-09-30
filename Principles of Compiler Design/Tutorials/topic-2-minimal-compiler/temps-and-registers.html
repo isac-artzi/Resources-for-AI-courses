@@ -1,0 +1,863 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Temporaries &amp; Registers</title>
+<style>
+:root{
+  --bg:#fbfaf7; --surface:#ffffff; --surface-2:#f3f1ec; --ink:#1d1c1a; --ink-2:#55524c; --ink-3:#86827a;
+  --line:#e2ded6; --accent:#2f5fb3; --accent-soft:#e6edf9;
+  --alloc:#1f7a4d; --alloc-soft:#e3f3ea; --free:#9a6a00; --free-soft:#fbf1d9;
+  --bad:#b3261e; --bad-soft:#fbe7e5; --load:#2f5fb3; --spill:#8a3ea8; --spill-soft:#f3e8f8;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#161614; --surface:#1f1f1c; --surface-2:#282824; --ink:#ecebe6; --ink-2:#b5b2aa; --ink-3:#86827a;
+    --line:#35342f; --accent:#8fb1ee; --accent-soft:#223252;
+    --alloc:#6fd3a0; --alloc-soft:#1c3a2b; --free:#e9c46a; --free-soft:#3a3120;
+    --bad:#ff8a80; --bad-soft:#44221f; --load:#8fb1ee; --spill:#d7a4ec; --spill-soft:#3a2745;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#161614; --surface:#1f1f1c; --surface-2:#282824; --ink:#ecebe6; --ink-2:#b5b2aa; --ink-3:#86827a;
+  --line:#35342f; --accent:#8fb1ee; --accent-soft:#223252;
+  --alloc:#6fd3a0; --alloc-soft:#1c3a2b; --free:#e9c46a; --free-soft:#3a3120;
+  --bad:#ff8a80; --bad-soft:#44221f; --load:#8fb1ee; --spill:#d7a4ec; --spill-soft:#3a2745;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans)}
+main{max-width:980px;margin:0 auto;padding:40px 20px 80px}
+h1{font-size:2.1rem;line-height:1.15;margin:0 0 .4em;letter-spacing:-.01em}
+h2{font-size:1.45rem;margin:2.6em 0 .5em;padding-top:.6em;border-top:1px solid var(--line)}
+h3{font-size:1.1rem;margin:1.8em 0 .4em}
+p,li{color:var(--ink)} .lede{font-size:1.1rem;color:var(--ink-2);max-width:62ch}
+.kicker{font:600 .78rem/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:.8em}
+code,kbd{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:.08em .35em;border-radius:4px}
+pre{font:13.5px/1.55 var(--mono);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto;margin:1em 0}
+pre code{background:none;padding:0;font-size:inherit}
+.c{color:var(--ink-3)} .k{color:var(--accent);font-weight:600} .hl{background:var(--free-soft)}
+.callout{border-left:3px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:0 8px 8px 0;margin:1.2em 0}
+.callout.warn{border-color:var(--bad);background:var(--bad-soft)}
+.callout p{margin:.3em 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border-bottom:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--ink-2);font-size:.82rem;text-transform:uppercase;letter-spacing:.04em}
+td.m{font-family:var(--mono);font-size:.86rem;white-space:nowrap}
+.tablewrap{overflow-x:auto;margin:1em 0;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.tablewrap table th:first-child,.tablewrap table td:first-child{padding-left:14px}
+.diagram{overflow-x:auto;margin:1.2em 0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px}
+.diagram svg{display:block;min-width:720px;width:100%;height:auto}
+.diagram text{font-family:var(--sans);fill:var(--ink)}
+.diagram .mono{font-family:var(--mono)}
+.diagram .muted{fill:var(--ink-2)}
+.steps{counter-reset:s;list-style:none;padding:0}
+.steps>li{counter-increment:s;position:relative;padding-left:2.2em;margin:.6em 0}
+.steps>li::before{content:counter(s);position:absolute;left:0;top:.1em;width:1.6em;height:1.6em;border-radius:50%;background:var(--accent-soft);color:var(--accent);font:600 .85rem/1.6em var(--sans);text-align:center}
+.tag{display:inline-block;font:600 .72rem/1 var(--sans);padding:.3em .5em;border-radius:4px;letter-spacing:.03em;vertical-align:middle}
+.tag.alloc{background:var(--alloc-soft);color:var(--alloc)} .tag.free{background:var(--free-soft);color:var(--free)}
+.tag.bad{background:var(--bad-soft);color:var(--bad)} .tag.spill{background:var(--spill-soft);color:var(--spill)}
+nav.toc{display:flex;flex-wrap:wrap;gap:8px;margin:1.4em 0 0}
+nav.toc a{font-size:.88rem;color:var(--ink-2);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:4px 12px;background:var(--surface)}
+nav.toc a:hover{color:var(--accent);border-color:var(--accent)}
+
+/* ---------- lab ---------- */
+.lab{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;margin:1.2em 0}
+.lab-top{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px}
+@media (max-width:760px){.lab-top{grid-template-columns:1fr}}
+textarea{width:100%;min-height:110px;font:14px/1.5 var(--mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;resize:vertical}
+label.lbl{display:block;font:600 .78rem/1 var(--sans);text-transform:uppercase;letter-spacing:.05em;color:var(--ink-2);margin:0 0 6px}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+button{font:500 .88rem/1 var(--sans);color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:7px 11px;cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.primary{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+button.primary:hover{color:var(--surface);filter:brightness(1.08)}
+button:disabled{opacity:.4;cursor:default}
+.opt{display:flex;align-items:flex-start;gap:8px;margin:8px 0;font-size:.92rem}
+.opt input{margin-top:.3em}
+select{font:inherit;font-size:.92rem;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:4px 6px}
+.err{color:var(--bad);font-size:.9rem;margin-top:6px;min-height:1.2em}
+.vals{font:13px/1.6 var(--mono);color:var(--ink-2)}
+.tabs{display:flex;gap:4px;margin:18px 0 0;border-bottom:1px solid var(--line)}
+.tabs button{border:none;border-bottom:2px solid transparent;border-radius:0;background:none;padding:10px 14px;color:var(--ink-2)}
+.tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.stepper{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:14px 0 10px}
+.stepper .count{font:13px var(--mono);color:var(--ink-2);margin-left:6px}
+input[type=range]{flex:1 1 160px;accent-color:var(--accent)}
+.msg{font:14px/1.5 var(--mono);padding:10px 12px;border-radius:8px;background:var(--surface-2);min-height:3.2em}
+.msg.alloc{background:var(--alloc-soft);color:var(--alloc)} .msg.free{background:var(--free-soft);color:var(--free)}
+.msg.bad{background:var(--bad-soft);color:var(--bad)} .msg.emit{background:var(--accent-soft);color:var(--accent)}
+.panes{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:12px}
+@media (max-width:760px){.panes{grid-template-columns:1fr}}
+.pane{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--bg);min-width:0}
+.pane h4{margin:0 0 8px;font:600 .78rem/1 var(--sans);text-transform:uppercase;letter-spacing:.05em;color:var(--ink-2)}
+.listing{font:13px/1.6 var(--mono);white-space:pre;overflow-x:auto;max-height:340px;overflow-y:auto}
+.listing div{padding:0 6px;border-radius:3px}
+.listing .ln{color:var(--ink-3);display:inline-block;width:2.4em}
+.listing .cur{background:var(--accent-soft)}
+.listing .future{opacity:.28}
+.listing .spill{color:var(--spill)} .listing .load{color:var(--load)} .listing .li{color:var(--alloc)} .listing .sys{color:var(--ink-3)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;min-height:30px;align-items:center}
+.chip{font:600 13px/1 var(--mono);padding:6px 9px;border-radius:6px;border:1px solid var(--line);background:var(--surface)}
+.chip.live{background:var(--alloc-soft);color:var(--alloc);border-color:transparent}
+.chip.freec{background:var(--free-soft);color:var(--free);border-color:transparent}
+.chip.flash{outline:2px solid var(--accent);outline-offset:1px}
+.stack{display:flex;flex-direction:column-reverse;gap:4px;min-height:30px}
+.stack .chip{align-self:flex-start}
+.small{font-size:.85rem;color:var(--ink-2)}
+.regtable td,.regtable th{padding:4px 8px;font-size:.86rem}
+.regtable td{font-family:var(--mono)}
+.regtable tr.empty td{color:var(--ink-3)}
+.regtable tr.touched td{background:var(--accent-soft)}
+.dirty{color:var(--spill);font-weight:700}
+.result{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-top:12px;font:14px var(--mono)}
+.result .ok{color:var(--alloc);font-weight:700} .result .no{color:var(--bad);font-weight:700}
+.warnbox{margin-top:8px;padding:8px 12px;border-radius:8px;background:var(--bad-soft);color:var(--bad);font-size:.9rem}
+.notes{margin:6px 0 0;padding-left:1.1em;font-size:.9rem;color:var(--ink-2)}
+nav.crumbs{font-size:.85rem;color:var(--ink-3);margin-bottom:1.6em}
+nav.crumbs a{color:var(--ink-2);text-decoration:none}
+nav.crumbs a:hover{color:var(--accent)}
+footer{margin-top:4em;color:var(--ink-3);font-size:.85rem}
+</style>
+</head>
+<body>
+<main>
+
+<nav class="crumbs" aria-label="Breadcrumb"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 2</a> &nbsp;›&nbsp; <a href="lecture-notes.html">Lecture notes</a> &nbsp;›&nbsp; Temporaries &amp; registers</nav>
+<div class="kicker">Compiler back end</div>
+<h1>Temporaries in TAC, registers in code generation</h1>
+<p class="lede">A compiler handles storage for intermediate values twice. The TAC generator decides <em>which names</em> hold intermediate values. The code generator then decides <em>which machine registers</em> hold those names at each moment. The two allocators solve the same problem at different levels, and this page walks through both using the algorithms in this course's compiler (<code>tac.c</code> and <code>codegen.c</code>).</p>
+
+<nav class="toc">
+  <a href="#big-picture">The big picture</a>
+  <a href="#tac">1 · TAC temporaries</a>
+  <a href="#regs">2 · Register cache</a>
+  <a href="#lab">3 · Interactive lab</a>
+  <a href="#pitfalls">4 · Pitfalls (real bugs)</a>
+  <a href="#summary">Cheat sheet</a>
+</nav>
+
+<h2 id="big-picture">The big picture</h2>
+<p>Take <code>x = (a + b) * (c - d)</code>. The source never names <code>a + b</code>, but the machine has to keep that value somewhere while it computes <code>c - d</code>. That produces two separate questions:</p>
+
+<div class="diagram" role="img" aria-label="Pipeline from AST to TAC with temporaries, then to MIPS registers backed by stack memory">
+<svg viewBox="0 0 900 250" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink-3)"/>
+    </marker>
+  </defs>
+  <!-- AST -->
+  <rect x="10" y="40" width="190" height="170" rx="10" style="fill:var(--surface-2);stroke:var(--line)"/>
+  <text x="105" y="30" text-anchor="middle" font-weight="600" font-size="14">AST</text>
+  <g font-size="13" class="mono">
+    <circle cx="105" cy="72" r="15" style="fill:var(--surface);stroke:var(--ink-3)"/><text x="105" y="77" text-anchor="middle" class="mono">*</text>
+    <line x1="95" y1="84" x2="62" y2="112" style="stroke:var(--ink-3)"/><line x1="115" y1="84" x2="148" y2="112" style="stroke:var(--ink-3)"/>
+    <circle cx="55" cy="122" r="15" style="fill:var(--surface);stroke:var(--ink-3)"/><text x="55" y="127" text-anchor="middle" class="mono">+</text>
+    <circle cx="155" cy="122" r="15" style="fill:var(--surface);stroke:var(--ink-3)"/><text x="155" y="127" text-anchor="middle" class="mono">−</text>
+    <text x="35" y="185" text-anchor="middle" class="mono">a</text><text x="75" y="185" text-anchor="middle" class="mono">b</text>
+    <text x="135" y="185" text-anchor="middle" class="mono">c</text><text x="175" y="185" text-anchor="middle" class="mono">d</text>
+    <line x1="48" y1="135" x2="38" y2="170" style="stroke:var(--ink-3)"/><line x1="62" y1="135" x2="72" y2="170" style="stroke:var(--ink-3)"/>
+    <line x1="148" y1="135" x2="138" y2="170" style="stroke:var(--ink-3)"/><line x1="162" y1="135" x2="172" y2="170" style="stroke:var(--ink-3)"/>
+  </g>
+  <line x1="205" y1="125" x2="258" y2="125" style="stroke:var(--ink-3);stroke-width:1.5" marker-end="url(#ar)"/>
+  <text x="231" y="112" text-anchor="middle" font-size="11" class="muted">tac.c</text>
+  <!-- TAC -->
+  <rect x="262" y="40" width="250" height="170" rx="10" style="fill:var(--alloc-soft);stroke:var(--line)"/>
+  <text x="387" y="30" text-anchor="middle" font-weight="600" font-size="14">TAC — virtual names</text>
+  <g font-size="13.5" class="mono">
+    <text x="282" y="80" class="mono">t0 = a + b</text>
+    <text x="282" y="104" class="mono">t1 = c - d</text>
+    <text x="282" y="128" class="mono">t2 = t0 * t1</text>
+    <text x="282" y="152" class="mono">x  = t2</text>
+  </g>
+  <text x="282" y="190" font-size="12" class="muted">Q1: which tN names? how many?</text>
+  <line x1="517" y1="125" x2="570" y2="125" style="stroke:var(--ink-3);stroke-width:1.5" marker-end="url(#ar)"/>
+  <text x="543" y="112" text-anchor="middle" font-size="11" class="muted">codegen.c</text>
+  <!-- registers -->
+  <rect x="574" y="40" width="150" height="170" rx="10" style="fill:var(--accent-soft);stroke:var(--line)"/>
+  <text x="649" y="30" text-anchor="middle" font-weight="600" font-size="14">$t0–$t9</text>
+  <g font-size="12.5" class="mono">
+    <rect x="592" y="58" width="114" height="24" rx="4" style="fill:var(--surface);stroke:var(--line)"/><text x="600" y="75" class="mono">$t0 ← t0</text>
+    <rect x="592" y="88" width="114" height="24" rx="4" style="fill:var(--surface);stroke:var(--line)"/><text x="600" y="105" class="mono">$t1 ← a</text>
+    <rect x="592" y="118" width="114" height="24" rx="4" style="fill:var(--surface);stroke:var(--line)"/><text x="600" y="135" class="mono">$t2 ← b</text>
+    <text x="649" y="162" text-anchor="middle" class="mono muted">⋯</text>
+  </g>
+  <text x="649" y="195" text-anchor="middle" font-size="12" class="muted">Q2: which register now?</text>
+  <!-- memory -->
+  <line x1="728" y1="105" x2="772" y2="105" style="stroke:var(--spill);stroke-width:1.5" marker-end="url(#ar)"/>
+  <text x="750" y="96" text-anchor="middle" font-size="11" style="fill:var(--spill)">spill</text>
+  <line x1="772" y1="145" x2="728" y2="145" style="stroke:var(--load);stroke-width:1.5" marker-end="url(#ar)"/>
+  <text x="750" y="163" text-anchor="middle" font-size="11" style="fill:var(--load)">load</text>
+  <rect x="776" y="40" width="114" height="170" rx="10" style="fill:var(--spill-soft);stroke:var(--line)"/>
+  <text x="833" y="30" text-anchor="middle" font-weight="600" font-size="14">stack homes</text>
+  <g font-size="12" class="mono">
+    <text x="790" y="75" class="mono">0($sp)  a</text>
+    <text x="790" y="97" class="mono">4($sp)  b</text>
+    <text x="790" y="119" class="mono">⋯</text>
+    <text x="790" y="141" class="mono">20($sp) t0</text>
+    <text x="790" y="163" class="mono">24($sp) t1</text>
+  </g>
+</svg>
+</div>
+
+<div class="grid2">
+  <div class="callout">
+    <p><strong>Q1 — TAC level.</strong> The pool of names is unlimited, but every name we mint becomes a stack slot later. <strong>Goal:</strong> recycle a name once its value has been consumed. <strong>Tools:</strong> <code>allocTemp()</code> / <code>freeTemp()</code>.</p>
+  </div>
+  <div class="callout">
+    <p><strong>Q2 — machine level.</strong> Ten registers have to cover an unbounded set of names. <strong>Goal:</strong> keep hot values in registers and write back to memory only when forced. <strong>Tools:</strong> <code>ensureReg</code>, <code>defReg</code>, LRU eviction, spill.</p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <p><strong>Two namespaces, same spelling.</strong> <code>t3</code> is a TAC temporary, which is a variable name. <code>$t3</code> is MIPS register number 3. They are unrelated: <code>t3</code> may sit in <code>$t7</code>, in memory at <code>28($sp)</code>, or in both. The <code>$</code> is the only thing telling them apart.</p>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="tac">1 · Allocating temporaries during TAC generation</h2>
+
+<h3>The naive version and why it wastes space</h3>
+<p><code>newTemp()</code> simply counts: <code>t0, t1, t2, …</code>, and every expression node gets a fresh name forever. It is correct but wasteful. A program with 500 additions needs 500 temporaries, and <code>layoutFrame()</code> gives each one its own 4-byte stack slot, even though only two or three are ever alive at the same moment.</p>
+
+<h3>The key observation: an expression temporary is used exactly once</h3>
+<p>A temporary created for an interior node of an expression tree is read by exactly one instruction, the one for its parent node. Once that instruction has been emitted, nothing later can refer to the temporary, so its name can be reused. Temps therefore behave like a stack: they are born in post-order and die as soon as their parent consumes them.</p>
+
+<h3>Data structure (<code>tac.h</code>)</h3>
+<pre><code><span class="k">typedef struct</span> {
+    int allocated[MAX_TEMPS];   <span class="c">/* allocated[n] == 1  ⇔  tn is live right now      */</span>
+    int maxUsed;                <span class="c">/* high-water mark: t0 … t(maxUsed-1) exist       */</span>
+    int freeList[MAX_TEMPS];    <span class="c">/* a STACK of dead temp numbers ready for reuse   */</span>
+    int freeCount;              <span class="c">/* stack pointer                                  */</span>
+} TempAllocator;</code></pre>
+
+<h3>The algorithm</h3>
+<div class="grid2">
+<div>
+<pre><code><span class="k">allocTemp</span>():
+  <span class="k">if</span> freeCount &gt; 0:
+      n ← freeList[--freeCount]  <span class="c">// reuse (LIFO)</span>
+  <span class="k">else</span>:
+      n ← maxUsed++              <span class="c">// mint a new one</span>
+  allocated[n] ← 1
+  <span class="k">return</span> "t" + n
+
+<span class="k">freeTemp</span>(name):
+  <span class="k">if</span> name is not a temp: <span class="k">return</span>   <span class="c">// "a", "42"</span>
+  n ← number in name
+  <span class="k">if</span> !allocated[n]: <span class="k">return</span>        <span class="c">// double free</span>
+  allocated[n] ← 0
+  freeList[freeCount++] ← n</code></pre>
+</div>
+<div>
+<pre><code><span class="c">/* generateTACExpr, NODE_BINOP */</span>
+left  = generateTACExpr(node-&gt;left);
+right = generateTACExpr(node-&gt;right);
+
+temp  = <span class="k">allocTemp</span>();          <span class="c">/* ① result name   */</span>
+appendTAC(op, left, right, temp); <span class="c">/* ② consume both  */</span>
+
+<span class="k">freeTemp</span>(left);                <span class="c">/* ③ children die  */</span>
+<span class="k">freeTemp</span>(right);
+<span class="k">return</span> temp;                    <span class="c">/* parent frees it */</span>
+
+<span class="c">/* statements free the final result */</span>
+appendTAC(ASSIGN, expr, x);
+<span class="k">freeTemp</span>(expr);</code></pre>
+</div>
+</div>
+
+<ol class="steps">
+  <li><strong>Recurse first.</strong> Generate both children (post-order). Each child returns the name holding its value: a literal, a user variable, or a temp.</li>
+  <li><strong>Allocate the result</strong> with <code>allocTemp()</code>. It takes a dead name from the top of the free stack if there is one, and otherwise mints a new name.</li>
+  <li><strong>Emit the instruction.</strong> This is the only use of the children's values.</li>
+  <li><strong>Free the children.</strong> <code>freeTemp</code> ignores anything that is not a temp, so it is safe to call on <code>a</code> or <code>42</code>.</li>
+  <li><strong>Return the result name</strong> to the parent, which is responsible for freeing it. At the top of the tree, the statement (assignment or print) frees it.</li>
+</ol>
+
+<h3>Worked trace: <code>x = (a + b) * (c - d)</code>, then <code>y = x + a</code></h3>
+<div class="tablewrap"><table>
+<thead><tr><th>#</th><th>Event</th><th>Free stack (top →)</th><th>Live</th><th>TAC emitted</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><span class="tag alloc">ALLOC</span> for <code>a+b</code>: stack empty, mint</td><td class="m">[ ]</td><td class="m">t0</td><td class="m"></td></tr>
+<tr><td>2</td><td>emit; <code>a</code>, <code>b</code> are not temps, so no free</td><td class="m">[ ]</td><td class="m">t0</td><td class="m">t0 = a + b</td></tr>
+<tr><td>3</td><td><span class="tag alloc">ALLOC</span> for <code>c-d</code>: mint</td><td class="m">[ ]</td><td class="m">t0 t1</td><td class="m">t1 = c - d</td></tr>
+<tr><td>4</td><td><span class="tag alloc">ALLOC</span> for <code>*</code>: mint (t0, t1 still live)</td><td class="m">[ ]</td><td class="m">t0 t1 t2</td><td class="m">t2 = t0 * t1</td></tr>
+<tr><td>5</td><td><span class="tag free">FREE</span> t0, then t1</td><td class="m">[0, 1]</td><td class="m">t2</td><td class="m"></td></tr>
+<tr><td>6</td><td>assignment consumes t2 → <span class="tag free">FREE</span></td><td class="m">[0, 1, 2]</td><td class="m">—</td><td class="m">x = t2</td></tr>
+<tr><td>7</td><td><span class="tag alloc">ALLOC</span> for <code>x+a</code>: <strong>pop t2</strong> (reuse)</td><td class="m">[0, 1]</td><td class="m">t2</td><td class="m">t2 = x + a</td></tr>
+<tr><td>8</td><td>assignment consumes t2 → <span class="tag free">FREE</span></td><td class="m">[0, 1, 2]</td><td class="m">—</td><td class="m">y = t2</td></tr>
+</tbody></table></div>
+<p>Two statements, four temp definitions, three names. However long the program gets, the number of names stays at the largest number of temps alive at one time, which depends on the <em>shape</em> of the biggest expression rather than on program length.</p>
+
+<div class="callout">
+  <p><strong>Why allocate before freeing?</strong> Step 4 mints <code>t2</code> even though <code>t0</code> and <code>t1</code> die in the same instruction. If the order were free-then-allocate, the result would get <code>t1</code> back (<code>t1 = t0 * t1</code>). That is legal, because an instruction reads its operands before it writes the result, and it saves one name. The course compiler uses the simpler allocate-first order, which never reuses an operand's name within the same instruction.</p>
+  <p><strong>Why a stack (LIFO)?</strong> The most recently freed temp is the one most likely to still be in a register, so reusing it first tends to reuse a warm register at code-gen time. Any free-list discipline would be <em>correct</em>, though.</p>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="regs">2 · Allocating registers during code generation</h2>
+
+<p>TAC now uses a small set of names: user variables plus a few temps. MIPS offers ten caller-saved scratch registers, <code>$t0</code>–<code>$t9</code>. The course compiler treats them as a <strong>write-back cache over memory</strong>, the same way a CPU cache sits in front of RAM.</p>
+
+<h3>Step 0 — every name gets a memory home first</h3>
+<p>Before emitting any instruction for a function, <code>layoutFrame()</code> walks its TAC and gives every declared variable <em>and every temporary</em> a slot in the activation record (<code>reserveTemp</code>). This is what makes spilling always possible: any register can be evicted at any moment, because its value always has somewhere to go.</p>
+<p>This is also where Part 1 pays off. Fewer distinct temp names mean fewer slots and a smaller frame.</p>
+
+<h3>The register descriptor</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Field</th><th>Meaning</th><th>Used for</th></tr></thead>
+<tbody>
+<tr><td class="m">varName</td><td>Which TAC name this register currently holds (or <code>#k5</code> for the literal 5)</td><td>cache lookup — <code>findVarReg</code></td></tr>
+<tr><td class="m">inUse</td><td>Register holds something</td><td>finding a free register</td></tr>
+<tr><td class="m">isDirty</td><td>The register is <em>newer</em> than memory</td><td>deciding whether eviction needs a <code>sw</code></td></tr>
+<tr><td class="m">hasHome</td><td>The value has a stack/global slot (literals don't)</td><td>homeless values are free to drop</td></tr>
+<tr><td class="m">lastUsed</td><td>Timestamp of last touch</td><td>LRU victim choice</td></tr>
+</tbody></table></div>
+
+<h3>The allocation algorithm — <code>getReg(name, hasHome, load)</code></h3>
+<ol class="steps">
+  <li><strong>Hit?</strong> If some register already holds <code>name</code>, refresh its timestamp and return it. No instruction is emitted.</li>
+  <li><strong>Free register?</strong> Take the first register with <code>inUse == 0</code>.</li>
+  <li><strong>Otherwise evict.</strong> <code>selectVictimReg()</code> prefers a register whose value has <em>no home</em> (a literal, which can be re-created with <code>li</code>). Failing that, it picks the <em>least recently used</em> register.</li>
+  <li><strong>Spill if needed.</strong> If the victim is <em>dirty and has a home</em>, emit <code>sw</code> to write it back. A clean victim needs no store because memory already matches.</li>
+  <li><strong>Claim it.</strong> Record the new name and timestamp, and set <code>dirty = 0</code>.</li>
+  <li><strong>Load if asked.</strong> If <code>load</code> is set, emit <code>lw</code> from the name's home.</li>
+</ol>
+
+<p>Three wrappers pick the right flags for each role an operand can play:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Wrapper</th><th>Role</th><th>Load?</th><th>Marks dirty?</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td class="m">ensureReg(x)</td><td>x is <strong>read</strong></td><td>yes</td><td>no</td><td>needs the current value</td></tr>
+<tr><td class="m">defReg(x)</td><td>x is <strong>written</strong></td><td>no</td><td>yes</td><td>old value is about to be overwritten, so loading it would be wasted</td></tr>
+<tr><td class="m">operandReg(s)</td><td>literal or name</td><td><code>li</code> for literals</td><td>no</td><td>literals are cached as <code>#k&lt;n&gt;</code> with no home</td></tr>
+</tbody></table></div>
+
+<p>Instruction selection then becomes almost mechanical:</p>
+<pre><code><span class="k">case</span> TAC_ADD: <span class="k">case</span> TAC_SUB: <span class="k">case</span> TAC_MUL: <span class="k">case</span> TAC_DIV: {
+    int a = <span class="k">operandReg</span>(i-&gt;arg1);     <span class="c">/* read  → maybe lw / li        */</span>
+    int b = <span class="k">operandReg</span>(i-&gt;arg2);     <span class="c">/* read  → maybe lw / li        */</span>
+    int d = <span class="k">defReg</span>(i-&gt;result);      <span class="c">/* write → no load, mark dirty  */</span>
+    emit("add $t%d, $t%d, $t%d", d, a, b);
+}</code></pre>
+
+<h3>Deallocation — when registers are released</h3>
+<p>Nothing in this allocator releases a register at a name's last use. Registers are given up in only three ways:</p>
+<ul>
+  <li><strong>Eviction</strong> (on demand). The LRU victim is spilled if dirty, then reassigned.</li>
+  <li><strong><code>flushRegisters()</code></strong> before a <code>jal</code> (the callee may overwrite <code>$t0</code>–<code>$t9</code>), before every label (control can arrive from elsewhere with different cache contents), and at the end of the function. Every dirty value with a home is written back, then the whole cache is forgotten.</li>
+  <li><strong>End of function.</strong> <code>initRegAlloc()</code> resets the cache for the next function.</li>
+</ul>
+
+<div class="callout">
+  <p><strong>The cost of skipping liveness.</strong> When a temp like <code>t0</code> dies, its register stays dirty. If it is evicted later, or the function ends, the compiler emits a useless <code>sw</code> of a dead value. The lab below shows this: watch for spills of temps that are never read again. Part 1 already knew exactly when each temp died, so a code generator can release (<em>not</em> spill) a temp's register at its last read. That is only valid if the optimizer keeps temps single-use. Otherwise it needs a real liveness analysis, which is the first step toward graph-coloring allocation.</p>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="lab">3 · Interactive lab</h2>
+<p>Write straight-line code: <code>name = expr</code> or <code>print(expr)</code>, with <code>+ - * /</code>, parentheses and unary minus. Step through phase 1 to watch temp names get recycled, then phase 2 to watch those names move between registers and memory. Every variable starts in memory with the value shown. The lab runs the emitted MIPS and compares its output with the value the source code should produce.</p>
+
+<div class="lab" id="labRoot">
+  <div class="lab-top">
+    <div>
+      <label class="lbl" for="src">Program</label>
+      <textarea id="src" spellcheck="false"></textarea>
+      <div class="presets" id="presets"></div>
+      <div class="err" id="err" role="alert"></div>
+    </div>
+    <div>
+      <label class="lbl">Options</label>
+      <label class="opt"><input type="checkbox" id="optBuggy"> <span>Use the old, buggy <code>freeTemp</code> (only checked <code>name[0]=='t'</code>). See <a href="#pitfall-1">pitfall 1</a>.</span></label>
+      <label class="opt"><span style="white-space:nowrap">Registers available:</span>
+        <select id="optN"></select></label>
+      <label class="opt"><input type="checkbox" id="optPin" checked> <span>Pin operands so one instruction's operands can't evict each other. Uncheck to get the old <code>selectVictimReg</code> (see <a href="#pitfall-2">pitfall 2</a>).</span></label>
+      <label class="lbl" style="margin-top:14px">Initial memory values</label>
+      <div class="vals" id="vals"></div>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab1" aria-selected="true">Phase 1 · TAC temporaries</button>
+    <button role="tab" id="tab2" aria-selected="false">Phase 2 · Registers &amp; MIPS</button>
+  </div>
+
+  <div class="stepper">
+    <button id="bFirst" aria-label="First step">⏮</button>
+    <button id="bPrev" aria-label="Previous step">◀</button>
+    <button id="bPlay" class="primary" aria-label="Play">▶ Play</button>
+    <button id="bNext" aria-label="Next step">▶</button>
+    <button id="bLast" aria-label="Last step">⏭</button>
+    <input type="range" id="scrub" min="0" max="0" value="0" aria-label="Step">
+    <span class="count" id="count"></span>
+  </div>
+
+  <div id="p1">
+    <div class="msg" id="msg1"></div>
+    <div class="panes">
+      <div class="pane"><h4>TAC emitted so far</h4><div class="listing" id="tacList"></div></div>
+      <div class="pane">
+        <h4>Live temporaries <span class="small">(allocated[n] = 1)</span></h4>
+        <div class="chips" id="liveChips"></div>
+        <h4 style="margin-top:14px">Free stack <span class="small">(top is last)</span></h4>
+        <div class="chips" id="freeChips"></div>
+        <p class="small" id="hw"></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="p2" hidden>
+    <div class="msg emit" id="msg2"></div>
+    <div id="warn2"></div>
+    <div class="panes">
+      <div class="pane"><h4>TAC</h4><div class="listing" id="tacList2"></div>
+        <h4 style="margin-top:14px">Registers</h4>
+        <div style="overflow-x:auto"><table class="regtable" id="regTable"></table></div>
+      </div>
+      <div class="pane"><h4>MIPS emitted</h4><div class="listing" id="mips" style="max-height:480px"></div></div>
+    </div>
+    <div class="result" id="result2"></div>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="pitfalls">4 · Pitfalls — two bugs found (and fixed) in the course compiler</h2>
+<p>Both bugs reproduced on the Topic 6 compiler, and every topic shared the same functions. They are now fixed in <code>.tools/master</code> and every generated topic folder. The lab can still switch the old behavior back on. They make good exercises, because each one follows directly from breaking one of the rules above.</p>
+
+<h3 id="pitfall-1">Pitfall 1 · <code>freeTemp</code> frees a live temp when a variable name starts with “t”</h3>
+<pre><code>void freeTemp(char* temp) {
+    <span class="hl">if (!temp || temp[0] != 't') return;</span>     <span class="c">/* "total" passes this test …   */</span>
+    int tempNum = <span class="hl">atoi(temp + 1)</span>;              <span class="c">/* … and atoi("otal") == 0      */</span>
+    if (!tempAlloc.allocated[tempNum]) return;
+    tempAlloc.allocated[tempNum] = 0;          <span class="c">/* t0 freed while still live!  */</span>
+    ...</code></pre>
+<p><code>freeTemp</code> is called on every operand, and the check that is supposed to skip user variables accepts <code>total</code>, <code>tax</code>, <code>temp</code>, and so on. If <code>t0</code> is live at that moment, it goes back on the free stack, the next <code>allocTemp()</code> hands it out again, and a value that is still needed gets overwritten:</p>
+<pre><code><span class="c">// print(((a+b) * (total+c)) + ((d+e) * (f+g)))    a..g = 1..7, total = 100</span>
+t0 = a + b
+t1 = total + c        <span class="c">← freeTemp("total") releases t0 here</span>
+t0 = t0 * t1          <span class="c">← allocTemp() hands t0 out again</span>
+t1 = d + e
+<span class="hl">t0 = f + g</span>            <span class="c">← overwrites (a+b)*(total+c) before it is used</span>
+t2 = t1 * t0
+t0 = t0 + t2
+PRINT t0              <span class="c">spim prints 130 — expected 426. Rename total → sum: 426.</span></code></pre>
+<p><strong>Fix (applied):</strong> check the full shape of a temp name, the same test <code>codegen.c</code>’s <code>isTemp()</code> uses:</p>
+<pre><code>static int isTempName(const char* s) {
+    if (!s || s[0] != 't' || !s[1]) return 0;
+    for (int i = 1; s[i]; i++) if (s[i] &lt; '0' || s[i] &gt; '9') return 0;
+    return 1;
+}
+void freeTemp(char* temp) {
+    if (!isTempName(temp)) return;
+    int tempNum = atoi(temp + 1);
+    if (tempNum &gt;= MAX_TEMPS || !tempAlloc.allocated[tempNum]) return;
+    ...</code></pre>
+<p>Try it in the lab: load the <em>“total” bug</em> preset and toggle the first option.</p>
+
+<h3 id="pitfall-2">Pitfall 2 · loading the second operand can evict the first</h3>
+<p>For <code>d = a op b</code> the code generator calls <code>operandReg(arg1)</code> and then <code>operandReg(arg2)</code>. If the second call finds no free register, it asks <code>selectVictimReg()</code>, which <em>returns the first register holding a homeless value</em>. The literal that the first call just loaded is homeless, so it can be chosen. Both operands then end up in the same register:</p>
+<pre><code><span class="c">// y = ((9 + 6) - r) * ((r * 2) * (9 * p))   p=3, r=7   (Topic 6, NUM_TEMP_REGS = 3)</span>
+    li   $t2, 9               <span class="c">← operandReg("9")</span>
+    <span class="hl">lw   $t2, 0($sp)   # p</span>    <span class="c">← operandReg("p") evicts the 9 it just loaded</span>
+    mul  $t0, $t2, $t2        <span class="c">← computes p*p instead of 9*p</span>
+<span class="c">// spim prints 1008 — expected 3024.  13 of 150 random expressions went wrong.</span></code></pre>
+<p>With 10 registers this needs a full cache, so small tests pass, but large functions trigger it. The same hazard also hit array stores (the value in a register could be evicted by the base address), array addressing (the base could be evicted by the index), and <code>&amp;&amp;</code>/<code>||</code>. In the logical case <code>defReg</code> could also take a scratch register that <code>releaseReg</code> then wiped, losing the result. <strong>Rule:</strong> every register handed out while translating one TAC instruction is <em>pinned</em> until the next instruction begins. The fix went into the allocator itself instead of each call site, so no instruction case can forget it:</p>
+<pre><code>static int pinned[NUM_TEMP_REGS];   <span class="c">/* 1 = in use by the current instruction */</span>
+
+<span class="c">/* findVarReg (on a hit) and getReg (on a claim) both set pinned[r] = 1;
+ * releaseReg clears it; the translation loop calls unpinAll() before
+ * each TAC instruction. */</span>
+
+static int selectVictimReg(void) {
+    int victim = -1;
+    for (int i = 0; i &lt; NUM_TEMP_REGS; i++) {       <span class="c">/* note: start at 0 */</span>
+        if (pinned[i]) continue;            <span class="c">/* the current instruction needs it */</span>
+        if (!regAlloc.regs[i].hasHome &amp;&amp; regAlloc.regs[i].inUse) return i;
+        if (victim &lt; 0 || regAlloc.regs[i].lastUsed &lt; regAlloc.regs[victim].lastUsed)
+            victim = i;
+    }
+    if (victim &lt; 0) { <span class="c">/* internal error: one instruction needs &gt; 10 registers */</span> exit(1); }
+    return victim;
+}</code></pre>
+<p>Verified after the fix: all 55 test runs across topics 2–6 give identical output, and with <code>NUM_TEMP_REGS</code> reduced to 3 the random expressions that failed before (13 of 150) now all pass. The lab reproduces the old behavior: load the <em>operand clobber</em> preset with 3 registers and uncheck “Pin operands”. (The lab lets the destination reuse an operand’s register. The compiler pins that too, which is simpler and costs at most one extra register.)</p>
+
+<!-- ===================================================================== -->
+<h2 id="summary">Cheat sheet</h2>
+<div class="tablewrap"><table>
+<thead><tr><th></th><th>TAC temporaries (<code>tac.c</code>)</th><th>Registers (<code>codegen.c</code>)</th></tr></thead>
+<tbody>
+<tr><td><strong>Resource</strong></td><td>names <code>t0 … t99</code> (each costs a stack slot)</td><td><code>$t0 … $t9</code> (10, fixed)</td></tr>
+<tr><td><strong>Allocate</strong></td><td><code>allocTemp</code>: pop free stack, else mint <code>maxUsed++</code></td><td><code>getReg</code>: hit → free reg → evict (homeless first, else LRU)</td></tr>
+<tr><td><strong>Deallocate</strong></td><td><code>freeTemp</code> right after the <em>single</em> use is emitted</td><td>only on eviction or <code>flushRegisters</code> (labels, calls, function end)</td></tr>
+<tr><td><strong>When space runs out</strong></td><td>fatal error at <code>MAX_TEMPS</code></td><td>spill: <code>sw</code> the victim to its home if dirty</td></tr>
+<tr><td><strong>Key invariant</strong></td><td>a temp is freed exactly once, only after its last use</td><td>every name has a home; dirty ⇒ memory is stale; registers used by the current instruction are pinned</td></tr>
+<tr><td><strong>Knows liveness?</strong></td><td>yes, implicitly (tree shape)</td><td>no, it approximates with LRU</td></tr>
+<tr><td><strong>Real-compiler upgrade</strong></td><td>SSA virtual registers (never reuse, let the allocator decide)</td><td>liveness + graph coloring or linear scan</td></tr>
+</tbody></table></div>
+
+<footer>Based on <code>tac.c</code>, <code>tac.h</code>, <code>codegen.c</code>, <code>codegen.h</code> in the course compiler. The lab mirrors those algorithms in JavaScript, without the TAC optimizer.</footer>
+</main>
+
+<script>
+/* ===== core: parser, TAC temp allocator, register cache (mirrors tac.c / codegen.c) ===== */
+function parseProgram(src) {
+  const stmts = [];
+  const lines = src.replace(/\/\/[^\n]*/g, '').split(/[\n;]/);
+  lines.forEach((raw, li) => {
+    const line = raw.trim();
+    if (!line) return;
+    const toks = [];
+    const re = /\s*(\d+|[A-Za-z_]\w*|[-+*/()=])/y;
+    let pos = 0;
+    while (pos < line.length) {
+      re.lastIndex = pos;
+      const m = re.exec(line);
+      if (!m) { if (/^\s+$/.test(line.slice(pos))) break; throw new Error(`line ${li + 1}: unexpected '${line[pos]}'`); }
+      toks.push(m[1]); pos = re.lastIndex;
+    }
+    let i = 0;
+    const peek = () => toks[i], next = () => toks[i++];
+    const expect = t => { if (toks[i] !== t) throw new Error(`line ${li + 1}: expected '${t}'`); i++; };
+    function expr() { let n = term(); while (peek() === '+' || peek() === '-') { const op = next(); n = { k: 'bin', op, l: n, r: term() }; } return n; }
+    function term() { let n = factor(); while (peek() === '*' || peek() === '/') { const op = next(); n = { k: 'bin', op, l: n, r: factor() }; } return n; }
+    function factor() {
+      const t = next();
+      if (t === undefined) throw new Error(`line ${li + 1}: unexpected end of line`);
+      if (t === '(') { const n = expr(); expect(')'); return n; }
+      if (t === '-') return { k: 'neg', e: factor() };
+      if (/^\d+$/.test(t)) return { k: 'num', v: +t };
+      if (/^[A-Za-z_]\w*$/.test(t)) {
+        if (/^t\d+$/.test(t)) throw new Error(`line ${li + 1}: '${t}' is reserved for compiler temporaries`);
+        if (t === 'print') throw new Error(`line ${li + 1}: 'print' is a keyword`);
+        return { k: 'var', name: t };
+      }
+      throw new Error(`line ${li + 1}: unexpected '${t}'`);
+    }
+    let st;
+    if (toks[0] === 'print') { i = 1; st = { k: 'print', e: expr() }; }
+    else if (toks[1] === '=') {
+      if (/^t\d+$/.test(toks[0])) throw new Error(`line ${li + 1}: '${toks[0]}' is reserved for compiler temporaries`);
+      i = 2; st = { k: 'assign', name: toks[0], e: expr() };
+    }
+    else { st = { k: 'print', e: expr() }; }
+    if (i !== toks.length) throw new Error(`line ${li + 1}: unexpected '${toks[i]}'`);
+    stmts.push(st);
+  });
+  return stmts;
+}
+
+function collectVars(stmts) {
+  const seen = [];
+  const add = n => { if (!seen.includes(n)) seen.push(n); };
+  const walk = n => { if (n.k === 'var') add(n.name); else if (n.k === 'bin') { walk(n.l); walk(n.r); } else if (n.k === 'neg') walk(n.e); };
+  stmts.forEach(s => { if (s.k === 'assign') add(s.name); walk(s.e); });
+  return seen;
+}
+
+const DEFAULT_VALUES = [3, 4, 7, 5, 2, 6, 8, 9, 11, 12, 13, 10, 14, 15, 16, 17, 18, 19, 20, 21];
+function initialValues(vars) { const m = {}; vars.forEach((v, i) => m[v] = DEFAULT_VALUES[i % DEFAULT_VALUES.length]); return m; }
+
+function cdiv(a, b) { return b === 0 ? 0 : Math.trunc(a / b); }
+function applyOp(op, a, b) { return op === '+' ? a + b : op === '-' ? a - b : op === '*' ? Math.imul(a, b) : cdiv(a, b); }
+
+function evaluate(stmts, init) {
+  const env = { ...init }, out = [];
+  const ev = n => n.k === 'num' ? n.v : n.k === 'var' ? env[n.name] : n.k === 'neg' ? -ev(n.e) : applyOp(n.op, ev(n.l), ev(n.r));
+  stmts.forEach(s => { const v = ev(s.e); if (s.k === 'assign') env[s.name] = v; else out.push(v); });
+  return out;
+}
+
+/* C's atoi: leading digits, else 0 — this is what freeTemp("total") runs into */
+function atoi(s) { const m = /^\s*([+-]?\d+)/.exec(s); return m ? parseInt(m[1], 10) : 0; }
+
+/* ---------- PHASE 1: TAC generation with allocTemp / freeTemp ---------- */
+function generateTAC(stmts, buggyFree) {
+  const st = { allocated: new Set(), free: [], maxUsed: 0 };
+  const tac = [], steps = [];
+  const snap = (kind, msg, extra = {}) => steps.push({
+    kind, msg, free: [...st.free], alloc: [...st.allocated].sort((a, b) => a - b),
+    maxUsed: st.maxUsed, tacLen: tac.length, ...extra
+  });
+  function allocTemp() {
+    let n, reused = false;
+    if (st.free.length) { n = st.free.pop(); reused = true; }
+    else n = st.maxUsed++;
+    st.allocated.add(n);
+    snap('alloc', reused ? `allocTemp() → pop t${n} off the free stack (reuse)`
+                         : `allocTemp() → free stack empty, mint new t${n} (maxUsed = ${st.maxUsed})`, { temp: n });
+    return 't' + n;
+  }
+  function freeTemp(name) {
+    let n;
+    const real = /^t\d+$/.test(name);
+    if (buggyFree) { if (name[0] !== 't') return; n = atoi(name.slice(1)); }
+    else { if (!real) return; n = +name.slice(1); }
+    if (!st.allocated.has(n)) return;
+    st.allocated.delete(n); st.free.push(n);
+    if (real) snap('free', `freeTemp(${name}) → its only use has been emitted; push t${n} on the free stack`, { temp: n });
+    else snap('bug', `freeTemp("${name}") → atoi("${name.slice(1)}") = ${n}, so t${n} is released while still live`, { temp: n });
+  }
+  function emit(ins) { tac.push(ins); snap('emit', `emit  ${fmtTAC(ins)}`, { emitted: tac.length - 1 }); }
+  function gen(n) {
+    if (n.k === 'num') return String(n.v);
+    if (n.k === 'var') return n.name;
+    if (n.k === 'neg') {
+      const a = gen(n.e); const t = allocTemp();
+      emit({ op: 'neg', arg1: a, result: t }); freeTemp(a); return t;
+    }
+    const l = gen(n.l), r = gen(n.r);
+    const t = allocTemp();
+    emit({ op: n.op, arg1: l, arg2: r, result: t });
+    freeTemp(l); freeTemp(r);
+    return t;
+  }
+  stmts.forEach((s, si) => {
+    snap('stmt', s.k === 'assign' ? `statement ${si + 1}: ${s.name} = …` : `statement ${si + 1}: print(…)`);
+    const e = gen(s.e);
+    if (s.k === 'assign') emit({ op: '=', arg1: e, result: s.name });
+    else emit({ op: 'print', arg1: e });
+    freeTemp(e);
+  });
+  snap('done', `done — ${st.maxUsed} distinct temporar${st.maxUsed === 1 ? 'y' : 'ies'} for ${tac.filter(i => /^t\d+$/.test(i.result || '')).length} temp definitions`);
+  return { tac, steps, maxUsed: st.maxUsed };
+}
+
+function fmtTAC(i) {
+  if (i.op === 'print') return `PRINT ${i.arg1}`;
+  if (i.op === '=') return `${i.result} = ${i.arg1}`;
+  if (i.op === 'neg') return `${i.result} = -${i.arg1}`;
+  return `${i.result} = ${i.arg1} ${i.op} ${i.arg2}`;
+}
+
+/* ---------- PHASE 2: MIPS with the $t register cache ---------- */
+const MNEM = { '+': 'add', '-': 'sub', '*': 'mul', '/': 'div' };
+const isConst = s => /^-?\d+$/.test(s);
+
+function generateMIPS(tac, vars, init, N, pinFix) {
+  const homes = {}; let off = 0;
+  vars.forEach(v => { homes[v] = off; off += 4; });
+  tac.forEach(i => [i.result, i.arg1, i.arg2].forEach(n => { if (n && /^t\d+$/.test(n) && !(n in homes)) { homes[n] = off; off += 4; } }));
+  const mem = {}; Object.keys(homes).forEach(n => mem[n] = n in init ? init[n] : 0);
+  const regs = Array.from({ length: N }, () => ({ name: '', dirty: 0, inUse: 0, hasHome: 0, last: 0, val: 0 }));
+  let ts = 0; const lines = [], out = [], steps = [], stats = { spills: 0, loads: 0 };
+  let pinned = new Set(), notes = [];
+  const emit = (text, cls = '') => lines.push({ text, cls });
+  const pad = (s, w) => s + ' '.repeat(Math.max(1, w - s.length));
+  const R = r => `$t${r}`;
+
+  function find(name) { for (let i = 0; i < N; i++) if (regs[i].inUse && regs[i].name === name) { regs[i].last = ++ts; return i; } return -1; }
+  function victim() {
+    if (!pinFix) {                    /* exactly selectVictimReg() in codegen.c */
+      let v = 0, oldest = regs[0].last;
+      for (let i = 1; i < N; i++) {
+        if (!regs[i].hasHome && regs[i].inUse) return i;
+        if (regs[i].last < oldest) { oldest = regs[i].last; v = i; }
+      }
+      return v;
+    }
+    let v = -1;                       /* fixed: never evict an operand of this instruction */
+    for (let i = 0; i < N; i++) { if (pinned.has(i)) continue; if (!regs[i].hasHome && regs[i].inUse) return i; if (v < 0 || regs[i].last < regs[v].last) v = i; }
+    return v;
+  }
+  function spill(r) {
+    const g = regs[r];
+    if (g.inUse && g.dirty && g.hasHome) {
+      emit(`    # spill: ${g.name} -> memory`, 'spill');
+      emit(`    ${pad(`sw   ${R(r)}, ${homes[g.name]}($sp)`, 25)}# ${g.name}`, 'spill');
+      mem[g.name] = g.val; stats.spills++;
+    }
+    g.dirty = 0;
+  }
+  function getReg(name, hasHome, load) {
+    let r = find(name); if (r !== -1) return r;
+    for (r = 0; r < N; r++) if (!regs[r].inUse) break;
+    if (r === N) {
+      r = victim();
+      const g = regs[r];
+      notes.push(`evict ${R(r)} (held ${g.name.startsWith('#k') ? 'constant ' + g.name.slice(2) : g.name}${g.dirty && g.hasHome ? ', dirty → spill' : g.hasHome ? ', clean → no store' : ', no home → free to drop'})`);
+      spill(r);
+    }
+    Object.assign(regs[r], { name, inUse: 1, dirty: 0, hasHome, last: ++ts });
+    if (load) {
+      emit(`    ${pad(`lw   ${R(r)}, ${homes[name]}($sp)`, 25)}# ${name}`, 'load');
+      regs[r].val = mem[name]; stats.loads++;
+    }
+    return r;
+  }
+  const ensureReg = n => getReg(n, 1, 1);
+  const defReg = n => { const r = getReg(n, 1, 0); regs[r].dirty = 1; return r; };
+  function operandReg(s) {
+    if (isConst(s)) {
+      const n = '#k' + s; let r = find(n); if (r !== -1) return r;
+      r = getReg(n, 0, 0); emit(`    li   ${R(r)}, ${s}`, 'li'); regs[r].val = +s; return r;
+    }
+    return ensureReg(s);
+  }
+  const snapRegs = () => regs.map(g => ({ ...g }));
+
+  tac.forEach((ins, idx) => {
+    const start = lines.length; notes = []; pinned = new Set(); let warn = null;
+    if (ins.op in MNEM) {
+      const a = operandReg(ins.arg1); pinned.add(a);
+      const b = operandReg(ins.arg2); pinned.add(b);
+      if (a === b && ins.arg1 !== ins.arg2) warn = `${ins.arg1} and ${ins.arg2} both ended up in ${R(a)}: loading ${ins.arg2} evicted ${ins.arg1}, which this instruction still needs`;
+      const va = regs[a].val, vb = regs[b].val;
+      pinned.clear();   /* the destination MAY reuse an operand register: read happens before write */
+      const d = defReg(ins.result);
+      emit(`    ${pad(`${pad(MNEM[ins.op], 5)}${R(d)}, ${R(a)}, ${R(b)}`, 25)}# ${ins.result} = ${ins.arg1} ${MNEM[ins.op]} ${ins.arg2}`, 'op');
+      regs[d].val = applyOp(ins.op, va, vb);
+    } else if (ins.op === 'neg') {
+      const a = operandReg(ins.arg1); pinned.add(a); const va = regs[a].val; pinned.clear();
+      const d = defReg(ins.result);
+      emit(`    ${pad(`sub  ${R(d)}, $zero, ${R(a)}`, 25)}# ${ins.result} = -${ins.arg1}`, 'op');
+      regs[d].val = -va;
+    } else if (ins.op === '=') {
+      const a = operandReg(ins.arg1); pinned.add(a); const va = regs[a].val; pinned.clear();
+      const d = defReg(ins.result);
+      if (a !== d) emit(`    ${pad(`move ${R(d)}, ${R(a)}`, 25)}# ${ins.result} = ${ins.arg1}`, 'op');
+      regs[d].val = va;
+    } else if (ins.op === 'print') {
+      const a = operandReg(ins.arg1);
+      emit(`    ${pad(`move $a0, ${R(a)}`, 25)}# print ${ins.arg1}`, 'op');
+      emit(`    li   $v0, 1`, 'sys'); emit(`    syscall`, 'sys');
+      out.push(regs[a].val);
+    }
+    steps.push({ tacIndex: idx, start, end: lines.length, regs: snapRegs(), notes: notes.slice(), warn, out: out.slice() });
+  });
+
+  const start = lines.length; notes = [];
+  if (regs.some(g => g.inUse && g.dirty && g.hasHome)) emit(`    # write back live values (end of function body)`, 'spill');
+  for (let i = 0; i < N; i++) { spill(i); Object.assign(regs[i], { inUse: 0, dirty: 0, hasHome: 0, name: '' }); }
+  steps.push({ tacIndex: -1, start, end: lines.length, regs: snapRegs(), notes: ['flushRegisters(): write back every dirty value that has a home, then forget the whole cache'], warn: null, out: out.slice() });
+  return { lines, steps, out, stats, homes };
+}
+
+if (typeof module !== 'undefined') module.exports = { parseProgram, collectVars, initialValues, evaluate, generateTAC, generateMIPS, fmtTAC };
+
+</script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const PRESETS = [
+    { name: 'Reuse across statements', src: 'x = (a + b) * (c - d)\ny = x + a\nprint(y)', n: 10 },
+    { name: 'Deep tree', src: 'print(((a + b) * (c + d)) + ((e + f) * (g + h)))', n: 10 },
+    { name: 'Spills (3 regs)', src: 'x = (a + b) * (c - d)\ny = (x - a) * (b + c)\nz = x + y * d\nprint(z)', n: 3 },
+    { name: '“total” bug', src: 'print(((a + b) * (total + c)) + ((d + e) * (f + g)))', n: 10 },
+    { name: 'Operand clobber', src: 'x = (q - 1) + (9 - p)\nprint(x)', n: 3 },
+  ];
+  let tab = 1, i1 = 0, i2 = 0, S = null, timer = null;
+
+  for (let n = 2; n <= 10; n++) { const o = document.createElement('option'); o.value = n; o.textContent = n + (n === 10 ? '  ($t0–$t9)' : ''); $('optN').appendChild(o); }
+  $('optN').value = 10;
+  PRESETS.forEach(p => {
+    const b = document.createElement('button'); b.textContent = p.name;
+    b.onclick = () => { $('src').value = p.src; $('optN').value = p.n; rebuild(); };
+    $('presets').appendChild(b);
+  });
+  $('src').value = PRESETS[0].src;
+
+  const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+  function rebuild() {
+    stop();
+    $('err').textContent = '';
+    try {
+      const stmts = parseProgram($('src').value);
+      if (!stmts.length) throw new Error('write at least one statement');
+      const vars = collectVars(stmts), init = initialValues(vars);
+      const T = generateTAC(stmts, $('optBuggy').checked);
+      const M = generateMIPS(T.tac, vars, init, +$('optN').value, $('optPin').checked);
+      S = { stmts, vars, init, T, M, expected: evaluate(stmts, init) };
+      $('vals').innerHTML = vars.map(v => `${esc(v)}=${init[v]}`).join('&nbsp;&nbsp; ') || '—';
+    } catch (e) { $('err').textContent = e.message; S = null; }
+    i1 = 0; i2 = 0; render();
+  }
+
+  function total() { return !S ? 0 : tab === 1 ? S.T.steps.length : S.M.steps.length; }
+  function idx() { return tab === 1 ? i1 : i2; }
+  function setIdx(v) { v = Math.max(0, Math.min(total() - 1, v)); if (tab === 1) i1 = v; else i2 = v; render(); }
+
+  function render() {
+    $('p1').hidden = tab !== 1; $('p2').hidden = tab !== 2;
+    $('tab1').setAttribute('aria-selected', tab === 1); $('tab2').setAttribute('aria-selected', tab === 2);
+    const n = total(), k = idx();
+    $('scrub').max = Math.max(0, n - 1); $('scrub').value = k;
+    $('count').textContent = n ? `step ${k + 1} / ${n}` : '';
+    ['bFirst', 'bPrev'].forEach(b => $(b).disabled = !n || k === 0);
+    ['bNext', 'bLast', 'bPlay'].forEach(b => $(b).disabled = !n || k === n - 1);
+    if (!S) { $('msg1').textContent = ''; $('tacList').innerHTML = ''; $('liveChips').innerHTML = ''; $('freeChips').innerHTML = ''; $('mips').innerHTML = ''; $('regTable').innerHTML = ''; $('result2').innerHTML = ''; $('warn2').innerHTML = ''; $('msg2').textContent = ''; $('tacList2').innerHTML = ''; return; }
+    tab === 1 ? render1() : render2();
+  }
+
+  function render1() {
+    const st = S.T.steps[i1];
+    const m = $('msg1'); m.textContent = st.msg;
+    m.className = 'msg ' + ({ alloc: 'alloc', free: 'free', bug: 'bad', emit: 'emit' }[st.kind] || '');
+    $('tacList').innerHTML = S.T.tac.map((ins, j) => {
+      const cls = j >= st.tacLen ? 'future' : (st.kind === 'emit' && j === st.emitted ? 'cur' : '');
+      return `<div class="${cls}"><span class="ln">${j + 1}:</span>${esc(fmtTAC(ins))}</div>`;
+    }).join('');
+    const flash = n => (st.temp === n ? ' flash' : '');
+    $('liveChips').innerHTML = st.alloc.length ? st.alloc.map(n => `<span class="chip live${flash(n)}">t${n}</span>`).join('') : '<span class="small">none</span>';
+    $('freeChips').innerHTML = st.free.length ? st.free.map((n, j) => `<span class="chip freec${flash(n) && st.kind !== 'alloc' ? ' flash' : ''}">t${n}${j === st.free.length - 1 ? ' ← top' : ''}</span>`).join('') : '<span class="small">empty</span>';
+    const defs = S.T.tac.filter(x => /^t\d+$/.test(x.result || '')).length;
+    $('hw').innerHTML = `High-water mark: <strong>${st.maxUsed}</strong> name${st.maxUsed === 1 ? '' : 's'} minted so far. Whole program: ${S.T.maxUsed} names for ${defs} temp definitions (<code>newTemp()</code> would need ${defs}).`;
+  }
+
+  function render2() {
+    const st = S.M.steps[i2];
+    const ins = st.tacIndex >= 0 ? S.T.tac[st.tacIndex] : null;
+    $('msg2').innerHTML = ins ? `TAC ${st.tacIndex + 1}: <strong>${esc(fmtTAC(ins))}</strong>` : '<strong>end of function</strong>';
+    const notes = st.notes.length ? `<ul class="notes">${st.notes.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '';
+    $('warn2').innerHTML = (st.warn ? `<div class="warnbox">⚠ ${esc(st.warn)}</div>` : '') + notes;
+    $('tacList2').innerHTML = S.T.tac.map((x, j) => `<div class="${j === st.tacIndex ? 'cur' : (st.tacIndex >= 0 && j > st.tacIndex ? 'future' : '')}"><span class="ln">${j + 1}:</span>${esc(fmtTAC(x))}</div>`).join('');
+    $('mips').innerHTML = S.M.lines.map((l, j) => `<div class="${l.cls} ${j >= st.start && j < st.end ? 'cur' : (j >= st.end ? 'future' : '')}">${esc(l.text)}</div>`).join('');
+    const cur = $('mips').querySelector('.cur'); if (cur) cur.scrollIntoView({ block: 'nearest' });
+    const prev = i2 > 0 ? S.M.steps[i2 - 1].regs : null;
+    $('regTable').innerHTML = '<tr><th>reg</th><th>holds</th><th>value</th><th>state</th><th>last</th></tr>' + st.regs.map((g, r) => {
+      if (!g.inUse) return `<tr class="empty"><td>$t${r}</td><td>—</td><td></td><td>free</td><td></td></tr>`;
+      const touched = !prev || prev[r].name !== g.name || prev[r].last !== g.last || prev[r].val !== g.val;
+      const name = g.name.startsWith('#k') ? `const ${g.name.slice(2)}` : g.name;
+      const state = !g.hasHome ? 'no home' : g.dirty ? '<span class="dirty">dirty</span>' : 'clean';
+      return `<tr class="${touched ? 'touched' : ''}"><td>$t${r}</td><td>${esc(name)}</td><td>${g.val}</td><td>${state}</td><td>${g.last}</td></tr>`;
+    }).join('');
+    const done = i2 === S.M.steps.length - 1;
+    const got = st.out.join(', ') || '—', exp = S.expected.join(', ');
+    const ok = S.M.out.join() === S.expected.join();
+    $('result2').innerHTML = `<span>output: <strong>${got}</strong></span>` +
+      (done ? `<span>expected: <strong>${exp}</strong></span><span class="${ok ? 'ok' : 'no'}">${ok ? '✓ correct' : '✗ wrong code'}</span>` : '') +
+      `<span class="small">loads ${S.M.stats.loads} · spills ${S.M.stats.spills} · frame ${Object.keys(S.M.homes).length * 4} bytes of homes</span>`;
+  }
+
+  function stop() { if (timer) { clearInterval(timer); timer = null; $('bPlay').textContent = '▶ Play'; } }
+  $('bPlay').onclick = () => {
+    if (timer) return stop();
+    $('bPlay').textContent = '❚❚ Pause';
+    timer = setInterval(() => { if (idx() >= total() - 1) { stop(); render(); return; } setIdx(idx() + 1); }, 700);
+    $('bPlay').disabled = false;
+  };
+  $('bFirst').onclick = () => { stop(); setIdx(0); };
+  $('bPrev').onclick = () => { stop(); setIdx(idx() - 1); };
+  $('bNext').onclick = () => { stop(); setIdx(idx() + 1); };
+  $('bLast').onclick = () => { stop(); setIdx(total() - 1); };
+  $('scrub').oninput = e => { stop(); setIdx(+e.target.value); };
+  $('tab1').onclick = () => { stop(); tab = 1; render(); };
+  $('tab2').onclick = () => { stop(); tab = 2; render(); };
+  let deb; $('src').oninput = () => { clearTimeout(deb); deb = setTimeout(rebuild, 350); };
+  ['optBuggy', 'optN', 'optPin'].forEach(id => $(id).onchange = rebuild);
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    if (e.key === 'ArrowRight') { stop(); setIdx(idx() + 1); } else if (e.key === 'ArrowLeft') { stop(); setIdx(idx() - 1); }
+  });
+  rebuild();
+})();
+</script>
+</body>
+</html>

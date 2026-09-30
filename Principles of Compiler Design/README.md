@@ -29,7 +29,7 @@ make, and how they fit together) and the
 
 ## In this folder
 
-- [`docs/`](./docs) — the course site: lecture notes, activities, project documents, assets
+- [`Tutorials/`](./Tutorials) — the course site: lecture notes, activities, project documents, assets
 - [`student/`](./student) — starter code for all six topics, one folder per topic, each with its
   own `README.md`, `Makefile` and test inputs
 

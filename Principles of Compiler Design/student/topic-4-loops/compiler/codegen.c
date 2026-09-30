@@ -126,10 +126,22 @@ static int isTemp(const char* s) {
  * When no register is free the least-recently-used one is evicted.  Eviction
  * writes the value back first if it is dirty AND the name has a memory home.
  * Literals and scratch values have no home, so evicting them is free.
+ *
+ * One more rule makes eviction safe: every register handed out while
+ * translating a TAC instruction is PINNED until the next instruction begins.
+ * Without it, fetching the second operand of  t2 = 9 * p  could evict the 9
+ * that was loaded a moment earlier, leaving both operands in one register.
  * ========================================================================*/
 
 static void emitStoreHome(int reg, const char* name);
 static void emitLoadHome(int reg, const char* name);
+
+static int pinned[NUM_TEMP_REGS];   /* 1 = in use by the current instruction */
+
+/* Called at the start of every TAC instruction. */
+static void unpinAll(void) {
+    for (int i = 0; i < NUM_TEMP_REGS; i++) pinned[i] = 0;
+}
 
 void initRegAlloc(void) {
     for (int i = 0; i < NUM_TEMP_REGS; i++) {
@@ -139,6 +151,7 @@ void initRegAlloc(void) {
         regAlloc.regs[i].hasHome    = 0;
         regAlloc.regs[i].lastUsed   = 0;
     }
+    unpinAll();
     regAlloc.timestamp  = 0;
     regAlloc.spillCount = 0;
     regAlloc.loadCount  = 0;
@@ -149,6 +162,7 @@ static int findVarReg(const char* name) {
     for (int i = 0; i < NUM_TEMP_REGS; i++) {
         if (regAlloc.regs[i].inUse && strcmp(regAlloc.regs[i].varName, name) == 0) {
             regAlloc.regs[i].lastUsed = ++regAlloc.timestamp;
+            pinned[i] = 1;
             return i;
         }
     }
@@ -159,14 +173,19 @@ static int findVarReg(const char* name) {
  * to lose.  A real compiler would use liveness information here; LRU is a
  * good approximation and is easy to reason about in class. */
 static int selectVictimReg(void) {
-    int victim = 0, oldest = regAlloc.regs[0].lastUsed;
-    for (int i = 1; i < NUM_TEMP_REGS; i++) {
+    int victim = -1;
+    for (int i = 0; i < NUM_TEMP_REGS; i++) {
+        if (pinned[i]) continue;            /* the current instruction needs it */
         /* Values with no memory home are the cheapest to discard */
         if (!regAlloc.regs[i].hasHome && regAlloc.regs[i].inUse) return i;
-        if (regAlloc.regs[i].lastUsed < oldest) {
-            oldest = regAlloc.regs[i].lastUsed;
+        if (victim < 0 || regAlloc.regs[i].lastUsed < regAlloc.regs[victim].lastUsed)
             victim = i;
-        }
+    }
+    if (victim < 0) {
+        fprintf(stderr, "codegen: one instruction needs more than %d registers "
+                        "(internal error in function '%s')\n",
+                NUM_TEMP_REGS, currentFunc ? currentFunc : "?");
+        exit(1);
     }
     return victim;
 }
@@ -201,6 +220,7 @@ static int getReg(const char* name, int hasHome, int load) {
     regAlloc.regs[r].isDirty  = 0;
     regAlloc.regs[r].hasHome  = hasHome;
     regAlloc.regs[r].lastUsed = ++regAlloc.timestamp;
+    pinned[r] = 1;
 
     if (load) {
         emitLoadHome(r, name);
@@ -233,6 +253,7 @@ static void releaseReg(int r) {
     regAlloc.regs[r].isDirty    = 0;
     regAlloc.regs[r].hasHome    = 0;
     regAlloc.regs[r].varName[0] = '\0';
+    pinned[r] = 0;
 }
 
 /* Materialise any TAC operand — literal or name — into a register. */
@@ -487,6 +508,7 @@ void generateMIPSFromTAC(const char* filename) {
         emitPrologue(currentFunc, frameSize);
 
         for (TACInstr* i = c->next; i && i->op != TAC_FUNC_END; i = i->next) {
+            unpinAll();
             switch (i->op) {
 
             /* ---------- storage declarations: no code, just a comment ----- */

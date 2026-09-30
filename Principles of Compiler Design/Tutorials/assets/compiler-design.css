@@ -291,3 +291,17 @@ h2 .secnum { font-family: var(--mono); font-size: .78em; color: var(--accent);
 /* Comments inside a code block, dimmed so the code itself reads first.
    Written in the source as «…» — see code() in docgen.py. */
 pre code .cm { color: var(--muted); font-style: italic; }
+
+/* ── two-table color coding ────────────────────────────────────────────────
+   The Topic 2 reference handout contrasts two symbol tables, and the reader
+   has to keep them apart across three figures, two tables and a worked
+   example.  So the two get one color each, reused everywhere without
+   exception: the scope stack is --ok, the storage map is --accent.  Both
+   tokens are already theme-aware, which is the reason for reusing them rather
+   than introducing a third and a fourth hue. */
+.t-scope { color: var(--ok);     font-weight: 650; }
+.t-store { color: var(--accent); font-weight: 650; }
+
+/* A frame slot the optimizer deleted: present in the drawing so the reader can
+   see what went missing, but clearly not part of the final frame. */
+.d-box.gone { fill: none; stroke: var(--muted); stroke-dasharray: 4 3; }

@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Two Symbol Tables, One Compiler · Principles of Compiler Design</title>
+<link rel="stylesheet" href="../assets/compiler-design.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Topic 2 · Reference · Weeks 2–5</p>
+    <h1>Two Symbol Tables, One Compiler</h1>
+    <p class="lede">Your textbook describes one symbol table. This compiler has two, in different files, with different shapes and opposite lifetimes. What each one is for, and why the split is forced rather than chosen.</p>
+    <nav class="crumbs"><a href="../index.html">All topics</a> &nbsp;›&nbsp; <a href="index.html">Topic 2</a> &nbsp;›&nbsp; Two Symbol Tables, One Compiler</nav>
+  </div>
+</header>
+<main class="wrap">
+<div class="readings"><b>Read alongside this</b><ul><li><cite>Compilers: Principles, Techniques and Tools</cite> <b>&sect;2.7</b> — symbol tables per scope, and the most-closely-nested rule.</li><li><b>&sect;7.2</b> — stack allocation of space: the activation record that every offset in this handout is an offset into.</li><li><b>&sect;8.3</b> — addresses in the target code: what has to be known before a name can become an operand.</li><li>The source, read side by side: <code>compiler/semantic.c</code> (323 lines) and <code>compiler/symtab.c</code> (226 lines). Together they are smaller than <code>codegen.c</code>.</li></ul>
+</div>
+<h2><span class="secnum">1</span>The question</h2>
+<p>Your textbook describes <b>the</b> symbol table: one structure, threaded through the phases, accumulating what the compiler learns about each name. Dragon &sect;2.7.</p>
+<p>Now grep this compiler. There are <b>two</b>, in two files, and they never exchange a single byte of data:</p>
+<pre><code class="lang-">semantic.c   static Scope       scopes[MAX_SCOPE_DEPTH];  <span class="cm">a stack of name lists</span>
+symtab.c     static SymbolTable locals, globals;         <span class="cm">names with addresses</span></code></pre>
+<p>The natural conclusion is that one of them is redundant. It is not. They answer different questions, they are alive at different times, and — the part worth the rest of this page — <b>neither one could do the other's job</b>, even if you wanted it to.</p>
+<div class="note"><b>Why this page exists</b><p>When Activity 5 asks you to predict &ldquo;what the symbol table will contain&rdquo;, it is asking about the <span class="t-store">storage map</span>: names and storage locations. When the compiler rejects an undeclared variable, that was the <span class="t-scope">scope stack</span>. Keeping those two straight is most of what makes the Topic 2 traces readable.</p>
+</div>
+<h2><span class="secnum">2</span>The two tables at a glance</h2>
+<div class="tablewrap"><table><thead><tr><th></th><th>scope stack (semantic.c)</th><th>storage map (symtab.c)</th></tr></thead><tbody><tr><td><b>Question it answers</b></td><td>Is this name visible <i>here</i>?</td><td>What <i>address</i> does this name live at?</td></tr><tr><td><b>Per-entry data</b></td><td>the name, and nothing else</td><td>name, type, <code>offset</code>, <code>isArray</code>, <code>arraySize</code>, <code>isGlobal</code>, <code>isParamArray</code></td></tr><tr><td><b>Structure</b></td><td>a stack of scopes, nested</td><td>two flat arrays: <code>locals</code> and <code>globals</code></td></tr><tr><td><b>Filled from</b></td><td>declaration nodes in the AST</td><td>TAC instructions, <i>after</i> optimization</td></tr><tr><td><b>Holds temporaries?</b></td><td>no — only names a programmer wrote</td><td>yes — <code>t0</code>, <code>t1</code> need frame slots too</td></tr><tr><td><b>Are entries removed?</b></td><td>yes, on every <code>exitScope()</code></td><td>no, until the next <code>initSymTab()</code></td></tr><tr><td><b>Lifetime</b></td><td>phase 3 only</td><td>phase 6 only; <code>globals</code> spans all functions</td></tr><tr><td><b>A failure means</b></td><td>a user error, reported with a line number</td><td>an internal error — <code>exit(1)</code></td></tr></tbody></table></div>
+<div class="key"><b>The one-sentence version</b><p>Both tables map names to facts. The <span class="t-scope">scope stack</span> maps a name to <i>whether you may use it</i>. The <span class="t-store">storage map</span> maps a name to <i>where it lives</i>. The first question can be answered from the AST. The second cannot be answered until the TAC is final.</p>
+</div>
+<h2><span class="secnum">3</span>Where each one lives</h2>
+<figure class="dia"><svg viewBox="0 0 800 272" role="img" style="max-width:800px" aria-label="Neither table is populated while the other is. The scope stack is built and emptied inside phase 3; the storage map gets its first entry in phase 6. What crosses a phase boundary is the AST and the TA"><rect class="d-box" x="19" y="44" width="112" height="48" rx="4"/><text class="d-t" x="75" y="66" text-anchor="middle">1 Lex + Syntax</text><text class="d-s" x="75" y="83" text-anchor="middle">scanner.l</text><rect class="d-box" x="149" y="44" width="112" height="48" rx="4"/><text class="d-t" x="205" y="66" text-anchor="middle">2 AST</text><text class="d-s" x="205" y="83" text-anchor="middle">ast.c</text><rect class="d-box alt" x="279" y="44" width="112" height="48" rx="4"/><text class="d-t" x="335" y="66" text-anchor="middle">3 Semantic</text><text class="d-s" x="335" y="83" text-anchor="middle">semantic.c</text><rect class="d-box" x="409" y="44" width="112" height="48" rx="4"/><text class="d-t" x="465" y="66" text-anchor="middle">4 TAC</text><text class="d-s" x="465" y="83" text-anchor="middle">tac.c</text><rect class="d-box" x="539" y="44" width="112" height="48" rx="4"/><text class="d-t" x="595" y="66" text-anchor="middle">5 Optimize</text><text class="d-s" x="595" y="83" text-anchor="middle">tac.c</text><rect class="d-box on" x="669" y="44" width="112" height="48" rx="4"/><text class="d-t" x="725" y="66" text-anchor="middle">6 CodeGen</text><text class="d-s" x="725" y="83" text-anchor="middle">codegen.c</text><path class="d-line" d="M131 68 L149 68 M145 64 L149 68 L145 72"/><text class="d-edge" x="140" y="36" text-anchor="middle">tokens</text><path class="d-line" d="M261 68 L279 68 M275 64 L279 68 L275 72"/><text class="d-edge" x="270" y="36" text-anchor="middle">AST</text><path class="d-line" d="M391 68 L409 68 M405 64 L409 68 L405 72"/><text class="d-edge" x="400" y="36" text-anchor="middle">AST</text><path class="d-line" d="M521 68 L539 68 M535 64 L539 68 L535 72"/><text class="d-edge" x="530" y="36" text-anchor="middle">TAC</text><path class="d-line" d="M651 68 L669 68 M665 64 L669 68 L665 72"/><text class="d-edge" x="660" y="36" text-anchor="middle">TAC'</text><text class="d-s2" x="19" y="118">what crosses phases</text><rect class="d-box" x="149" y="128" width="372" height="22" rx="3"/><text class="d-lbl" x="335" y="143" text-anchor="middle">AST</text><rect class="d-box" x="409" y="156" width="372" height="22" rx="3"/><text class="d-lbl" x="595" y="171" text-anchor="middle">TAC</text><text class="d-s2" x="19" y="200">the two tables</text><rect class="d-box alt" x="279" y="210" width="112" height="24" rx="3"/><text class="d-lbl" x="335" y="226" text-anchor="middle">scope stack</text><rect class="d-box on" x="669" y="210" width="112" height="24" rx="3"/><text class="d-lbl" x="725" y="226" text-anchor="middle">storage map</text><path class="d-dash" d="M395 254 L665 254 M399 250 L395 254 L399 258 M661 250 L665 254 L661 258"/><text class="d-s2" x="530" y="248" text-anchor="middle">phases 4 and 5: neither table holds anything</text></svg><figcaption><b>Neither table is populated while the other is.</b> The <span class="t-scope">scope stack</span> is built and emptied inside phase 3; the <span class="t-store">storage map</span> gets its first entry in phase 6. What crosses a phase boundary is the AST and the TAC — the tables are local to one phase each. The compiler even times them separately: 0.02 ms in phase 3, 0.18 ms in phase 6.</figcaption></figure>
+<p>The ordering is fixed in <code>main.c</code>: <code>yyparse()</code> at line 124, then semantic analysis, then <code>generateTAC()</code> at 167, <code>optimizeTAC()</code> at 176, and <code>generateMIPSFromTAC()</code> at 183.</p>
+<p>Read that ordering again with the <span class="t-store">storage map</span> in mind. Every entry in it is a byte offset. At the moment semantic analysis runs there is nothing to take an offset <i>into</i>: no TAC, no list of temporaries, no frame, no idea how big the frame will be. The storage map is not merely unpopulated during phase 3. It is unpopulatable.</p>
+<h2><span class="secnum">4</span>Table 1 — the scope stack in semantic.c</h2>
+<h3>What one entry holds</h3>
+<pre><code class="lang-">typedef struct {
+<span class="hi">    char* names[MAX_VARS];   <span class="cm">the entire entry: a string</span></span>
+    int   count;
+} Scope;
+
+static Scope scopes[MAX_SCOPE_DEPTH];
+static int   scopeDepth = 0;</code></pre>
+<p>That really is the whole entry. No type, no size, no address — because none of those are needed to answer the only question this table is ever asked.</p>
+<h3>How it is searched</h3>
+<pre><code class="lang-">static int isVarDeclaredInScope(char* name) {
+<span class="hi">    for (int depth = scopeDepth - 1; depth &gt;= 0; depth--)   <span class="cm">innermost first</span></span>
+        for (int i = 0; i &lt; scopes[depth].count; i++)
+            if (strcmp(scopes[depth].names[i], name) == 0)
+                return 1;
+    return 0;
+}</code></pre>
+<p>Innermost outward — the most-closely-nested rule from Dragon &sect;2.7, written out in six lines. Compare it with <code>addVarToScope()</code>, which checks for duplicates in the <i>current</i> scope only, because shadowing an outer name is legal and redeclaring in the same block is not.</p>
+<h3>What it looks like running</h3>
+<p>Compile any test program without <code>-q</code> and phase 3 narrates itself. Each line is one query against the scope stack:</p>
+<pre><code class="lang-">  ✓ Variable 'x' declared (line 3)
+  ✓ Variable 'y' declared (line 4)
+  ✓ Variable 'total' declared (line 5)
+  ✓ Assignment to 'x' is valid (line 7)
+  ✓ Assignment to 'y' is valid (line 8)
+  ✓ Assignment to 'total' is valid (line 9)</code></pre>
+<p>Nothing is being allocated there. Names are only being accepted or rejected.</p>
+<h3>When it says no</h3>
+<pre><code class="lang-">$ ./minicompiler tests/t2_04_errors_undeclared.cm out.s
+
+║ SEMANTIC ERROR - Undeclared Variable                      ║
+  📍 Location: Line 8
+  ❌ Error: Variable 'ghost' is used before being declared
+  💡 Suggestion: Add a declaration before using this variable:
+     → int ghost;  (add this before line 8)</code></pre>
+<div class="warn"><b>Notice what makes that message possible</b><p>A line number. <code>ASTNode</code> carries one (<code>ast.h</code> line 43); <code>TACInstr</code> carries no line number at all — look at the struct in <code>tac.h</code>. So source positions are available in phase 3 and simply gone by phase 6. That is a second, independent reason this check cannot be deferred to the <span class="t-store">storage map</span>: by then the compiler could tell you that a name has no storage, but not where you wrote it.</p>
+</div>
+<h2><span class="secnum">5</span>Table 2 — the storage map in symtab.c</h2>
+<h3>What one entry holds</h3>
+<pre><code class="lang-">typedef struct {
+    char* name;
+    char* type;
+<span class="hi">    int   offset;       <span class="cm">locals: byte offset from $sp</span></span>
+    int   isArray;
+    int   arraySize;
+<span class="hi">    int   isGlobal;     <span class="cm">1 = lives in .data instead</span></span>
+    int   isParamArray; <span class="cm">slot holds a base address, not the data</span>
+} Symbol;</code></pre>
+<h3>Two tables inside one file, because MIPS has two storage classes</h3>
+<pre><code class="lang-">GLOBALS  →  .data, addressed by label     la   $t0, counter
+LOCALS   →  the current frame, by offset  lw   $t0, 8($sp)</code></pre>
+<p><code>locals</code> is cleared at the start of every function by <code>initSymTab()</code>, because each function gets a fresh activation record. <code>globals</code> is built once by <code>initGlobalScope()</code> and persists for the whole program.</p>
+<h3>Where its functions are called</h3>
+<p>All of them, from one file. This is the complete list:</p>
+<div class="tablewrap"><table><thead><tr><th>Function</th><th>Call site</th><th>What it is for</th></tr></thead><tbody><tr><td><code>initGlobalScope()</code></td><td><code>codegen.c:371</code></td><td>reset the global table, once, before any function</td></tr><tr><td><code>addGlobalVar()</code></td><td><code>codegen.c:387</code></td><td>each file-scope <code>TAC_DECL</code>, paired with its <code>.word</code></td></tr><tr><td><code>addGlobalArray()</code></td><td><code>codegen.c:392</code></td><td>each file-scope <code>TAC_ARRAY_DECL</code>, paired with its <code>.space</code></td></tr><tr><td><code>initSymTab()</code></td><td><code>codegen.c:304</code></td><td>start a fresh frame for each function</td></tr><tr><td><code>addVar()</code></td><td><code>codegen.c:311, :314, :298</code></td><td>parameters, declarations, and every temporary</td></tr><tr><td><code>addArrayParam()</code></td><td><code>codegen.c:310</code></td><td>one word holding an incoming base address</td></tr><tr><td><code>addArray()</code></td><td><code>codegen.c:317</code></td><td>reserve <code>size&nbsp;&times;&nbsp;4</code> bytes</td></tr><tr><td><code>getLocalBytes()</code></td><td><code>codegen.c:328</code></td><td>frame size = locals + 8, rounded up to a multiple of 8</td></tr><tr><td><code>lookupSymbol()</code></td><td><code>codegen.c:261, :273</code> and 3 more</td><td>the hot path: decides <code>lw $t0, counter</code> vs <code>lw $t0, 8($sp)</code></td></tr><tr><td><code>printSymTab()</code></td><td><code>codegen.c:424</code></td><td>the trace box below</td></tr></tbody></table></div>
+<p>Nothing outside <code>codegen.c</code> calls into <code>symtab.c</code> — not the parser, not <code>tac.c</code>, and not <code>semantic.c</code>. That holds in all six topics. <code>semantic.c</code> does <code>#include "symtab.h"</code>, but only to borrow the <code>MAX_VARS</code> constant.</p>
+<div class="warn"><b>Five declared functions with no callers</b><p><code>getVarOffset</code>, <code>getArraySize</code>, <code>isVarDeclared</code>, <code>isArray</code> and <code>isGlobalSymbol</code> are described in <code>symtab.h</code> as &ldquo;convenience wrappers kept for readability at the call sites&rdquo;. There are no such call sites, in any of the six topics: <code>codegen.c</code> calls <code>lookupSymbol()</code> and reads the <code>Symbol</code> fields directly. Proposing that they be deleted is a perfectly good answer to &ldquo;what would you change about this code?&rdquo;</p>
+</div>
+<h3>What it looks like running</h3>
+<pre><code class="lang-">  ┌─ SYMBOL TABLE ─────────────────────────────────────────┐
+  │ GLOBALS (.data)                                            │
+    (none)
+  │ LOCALS (current activation record,  12 bytes)              │
+<span class="hi">    x              int        0($sp)</span>
+<span class="hi">    y              int        4($sp)</span>
+<span class="hi">    total          int        8($sp)</span>
+  └──────────────────────────────────────────────────────┘</code></pre>
+<div class="note"><b>Why GLOBALS is empty in Topic 2</b><p>The TAC generator wraps the whole program in <code>FUNC_BEGIN main &hellip; FUNC_END</code>, so every declaration lands inside a function and becomes a local. The global table is initialized and then stays empty for the entire topic. It earns its keep in Topic 3, when real functions and file-scope declarations arrive — which is also when <code>addArrayParam()</code> stops being theoretical.</p>
+</div>
+<h2><span class="secnum">6</span>Why the shapes differ</h2>
+<figure class="dia"><svg viewBox="0 0 800 310" role="img" style="max-width:800px" aria-label="The two tables need opposite structures. Scoping is deletion: exitScope() frees the names so they stop resolving, and a lookup walks outward from the innermost box. Storage is permanence: a spill near"><line class="d-line" x1="400" y1="14" x2="400" y2="298"/><text class="d-t" x="205" y="26" text-anchor="middle">semantic.c — scope stack</text><text class="d-s2" x="205" y="44" text-anchor="middle">nested · pops · names only</text><rect class="d-box alt" x="115" y="58" width="180" height="48" rx="4"/><text class="d-lbl" x="205" y="78" text-anchor="middle">Scope[1]</text><text class="d-s" x="205" y="96" text-anchor="middle">i, tmp</text><rect class="d-box alt" x="115" y="114" width="180" height="48" rx="4"/><text class="d-lbl" x="205" y="134" text-anchor="middle">Scope[0]</text><text class="d-s" x="205" y="152" text-anchor="middle">x, y, total</text><path class="d-line" d="M305 72 L305 150 M301 146 L305 150 L309 146"/><text class="d-s2" x="312" y="114">search</text><text class="d-s2" x="205" y="258" text-anchor="middle">enterScope() pushes · exitScope() pops</text><text class="d-s2" x="205" y="274" text-anchor="middle">the pop calls free() — entries cease to exist</text><text class="d-s2" x="205" y="290" text-anchor="middle">stores names, and nothing else</text><text class="d-t" x="595" y="26" text-anchor="middle">symtab.c — storage map</text><text class="d-s2" x="595" y="44" text-anchor="middle">flat · persists · names + addresses</text><rect class="d-box on" x="505" y="58" width="180" height="130" rx="4"/><text class="d-lbl" x="517" y="78">locals</text><text class="d-s" x="519" y="100">x</text><text class="d-s" x="671" y="100" text-anchor="end">0($sp)</text><text class="d-s" x="519" y="118">y</text><text class="d-s" x="671" y="118" text-anchor="end">4($sp)</text><text class="d-s" x="519" y="136">total</text><text class="d-s" x="671" y="136" text-anchor="end">8($sp)</text><text class="d-s" x="519" y="154">t0</text><text class="d-s" x="671" y="154" text-anchor="end">12($sp)</text><text class="d-s" x="519" y="172">t1</text><text class="d-s" x="671" y="172" text-anchor="end">16($sp)</text><rect class="d-box on" x="505" y="200" width="180" height="42" rx="4"/><text class="d-lbl" x="517" y="220">globals</text><text class="d-s2" x="517" y="236">(empty in Topic 2)</text><path class="d-line" d="M695 72 L695 216 M691 212 L695 216 L699 212"/><text class="d-s2" x="702" y="144">search</text><text class="d-s2" x="595" y="258" text-anchor="middle">one flat table per function</text><text class="d-s2" x="595" y="274" text-anchor="middle">cleared only by the next initSymTab()</text><text class="d-s2" x="595" y="290" text-anchor="middle">nothing is removed mid-function</text></svg><figcaption><b>The two tables need opposite structures.</b> Scoping is deletion: <code>exitScope()</code> frees the names so they stop resolving, and a lookup walks outward from the innermost box. Storage is permanence: a spill near the end of a function must still find the home a declaration gave it at the top, so the table stays flat and keeps every entry until the next function starts. Then note what the right-hand table contains that the left-hand one never could: <code>t0</code> and <code>t1</code>, which nobody declared.</figcaption></figure>
+<p><b>Scoping requires deletion.</b> <code>exitScope()</code> frees the names and decrements the depth, because leaving a block has to make those names stop resolving. That <i>is</i> what scoping means. A table that never forgot anything could not implement it.</p>
+<p><b>Storage requires permanence.</b> A register spill near the bottom of a function has to find the home a declaration was given at the top. If the <span class="t-store">storage map</span> popped entries the way a scope stack does, <code>emitStoreHome()</code> would fail on any name whose block had already ended.</p>
+<p><b>And by phase 6 there is no nesting left to represent.</b> TAC is a flat list; blocks have dissolved into labels and jumps. So the visibility question is meaningless in phase 6, and the storage question is unanswerable in phase 3. Each table has the only structure that fits its own question.</p>
+<h2><span class="secnum">7</span>One program through both tables</h2>
+<p><code>tests/t2_01_basics.cm</code> — the whole starter language in four statements:</p>
+<pre><code class="lang-">int x;
+int y;
+int total;
+
+x = 5;
+y = 10;
+<span class="hi">total = x + y + 3;</span>
+
+print(x);
+print(y);
+print(total);</code></pre>
+<p>Follow one name, <code>total</code>, and watch what each phase knows about it:</p>
+<div class="tablewrap"><table><thead><tr><th>Phase</th><th>What the compiler knows about total</th></tr></thead><tbody><tr><td><b>3</b> &middot; semantic</td><td>declared at line 5, visible at line 9 — <i>and nothing else</i></td></tr><tr><td><b>4</b> &middot; TAC</td><td><code>t0 = x + y</code>, <code>t1 = t0 + 3</code>, <code>total = t1</code> &nbsp;(14 instructions)</td></tr><tr><td><b>5</b> &middot; optimize</td><td><code>total = 18</code> — <code>t0</code> and <code>t1</code> no longer exist &nbsp;(12 instructions)</td></tr><tr><td><b>6</b> &middot; storage map</td><td><code>total</code> lives at offset 8; the frame is 24 bytes</td></tr><tr><td><b>6</b> &middot; MIPS</td><td><code>li $t4, 18</code> &nbsp;&middot;&nbsp; <code>sw</code> to <code>8($sp)</code> when the register is needed elsewhere</td></tr></tbody></table></div>
+<p>The two TAC listings, side by side, are the whole argument of this handout:</p>
+<pre><code class="lang-"><span class="cm"> unoptimized — 14 instructions </span>        <span class="cm"> optimized — 12 instructions </span>
+  FUNC_BEGIN main                        FUNC_BEGIN main
+      DECL int x                             DECL int x
+      DECL int y                             DECL int y
+      DECL int total                         DECL int total
+      x = 5                                  x = 5
+      y = 10                                 y = 10
+<span class="hi">      t0 = x + y                             total = 18</span>
+<span class="hi">      t1 = t0 + 3                            PRINT 5</span>
+      total = t1                             PRINT 10
+      PRINT x                                PRINT 18
+      PRINT y                                RETURN 0
+      PRINT total                        FUNC_END main
+      RETURN 0
+  FUNC_END main</code></pre>
+<p>Three things changed between phase 4 and phase 6, and every one of them would have invalidated a storage map built during phase 3: two temporaries appeared, both were then deleted, and the frame size changed as a result.</p>
+<h2><span class="secnum">8</span>Why they cannot be merged</h2>
+<figure class="dia"><svg viewBox="0 0 720 360" role="img" style="max-width:720px" aria-label="The storage map cannot be filled before the optimizer runs. Both frames are drawn to the same scale, so that height difference is the eight bytes. Fold x + y + 3 into 18 and the temporaries t0 and t1 "><text class="d-t" x="180" y="40" text-anchor="middle">laid out from the unoptimized TAC</text><text class="d-s2" x="180" y="58" text-anchor="middle">5 named slots · 32 bytes</text><rect class="d-box on" x="90" y="290" width="180" height="30"/><text class="d-lbl" x="180" y="309" text-anchor="middle">x</text><text class="d-s" x="82" y="309" text-anchor="end">0</text><rect class="d-box on" x="90" y="260" width="180" height="30"/><text class="d-lbl" x="180" y="279" text-anchor="middle">y</text><text class="d-s" x="82" y="279" text-anchor="end">4</text><rect class="d-box on" x="90" y="230" width="180" height="30"/><text class="d-lbl" x="180" y="249" text-anchor="middle">total</text><text class="d-s" x="82" y="249" text-anchor="end">8</text><rect class="d-box gone" x="90" y="200" width="180" height="30"/><text class="d-lbl" x="180" y="219" text-anchor="middle">t0</text><text class="d-s" x="82" y="219" text-anchor="end">12</text><rect class="d-box gone" x="90" y="170" width="180" height="30"/><text class="d-lbl" x="180" y="189" text-anchor="middle">t1</text><text class="d-s" x="82" y="189" text-anchor="end">16</text><rect class="d-box" x="90" y="110" width="180" height="60"/><text class="d-lbl" x="180" y="144" text-anchor="middle">padding (8 B)</text><text class="d-s" x="82" y="144" text-anchor="end">20</text><rect class="d-box" x="90" y="80" width="180" height="30"/><text class="d-lbl" x="180" y="99" text-anchor="middle">saved $ra</text><text class="d-s" x="82" y="99" text-anchor="end">28</text><text class="d-s2" x="180" y="342" text-anchor="middle">offset 0 sits at $sp</text><text class="d-t" x="540" y="40" text-anchor="middle">what codegen actually emits</text><text class="d-s2" x="540" y="58" text-anchor="middle">3 named slots · 24 bytes</text><rect class="d-box on" x="450" y="290" width="180" height="30"/><text class="d-lbl" x="540" y="309" text-anchor="middle">x</text><text class="d-s" x="442" y="309" text-anchor="end">0</text><rect class="d-box on" x="450" y="260" width="180" height="30"/><text class="d-lbl" x="540" y="279" text-anchor="middle">y</text><text class="d-s" x="442" y="279" text-anchor="end">4</text><rect class="d-box on" x="450" y="230" width="180" height="30"/><text class="d-lbl" x="540" y="249" text-anchor="middle">total</text><text class="d-s" x="442" y="249" text-anchor="end">8</text><rect class="d-box" x="450" y="170" width="180" height="60"/><text class="d-lbl" x="540" y="204" text-anchor="middle">padding (8 B)</text><text class="d-s" x="442" y="204" text-anchor="end">12</text><rect class="d-box" x="450" y="140" width="180" height="30"/><text class="d-lbl" x="540" y="159" text-anchor="middle">saved $ra</text><text class="d-s" x="442" y="159" text-anchor="end">20</text><text class="d-s2" x="540" y="342" text-anchor="middle">offset 0 sits at $sp</text><text class="d-s2" x="360" y="192" text-anchor="middle">constant folding</text><text class="d-s2" x="360" y="208" text-anchor="middle">removes t0 and t1</text><path class="d-dash" d="M282 230 L438 230 M434 226 L438 230 L434 234"/><path class="d-dash" d="M270 80 L646 80"/><path class="d-line hot" d="M654 80 L654 140 M650 84 L654 80 L658 84 M650 136 L654 140 L658 136"/><text class="d-lbl" x="662" y="114">8 B</text></svg><figcaption><b>The storage map cannot be filled before the optimizer runs.</b> Both frames are drawn to the same scale, so that height difference is the eight bytes. Fold <code>x + y + 3</code> into <code>18</code> and the temporaries <code>t0</code> and <code>t1</code> stop existing, which takes the frame from 32 bytes to 24. <code>layoutFrame()</code> walks the <i>optimized</i> TAC for exactly this reason, and the prologue it emits really does say <code>addi $sp, $sp, -24</code>.</figcaption></figure>
+<p>Four independent reasons, in increasing order of how hard they are to work around:</p>
+<ol><li><b>Ordering.</b> Semantic analysis runs two phases before any TAC exists. There is no frame to measure offsets against.</li><li><b>Temporaries.</b> <code>t0</code> and <code>t1</code> are invented by <code>tac.c</code>. They need frame slots — <code>reserveTemp()</code> hands them out — and in this program the temporaries are the only things that get spilled (the trace reports 3 spills, 0 reloads). A phase-3 table could not have named them.</li><li><b>Optimization.</b> The frame size is a function of the <i>optimized</i> TAC, as the figure above shows. Any table filled earlier would reserve slots for names that no longer exist.</li><li><b>Structure.</b> One question needs a stack that pops; the other needs a flat map that persists. Section 6.</li></ol>
+<h2><span class="secnum">9</span>Where the two tables touch</h2>
+<p>They share no data structure. They coordinate through exactly one rule:</p>
+<pre><code class="lang-">static int isReservedName(const char* name) {
+    if (strncmp(name, "__sw", 4) == 0) return 1;   <span class="cm">switch temporaries</span>
+<span class="hi">    if (name[0] != 't' &amp;&amp; name[0] != 'L') return 0;</span>
+    for (int i = 1; name[i]; i++)
+        if (name[i] &lt; '0' || name[i] &gt; '9') return 0;
+    return 1;
+}</code></pre>
+<p>The <span class="t-store">storage map</span> puts user names and generated temporaries into one flat namespace, where <code>lookupSymbol()</code> could not tell them apart. So the semantic analyzer, three phases earlier, refuses to let you declare a variable named <code>t0</code>:</p>
+<pre><code class="lang-">  ❌ Error: 't0' is reserved for the compiler's own use
+  📖 Note: names of the form t0, t1, ... are three-address-code
+           temporaries and L0, L1, ... are generated labels.</code></pre>
+<p>One of phase 3's jobs, then, is protecting phase 6's key space. That is the entire interface between the two tables: a naming convention, enforced early, with a decent error message attached.</p>
+<h2><span class="secnum">10</span>What the split costs</h2>
+<p>Declarations get recorded twice, and there are two independent duplicate checks that know nothing about each other:</p>
+<pre><code class="lang-"><span class="cm"> semantic.c — reported to the user, with a line number </span>
+if (addVarToScope(node-&gt;data.decl.name) == -1) { ...SEMANTIC ERROR... }
+
+<span class="cm"> symtab.c — the same question, asked again in phase 6 </span>
+int addVar(char* name, char* type) {
+<span class="hi">    if (findIn(&amp;locals, name)) return -1;      <span class="cm">duplicate declaration</span></span>
+    ...
+}</code></pre>
+<p><code>layoutFrame()</code> discards that <code>-1</code> without looking at it, and is entitled to: phase 3 already guaranteed there are no duplicates. But it is a genuine redundancy, and the kind of thing worth noticing — it is the seam where two tables that should arguably be one rub against each other.</p>
+<h3>What a production compiler does instead</h3>
+<p>Keeps <b>one</b> table whose entries accumulate attributes across phases: the parser inserts the name, the semantic pass annotates type and scope, the back end annotates the address. That requires the table to model scopes as a persistent <i>tree</i> rather than a stack that frees as it pops, and to survive every phase rather than one. It also means every phase can see fields that are meaningless to it.</p>
+<h3>What the split buys</h3>
+<p><code>symtab.c</code> does not know what a scope is. <code>semantic.c</code> does not know what MIPS is. Each file is 300-odd lines and readable on its own, which is why this compiler is a teaching compiler and GCC is not.</p>
+<h2><span class="secnum">11</span>Check yourself</h2>
+<div class="quiz"><p class="q">A classmate proposes filling in the offsets during semantic analysis, so the compiler only needs one table. What breaks first?</p><button class="opt" data-correct="0" data-feedback="The offsets are exactly the problem: in phase 3 there is no frame to measure them against, and no complete list of what has to go in it.">Nothing — it would work, and would be tidier.</button><button class="opt" data-correct="1" data-feedback="Right — and in this program the temporaries are the only things that ever get spilled, so a table without them would be useless to the register allocator.">The temporaries. <code>t0</code> and <code>t1</code> do not exist until phase 4, and they need frame slots too.</button><button class="opt" data-correct="0" data-feedback="Line numbers are lost after phase 3, but that argues for keeping the CHECK early, not for moving the offsets early.">Line numbers would be lost.</button><button class="opt" data-correct="0" data-feedback="The global table is a static in symtab.c; where it lives is not the issue.">The global table would have nowhere to live.</button><p class="fb"></p></div>
+<div class="quiz"><p class="q">Why does the scope stack <code>free()</code> its names on <code>exitScope()</code>, when the storage map never removes anything?</p><button class="opt" data-correct="0" data-feedback="A few strings per block is not a memory problem. The reason is semantic, not about resources.">To save memory.</button><button class="opt" data-correct="1" data-feedback="Exactly. The two tables need opposite behavior from the same operation, which is why one structure cannot serve both.">Because scoping <i>is</i> deletion: once the block ends those names must stop resolving. A frame slot, by contrast, has to stay findable until the function ends.</button><button class="opt" data-correct="0" data-feedback="Overflow is handled separately, and would be a reason to make the table bigger, not to free entries.">Because <code>MAX_VARS</code> would otherwise overflow.</button><p class="fb"></p></div>
+<div class="quiz"><p class="q"><code>t2_01_basics.cm</code> declares three <code>int</code>s and the frame comes out at 24 bytes. Where are the other 12?</p><button class="opt" data-correct="0" data-feedback="Those were folded away before the frame was laid out — that is precisely why the frame is 24 bytes and not 32.">Two temporaries, <code>t0</code> and <code>t1</code>.</button><button class="opt" data-correct="1" data-feedback="Yes: &lt;code&gt;getLocalBytes()&lt;/code&gt; returns 12, then &lt;code&gt;12 + 8 = 20&lt;/code&gt;, rounded up to 24, with &lt;code&gt;$ra&lt;/code&gt; at &lt;code&gt;20($sp)&lt;/code&gt;.">8 bytes of padding to keep the frame 8-byte aligned, plus 4 for the saved <code>$ra</code>.</button><button class="opt" data-correct="0" data-feedback="Syscalls use &lt;code&gt;$a0&lt;/code&gt; and &lt;code&gt;$v0&lt;/code&gt;; they need no frame space.">Space reserved for the <code>print</code> syscall.</button><p class="fb"></p></div>
+<details class="reveal"><summary>Why can't <code>semantic.c</code> tell you that <code>x</code> is at offset 8?</summary><p>Because in phase 3 there is no frame. Offsets are handed out by <code>layoutFrame()</code>, which walks the optimized TAC and must also find room for every temporary the intermediate-code generator invented. Neither the temporaries nor the final instruction list exist yet when <code>semantic.c</code> runs.</p>
+</details>
+<details class="reveal"><summary>Both tables are <code>static</code> arrays that exist for the whole process. In what sense is it true that their lifetimes do not overlap?</summary><p>Fair challenge — and the precise claim matters. Both are statically allocated, so as <i>memory</i> they coexist from start to finish. The claim is about contents: <code>scopeDepth</code> is back to 0 before <code>generateMIPSFromTAC()</code> is called, and <code>locals.count</code> is 0 until <code>layoutFrame()</code> runs. So the scope stack is empty before the storage map holds a single entry. If you wanted to enforce that rather than merely observe it, you would move each table behind an <code>init</code>/<code>destroy</code> pair and assert on use-after-destroy.</p>
+</details>
+
+<footer class="pagefoot">
+  <span>Principles of Compiler Design</span>
+  <span><a href="../index.html">All topics</a></span>
+</footer>
+</main>
+<script src="../assets/compiler-design.js"></script>
+</body>
+</html>
