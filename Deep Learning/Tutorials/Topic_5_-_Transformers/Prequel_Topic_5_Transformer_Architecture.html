@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transformers in One Idea</title>
+<meta name="description" content="AIT-204 Topic 5 prequel: the key idea behind transformers, before the lecture.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fbfaf6; --card:#ffffff; --ink:#1d2433; --muted:#5b6475; --line:#e4e1d8;
+  --blue:#2563eb; --orange:#d97706; --green:#15803d; --purple:#7c3aed; --red:#dc2626; --teal:#0f766e;
+  --tint:#f3f0ff; --chip:#eef2ff;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12151c; --card:#1a1f29; --ink:#e8eaf0; --muted:#9aa3b5; --line:#2c3341;
+    --blue:#6b9bff; --orange:#f0a443; --green:#4cc27a; --purple:#a98bff; --red:#ff6b6b; --teal:#3cc4b4;
+    --tint:#231d38; --chip:#1e2740;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12151c; --card:#1a1f29; --ink:#e8eaf0; --muted:#9aa3b5; --line:#2c3341;
+  --blue:#6b9bff; --orange:#f0a443; --green:#4cc27a; --purple:#a98bff; --red:#ff6b6b; --teal:#3cc4b4;
+  --tint:#231d38; --chip:#1e2740;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:Inter,"Helvetica Neue",Arial,sans-serif;font-size:17px;line-height:1.6}
+.wrap{max-width:900px;margin:0 auto;padding:40px 16px 80px}
+.kicker{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--purple);font-weight:700}
+h1{font-size:clamp(30px,6vw,48px);line-height:1.1;margin:.25em 0 .3em;font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(22px,4vw,28px);margin:2.2em 0 .4em;font-weight:700;letter-spacing:-.01em}
+h2 .n{color:var(--purple);margin-right:.35em}
+p{margin:.6em 0}
+.lede{font-size:clamp(18px,2.6vw,21px);color:var(--muted)}
+.big{font-family:"Source Serif 4",Georgia,serif;font-style:italic;font-size:clamp(22px,3.6vw,30px);line-height:1.35;
+  border-left:5px solid var(--purple);padding:.2em 0 .2em .8em;margin:1.2em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin:16px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:640px){.grid2{grid-template-columns:1fr}}
+.tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+svg text{font-family:Inter,Arial,sans-serif}
+/* attention demo */
+.sentence{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 6px}
+.tok{border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:6px 11px;font:600 16px Inter,sans-serif;cursor:pointer;position:relative;transition:background .2s,border-color .2s}
+.tok:hover{border-color:var(--blue)}
+.tok.q{border-color:var(--blue);background:var(--chip)}
+.tok .bar{position:absolute;left:0;bottom:-8px;height:5px;border-radius:3px;background:var(--orange);transition:width .35s}
+.switch{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 14px;font:600 14px Inter,sans-serif;cursor:pointer}
+.btn.on{background:var(--purple);border-color:var(--purple);color:#fff}
+.readout{min-height:48px;font-size:15px;color:var(--muted);margin-top:16px}
+.readout b{color:var(--ink)}
+/* heads */
+.heads{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:640px){.heads{grid-template-columns:1fr}}
+.head{border-radius:12px;padding:14px;border:2px solid}
+.head h4{margin:0 0 4px;font-size:16px}
+/* archetypes */
+.arch{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:720px){.arch{grid-template-columns:1fr}}
+.arch .card{margin:0;border-width:2px}
+.arch h3{margin:.1em 0 .1em;font-size:20px}
+.mask{display:grid;grid-template-columns:repeat(5,14px);gap:3px;margin:10px 0}
+.mask span{width:14px;height:14px;border-radius:3px;background:var(--line)}
+/* checklist */
+.sessions{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media (max-width:640px){.sessions{grid-template-columns:1fr}}
+.sess{border-left:4px solid var(--purple);background:var(--card);border-radius:0 12px 12px 0;padding:12px 14px;border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.sess .when{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--purple)}
+code{font-family:"DejaVu Sans Mono",Menlo,Consolas,monospace;font-size:.88em;background:var(--chip);padding:1px 5px;border-radius:5px}
+.order{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.seat{display:inline-flex;flex-direction:column;align-items:center;gap:2px}
+.seat .w{border:2px solid var(--line);border-radius:8px;padding:4px 10px;font-weight:600;background:var(--card)}
+.seat .p{font-size:12px;color:var(--purple);font-weight:700;opacity:0;transition:opacity .3s}
+.showpos .seat .p{opacity:1}
+.theme{position:fixed;top:12px;right:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font:600 13px Inter,sans-serif;cursor:pointer;z-index:5}
+footer{margin-top:3em;color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
+</style>
+</head>
+<body>
+<button class="theme" id="theme" aria-label="Toggle light or dark theme">◐ Theme</button>
+<div class="wrap">
+
+<div class="kicker">AIT-204 · Topic 5 · Before the lecture · ~10 min</div>
+<h1>Transformers in one idea: every word looks at every other word, all at once</h1>
+<p class="lede">Last topic you watched RNNs and LSTMs read a sentence the way you read with a finger under each word, carrying a memory forward one step at a time. This page is the whole of Topic 5 in plain language. The lecture and the four in-class sessions then add the math, the shapes, and the code.</p>
+
+<h2><span class="n">1</span>The problem with passing notes down a line</h2>
+<p>An RNN is like a row of students passing a note. Word 1 writes something, hands it to word 2, who adds to it and hands it on. By word 40, the note has been rewritten 39 times. You saw what that does: early words fade (vanishing gradients) and nobody can start until the person before them is done, so a GPU sits mostly idle.</p>
+<div class="card">
+<svg viewBox="0 0 820 230" width="100%" role="img" aria-label="Left: RNN chain where information passes word by word. Right: every word connected to every other word.">
+  <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--muted)"/></marker></defs>
+  <text x="190" y="24" text-anchor="middle" font-weight="700" fill="var(--orange)" font-size="16">RNN / LSTM: a relay</text>
+  <g font-size="14" fill="var(--ink)">
+    <rect x="15" y="95" width="60" height="38" rx="8" fill="var(--card)" stroke="var(--orange)" stroke-width="2"/><text x="45" y="119" text-anchor="middle">The</text>
+    <rect x="105" y="95" width="60" height="38" rx="8" fill="var(--card)" stroke="var(--orange)" stroke-width="2"/><text x="135" y="119" text-anchor="middle">cat</text>
+    <rect x="195" y="95" width="60" height="38" rx="8" fill="var(--card)" stroke="var(--orange)" stroke-width="2"/><text x="225" y="119" text-anchor="middle">sat</text>
+    <rect x="285" y="95" width="60" height="38" rx="8" fill="var(--card)" stroke="var(--orange)" stroke-width="2"/><text x="315" y="119" text-anchor="middle">down</text>
+  </g>
+  <g stroke="var(--muted)" stroke-width="2" marker-end="url(#ar)"><line x1="77" y1="114" x2="101" y2="114"/><line x1="167" y1="114" x2="191" y2="114"/><line x1="257" y1="114" x2="281" y2="114"/></g>
+  <text x="190" y="175" text-anchor="middle" fill="var(--muted)" font-size="14">step 1 → step 2 → step 3 → step 4</text>
+  <text x="190" y="198" text-anchor="middle" fill="var(--muted)" font-size="14">sequential · memory fades with distance</text>
+  <line x1="410" y1="20" x2="410" y2="210" stroke="var(--line)"/>
+  <text x="615" y="24" text-anchor="middle" font-weight="700" fill="var(--blue)" font-size="16">Transformer: a round table</text>
+  <g id="mesh" stroke="var(--blue)" stroke-opacity=".45" stroke-width="2"></g>
+  <g id="meshnodes" font-size="14"></g>
+  <text x="615" y="198" text-anchor="middle" fill="var(--muted)" font-size="14">one step · every pair is one hop apart</text>
+</svg>
+</div>
+<p>The transformer's move is simple to say: <b>put everyone at a round table</b>. Every word can talk to every other word directly, and all those conversations happen at the same time. Distance stops mattering, and the whole sentence is processed in one parallel step. That parallelism is why transformers could be trained on most of the internet.</p>
+
+<h2><span class="n">2</span>Attention: who should I listen to?</h2>
+<p class="big">Each word asks a question, every word wears a name tag, and each word listens to the others in proportion to how well their name tag answers its question.</p>
+<p>That sentence is attention. In the lecture the three parts get names:</p>
+<div class="grid2">
+  <div class="card"><span class="tag" style="background:var(--chip);color:var(--blue)">Query</span><p class="small">What am I looking for? (“I'm the word <i>it</i>; I need to know what I refer to.”)</p></div>
+  <div class="card"><span class="tag" style="background:var(--chip);color:var(--orange)">Key</span><p class="small">What do I offer? (“I'm <i>animal</i>: a living thing, a noun, something that can be tired.”)</p></div>
+  <div class="card"><span class="tag" style="background:var(--chip);color:var(--green)">Value</span><p class="small">What do I actually pass along if you listen to me? (the meaning that gets mixed in)</p></div>
+  <div class="card"><span class="tag" style="background:var(--tint);color:var(--purple)">Weights</span><p class="small">Query·Key scores, squashed by softmax so they add up to 100%. Each word's new meaning = a weighted blend of everyone's Values.</p></div>
+</div>
+
+<div class="card">
+<b>Try it.</b> <span class="muted">Click a word to see where it “looks.” The orange bar under each word shows how much attention it gets. Then change the last word and watch <i>it</i> change its mind.</span>
+<div class="switch" role="group" aria-label="Choose the ending">
+  <button class="btn on" data-end="tired">…because it was too <b>tired</b></button>
+  <button class="btn" data-end="wide">…because it was too <b>wide</b></button>
+</div>
+<div class="sentence" id="sent"></div>
+<div class="readout" id="readout"></div>
+<p class="small muted">The weights here are illustrative, chosen to show the idea; a trained model learns its own. The famous version of this example comes from Google's 2017 Transformer blog post.</p>
+</div>
+
+<h2><span class="n">3</span>Many heads: several conversations at once</h2>
+<p>One round of “who should I listen to?” can only chase one kind of relationship. So the transformer runs several small attentions side by side, called <b>heads</b>, each with its own question/name-tag/value projections. They split the same budget; they don't add parameters. What they add is <b>specialization</b>:</p>
+<div class="heads">
+  <div class="head" style="border-color:var(--blue)"><h4 style="color:var(--blue)">Head A · neighbors</h4><p class="small">“What word came right before me?”</p></div>
+  <div class="head" style="border-color:var(--orange)"><h4 style="color:var(--orange)">Head B · grammar</h4><p class="small">“I'm a verb. Who is my subject?”</p></div>
+  <div class="head" style="border-color:var(--green)"><h4 style="color:var(--green)">Head C · references</h4><p class="small">“I'm a pronoun. Who am I standing in for?”</p></div>
+</div>
+<p>Their answers are glued together and mixed. <span class="muted">→ Session 1 (Week 9 Wednesday): you'll build exactly this and check every shape.</span></p>
+
+<h2><span class="n">4</span>The catch: a round table has no “first seat”</h2>
+<p>If everyone talks to everyone at once, the model can't tell <i>dog bites man</i> from <i>man bites dog</i>. Same words, same conversations, same result, just shuffled. Attention on its own sees a <b>set</b>, not a sequence.</p>
+<div class="card">
+  <div class="order" id="order">
+    <div class="seat"><span class="w">man</span><span class="p">seat 1</span></div>
+    <div class="seat"><span class="w">bites</span><span class="p">seat 2</span></div>
+    <div class="seat"><span class="w">dog</span><span class="p">seat 3</span></div>
+  </div>
+  <div class="switch">
+    <button class="btn" id="shuffle">Shuffle the words</button>
+    <button class="btn" id="seats">Give each word a seat number</button>
+  </div>
+  <p class="small muted" id="ordermsg">Without seat numbers, shuffling changes nothing the model can see.</p>
+</div>
+<p>The fix is to stamp each word with its position before (or during) attention. There are three popular stamps: fixed sine waves (<b>sinusoidal</b>), a learned lookup table (<b>learned</b>), and rotating each word's question and name tag by an angle set by its position (<b>rotary</b>, used by most modern LLMs). <span class="muted">→ Session 2 (Week 9 Friday).</span></p>
+
+<h2><span class="n">5</span>Talk, then think, then repeat</h2>
+<p>A transformer <b>block</b> is two steps. First the words <b>talk</b> (attention: share information across the table). Then each word <b>thinks</b> on its own (a small feed-forward network, the same MLP you built in Topic 2). Stack 12, 24 or 96 of these blocks and you have BERT, GPT-2 or a modern LLM.</p>
+<div class="card">
+<svg viewBox="0 0 820 200" width="100%" role="img" aria-label="A residual highway running left to right with talk and think steps branching off and adding back in, repeated.">
+  <line x1="20" y1="150" x2="790" y2="150" stroke="var(--purple)" stroke-width="10" stroke-opacity=".8"/>
+  <polygon points="790,138 812,150 790,162" fill="var(--purple)"/>
+  <text x="24" y="185" fill="var(--purple)" font-weight="700" font-size="14">the residual “highway”: each block only ADDS a correction</text>
+  <g font-size="14" font-weight="600">
+    <path d="M80,150 V60 H120" fill="none" stroke="var(--muted)" stroke-width="2"/><rect x="120" y="38" width="120" height="44" rx="10" fill="var(--chip)" stroke="var(--blue)" stroke-width="2"/><text x="180" y="65" text-anchor="middle" fill="var(--blue)">talk</text><path d="M240,60 H280 V140" fill="none" stroke="var(--blue)" stroke-width="2"/><circle cx="280" cy="150" r="11" fill="var(--card)" stroke="var(--purple)" stroke-width="2"/><text x="280" y="155" text-anchor="middle" fill="var(--purple)">+</text>
+    <path d="M310,150 V60 H350" fill="none" stroke="var(--muted)" stroke-width="2"/><rect x="350" y="38" width="120" height="44" rx="10" fill="var(--card)" stroke="var(--green)" stroke-width="2"/><text x="410" y="65" text-anchor="middle" fill="var(--green)">think</text><path d="M470,60 H510 V140" fill="none" stroke="var(--green)" stroke-width="2"/><circle cx="510" cy="150" r="11" fill="var(--card)" stroke="var(--purple)" stroke-width="2"/><text x="510" y="155" text-anchor="middle" fill="var(--purple)">+</text>
+  </g>
+  <text x="660" y="66" text-anchor="middle" fill="var(--muted)" font-size="15">× 12 … × 96 blocks</text>
+  <text x="660" y="88" text-anchor="middle" fill="var(--muted)" font-size="13">same shape in, same shape out</text>
+</svg>
+</div>
+<p>The highway matters: because each block <i>adds</i> to the running representation instead of replacing it, gradients have a clean path back through dozens of blocks. That's the same lesson as the LSTM's cell-state “conveyor belt” from Topic 4. <span class="muted">→ Session 3 (Week 10 Wednesday): you'll build the block and prove it matches PyTorch's own.</span></p>
+
+<h2><span class="n">6</span>One recipe, three family members</h2>
+<p>Change <b>who may look at whom</b> and you get the three transformer archetypes. Your TrioFormer product serves all three side by side.</p>
+<div class="arch">
+  <div class="card" style="border-color:var(--blue)"><span class="tag" style="background:var(--chip);color:var(--blue)">Reader</span><h3>Encoder · BERT</h3><div class="mask" data-kind="full"></div><p class="small">Every word sees the whole sentence, both directions. Trained to fill in blanks. Great at <b>understanding</b>: classify, search, fill a <code>[MASK]</code>.</p></div>
+  <div class="card" style="border-color:var(--orange)"><span class="tag" style="background:var(--chip);color:var(--orange)">Writer</span><h3>Decoder · GPT</h3><div class="mask" data-kind="causal"></div><p class="small">Each word sees only the past (no peeking at the answer). Trained to guess the next word. Great at <b>generating</b>: continue, chat, code.</p></div>
+  <div class="card" style="border-color:var(--green)"><span class="tag" style="background:var(--chip);color:var(--green)">Translator</span><h3>Encoder–decoder · T5</h3><div class="mask" data-kind="cross"></div><p class="small">A reader and a writer joined: the writer keeps glancing back at what the reader understood. Great at <b>transforming</b> text: summarize, translate.</p></div>
+</div>
+<p><span class="muted">→ Session 4 (Week 10 Friday): masks, the KV cache that makes writing fast, and the temperature/top-p knobs behind every “creativity” slider.</span></p>
+
+<h2><span class="n">7</span>The price of the round table</h2>
+<p>Everyone-talks-to-everyone means the number of conversations grows with the <b>square</b> of the text length. Double the text and attention does about <b>four times</b> the work. That single fact explains context-window limits, why long prompts cost more, and the latency curve the Honors addendum asks you to measure on your own hardware.</p>
+
+<h2><span class="n">8</span>Bring these four questions to class</h2>
+<div class="sessions">
+  <div class="sess"><div class="when">Week 9 · Wednesday</div><b>If heads don't add parameters, why are eight better than one?</b><div class="small muted">Multi-head attention & shapes → DQ 1, <code>src/transformer.py</code></div></div>
+  <div class="sess"><div class="when">Week 9 · Friday</div><b>How can a rotation encode “three words apart”?</b><div class="small muted">Positional encodings → DQ 2, “Concepts” tab, pytest (d)</div></div>
+  <div class="sess"><div class="when">Week 10 · Wednesday</div><b>Why does adding (instead of replacing) let us stack 96 blocks?</b><div class="small muted">The encoder block → “My Encoder Block” tab, benchmark vs <code>torch.nn</code></div></div>
+  <div class="sess"><div class="when">Week 10 · Friday</div><b>Why is GPT-2 the slowest lane in your Compare tab?</b><div class="small muted">Archetypes & decoding → DQ 3–4, latency_ms in Supabase</div></div>
+</div>
+
+<footer>AIT-204 Deep Learning · Topic 5 — Transformer Architecture. Reading to pair with this page: Alammar, “The Illustrated Transformer” and “The Illustrated GPT-2”; Harvard NLP, “The Annotated Transformer.”</footer>
+</div>
+
+<script>
+(function(){
+  // theme toggle
+  var root=document.documentElement, KEY="ait204-theme";
+  try{var t=localStorage.getItem(KEY); if(t) root.setAttribute("data-theme",t);}catch(e){}
+  document.getElementById("theme").onclick=function(){
+    var dark=root.getAttribute("data-theme")==="dark"||(!root.getAttribute("data-theme")&&matchMedia("(prefers-color-scheme: dark)").matches);
+    var n=dark?"light":"dark"; root.setAttribute("data-theme",n); try{localStorage.setItem(KEY,n);}catch(e){}
+  };
+
+  // round-table mesh
+  var words=["The","cat","sat","down"], cx=615, cy=105, R=62, pts=[];
+  words.forEach(function(w,i){var a=-Math.PI/2+i*2*Math.PI/4; pts.push([cx+R*1.5*Math.cos(a),cy+R*Math.sin(a)]);});
+  var mesh=document.getElementById("mesh"), nodes=document.getElementById("meshnodes"), ns="http://www.w3.org/2000/svg";
+  for(var i=0;i<4;i++)for(var j=i+1;j<4;j++){var l=document.createElementNS(ns,"line");l.setAttribute("x1",pts[i][0]);l.setAttribute("y1",pts[i][1]);l.setAttribute("x2",pts[j][0]);l.setAttribute("y2",pts[j][1]);mesh.appendChild(l);}
+  pts.forEach(function(p,i){var r=document.createElementNS(ns,"rect");r.setAttribute("x",p[0]-30);r.setAttribute("y",p[1]-17);r.setAttribute("width",60);r.setAttribute("height",34);r.setAttribute("rx",8);r.setAttribute("fill","var(--card)");r.setAttribute("stroke","var(--blue)");r.setAttribute("stroke-width",2);nodes.appendChild(r);
+    var t=document.createElementNS(ns,"text");t.setAttribute("x",p[0]);t.setAttribute("y",p[1]+5);t.setAttribute("text-anchor","middle");t.setAttribute("fill","var(--ink)");t.textContent=words[i];nodes.appendChild(t);});
+
+  // attention demo
+  var base=["The","animal","didn't","cross","the","street","because","it","was","too"];
+  var end="tired";
+  // illustrative weights: W[query][key]
+  function weights(qi){
+    var toks=base.concat([end]), n=toks.length, w=new Array(n).fill(0.02);
+    var it=7, animal=1, street=5, last=n-1;
+    if(qi===it){ if(end==="tired"){w[animal]=0.62;w[street]=0.08;} else {w[street]=0.60;w[animal]=0.09;} w[last]=0.12; w[it]=0.05; }
+    else if(qi===last){ w[it]=0.45; w[end==="tired"?animal:street]=0.25; w[9]=0.12; }
+    else if(qi===3){ w[animal]=0.45; w[street]=0.30; w[2]=0.1; }
+    else if(qi===2){ w[animal]=0.4; w[3]=0.35; }
+    else if(qi===6){ w[3]=0.3; w[8]=0.25; w[it]=0.2; }
+    else { w[qi]=0.4; if(qi>0) w[qi-1]=0.3; if(qi+1<n) w[qi+1]=0.15; }
+    var s=w.reduce(function(a,b){return a+b;},0); return w.map(function(x){return x/s;});
+  }
+  var sent=document.getElementById("sent"), out=document.getElementById("readout"), q=7;
+  function render(){
+    var toks=base.concat([end]); sent.innerHTML="";
+    var w=weights(q);
+    toks.forEach(function(t,i){
+      var b=document.createElement("button"); b.className="tok"+(i===q?" q":""); b.textContent=t;
+      b.setAttribute("aria-label",t+": receives "+Math.round(w[i]*100)+"% of the attention");
+      var bar=document.createElement("span"); bar.className="bar"; bar.style.width=Math.max(4,w[i]*100)+"%"; b.appendChild(bar);
+      b.onclick=function(){q=i;render();}; sent.appendChild(b);
+    });
+    var top=w.map(function(x,i){return [x,i];}).filter(function(p){return p[1]!==q;}).sort(function(a,b){return b[0]-a[0];}).slice(0,2);
+    out.innerHTML="Query <b>“"+toks[q]+"”</b> listens most to <b>“"+toks[top[0][1]]+"”</b> ("+Math.round(top[0][0]*100)+"%) and <b>“"+toks[top[1][1]]+"”</b> ("+Math.round(top[1][0]*100)+"%). "+
+      (q===7?(end==="tired"?"Animals get tired, so <i>it</i> = the animal.":"Streets are wide, so <i>it</i> = the street. Same word, new meaning, decided by context."):"");
+  }
+  document.querySelectorAll("[data-end]").forEach(function(b){b.onclick=function(){end=b.getAttribute("data-end");document.querySelectorAll("[data-end]").forEach(function(x){x.classList.toggle("on",x===b);});q=7;render();};});
+  render();
+
+  // order demo
+  var order=document.getElementById("order"), msg=document.getElementById("ordermsg"), seats=false;
+  document.getElementById("shuffle").onclick=function(){
+    var s=Array.prototype.slice.call(order.children); s.reverse().forEach(function(c){order.appendChild(c);});
+    Array.prototype.forEach.call(order.children,function(c,i){c.querySelector(".p").textContent="seat "+(i+1);});
+    var txt=Array.prototype.map.call(order.children,function(c){return c.querySelector(".w").textContent;}).join(" ");
+    msg.textContent=seats?("“"+txt+"”: now each word carries a different seat number, so the model sees a different sentence."):("“"+txt+"”: same three words, same conversations. Without seat numbers the model can't tell the difference.");
+  };
+  document.getElementById("seats").onclick=function(e){seats=!seats;order.classList.toggle("showpos",seats);e.target.classList.toggle("on",seats);
+    msg.textContent=seats?"Seat numbers on. Now shuffle again.":"Without seat numbers, shuffling changes nothing the model can see.";};
+
+  // mask minis
+  document.querySelectorAll(".mask").forEach(function(m){
+    var kind=m.getAttribute("data-kind"), col=kind==="full"?"var(--blue)":kind==="causal"?"var(--orange)":"var(--green)";
+    for(var i=0;i<5;i++)for(var j=0;j<5;j++){var s=document.createElement("span"); if(kind!=="causal"||j<=i) s.style.background=col; if(kind==="cross"&&!(Math.abs(i-j)<1||j===4-i)) s.style.opacity=".35"; m.appendChild(s);}
+  });
+})();
+</script>
+</body>
+</html>
