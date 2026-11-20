@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 6 Prequel — Pre-Training and Fine-Tuning in One Idea</title>
+<meta name="description" content="AIT-204 Topic 6 prequel: the key ideas behind pre-training and fine-tuning LLMs, before the lecture.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fbfaf6; --card:#ffffff; --ink:#1d2433; --muted:#5b6475; --line:#e4e1d8;
+  --blue:#2563eb; --orange:#d97706; --green:#15803d; --purple:#7c3aed; --red:#dc2626; --teal:#0f766e;
+  --tint:#f3f0ff; --chip:#eef2ff;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12151c; --card:#1a1f29; --ink:#e8eaf0; --muted:#9aa3b5; --line:#2c3341;
+    --blue:#6b9bff; --orange:#f0a443; --green:#4cc27a; --purple:#a98bff; --red:#ff6b6b; --teal:#3cc4b4;
+    --tint:#231d38; --chip:#1e2740;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12151c; --card:#1a1f29; --ink:#e8eaf0; --muted:#9aa3b5; --line:#2c3341;
+  --blue:#6b9bff; --orange:#f0a443; --green:#4cc27a; --purple:#a98bff; --red:#ff6b6b; --teal:#3cc4b4;
+  --tint:#231d38; --chip:#1e2740;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:Inter,"Helvetica Neue",Arial,sans-serif;font-size:17px;line-height:1.6}
+.wrap{max-width:900px;margin:0 auto;padding:40px 16px 80px}
+.kicker{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--purple);font-weight:700}
+h1{font-size:clamp(30px,6vw,48px);line-height:1.1;margin:.25em 0 .3em;font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(22px,4vw,28px);margin:2.2em 0 .4em;font-weight:700;letter-spacing:-.01em}
+h2 .n{color:var(--purple);margin-right:.35em}
+p{margin:.6em 0}
+.lede{font-size:clamp(18px,2.6vw,21px);color:var(--muted)}
+.big{font-family:"Source Serif 4",Georgia,serif;font-style:italic;font-size:clamp(22px,3.6vw,30px);line-height:1.35;
+  border-left:5px solid var(--purple);padding:.2em 0 .2em .8em;margin:1.2em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin:16px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:640px){.grid2{grid-template-columns:1fr}}
+.tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+svg text{font-family:Inter,Arial,sans-serif}
+/* attention demo */
+.sentence{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 6px}
+.tok{border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:6px 11px;font:600 16px Inter,sans-serif;cursor:pointer;position:relative;transition:background .2s,border-color .2s}
+.tok:hover{border-color:var(--blue)}
+.tok.q{border-color:var(--blue);background:var(--chip)}
+.tok .bar{position:absolute;left:0;bottom:-8px;height:5px;border-radius:3px;background:var(--orange);transition:width .35s}
+.switch{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 14px;font:600 14px Inter,sans-serif;cursor:pointer}
+.btn.on{background:var(--purple);border-color:var(--purple);color:#fff}
+.readout{min-height:48px;font-size:15px;color:var(--muted);margin-top:16px}
+.readout b{color:var(--ink)}
+/* heads */
+.heads{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:640px){.heads{grid-template-columns:1fr}}
+.head{border-radius:12px;padding:14px;border:2px solid}
+.head h4{margin:0 0 4px;font-size:16px}
+/* archetypes */
+.arch{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:720px){.arch{grid-template-columns:1fr}}
+.arch .card{margin:0;border-width:2px}
+.arch h3{margin:.1em 0 .1em;font-size:20px}
+.mask{display:grid;grid-template-columns:repeat(5,14px);gap:3px;margin:10px 0}
+.mask span{width:14px;height:14px;border-radius:3px;background:var(--line)}
+/* checklist */
+.sessions{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media (max-width:640px){.sessions{grid-template-columns:1fr}}
+.sess{border-left:4px solid var(--purple);background:var(--card);border-radius:0 12px 12px 0;padding:12px 14px;border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.sess .when{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--purple)}
+code{font-family:"DejaVu Sans Mono",Menlo,Consolas,monospace;font-size:.88em;background:var(--chip);padding:1px 5px;border-radius:5px}
+.order{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.seat{display:inline-flex;flex-direction:column;align-items:center;gap:2px}
+.seat .w{border:2px solid var(--line);border-radius:8px;padding:4px 10px;font-weight:600;background:var(--card)}
+.seat .p{font-size:12px;color:var(--purple);font-weight:700;opacity:0;transition:opacity .3s}
+.showpos .seat .p{opacity:1}
+.theme{position:fixed;top:12px;right:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font:600 13px Inter,sans-serif;cursor:pointer;z-index:5}
+footer{margin-top:3em;color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
+/* controls + meters (Topic 6 prequel) */
+.ctl{display:grid;grid-template-columns:220px 1fr 90px;gap:12px;align-items:center;margin:10px 0}
+.ctl label{font-weight:600;font-size:15px}
+.ctl output{font:700 15px "DejaVu Sans Mono",Menlo,Consolas,monospace;text-align:right;color:var(--purple)}
+.ctl input[type=range]{width:100%;accent-color:var(--purple)}
+.ctl input[type=number],.ctl input[type=text]{grid-column:2 / 4;width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:7px 10px;font:500 15px Inter,sans-serif}
+@media (max-width:640px){.ctl{grid-template-columns:1fr 70px}.ctl label{grid-column:1 / 3}.ctl input[type=number],.ctl input[type=text]{grid-column:1 / 3}}
+.meter{display:grid;grid-template-columns:220px 1fr 90px;gap:12px;align-items:center;margin:8px 0}
+.meter .mlab{font-size:14px;color:var(--muted);font-weight:600}
+.meter .track{height:16px;border-radius:8px;background:var(--line);overflow:hidden}
+.meter .fill{height:100%;border-radius:8px;width:0;transition:width .3s}
+.meter .mval{font:700 15px "DejaVu Sans Mono",Menlo,Consolas,monospace;text-align:right}
+@media (max-width:640px){.meter{grid-template-columns:1fr 80px}.meter .mlab{grid-column:1 / 3}}
+.w{border:2px solid var(--line);border-radius:10px;padding:6px 11px;font:600 16px Inter,sans-serif;background:var(--card)}
+.w.sent{border-color:var(--green);color:var(--green);background:transparent}
+.w.next{border-color:var(--orange);color:var(--orange);border-style:dashed}
+.w.hid{background:var(--line);border-color:var(--line)}
+.tok.blank{border-style:dashed;border-color:var(--blue);color:var(--blue)}
+.tok.opt{font-weight:500}
+</style>
+</head>
+<body>
+<button class="theme" id="theme" aria-label="Toggle light or dark theme">◐ Theme</button>
+<div class="wrap">
+
+<div class="kicker">AIT-204 · Topic 6 · Before the lecture · ~12 min</div>
+<h1>Pre-training and fine-tuning in one idea: first go to school, then learn the job</h1>
+<p class="lede">In Topic 5 you built the transformer and met its three family members: the Reader (BERT), the Writer (GPT) and the Translator (T5). This page answers the next question in plain language: <b>how do those models get smart, and how do you make one of them yours?</b> The lecture and the sessions then add the math, the metrics and the code.</p>
+
+<h2><span class="n">1</span>Nobody hires a newborn</h2>
+<p>Suppose your team needs someone to sort incoming text messages into <i>spam</i> and <i>not spam</i>. You could raise a child from birth and teach them nothing but spam sorting. Or you could hire an adult who already reads English and show them a few hundred examples on their first morning.</p>
+<p class="big">Pre-training is the twelve years of school. Fine-tuning is the first week on the job.</p>
+<p>A model trained from scratch on your small labeled set has to learn what words are, what grammar is, <i>and</i> what spam looks like, all from a few hundred examples. A pre-trained model arrives already knowing the language. It only has to learn your task.</p>
+<div class="card">
+  <b>Try it.</b> <span class="muted">Drag the slider: how many labeled examples can your team afford to write?</span>
+  <div class="ctl"><label for="nlab">Labeled examples</label><input type="range" id="nlab" min="0" max="100" value="38"><output id="nlabv"></output></div>
+  <div class="meter"><span class="mlab">From scratch</span><div class="track"><div class="fill" id="bscr" style="background:var(--orange)"></div></div><span class="mval" id="vscr"></span></div>
+  <div class="meter"><span class="mlab">Pre-trained, then fine-tuned</span><div class="track"><div class="fill" id="bft" style="background:var(--purple)"></div></div><span class="mval" id="vft"></span></div>
+  <div class="readout" id="r1"></div>
+  <p class="small muted">Illustrative curves that show the typical shape, not a measurement. Your Fine-It template measures the real gap on your own runs and draws it as a bar chart.</p>
+</div>
+
+<h2><span class="n">2</span>School without a teacher: four homework games</h2>
+<p>School for a language model has a problem: nobody can hand-label the internet. The trick is to make the text <b>grade itself</b>. Hide part of a sentence, ask the model to recover it, and check against the original. No human labels needed, which is why this is called <i>self-supervised</i> learning. There are four classic ways to play that game, and the game a model played in school decides what it is good at for life.</p>
+<div class="card">
+  <div class="switch" role="group" aria-label="Choose a pre-training game" id="games">
+    <button class="btn on" data-g="mlm">Fill in the blank</button>
+    <button class="btn" data-g="clm">Finish my sentence</button>
+    <button class="btn" data-g="span">Restore the redacted memo</button>
+    <button class="btn" data-g="con">Find the twin</button>
+  </div>
+  <div id="gamebox"></div>
+  <div class="readout" id="gameout"></div>
+</div>
+<div class="grid2">
+  <div class="card"><span class="tag" style="background:var(--chip);color:var(--blue)">MLM · BERT</span><p class="small"><b>Fill in the blank.</b> A cloze test. You may look left and right, so you become a careful <b>reader</b>: classification, search, tagging.</p></div>
+  <div class="card"><span class="tag" style="background:var(--chip);color:var(--orange)">CLM · GPT</span><p class="small"><b>Finish my sentence.</b> Your phone's autocomplete, taken seriously. You may only look left, so you become a fluent <b>writer</b>.</p></div>
+  <div class="card"><span class="tag" style="background:var(--chip);color:var(--green)">Span corruption · T5</span><p class="small"><b>Restore the redacted memo.</b> Whole phrases are blacked out and you write them back. Text in, text out: a <b>translator</b> and summarizer.</p></div>
+  <div class="card"><span class="tag" style="background:var(--tint);color:var(--purple)">Contrastive · SimCSE, CLIP</span><p class="small"><b>Find the twin.</b> Decide which items mean the same thing. You never produce a word; you learn to shelve similar things together, like a <b>librarian</b>. This is where embeddings come from.</p></div>
+</div>
+<p><span class="muted">→ Session 1: you'll write all four games as code and compute each loss by hand.</span></p>
+
+<h2><span class="n">3</span>Fine-tuning: keep the brain, swap the hat</h2>
+<p>To put a graduate to work you don't rebuild their brain. You keep everything they learned and add a small, task-shaped piece on top, called a <b>head</b>. For spam sorting, the head is a tiny layer that turns the model's summary of the message into two numbers: <i>spam</i> and <i>not spam</i>.</p>
+<div class="card">
+<svg viewBox="0 0 820 220" width="100%" role="img" aria-label="A large pre-trained body with a small new task head on top. The body is nudged gently, the head is trained from scratch.">
+  <rect x="40" y="70" width="470" height="110" rx="14" fill="var(--chip)" stroke="var(--blue)" stroke-width="2.5"/>
+  <text x="275" y="118" text-anchor="middle" font-weight="700" font-size="17" fill="var(--blue)">Pre-trained body · DistilBERT, about 66M weights</text>
+  <text x="275" y="146" text-anchor="middle" font-size="14" fill="var(--muted)">already knows English · nudge gently</text>
+  <line x1="510" y1="125" x2="566" y2="125" stroke="var(--muted)" stroke-width="2.5"/>
+  <polygon points="566,118 580,125 566,132" fill="var(--muted)"/>
+  <rect x="584" y="92" width="110" height="66" rx="12" fill="var(--tint)" stroke="var(--purple)" stroke-width="2.5"/>
+  <text x="639" y="121" text-anchor="middle" font-weight="700" font-size="16" fill="var(--purple)">New head</text>
+  <text x="639" y="142" text-anchor="middle" font-size="12.5" fill="var(--muted)">starts random</text>
+  <line x1="694" y1="125" x2="730" y2="125" stroke="var(--muted)" stroke-width="2.5"/>
+  <polygon points="730,118 744,125 730,132" fill="var(--muted)"/>
+  <text x="752" y="118" font-size="14" font-weight="600" fill="var(--ink)">spam</text>
+  <text x="752" y="140" font-size="14" font-weight="600" fill="var(--ink)">ham</text>
+  <text x="275" y="46" text-anchor="middle" font-size="14" fill="var(--muted)">twelve years of school</text>
+  <text x="639" y="76" text-anchor="middle" font-size="14" fill="var(--muted)">the new job</text>
+  <text x="410" y="208" text-anchor="middle" font-size="14" fill="var(--muted)">The head holds well under 1% of the weights. Almost everything you ship was learned before you arrived.</text>
+</svg>
+</div>
+<p>In code this is one line: <code>AutoModelForSequenceClassification.from_pretrained("distilbert-base-uncased", num_labels=2)</code>. The library loads the schooled body and bolts on a fresh, untrained head. <span class="muted">→ Session 2: you'll write the training loop that the Hugging Face <code>Trainer</code> runs for you.</span></p>
+
+<h2><span class="n">4</span>Use a chisel, not a sledgehammer</h2>
+<p>A pre-trained model is a statue that is 95% carved. Fine-tuning finishes the face. If you swing a sledgehammer (a big learning rate, or far too many passes over a tiny dataset), you get your detail but smash the rest of the statue. The model gets better at your one task while losing the general knowledge that made it useful. That failure has a name: <b>catastrophic forgetting</b>.</p>
+<div class="card">
+  <b>Try it.</b> <span class="muted">Pick a tool and decide how long to carve.</span>
+  <div class="ctl"><label for="lr">Learning rate</label><input type="range" id="lr" min="0" max="100" value="24"><output id="lrv"></output></div>
+  <div class="ctl"><label for="ep">Epochs</label><input type="range" id="ep" min="1" max="12" value="3"><output id="epv"></output></div>
+  <div class="meter"><span class="mlab">Skill at the new job</span><div class="track"><div class="fill" id="bskill" style="background:var(--green)"></div></div><span class="mval" id="vskill"></span></div>
+  <div class="meter"><span class="mlab">General knowledge kept</span><div class="track"><div class="fill" id="bkeep" style="background:var(--blue)"></div></div><span class="mval" id="vkeep"></span></div>
+  <div class="readout" id="r4"></div>
+  <p class="small muted">An illustrative model of the trade-off, not a measurement. The real numbers come from your own three Trainer runs.</p>
+</div>
+<p>This is why fine-tuning uses learning rates near <code>2e-5</code>, about a hundred times smaller than you used when training from scratch, and only 2 to 5 epochs. It also starts with a short <b>warmup</b>: the learning rate ramps up from zero, the way you stretch before you sprint, because the brand-new head produces wild gradients in its first few steps.</p>
+
+<h2><span class="n">5</span>Sticky notes instead of reprinting the textbook</h2>
+<p>Updating every weight in a model with billions of them is like reprinting a whole textbook to fix a few pages. <b>LoRA</b> leaves the book untouched and adds sticky notes: two thin matrices whose product is the correction. Train only the notes. If you don't like the result, peel them off and the original model is still there.</p>
+<div class="card">
+  <b>Try it.</b> <span class="muted">Count the weights you'd train for one layer.</span>
+  <div class="switch" role="group" aria-label="Layer width">
+    <button class="btn on" data-d="768">d = 768 (DistilBERT)</button>
+    <button class="btn" data-d="4096">d = 4096 (an 8B-parameter LLM)</button>
+  </div>
+  <div class="ctl"><label for="rank">Sticky-note rank r</label><input type="range" id="rank" min="1" max="64" value="8"><output id="rankv"></output></div>
+  <div class="meter"><span class="mlab">Full fine-tune: d × d</span><div class="track"><div class="fill" style="background:var(--orange);width:100%"></div></div><span class="mval" id="vfull"></span></div>
+  <div class="meter"><span class="mlab">LoRA: 2 × d × r</span><div class="track"><div class="fill" id="blora" style="background:var(--purple)"></div></div><span class="mval" id="vlora"></span></div>
+  <div class="readout" id="r5"></div>
+</div>
+<p><span class="muted">→ Session 4: you'll build a LoRA layer and prove that peeling the notes off, or gluing them in, gives exactly the model you expect.</span></p>
+
+<h2><span class="n">6</span>One exam score is one roll of the dice</h2>
+<p>Your fine-tuned model scores 87% on the test set and the zero-shot baseline scores 79%. Is that a real win? It depends on which 200 messages happened to land in the test set. Pick a different 200 and both numbers move.</p>
+<p>You can't collect a thousand new test sets, but you can fake it honestly: draw 200 messages <i>from your own test set</i>, with repeats allowed, re-score, and do that many times. The spread of those scores is your uncertainty. That is the <b>bootstrap</b>, and the middle 95% of the spread is the <b>95% confidence interval</b>.</p>
+<div class="card">
+  <b>Try it.</b> <span class="muted">Each click re-draws the test set 25 times and adds 25 dots per model. This demo runs a real bootstrap on a made-up test set of 200 messages.</span>
+  <div class="switch"><button class="btn on" id="draw">Re-draw the test set ×25</button><button class="btn" id="reset">Reset</button></div>
+  <svg id="strip" viewBox="0 0 820 170" width="100%" role="img" aria-label="Strip plot of bootstrap scores for the fine-tuned model and the zero-shot baseline."></svg>
+  <div class="readout" id="r6"></div>
+</div>
+<p>If the two intervals overlap heavily, you have not shown a winner, and saying so is part of the job. Your FleetDeck leaderboard has to print the interval next to every metric. <span class="muted">→ Session 3.</span></p>
+
+<h2><span class="n">7</span>Rent a genius by the word, or train your own specialist?</h2>
+<p>A frontier model behind an API is a brilliant consultant who bills for every word read and written. A fine-tuned small model is an intern you trained yourself: narrower, but fast, private, and paid a flat rate. Which is cheaper depends almost entirely on <b>volume</b>.</p>
+<div class="card">
+  <b>Try it.</b> <span class="muted">Every number here is an assumption you can change. Look up today's prices before you quote this to a customer.</span>
+  <div class="ctl"><label for="vol">Requests per month</label><input type="range" id="vol" min="0" max="100" value="50"><output id="volv"></output></div>
+  <div class="ctl"><label for="tok">Tokens per request</label><input type="range" id="tok" min="50" max="2000" step="50" value="300"><output id="tokv"></output></div>
+  <div class="ctl"><label for="price">API price, $ per million tokens</label><input type="number" id="price" min="0" step="0.5" value="3"></div>
+  <div class="ctl"><label for="host">Small-model hosting, $ per month</label><input type="number" id="host" min="0" step="1" value="25"></div>
+  <div class="meter"><span class="mlab">Frontier API</span><div class="track"><div class="fill" id="bapi" style="background:var(--orange)"></div></div><span class="mval" id="vapi"></span></div>
+  <div class="meter"><span class="mlab">Your fine-tuned model</span><div class="track"><div class="fill" id="bown" style="background:var(--purple)"></div></div><span class="mval" id="vown"></span></div>
+  <div class="readout" id="r7"></div>
+</div>
+<p>Cost is only half the story. The consultant wins when you have no labeled examples, when the task keeps changing, or when it needs broad reasoning. The specialist wins on a narrow, stable, high-volume task where milliseconds and privacy matter. Your FineTuneFleet report has to argue this with numbers, not adjectives.</p>
+
+<h2><span class="n">8</span>Keep a lab notebook, and keep fingerprints instead of letters</h2>
+<p>Three months from now someone will ask, “Why did we ship <i>this</i> checkpoint?” If the answer lives in your memory, there is no answer. So every training run writes one row to an <code>experiments</code> table: learning rate, batch size, epochs, score, duration. That table is the lab notebook, and the leaderboard is just that table, sorted.</p>
+<p>Every prediction is logged too, with one rule: <b>never store the customer's text</b>. Store its fingerprint, a SHA-256 hash. The same message always gives the same fingerprint, so you can count and audit, but nobody can read the message back out of it.</p>
+<div class="card">
+  <b>Try it.</b> <span class="muted">Type a message. Change one character and watch the whole fingerprint change.</span>
+  <div class="ctl"><label for="msg">Message</label><input type="text" id="msg" value="WINNER!! Claim your free prize now" autocomplete="off"></div>
+  <div class="readout" id="r8" style="word-break:break-all"></div>
+</div>
+
+<h2><span class="n">9</span>Bring these four questions to class</h2>
+<div class="sessions">
+  <div class="sess"><div class="when">Session 1</div><b>Why can't the Reader's game teach a model to write?</b><div class="small muted">Four pre-training objectives → DQ 1, the “Concepts” tab</div></div>
+  <div class="sess"><div class="when">Session 2</div><b>Why is the fine-tuning learning rate 100× smaller than the one you trained from scratch with?</b><div class="small muted">Tokenizer output, heads, warmup, the Trainer loop → three logged runs</div></div>
+  <div class="sess"><div class="when">Session 3</div><b>Your model beat zero-shot by 8 points. How sure are you?</b><div class="small muted">F1, ROUGE-L, perplexity, bootstrap intervals → the leaderboard</div></div>
+  <div class="sess"><div class="when">Session 4</div><b>When should the customer skip fine-tuning and call the API?</b><div class="small muted">LoRA, forgetting, cost and latency, what to persist → DQ 2–4</div></div>
+</div>
+
+<footer>AIT-204 Deep Learning · Topic 6 — Pre-Training Paradigms &amp; Fine-Tuning LLMs. Reading to pair with this page: Hugging Face NLP Course, chapters 3, 5 and 7; Sanh et al., “DistilBERT”; Gao, Yao and Chen, “SimCSE.”</footer>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  // theme toggle
+  var root=document.documentElement, KEY="ait204-theme";
+  try{var t=localStorage.getItem(KEY); if(t) root.setAttribute("data-theme",t);}catch(e){}
+  $("theme").onclick=function(){
+    var dark=root.getAttribute("data-theme")==="dark"||(!root.getAttribute("data-theme")&&matchMedia("(prefers-color-scheme: dark)").matches);
+    var n=dark?"light":"dark"; root.setAttribute("data-theme",n); try{localStorage.setItem(KEY,n);}catch(e){}
+  };
+  function fmt(n){return Math.round(n).toLocaleString("en-US");}
+  function pct(x){return Math.round(x*100)+"%";}
+  function setBar(id,frac){$(id).style.width=Math.max(1,Math.min(100,frac*100))+"%";}
+
+  // 1 · scratch vs fine-tuned (illustrative)
+  function s1(){
+    var n=Math.round(50*Math.pow(100,$("nlab").value/100)); // 50 … 5,000
+    var scr=0.5+0.42*(1-Math.exp(-n/2500)), ft=0.5+0.46*(1-Math.exp(-n/110));
+    $("nlabv").textContent=fmt(n);
+    setBar("bscr",scr); setBar("bft",ft); $("vscr").textContent=pct(scr); $("vft").textContent=pct(ft);
+    $("r1").innerHTML = n<400 ? "With <b>"+fmt(n)+"</b> examples the from-scratch model is barely better than a coin flip. The graduate is already useful."
+      : n<2500 ? "At <b>"+fmt(n)+"</b> examples the from-scratch model is still learning what words are. The graduate has flattened out near its ceiling."
+      : "With thousands of examples the gap narrows, but writing <b>"+fmt(n)+"</b> labels is weeks of someone's time.";
+  }
+  $("nlab").oninput=s1; s1();
+
+  // 2 · four games
+  var S=["The","quick","brown","fox","jumps","over","the","lazy","dog"];
+  var box=$("gamebox"), out=$("gameout"), clmN=3;
+  function chip(txt,cls,extra){return '<span class="w '+(cls||"")+'"'+(extra||"")+'>'+txt+'</span>';}
+  var games={
+    mlm:function(){
+      var hidden={2:1,7:1};
+      box.innerHTML='<div class="sentence">'+S.map(function(w,i){return hidden[i]?'<button class="tok blank" data-w="'+w+'">[MASK]</button>':chip(w);}).join("")+'</div>';
+      box.querySelectorAll(".blank").forEach(function(b){b.onclick=function(){b.textContent=b.getAttribute("data-w");b.classList.add("q");};});
+      out.innerHTML="<b>Masked language modeling.</b> About 15% of the words are hidden. The model sees the words on <i>both</i> sides and is graded only on the blanks. Click a blank to check the answer.";
+    },
+    clm:function(){
+      box.innerHTML='<div class="sentence">'+S.map(function(w,i){return i<clmN?chip(w):i===clmN?chip("?","next"):chip("&nbsp;&nbsp;&nbsp;","hid");}).join("")+'</div><div class="switch"><button class="btn" id="clmnext">Reveal the next word</button></div>';
+      $("clmnext").onclick=function(){clmN=clmN>=S.length?1:clmN+1;games.clm();};
+      out.innerHTML="<b>Causal language modeling.</b> The model sees only what came before and guesses the next word. Every position is a question, so one sentence of "+S.length+" words gives "+(S.length-1)+" practice problems"+(clmN>=S.length?". Sentence finished; click to start over.":". The answer here is <b>“"+S[clmN]+"”</b>.");
+    },
+    span:function(){
+      box.innerHTML='<div class="sentence">'+chip("The")+chip("&lt;X&gt;","sent")+chip("fox")+chip("jumps")+chip("&lt;Y&gt;","sent")+chip("dog")+'</div>'+
+        '<div class="small muted" style="margin:6px 0 2px">The model writes back:</div><div class="sentence">'+chip("&lt;X&gt;","sent")+chip("quick")+chip("brown")+chip("&lt;Y&gt;","sent")+chip("over")+chip("the")+chip("lazy")+chip("&lt;Z&gt;","sent")+'</div>';
+      out.innerHTML="<b>Span corruption.</b> Whole phrases are replaced by numbered markers. An encoder reads the damaged memo and a decoder writes out only the missing pieces. Input is text and output is text, which is the shape of summarizing and translating.";
+    },
+    con:function(){
+      var opts=[["A fast, dark-colored fox leaps across a sleepy dog.",0.91,true],["The stock market fell sharply on Tuesday.",0.07,false],["A lazy dog sleeps under the old oak tree.",0.38,false]];
+      box.innerHTML='<div class="small muted" style="margin-bottom:6px">Anchor: “'+S.join(" ")+'.” Which sentence is its twin?</div>'+
+        opts.map(function(o,i){return '<button class="tok opt" data-i="'+i+'" style="display:block;width:100%;text-align:left;margin:8px 0 14px">'+o[0]+'<span class="bar" style="width:0%"></span></button>';}).join("");
+      box.querySelectorAll(".opt").forEach(function(b){b.onclick=function(){
+        box.querySelectorAll(".opt").forEach(function(x){var o=opts[+x.getAttribute("data-i")]; x.querySelector(".bar").style.width=(o[1]*100)+"%"; if(o[2]) x.classList.add("q");});
+        var o=opts[+b.getAttribute("data-i")];
+        out.innerHTML=(o[2]?"<b>Yes.</b> ":"<b>Not quite.</b> ")+"The orange bars show similarity. Training pulls the twin's vector toward the anchor and pushes the other two away. Sentence three shares words with the anchor (<i>lazy</i>, <i>dog</i>) but not its meaning; a good embedding learns the difference. (Similarities are illustrative.)";
+      };});
+      out.innerHTML="<b>Contrastive learning.</b> No word is ever predicted. The model turns each sentence into a vector and is graded on whether twins land close together. Pick one.";
+    }
+  };
+  document.querySelectorAll("#games .btn").forEach(function(b){b.onclick=function(){
+    document.querySelectorAll("#games .btn").forEach(function(x){x.classList.toggle("on",x===b);}); clmN=3; games[b.getAttribute("data-g")]();
+  };});
+  games.mlm();
+
+  // 4 · chisel vs sledgehammer (illustrative)
+  function s4(){
+    var lr=Math.pow(10,-5.3+2.8*$("lr").value/100), ep=+$("ep").value;      // 5e-6 … 3e-3
+    var dose=(lr/2e-5)*ep/3;
+    var blow=Math.max(0,Math.min(1,(Math.log10(lr)+3.6)/0.7));               // unstable above ~2.5e-4
+    var skill=(0.55+0.42*(1-Math.exp(-1.6*dose)))*(1-0.45*blow);
+    var keep=Math.exp(-0.04*Math.pow(dose,1.15));
+    $("lrv").textContent=lr.toExponential(1).replace("e-","e-"); $("epv").textContent=ep;
+    setBar("bskill",skill); setBar("bkeep",keep); $("vskill").textContent=pct(skill); $("vkeep").textContent=pct(keep);
+    $("r4").innerHTML = blow>0.5 ? "<b>Sledgehammer.</b> Updates this large wipe out what the model learned in school. Training becomes unstable and both bars fall."
+      : dose<0.35 ? "<b>Too gentle.</b> The chisel barely touches the stone. The model keeps its general knowledge and learns little of the new job."
+      : keep<0.8 ? "<b>Over-carved.</b> The new skill is high, but general knowledge is eroding. This is catastrophic forgetting. Stop earlier or lower the rate."
+      : "<b>Sweet spot.</b> A small rate and a few epochs: strong on the new job, and the schooling is intact.";
+  }
+  $("lr").oninput=s4; $("ep").oninput=s4; s4();
+
+  // 5 · LoRA parameter count (exact)
+  var D=768;
+  function s5(){
+    var r=+$("rank").value, full=D*D, lora=2*D*r;
+    $("rankv").textContent=r; $("vfull").textContent=fmt(full); $("vlora").textContent=fmt(lora);
+    setBar("blora",lora/full);
+    $("r5").innerHTML="One "+D+" × "+D+" weight matrix has <b>"+fmt(full)+"</b> numbers. Two sticky notes of rank "+r+" hold <b>"+fmt(lora)+"</b>: about <b>"+(full/lora<10?(full/lora).toFixed(1):Math.round(full/lora))+"× fewer</b> to train and to store ("+(100*lora/full).toFixed(2)+"% of the layer).";
+  }
+  document.querySelectorAll("[data-d]").forEach(function(b){b.onclick=function(){D=+b.getAttribute("data-d");document.querySelectorAll("[data-d]").forEach(function(x){x.classList.toggle("on",x===b);});s5();};});
+  $("rank").oninput=s5; s5();
+
+  // 6 · bootstrap (real resampling on a fixed synthetic test set)
+  var N=200, ft=[], zs=[], i;
+  for(i=0;i<N;i++){ ft.push(i%100<87?1:0); zs.push((i*7+3)%100<79?1:0); }   // 87% and 79% correct
+  var A=[], B=[], strip=$("strip"), ns="http://www.w3.org/2000/svg";
+  function X(v){return 60+(v-0.65)/(0.97-0.65)*720;}
+  function el(tag,attrs,txt){var e=document.createElementNS(ns,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(txt!=null)e.textContent=txt;strip.appendChild(e);return e;}
+  function ci(a){var s=a.slice().sort(function(x,y){return x-y;});return [s[Math.floor(0.025*(s.length-1))],s[Math.ceil(0.975*(s.length-1))]];}
+  function drawStrip(){
+    while(strip.firstChild) strip.removeChild(strip.firstChild);
+    for(var v=0.65;v<0.971;v+=0.05){el("line",{x1:X(v),y1:22,x2:X(v),y2:138,stroke:"var(--line)"});el("text",{x:X(v),y:158,"text-anchor":"middle","font-size":13,fill:"var(--muted)"},Math.round(v*100)+"%");}
+    [["Fine-tuned",A,"var(--purple)",55],["Zero-shot",B,"var(--orange)",108]].forEach(function(row){
+      el("text",{x:60,y:row[3]-22,"font-size":14,"font-weight":700,fill:row[2]},row[0]);
+      row[1].forEach(function(v,k){el("circle",{cx:X(v),cy:row[3]+((k*37)%19)-9,r:4,fill:row[2],"fill-opacity":0.45});});
+      if(row[1].length>=50){var c=ci(row[1]);el("line",{x1:X(c[0]),y1:row[3]+18,x2:X(c[1]),y2:row[3]+18,stroke:row[2],"stroke-width":5,"stroke-linecap":"round"});}
+    });
+    if(!A.length){$("r6").innerHTML="No draws yet. On the full test set: fine-tuned <b>87%</b>, zero-shot <b>79%</b>.";return;}
+    if(A.length<50){$("r6").innerHTML="<b>"+A.length+"</b> re-draws so far. Same model, same messages, and the score already wanders. Draw again.";return;}
+    var ca=ci(A), cb=ci(B), over=cb[1]>=ca[0];
+    $("r6").innerHTML="<b>"+A.length+"</b> re-draws. Fine-tuned: 95% of scores fall in <b>["+pct(ca[0])+", "+pct(ca[1])+"]</b>. Zero-shot: <b>["+pct(cb[0])+", "+pct(cb[1])+"]</b>. "+
+      (over?"The bars overlap, so 200 test messages are not enough to be sure of an 8-point win. Session 3 shows a sharper test for exactly this case.":"The bars do not overlap: the win holds up under re-drawing.");
+  }
+  function boot(arr,idx){var s=0;for(var k=0;k<N;k++)s+=arr[idx[k]];return s/N;}
+  $("draw").onclick=function(){for(var d=0;d<25;d++){var idx=[];for(var k=0;k<N;k++)idx.push(Math.floor(Math.random()*N));A.push(boot(ft,idx));B.push(boot(zs,idx));}drawStrip();};
+  $("reset").onclick=function(){A=[];B=[];drawStrip();};
+  drawStrip();
+
+  // 7 · cost (pure arithmetic on the reader's assumptions)
+  function s7(){
+    var vol=Math.round(1000*Math.pow(10000,$("vol").value/100)), tok=+$("tok").value, price=Math.max(0,+$("price").value||0), host=Math.max(0,+$("host").value||0);
+    var api=vol*tok/1e6*price, mx=Math.max(api,host,1);
+    $("volv").textContent=fmt(vol); $("tokv").textContent=fmt(tok);
+    setBar("bapi",api/mx); setBar("bown",host/mx);
+    $("vapi").textContent="$"+fmt(api); $("vown").textContent="$"+fmt(host);
+    var be=price>0?host/(tok/1e6*price):Infinity;
+    $("r7").innerHTML=(isFinite(be)?"Break-even is about <b>"+fmt(be)+"</b> requests a month. ":"")+
+      (api<host?"At this volume the API is cheaper, and you skip the labeling and training work.":"At this volume your own model is cheaper by about <b>$"+fmt(api-host)+"</b> a month, before you count the one-time cost of labeling and training.");
+  }
+  ["vol","tok","price","host"].forEach(function(id){$(id).oninput=s7;}); s7();
+
+  // 8 · SHA-256 fingerprint
+  function s8(){
+    var txt=$("msg").value;
+    try{
+      crypto.subtle.digest("SHA-256",new TextEncoder().encode(txt)).then(function(buf){
+        var hex=Array.prototype.map.call(new Uint8Array(buf),function(b){return ("0"+b.toString(16)).slice(-2);}).join("");
+        $("r8").innerHTML="What gets stored: <code>"+hex+"</code><br>What never gets stored: the "+txt.length+" characters you typed.";
+      },function(){ $("r8").textContent="This browser blocked the hashing function on this page. Open the page over https to try it."; });
+    }catch(e){ $("r8").textContent="This browser blocked the hashing function on this page. Open the page over https to try it."; }
+  }
+  $("msg").oninput=s8; s8();
+})();
+</script>
+</body>
+</html>

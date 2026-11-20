@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 6 Deeper Dive — Why Fine-Tuning Works</title>
+<meta name="description" content="AIT-204 Topic 6 deeper dive: low-rank updates, contrastive temperature, paired bootstrap and layer-wise learning rates.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fbfaf6; --card:#ffffff; --ink:#1d2433; --muted:#5b6475; --line:#e4e1d8;
+  --blue:#2563eb; --orange:#d97706; --green:#15803d; --purple:#7c3aed; --red:#dc2626; --teal:#0f766e;
+  --tint:#f3f0ff; --chip:#eef2ff;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12151c; --card:#1a1f29; --ink:#e8eaf0; --muted:#9aa3b5; --line:#2c3341;
+    --blue:#6b9bff; --orange:#f0a443; --green:#4cc27a; --purple:#a98bff; --red:#ff6b6b; --teal:#3cc4b4;
+    --tint:#231d38; --chip:#1e2740;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12151c; --card:#1a1f29; --ink:#e8eaf0; --muted:#9aa3b5; --line:#2c3341;
+  --blue:#6b9bff; --orange:#f0a443; --green:#4cc27a; --purple:#a98bff; --red:#ff6b6b; --teal:#3cc4b4;
+  --tint:#231d38; --chip:#1e2740;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:Inter,"Helvetica Neue",Arial,sans-serif;font-size:17px;line-height:1.6}
+.wrap{max-width:900px;margin:0 auto;padding:40px 16px 80px}
+.kicker{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--purple);font-weight:700}
+h1{font-size:clamp(30px,6vw,48px);line-height:1.1;margin:.25em 0 .3em;font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(22px,4vw,28px);margin:2.2em 0 .4em;font-weight:700;letter-spacing:-.01em}
+h2 .n{color:var(--purple);margin-right:.35em}
+p{margin:.6em 0}
+.lede{font-size:clamp(18px,2.6vw,21px);color:var(--muted)}
+.big{font-family:"Source Serif 4",Georgia,serif;font-style:italic;font-size:clamp(22px,3.6vw,30px);line-height:1.35;
+  border-left:5px solid var(--purple);padding:.2em 0 .2em .8em;margin:1.2em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin:16px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:640px){.grid2{grid-template-columns:1fr}}
+.tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+svg text{font-family:Inter,Arial,sans-serif}
+/* attention demo */
+.sentence{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 6px}
+.tok{border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:6px 11px;font:600 16px Inter,sans-serif;cursor:pointer;position:relative;transition:background .2s,border-color .2s}
+.tok:hover{border-color:var(--blue)}
+.tok.q{border-color:var(--blue);background:var(--chip)}
+.tok .bar{position:absolute;left:0;bottom:-8px;height:5px;border-radius:3px;background:var(--orange);transition:width .35s}
+.switch{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 14px;font:600 14px Inter,sans-serif;cursor:pointer}
+.btn.on{background:var(--purple);border-color:var(--purple);color:#fff}
+.readout{min-height:48px;font-size:15px;color:var(--muted);margin-top:16px}
+.readout b{color:var(--ink)}
+/* heads */
+.heads{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:640px){.heads{grid-template-columns:1fr}}
+.head{border-radius:12px;padding:14px;border:2px solid}
+.head h4{margin:0 0 4px;font-size:16px}
+/* archetypes */
+.arch{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:720px){.arch{grid-template-columns:1fr}}
+.arch .card{margin:0;border-width:2px}
+.arch h3{margin:.1em 0 .1em;font-size:20px}
+.mask{display:grid;grid-template-columns:repeat(5,14px);gap:3px;margin:10px 0}
+.mask span{width:14px;height:14px;border-radius:3px;background:var(--line)}
+/* checklist */
+.sessions{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media (max-width:640px){.sessions{grid-template-columns:1fr}}
+.sess{border-left:4px solid var(--purple);background:var(--card);border-radius:0 12px 12px 0;padding:12px 14px;border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.sess .when{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--purple)}
+code{font-family:"DejaVu Sans Mono",Menlo,Consolas,monospace;font-size:.88em;background:var(--chip);padding:1px 5px;border-radius:5px}
+.order{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.seat{display:inline-flex;flex-direction:column;align-items:center;gap:2px}
+.seat .w{border:2px solid var(--line);border-radius:8px;padding:4px 10px;font-weight:600;background:var(--card)}
+.seat .p{font-size:12px;color:var(--purple);font-weight:700;opacity:0;transition:opacity .3s}
+.showpos .seat .p{opacity:1}
+.theme{position:fixed;top:12px;right:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font:600 13px Inter,sans-serif;cursor:pointer;z-index:5}
+footer{margin-top:3em;color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
+/* controls + meters (Topic 6 prequel) */
+.ctl{display:grid;grid-template-columns:220px 1fr 90px;gap:12px;align-items:center;margin:10px 0}
+.ctl label{font-weight:600;font-size:15px}
+.ctl output{font:700 15px "DejaVu Sans Mono",Menlo,Consolas,monospace;text-align:right;color:var(--purple)}
+.ctl input[type=range]{width:100%;accent-color:var(--purple)}
+.ctl input[type=number],.ctl input[type=text]{grid-column:2 / 4;width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:7px 10px;font:500 15px Inter,sans-serif}
+@media (max-width:640px){.ctl{grid-template-columns:1fr 70px}.ctl label{grid-column:1 / 3}.ctl input[type=number],.ctl input[type=text]{grid-column:1 / 3}}
+.meter{display:grid;grid-template-columns:220px 1fr 90px;gap:12px;align-items:center;margin:8px 0}
+.meter .mlab{font-size:14px;color:var(--muted);font-weight:600}
+.meter .track{height:16px;border-radius:8px;background:var(--line);overflow:hidden}
+.meter .fill{height:100%;border-radius:8px;width:0;transition:width .3s}
+.meter .mval{font:700 15px "DejaVu Sans Mono",Menlo,Consolas,monospace;text-align:right}
+@media (max-width:640px){.meter{grid-template-columns:1fr 80px}.meter .mlab{grid-column:1 / 3}}
+.w{border:2px solid var(--line);border-radius:10px;padding:6px 11px;font:600 16px Inter,sans-serif;background:var(--card)}
+.w.sent{border-color:var(--green);color:var(--green);background:transparent}
+.w.next{border-color:var(--orange);color:var(--orange);border-style:dashed}
+.w.hid{background:var(--line);border-color:var(--line)}
+.tok.blank{border-style:dashed;border-color:var(--blue);color:var(--blue)}
+.tok.opt{font-weight:500}
+</style>
+</head>
+<body>
+<button class="theme" id="theme" aria-label="Toggle light or dark theme">◐ Theme</button>
+<div class="wrap">
+
+<div class="kicker">AIT-204 · Topic 6 · Deeper dive · after the lecture · ~20 min</div>
+<h1>Why fine-tuning works, and where it quietly goes wrong</h1>
+<p class="lede">The lecture notes tell you <i>what</i> to do: mask 15%, use a learning rate near 2e-5, add LoRA, report a confidence interval. This page is about <i>why</i> each of those choices is what it is. Every demo below computes real numbers in your browser.</p>
+
+<h2><span class="n">1</span>Why 15%, and why 80 / 10 / 10?</h2>
+<p>BERT hides about 15% of the tokens. Hide far fewer and each sentence yields almost no practice problems. Hide far more and there is too little context left to solve them. But there is a second problem: the <code>[MASK]</code> token never appears when the model is actually used. A model that only ever practiced on <code>[MASK]</code> would learn “I only need to think hard when I see a blank.”</p>
+<div class="grid2">
+  <div class="card"><span class="tag" style="background:var(--chip);color:var(--blue)">80% → [MASK]</span><p class="small">The main game: recover the word from both sides.</p></div>
+  <div class="card"><span class="tag" style="background:var(--chip);color:var(--orange)">10% → a random word</span><p class="small">Now any word in the sentence might be wrong, so the model must check every word against its context.</p></div>
+  <div class="card"><span class="tag" style="background:var(--chip);color:var(--green)">10% → left unchanged</span><p class="small">The model is still graded here, so it must build a good representation of ordinary, visible words, which is what fine-tuning will use.</p></div>
+  <div class="card"><span class="tag" style="background:var(--tint);color:var(--purple)">The cost</span><p class="small">Only 15% of positions teach anything per pass. A causal LM learns from every position. That is one reason BERT-style pre-training needs many passes over the corpus.</p></div>
+</div>
+
+<h2><span class="n">2</span>Contrastive learning: the temperature decides who you argue with</h2>
+<p>InfoNCE is a multiple-choice question: “which of these N sentences is my twin?” The temperature τ divides every similarity before the softmax. A small τ stretches the differences, so the loss concentrates on the <b>hard negatives</b>: the wrong answers that look almost right. A large τ flattens everything, and every wrong answer gets pushed about equally.</p>
+<div class="card">
+  <b>Try it.</b> <span class="muted">One anchor, four candidates with fixed cosine similarities. Move τ.</span>
+  <div class="ctl"><label for="tau">Temperature τ</label><input type="range" id="tau" min="0" max="100" value="22"><output id="tauv"></output></div>
+  <div id="nce"></div>
+  <div class="readout" id="rnce"></div>
+</div>
+<p>SimCSE uses τ = 0.05. Its other trick is where the twin comes from: the <i>same</i> sentence is passed through the encoder twice, and dropout makes the two passes slightly different. That tiny difference is the only “augmentation.”</p>
+
+<h2><span class="n">3</span>Why LoRA works: the update has only a few real directions</h2>
+<p>LoRA bets that the change fine-tuning makes to a weight matrix, ΔW, is <b>low-rank</b>: a handful of directions carry nearly all of it. If that is true, two thin matrices can store the change. The singular value decomposition lets you test the bet. Sort the directions of ΔW by strength; keeping the strongest r is the best possible rank-r copy (the Eckart–Young theorem).</p>
+<div class="card">
+  <b>Try it.</b> <span class="muted">A 24 × 24 update whose directions fade in strength. Choose how fast they fade, then how many you keep.</span>
+  <div class="ctl"><label for="decay">How fast directions fade</label><input type="range" id="decay" min="30" max="97" value="62"><output id="decayv"></output></div>
+  <div class="ctl"><label for="keep">Rank r kept</label><input type="range" id="keep" min="1" max="24" value="4"><output id="keepv"></output></div>
+  <div class="grid2" style="grid-template-columns:1fr 1fr 1fr">
+    <div><div class="small muted">ΔW (full)</div><canvas id="cfull" width="192" height="192" style="width:100%;image-rendering:pixelated;border-radius:8px"></canvas></div>
+    <div><div class="small muted">Rank-r copy (B·A)</div><canvas id="clow" width="192" height="192" style="width:100%;image-rendering:pixelated;border-radius:8px"></canvas></div>
+    <div><div class="small muted">What was lost</div><canvas id="cerr" width="192" height="192" style="width:100%;image-rendering:pixelated;border-radius:8px"></canvas></div>
+  </div>
+  <div class="readout" id="rsvd"></div>
+</div>
+<p>Slide the fade toward “slow” and the bet fails: every direction matters and a small r loses a lot. That is the honest limit of LoRA. It works well when the new task is close to what the model already knows, and less well when you are teaching it something truly new. In Exercise 4 you check the other half of the claim in code: whatever B and A learn, <code>rank(B·A) ≤ r</code>.</p>
+
+<h2><span class="n">4</span>Not every layer needs the same chisel</h2>
+<p>Lower layers of a transformer hold general knowledge (word forms, syntax). Upper layers hold more task-shaped features. So the layers that most need to change are at the top, and the layers most worth protecting are at the bottom. Four techniques follow from that one observation:</p>
+<div class="grid2">
+  <div class="card"><b>Freeze the body, train the head.</b><p class="small">Cheapest and safest, with no forgetting at all. Often a few points worse, because the features can't adapt. A good first baseline row for your leaderboard.</p></div>
+  <div class="card"><b>Layer-wise learning-rate decay.</b><p class="small">Top layer gets η, the next gets 0.9·η, then 0.81·η, and so on. The bottom barely moves.</p></div>
+  <div class="card"><b>Gradual unfreezing.</b><p class="small">Train the head first, then unfreeze one more layer per epoch from the top down.</p></div>
+  <div class="card"><b>LoRA.</b><p class="small">Freeze everything and add low-rank corrections, usually to the attention query and value matrices in every layer.</p></div>
+</div>
+<p>All four are answers to the same question from the prequel: how do I finish the statue's face without smashing the rest?</p>
+
+<h2><span class="n">5</span>Two honest intervals, and why pairing is sharper</h2>
+<p>The prequel ended on a cliffhanger: two models, two overlapping intervals, no clear winner. Here is the sharper test. Both models answered the <i>same</i> 200 messages. When a resample happens to be easy, both scores go up; when it is hard, both go down. That shared luck is noise you can cancel: on each resample, compute the <b>difference</b> and build the interval for that.</p>
+<div class="card">
+  <b>Try it.</b> <span class="muted">A real bootstrap with 2,000 resamples on a made-up test set. The zero-shot model makes every mistake the fine-tuned one makes, plus some more, which is typical.</span>
+  <div class="switch"><button class="btn on" id="runboot">Run 2,000 resamples</button></div>
+  <svg id="bplot" viewBox="0 0 820 210" width="100%" role="img" aria-label="Three intervals: fine-tuned accuracy, zero-shot accuracy, and their paired difference."></svg>
+  <div class="readout" id="rboot"></div>
+</div>
+<p>In symbols: Var(A − B) = Var(A) + Var(B) − 2·Cov(A, B). Pairing keeps the covariance term, and that term is large when two models share most of their mistakes. Report the paired interval for Δ in your README. If it includes zero, say so.</p>
+
+<h2><span class="n">6</span>When the big model wins anyway</h2>
+<p>Discussion Question 2 asks for a case where zero-shot prompting a large model beats your fine-tuned small one. There are several, and a good engineer names them before the customer does:</p>
+<div class="card">
+<ul>
+  <li><b>No labels.</b> Fine-tuning needs hundreds of labeled examples. If nobody has time to write them, there is nothing to fine-tune on.</li>
+  <li><b>The task keeps moving.</b> New categories every month mean re-labeling and re-training every month. A prompt can be edited in a minute.</li>
+  <li><b>Low volume.</b> Below the break-even point the API is simply cheaper, and you run no servers.</li>
+  <li><b>Broad reasoning or world knowledge.</b> A 66-million-weight model cannot reason about a contract or a medical note the way a frontier model can.</li>
+  <li><b>Long, open-ended outputs.</b> Small encoders classify. They do not write.</li>
+</ul>
+<p class="small muted">The middle path, few-shot prompting with a handful of examples in the prompt, often makes a strong baseline row for the leaderboard too.</p>
+</div>
+
+<h2><span class="n">7</span>Three ways a fine-tune fools you (Discussion Question 4)</h2>
+<div class="grid2" style="grid-template-columns:1fr 1fr 1fr">
+  <div class="card"><span class="tag" style="background:var(--chip);color:var(--red)">Contamination</span><p class="small">The same or near-identical message sits in both train and test, so the test score measures memory. <b>Safeguard:</b> de-duplicate before splitting, split once with a fixed seed, and store the split label in the <code>documents</code> table.</p></div>
+  <div class="card"><span class="tag" style="background:var(--chip);color:var(--orange)">Forgetting</span><p class="small">The model aces your test set and falls apart on anything slightly different. <b>Safeguard:</b> keep a small general or adversarial check set, stop early, and prefer LoRA or a frozen body.</p></div>
+  <div class="card"><span class="tag" style="background:var(--tint);color:var(--purple)">Privacy leakage</span><p class="small">Models can memorize rare training strings, and logs can store customer text. <b>Safeguard:</b> scrub personal data before training, and log a SHA-256 hash of each request instead of the text.</p></div>
+</div>
+
+<footer>AIT-204 Deep Learning · Topic 6 — Pre-Training Paradigms &amp; Fine-Tuning LLMs. Going further: Hu et al., “LoRA: Low-Rank Adaptation of Large Language Models” (2021); Gao, Yao and Chen, “SimCSE” (2021); Devlin et al., “BERT” (2018); Efron and Tibshirani, <i>An Introduction to the Bootstrap</i>.</footer>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  var root=document.documentElement, KEY="ait204-theme";
+  try{var t=localStorage.getItem(KEY); if(t) root.setAttribute("data-theme",t);}catch(e){}
+  $("theme").onclick=function(){
+    var dark=root.getAttribute("data-theme")==="dark"||(!root.getAttribute("data-theme")&&matchMedia("(prefers-color-scheme: dark)").matches);
+    var n=dark?"light":"dark"; root.setAttribute("data-theme",n); try{localStorage.setItem(KEY,n);}catch(e){}
+  };
+  function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+  // 2 · InfoNCE temperature (exact softmax)
+  var cands=[["its twin (the positive)",0.90,"var(--purple)"],["a hard negative: same topic, different meaning",0.70,"var(--orange)"],["an easy negative",0.10,"var(--muted)"],["an unrelated sentence",0.00,"var(--muted)"]];
+  function nce(){
+    var tau=0.02*Math.pow(50,$("tau").value/100);                 // 0.02 … 1.0
+    var ex=cands.map(function(c){return Math.exp(c[1]/tau);}), Z=ex.reduce(function(a,b){return a+b;},0), p=ex.map(function(e){return e/Z;});
+    $("tauv").textContent=tau.toFixed(3);
+    $("nce").innerHTML=cands.map(function(c,i){return '<div class="meter"><span class="mlab">'+c[0]+' · sim '+c[1].toFixed(2)+'</span><div class="track"><div class="fill" style="background:'+c[2]+';width:'+Math.max(0.5,p[i]*100)+'%"></div></div><span class="mval">'+(p[i]*100).toFixed(1)+'%</span></div>';}).join("");
+    var loss=-Math.log(p[0]), share=p[1]/(1-p[0]);
+    $("rnce").innerHTML="Loss = −ln(p<sub>twin</sub>) = <b>"+loss.toFixed(3)+"</b>. Of all the push applied to wrong answers, <b>"+(share*100).toFixed(0)+"%</b> lands on the hard negative. "+
+      (tau<0.08?"At a small τ the model is nearly certain, and almost all of the remaining pressure is on telling the twin from its look-alike.":tau>0.5?"At a large τ the four options look nearly alike to the loss, so even a perfect encoder is penalized. Training signal is spread thin.":"Lower τ further to focus on the hard negative; raise it to spread the pressure out.");
+  }
+  $("tau").oninput=nce; nce();
+
+  // 3 · low-rank approximation with a known SVD (orthonormal U, V by Gram–Schmidt)
+  var n=24;
+  function ortho(seed){
+    var r=rng(seed), Q=[];
+    for(var k=0;k<n;k++){
+      var v=[]; for(var i=0;i<n;i++) v.push(r()*2-1);
+      for(var j=0;j<k;j++){var d=0; for(i=0;i<n;i++) d+=v[i]*Q[j][i]; for(i=0;i<n;i++) v[i]-=d*Q[j][i];}
+      var nm=0; for(i=0;i<n;i++) nm+=v[i]*v[i]; nm=Math.sqrt(nm); for(i=0;i<n;i++) v[i]/=nm; Q.push(v);
+    }
+    return Q;
+  }
+  var U=ortho(11), Vv=ortho(29);
+  function build(sig,from,to){
+    var M=[]; for(var i=0;i<n;i++){M.push(new Float64Array(n));}
+    for(var k=from;k<to;k++) for(i=0;i<n;i++) for(var j=0;j<n;j++) M[i][j]+=sig[k]*U[k][i]*Vv[k][j];
+    return M;
+  }
+  function paint(id,M,scale){
+    var c=$(id), ctx=c.getContext("2d"), cell=c.width/n;
+    for(var i=0;i<n;i++) for(var j=0;j<n;j++){
+      var v=Math.max(-1,Math.min(1,M[i][j]/scale)), a=Math.abs(v);
+      ctx.fillStyle=v>=0?"rgba(124,58,237,"+a+")":"rgba(217,119,6,"+a+")";
+      ctx.clearRect(j*cell,i*cell,cell,cell); ctx.fillRect(j*cell,i*cell,cell,cell);
+    }
+  }
+  function svd(){
+    var decay=$("decay").value/100, r=+$("keep").value, sig=[], tot=0, lost=0;
+    for(var k=0;k<n;k++){sig.push(Math.pow(decay,k)); tot+=sig[k]*sig[k]; if(k>=r) lost+=sig[k]*sig[k];}
+    $("decayv").textContent=decay<0.5?"fast":decay<0.8?"medium":"slow"; $("keepv").textContent=r;
+    var full=build(sig,0,n), low=build(sig,0,r), err=build(sig,r,n), scale=0;
+    for(var i=0;i<n;i++) for(var j=0;j<n;j++) scale=Math.max(scale,Math.abs(full[i][j]));
+    paint("cfull",full,scale); paint("clow",low,scale); paint("cerr",err,scale);
+    var relErr=Math.sqrt(lost/tot), stored=2*n*r;
+    $("rsvd").innerHTML="Rank "+r+" stores <b>"+stored+"</b> numbers instead of "+(n*n)+" ("+(100*stored/(n*n)).toFixed(0)+"%) and misses <b>"+(100*relErr).toFixed(1)+"%</b> of ΔW (relative Frobenius error, exact from the discarded singular values). "+
+      (relErr<0.05?"A few directions carry almost everything. This is the situation LoRA counts on.":relErr<0.3?"A usable copy. Raising r buys accuracy at a linear cost in parameters.":"Too much is lost. Either raise r, or the update is not low-rank and LoRA is the wrong tool.");
+  }
+  $("decay").oninput=svd; $("keep").oninput=svd; svd();
+
+  // 5 · paired vs unpaired bootstrap (real resampling)
+  var N=200, ft=[], zs=[], r0=rng(7), i;
+  for(i=0;i<N;i++){ ft.push(i<24?0:1); zs.push(i<36?0:1); }            // 88% and 82% correct;   // zero-shot errors ⊇ fine-tuned errors
+  var plot=$("bplot"), ns="http://www.w3.org/2000/svg";
+  function el(tag,attrs,txt){var e=document.createElementNS(ns,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(txt!=null)e.textContent=txt;plot.appendChild(e);return e;}
+  function q(a,p){var s=Array.prototype.slice.call(a).sort(function(x,y){return x-y;});return s[Math.round(p*(s.length-1))];}
+  function mean(a){var s=0;for(var k=0;k<a.length;k++)s+=a[k];return s/a.length;}
+  function drawBoot(res){
+    while(plot.firstChild) plot.removeChild(plot.firstChild);
+    function X(v){return 200+(v-0.66)/(0.96-0.66)*590;}
+    function XD(v){return 200+(v+0.04)/0.24*590;}
+    for(var v=0.70;v<0.951;v+=0.05){el("line",{x1:X(v),y1:14,x2:X(v),y2:98,stroke:"var(--line)"});el("text",{x:X(v),y:114,"text-anchor":"middle","font-size":12,fill:"var(--muted)"},Math.round(v*100)+"%");}
+    var rows=[["Fine-tuned",mean(ft),res&&res.a,"var(--purple)",36],["Zero-shot",mean(zs),res&&res.b,"var(--orange)",78]];
+    rows.forEach(function(row){
+      el("text",{x:190,y:row[4]+5,"text-anchor":"end","font-size":14,"font-weight":700,fill:row[3]},row[0]);
+      if(row[2]) el("line",{x1:X(row[2][0]),y1:row[4],x2:X(row[2][1]),y2:row[4],stroke:row[3],"stroke-width":6,"stroke-linecap":"round"});
+      el("circle",{cx:X(row[1]),cy:row[4],r:6,fill:"var(--card)",stroke:row[3],"stroke-width":3});
+    });
+    el("line",{x1:200,y1:172,x2:790,y2:172,stroke:"var(--muted)"});
+    [0,0.05,0.10,0.15].forEach(function(v){el("line",{x1:XD(v),y1:166,x2:XD(v),y2:178,stroke:"var(--muted)"});el("text",{x:XD(v),y:194,"text-anchor":"middle","font-size":12,fill:v===0?"var(--red)":"var(--muted)"},v===0?"0":"+"+Math.round(v*100)+" pts");});
+    el("line",{x1:XD(0),y1:134,x2:XD(0),y2:178,stroke:"var(--red)","stroke-dasharray":"5 4","stroke-width":2});
+    el("text",{x:190,y:157,"text-anchor":"end","font-size":14,"font-weight":700,fill:"var(--teal)"},"Paired Δ");
+    if(res) el("line",{x1:XD(res.d[0]),y1:152,x2:XD(res.d[1]),y2:152,stroke:"var(--teal)","stroke-width":6,"stroke-linecap":"round"});
+    el("circle",{cx:XD(mean(ft)-mean(zs)),cy:152,r:6,fill:"var(--card)",stroke:"var(--teal)","stroke-width":3});
+  }
+  function pc(x){return (x*100).toFixed(1)+"%";}
+  $("runboot").onclick=function(){
+    var B=2000, a=new Float64Array(B), b=new Float64Array(B), d=new Float64Array(B);
+    for(var k=0;k<B;k++){var sa=0,sb=0;for(var m=0;m<N;m++){var j=Math.floor(Math.random()*N);sa+=ft[j];sb+=zs[j];}a[k]=sa/N;b[k]=sb/N;d[k]=(sa-sb)/N;}
+    var res={a:[q(a,0.025),q(a,0.975)],b:[q(b,0.025),q(b,0.975)],d:[q(d,0.025),q(d,0.975)]};
+    drawBoot(res);
+    var overlap=res.b[1]>=res.a[0];
+    $("rboot").innerHTML="Fine-tuned <b>["+pc(res.a[0])+", "+pc(res.a[1])+"]</b>, zero-shot <b>["+pc(res.b[0])+", "+pc(res.b[1])+"]</b>: the two intervals "+(overlap?"overlap":"do not overlap")+". "+
+      "Paired difference: <b>["+(res.d[0]*100).toFixed(1)+", "+(res.d[1]*100).toFixed(1)+"] points</b>, which "+(res.d[0]>0?"<b>excludes zero</b>. Same data, same models, a much clearer answer.":"includes zero on this run.");
+  };
+  drawBoot(null);
+  $("rboot").innerHTML="On the full test set: fine-tuned <b>"+pc(mean(ft))+"</b>, zero-shot <b>"+pc(mean(zs))+"</b>. Run the bootstrap to see how sure you can be.";
+})();
+</script>
+</body>
+</html>
