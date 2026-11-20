@@ -99,6 +99,9 @@ footer{margin-top:3em;color:var(--muted);font-size:14px;border-top:1px solid var
 .w.hid{background:var(--line);border-color:var(--line)}
 .tok.blank{border-style:dashed;border-color:var(--blue);color:var(--blue)}
 .tok.opt{font-weight:500}
+
+.btn:disabled{opacity:.45;cursor:default}
+.tok:disabled{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -107,7 +110,7 @@ footer{margin-top:3em;color:var(--muted);font-size:14px;border-top:1px solid var
 
 <div class="kicker">AIT-204 · Topic 6 · Before the lecture · ~12 min</div>
 <h1>Pre-training and fine-tuning in one idea: first go to school, then learn the job</h1>
-<p class="lede">In Topic 5 you built the transformer and met its three family members: the Reader (BERT), the Writer (GPT) and the Translator (T5). This page answers the next question in plain language: <b>how do those models get smart, and how do you make one of them yours?</b> The lecture and the sessions then add the math, the metrics and the code.</p>
+<p class="lede">In Topic 5 you built the transformer and met its three family members: the Reader (BERT), the Writer (GPT) and the Translator (T5). (Need a refresher? <a href="Review_Topic_6_Reader_Writer_Translator.html" style="color:var(--purple)">Meet the family again</a>.) This page answers the next question in plain language: <b>how do those models get smart, and how do you make one of them yours?</b> The lecture and the sessions then add the math, the metrics and the code.</p>
 
 <h2><span class="n">1</span>Nobody hires a newborn</h2>
 <p>Suppose your team needs someone to sort incoming text messages into <i>spam</i> and <i>not spam</i>. You could raise a child from birth and teach them nothing but spam sorting. Or you could hire an adult who already reads English and show them a few hundred examples on their first morning.</p>

@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topic 6 Warm-Up — Meet the Family Again: Reader, Writer, Translator</title>
+<meta name="description" content="AIT-204 Topic 6 warm-up: a review of the three transformer archetypes before pre-training and fine-tuning.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fbfaf6; --card:#ffffff; --ink:#1d2433; --muted:#5b6475; --line:#e4e1d8;
+  --blue:#2563eb; --orange:#d97706; --green:#15803d; --purple:#7c3aed; --red:#dc2626; --teal:#0f766e;
+  --tint:#f3f0ff; --chip:#eef2ff;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12151c; --card:#1a1f29; --ink:#e8eaf0; --muted:#9aa3b5; --line:#2c3341;
+    --blue:#6b9bff; --orange:#f0a443; --green:#4cc27a; --purple:#a98bff; --red:#ff6b6b; --teal:#3cc4b4;
+    --tint:#231d38; --chip:#1e2740;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12151c; --card:#1a1f29; --ink:#e8eaf0; --muted:#9aa3b5; --line:#2c3341;
+  --blue:#6b9bff; --orange:#f0a443; --green:#4cc27a; --purple:#a98bff; --red:#ff6b6b; --teal:#3cc4b4;
+  --tint:#231d38; --chip:#1e2740;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:Inter,"Helvetica Neue",Arial,sans-serif;font-size:17px;line-height:1.6}
+.wrap{max-width:900px;margin:0 auto;padding:40px 16px 80px}
+.kicker{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--purple);font-weight:700}
+h1{font-size:clamp(30px,6vw,48px);line-height:1.1;margin:.25em 0 .3em;font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(22px,4vw,28px);margin:2.2em 0 .4em;font-weight:700;letter-spacing:-.01em}
+h2 .n{color:var(--purple);margin-right:.35em}
+p{margin:.6em 0}
+.lede{font-size:clamp(18px,2.6vw,21px);color:var(--muted)}
+.big{font-family:"Source Serif 4",Georgia,serif;font-style:italic;font-size:clamp(22px,3.6vw,30px);line-height:1.35;
+  border-left:5px solid var(--purple);padding:.2em 0 .2em .8em;margin:1.2em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin:16px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:640px){.grid2{grid-template-columns:1fr}}
+.tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+svg text{font-family:Inter,Arial,sans-serif}
+/* attention demo */
+.sentence{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 6px}
+.tok{border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:6px 11px;font:600 16px Inter,sans-serif;cursor:pointer;position:relative;transition:background .2s,border-color .2s}
+.tok:hover{border-color:var(--blue)}
+.tok.q{border-color:var(--blue);background:var(--chip)}
+.tok .bar{position:absolute;left:0;bottom:-8px;height:5px;border-radius:3px;background:var(--orange);transition:width .35s}
+.switch{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 14px;font:600 14px Inter,sans-serif;cursor:pointer}
+.btn.on{background:var(--purple);border-color:var(--purple);color:#fff}
+.readout{min-height:48px;font-size:15px;color:var(--muted);margin-top:16px}
+.readout b{color:var(--ink)}
+/* heads */
+.heads{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:640px){.heads{grid-template-columns:1fr}}
+.head{border-radius:12px;padding:14px;border:2px solid}
+.head h4{margin:0 0 4px;font-size:16px}
+/* archetypes */
+.arch{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:720px){.arch{grid-template-columns:1fr}}
+.arch .card{margin:0;border-width:2px}
+.arch h3{margin:.1em 0 .1em;font-size:20px}
+.mask{display:grid;grid-template-columns:repeat(5,14px);gap:3px;margin:10px 0}
+.mask span{width:14px;height:14px;border-radius:3px;background:var(--line)}
+/* checklist */
+.sessions{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media (max-width:640px){.sessions{grid-template-columns:1fr}}
+.sess{border-left:4px solid var(--purple);background:var(--card);border-radius:0 12px 12px 0;padding:12px 14px;border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.sess .when{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--purple)}
+code{font-family:"DejaVu Sans Mono",Menlo,Consolas,monospace;font-size:.88em;background:var(--chip);padding:1px 5px;border-radius:5px}
+.order{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.seat{display:inline-flex;flex-direction:column;align-items:center;gap:2px}
+.seat .w{border:2px solid var(--line);border-radius:8px;padding:4px 10px;font-weight:600;background:var(--card)}
+.seat .p{font-size:12px;color:var(--purple);font-weight:700;opacity:0;transition:opacity .3s}
+.showpos .seat .p{opacity:1}
+.theme{position:fixed;top:12px;right:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font:600 13px Inter,sans-serif;cursor:pointer;z-index:5}
+footer{margin-top:3em;color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
+/* controls + meters (Topic 6 prequel) */
+.ctl{display:grid;grid-template-columns:220px 1fr 90px;gap:12px;align-items:center;margin:10px 0}
+.ctl label{font-weight:600;font-size:15px}
+.ctl output{font:700 15px "DejaVu Sans Mono",Menlo,Consolas,monospace;text-align:right;color:var(--purple)}
+.ctl input[type=range]{width:100%;accent-color:var(--purple)}
+.ctl input[type=number],.ctl input[type=text]{grid-column:2 / 4;width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:7px 10px;font:500 15px Inter,sans-serif}
+@media (max-width:640px){.ctl{grid-template-columns:1fr 70px}.ctl label{grid-column:1 / 3}.ctl input[type=number],.ctl input[type=text]{grid-column:1 / 3}}
+.meter{display:grid;grid-template-columns:220px 1fr 90px;gap:12px;align-items:center;margin:8px 0}
+.meter .mlab{font-size:14px;color:var(--muted);font-weight:600}
+.meter .track{height:16px;border-radius:8px;background:var(--line);overflow:hidden}
+.meter .fill{height:100%;border-radius:8px;width:0;transition:width .3s}
+.meter .mval{font:700 15px "DejaVu Sans Mono",Menlo,Consolas,monospace;text-align:right}
+@media (max-width:640px){.meter{grid-template-columns:1fr 80px}.meter .mlab{grid-column:1 / 3}}
+.w{border:2px solid var(--line);border-radius:10px;padding:6px 11px;font:600 16px Inter,sans-serif;background:var(--card)}
+.w.sent{border-color:var(--green);color:var(--green);background:transparent}
+.w.next{border-color:var(--orange);color:var(--orange);border-style:dashed}
+.w.hid{background:var(--line);border-color:var(--line)}
+.tok.blank{border-style:dashed;border-color:var(--blue);color:var(--blue)}
+.tok.opt{font-weight:500}
+
+.btn:disabled{opacity:.45;cursor:default}
+.tok:disabled{color:var(--ink)}
+</style>
+</head>
+<body>
+<button class="theme" id="theme" aria-label="Toggle light or dark theme">◐ Theme</button>
+<div class="wrap">
+
+<div class="kicker">AIT-204 · Topic 6 · Warm-up review · ~8 min</div>
+<h1>Meet the family again: the Reader, the Writer and the Translator</h1>
+<p class="lede">In Topic 5 you built one transformer block and saw that three famous model families are that same block with different rules. Before we ask how these models are trained, here is a quick tour of who they are, what each is good at, and how they work as a team.</p>
+
+<h2><span class="n">1</span>One block, three rules about who may look at whom</h2>
+<p>Every transformer is built from the same parts: attention (the words talk) and a small feed-forward network (each word thinks). The three family members differ in one thing only: <b>which words each word is allowed to look at</b>.</p>
+<div class="arch">
+  <div class="card" style="border-color:var(--blue)"><span class="tag" style="background:var(--chip);color:var(--blue)">Reader</span><h3>Encoder · BERT</h3><p class="small">Reads the whole sentence at once, left and right. Like a student who reads the full paragraph before answering a question about it.</p></div>
+  <div class="card" style="border-color:var(--orange)"><span class="tag" style="background:var(--chip);color:var(--orange)">Writer</span><h3>Decoder · GPT</h3><p class="small">Sees only what has been written so far and adds the next word. Like writing a story with a card covering everything to the right of your pen.</p></div>
+  <div class="card" style="border-color:var(--green)"><span class="tag" style="background:var(--chip);color:var(--green)">Translator</span><h3>Encoder–decoder · T5</h3><p class="small">A Reader and a Writer joined. The Writer keeps glancing back at what the Reader understood. Like an interpreter who listens to the full sentence, then speaks.</p></div>
+</div>
+<div class="card">
+  <b>Try it.</b> <span class="muted">Pick a family member, then click a word to see which words it is allowed to look at.</span>
+  <div class="switch" role="group" aria-label="Choose a family member" id="who">
+    <button class="btn on" data-m="reader">Reader</button>
+    <button class="btn" data-m="writer">Writer</button>
+    <button class="btn" data-m="translator">Translator</button>
+  </div>
+  <div id="maskbox"></div>
+  <div class="readout" id="maskout"></div>
+</div>
+
+<h2><span class="n">2</span>Who do you call for which job?</h2>
+<p>The rule each member lives by decides what it is naturally good at. Seeing both sides makes the Reader good at <b>understanding</b>. Seeing only the past makes the Writer good at <b>continuing</b>. Reading one text and writing another makes the Translator good at <b>transforming</b>.</p>
+<div class="card">
+  <b>Try it.</b> <span class="muted">Seven jobs arrive at the family business. Send each one to the member whose native talent fits best.</span>
+  <div class="big" id="job" style="font-size:clamp(19px,3vw,24px)"></div>
+  <div class="switch" id="jobbtns">
+    <button class="btn" data-a="reader">Reader</button>
+    <button class="btn" data-a="writer">Writer</button>
+    <button class="btn" data-a="translator">Translator</button>
+  </div>
+  <div class="readout" id="jobout"></div>
+</div>
+<p class="small muted">A fair caveat: today's very large Writers can also summarize and translate when you ask them in a prompt. “Native talent” here means the job each design does well at a small size and low cost, which is the comparison your products care about.</p>
+
+<h2><span class="n">3</span>How each one works: count the passes</h2>
+<p>A <b>pass</b> is one trip of the text through the whole stack of blocks. How many passes a member needs explains why your TrioFormer lanes had such different latencies.</p>
+<div class="card">
+  <div class="switch" role="group" aria-label="Choose a family member" id="who2">
+    <button class="btn on" data-m="reader">Reader</button>
+    <button class="btn" data-m="writer">Writer</button>
+    <button class="btn" data-m="translator">Translator</button>
+  </div>
+  <div class="small muted" id="runin"></div>
+  <div class="sentence" id="runout"></div>
+  <div class="switch"><button class="btn on" id="runbtn">Run one pass</button><button class="btn" id="runreset">Start over</button></div>
+  <div class="meter"><span class="mlab">Passes used</span><div class="track"><div class="fill" id="passbar" style="background:var(--purple)"></div></div><span class="mval" id="passval">0</span></div>
+  <div class="readout" id="runmsg"></div>
+</div>
+<p>The Reader answers in <b>one pass</b>, however long the sentence is. The Writer needs <b>one pass per new word</b>. The Translator reads <b>once</b>, then writes one word per pass. That is why BERT was your fastest lane and why generation time grows with output length.</p>
+
+<h2><span class="n">4</span>How they work together</h2>
+<p>Real products rarely use one member alone. They chain them, each doing the part it is best at. Here is a typical design for a support inbox.</p>
+<div class="card">
+  <b>Try it.</b> <span class="muted">A long customer email thread arrives. Step through what happens.</span>
+  <div id="pipe"></div>
+  <div class="switch"><button class="btn on" id="pipenext">Next step</button><button class="btn" id="pipereset">Start over</button></div>
+  <div class="readout" id="pipeout"></div>
+</div>
+<p>Notice the division of labor: the cheap, fast Reader touches <i>every</i> message; the slower Writer is called only when words have to be produced. Your Topic 6 product makes exactly this kind of choice: a small fine-tuned Reader for spam, or a small Translator for summaries.</p>
+
+<h2><span class="n">5</span>Where did each one get its talent?</h2>
+<p>Nobody programmed the Reader to understand or the Writer to write. Each learned its talent from a practice game it played billions of times before you ever downloaded it. That practice is called <b>pre-training</b>, and it is today's topic.</p>
+<div class="heads">
+  <div class="head" style="border-color:var(--blue)"><h4 style="color:var(--blue)">Reader</h4><p class="small">Practiced <b>filling in blanks</b>, looking both ways.</p></div>
+  <div class="head" style="border-color:var(--orange)"><h4 style="color:var(--orange)">Writer</h4><p class="small">Practiced <b>guessing the next word</b>, looking only back.</p></div>
+  <div class="head" style="border-color:var(--green)"><h4 style="color:var(--green)">Translator</h4><p class="small">Practiced <b>restoring blacked-out phrases</b>: damaged text in, missing text out.</p></div>
+</div>
+<p>There is also a fourth relative you have not met, the <b>Librarian</b>, who never writes a word and instead learns to shelve similar things together. You will meet all four games next.</p>
+<p><a class="btn on" style="text-decoration:none;display:inline-block" href="Prequel_Topic_6_Pre_Training_and_Fine_Tuning_LLMs.html">Continue to the prequel: first go to school, then learn the job →</a></p>
+
+<footer>AIT-204 Deep Learning · Topic 6 warm-up. A review of Topic 5 — Transformer Architecture: encoder-only, decoder-only and encoder–decoder models.</footer>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  var root=document.documentElement, KEY="ait204-theme";
+  try{var t=localStorage.getItem(KEY); if(t) root.setAttribute("data-theme",t);}catch(e){}
+  $("theme").onclick=function(){
+    var dark=root.getAttribute("data-theme")==="dark"||(!root.getAttribute("data-theme")&&matchMedia("(prefers-color-scheme: dark)").matches);
+    var n=dark?"light":"dark"; root.setAttribute("data-theme",n); try{localStorage.setItem(KEY,n);}catch(e){}
+  };
+  var COL={reader:"var(--blue)",writer:"var(--orange)",translator:"var(--green)"};
+  var NAME={reader:"Reader",writer:"Writer",translator:"Translator"};
+  function tabs(id,fn){document.querySelectorAll("#"+id+" .btn").forEach(function(b){b.onclick=function(){
+    document.querySelectorAll("#"+id+" .btn").forEach(function(x){x.classList.toggle("on",x===b);}); fn(b.getAttribute("data-m"));};});}
+
+  // 1 · who may look at whom
+  var EN=["The","cat","sat","on","the","mat"], SRC=["The","cat","sat","down"], FR=["Le","chat","s'est","assis"];
+  var who="reader", pick=2;
+  function row(words,canSee,isPick,clickable,col){
+    return '<div class="sentence">'+words.map(function(w,i){
+      var see=canSee(i), me=isPick(i);
+      return '<button class="tok'+(me?" q":"")+'" '+(clickable?'data-i="'+i+'"':'disabled')+' style="'+(see?"border-color:"+col+";":"opacity:.35;")+(clickable?"":"cursor:default;")+'">'+w+(see&&!me?'<span class="bar" style="width:100%;background:'+col+'"></span>':'')+'</button>';
+    }).join("")+'</div>';
+  }
+  function drawMask(){
+    var col=COL[who], box=$("maskbox"), out=$("maskout");
+    if(who==="reader"){
+      box.innerHTML=row(EN,function(){return true;},function(i){return i===pick;},true,col);
+      out.innerHTML="<b>Reader.</b> “"+EN[pick]+"” may look at <b>all "+EN.length+" words</b>, on both sides. Nothing is hidden, so the Reader understands each word in full context. It also means it can never be asked to guess the next word: it has already seen it.";
+    }else if(who==="writer"){
+      box.innerHTML=row(EN,function(i){return i<=pick;},function(i){return i===pick;},true,col);
+      out.innerHTML="<b>Writer.</b> “"+EN[pick]+"” may look at <b>"+(pick+1)+" of "+EN.length+" words</b>: itself and everything to its left. The "+(EN.length-1-pick)+" word"+(EN.length-1-pick===1?"":"s")+" to its right "+(EN.length-1-pick===1?"is":"are")+" masked. That is the rule that makes honest next-word prediction possible.";
+    }else{
+      var p=Math.min(pick,FR.length-1);
+      box.innerHTML='<div class="small muted">What the Reader half understood (English):</div>'+row(SRC,function(){return true;},function(){return false;},false,"var(--blue)")+
+        '<div class="small muted" style="margin-top:14px">What the Writer half has produced so far (French). Click a word:</div>'+row(FR,function(i){return i<=p;},function(i){return i===p;},true,col);
+      out.innerHTML="<b>Translator.</b> While writing “"+FR[p]+"”, the Writer half may look at its own <b>"+(p+1)+" word"+(p?"s":"")+" so far</b> and at <b>all "+SRC.length+" English words</b> the Reader half understood. That glance across is called cross-attention.";
+    }
+    box.querySelectorAll("[data-i]").forEach(function(b){b.onclick=function(){pick=+b.getAttribute("data-i");drawMask();};});
+  }
+  tabs("who",function(m){who=m;pick=2;drawMask();}); drawMask();
+
+  // 2 · job sorter
+  var jobs=[
+    ["“Is this text message spam?”","reader","Classifying needs understanding of the whole message. One pass, one label."],
+    ["“Continue this story: Once upon a time…”","writer","Open-ended continuation is next-word prediction, over and over."],
+    ["“Summarize this two-page email in two sentences.”","translator","Text in, different text out. The Reader half digests the email; the Writer half produces the summary."],
+    ["“Fill in the blank: The capital of France is ____.”","reader","A blank in the middle needs the words on both sides. This is the Reader's own practice game."],
+    ["“Translate this sentence from English to German.”","translator","The original job this design was invented for."],
+    ["“Find the five documents most similar to this question.”","reader","The Reader turns each text into one vector (an embedding); similar texts land close together."],
+    ["“Reply to this chat message.”","writer","A reply is a continuation of the conversation so far."]
+  ], ji=0, score=0, answered=false;
+  function drawJob(){
+    answered=false;
+    document.querySelectorAll("#jobbtns .btn").forEach(function(b){b.classList.remove("on");b.disabled=false;b.textContent=NAME[b.getAttribute("data-a")];});
+    if(ji>=jobs.length){$("job").textContent="All seven jobs assigned.";$("jobout").innerHTML="You matched <b>"+score+" of "+jobs.length+"</b> on the first try. <button class='btn' id='again'>Play again</button>";$("again").onclick=function(){ji=0;score=0;drawJob();};document.querySelectorAll("#jobbtns .btn").forEach(function(b){b.disabled=true;});return;}
+    $("job").textContent=jobs[ji][0]; $("jobout").innerHTML="Job "+(ji+1)+" of "+jobs.length+".";
+  }
+  document.querySelectorAll("#jobbtns .btn").forEach(function(b){b.onclick=function(){
+    if(ji>=jobs.length) return;
+    var a=b.getAttribute("data-a"), right=jobs[ji][1];
+    if(a===right){ if(!answered) score++; b.classList.add("on");
+      $("jobout").innerHTML="<b>Yes, the "+NAME[right]+".</b> "+jobs[ji][2]+" <button class='btn' id='nextjob'>Next job</button>";
+      document.querySelectorAll("#jobbtns .btn").forEach(function(x){x.disabled=true;});
+      $("nextjob").onclick=function(){ji++;drawJob();};
+    } else { answered=true; $("jobout").innerHTML="<b>Not the best fit.</b> Think about what the "+NAME[a]+" is allowed to see, then try again."; }
+  };});
+  drawJob();
+
+  // 3 · count the passes
+  var RUN={
+    reader:{intro:"Input: “The cat [MASK] on the mat.” Task: fill the blank.",shown:["The","cat","[MASK]","on","the","mat"],steps:[{set:[2,"sat"],msg:"One pass and the blank is filled. The Reader is done."}]},
+    writer:{intro:"Prompt: “The cat sat on the”. Task: continue.",shown:["The","cat","sat","on","the"],steps:[{add:"mat",msg:"Pass 1 produced “mat”. To get another word, the whole text goes through again."},{add:"and",msg:"Pass 2 produced “and”."},{add:"purred",msg:"Pass 3 produced “purred”."},{add:".",msg:"Pass 4 produced the full stop. Four new tokens cost four passes."}]},
+    translator:{intro:"Input: “The cat sat down”. Task: translate to French.",shown:[],steps:[{msg:"Pass 1: the Reader half reads the whole English sentence once. Nothing is written yet."},{add:"Le",msg:"Pass 2: the Writer half produces “Le”, glancing at the English."},{add:"chat",msg:"Pass 3: “chat”."},{add:"s'est",msg:"Pass 4: “s'est”."},{add:"assis",msg:"Pass 5: “assis”. One reading pass plus one writing pass per word."}]}
+  }, rm="reader", rs=0, words=[];
+  function drawRun(){
+    var r=RUN[rm], col=COL[rm];
+    $("runin").textContent=r.intro;
+    $("runout").innerHTML=(words.length?words:["…"]).map(function(w){var nw=w.charAt(0)==="*";return '<span class="w" style="'+(nw?"border-color:"+col+";color:"+col:"")+'">'+(nw?w.slice(1):w)+'</span>';}).join("");
+    $("passval").textContent=rs; $("passbar").style.width=Math.max(1,rs/5*100)+"%";
+    $("runmsg").innerHTML=rs===0?"No passes yet.":r.steps[rs-1].msg;
+    $("runbtn").disabled=rs>=r.steps.length; $("runbtn").classList.toggle("on",rs<r.steps.length);
+  }
+  function resetRun(){rs=0;words=RUN[rm].shown.slice();drawRun();}
+  $("runbtn").onclick=function(){var r=RUN[rm]; if(rs>=r.steps.length) return; var s=r.steps[rs]; if(s.set) words[s.set[0]]="*"+s.set[1]; if(s.add) words.push("*"+s.add); rs++; drawRun();};
+  $("runreset").onclick=resetRun;
+  tabs("who2",function(m){rm=m;resetRun();}); resetRun();
+
+  // 4 · pipeline
+  var PIPE=[
+    ["reader","Reader · sort","Is this a billing question, a bug report or spam? One pass, one label. Runs on every incoming message because it is cheap."],
+    ["reader","Reader · search","Turn the question into a vector and pull the three most similar help articles from the knowledge base."],
+    ["translator","Translator · condense","The thread is 40 messages long. Compress it into a five-line summary of what the customer has already tried."],
+    ["writer","Writer · draft","Given the summary and the three articles, write a reply for a human agent to check and send."]
+  ], ps=0;
+  function drawPipe(){
+    $("pipe").innerHTML='<div class="sentence" style="align-items:stretch">'+PIPE.map(function(p,i){
+      var on=i<ps, col=COL[p[0]];
+      return '<span class="w" style="flex:1 1 150px;'+(on?"border-color:"+col+";color:"+col:"opacity:.35")+'">'+(i+1)+". "+p[1]+'</span>';
+    }).join("")+'</div>';
+    $("pipeout").innerHTML=ps===0?"The email thread is waiting in the inbox.":"<b>"+PIPE[ps-1][1]+".</b> "+PIPE[ps-1][2]+(ps===PIPE.length?" <b>Done:</b> two Reader calls, one Translator call, one Writer call.":"");
+    $("pipenext").disabled=ps>=PIPE.length; $("pipenext").classList.toggle("on",ps<PIPE.length);
+  }
+  $("pipenext").onclick=function(){if(ps<PIPE.length){ps++;drawPipe();}};
+  $("pipereset").onclick=function(){ps=0;drawPipe();};
+  drawPipe();
+})();
+</script>
+</body>
+</html>
